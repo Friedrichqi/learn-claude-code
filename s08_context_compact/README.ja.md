@@ -147,7 +147,9 @@ for _, _, block in consumed[:-self.KEEP_RECENT_RESULTS]:
 `micro_compact` と `fit_tool_results` の後、コードは `estimate_chars(messages)` でコンテキストを再び推定します。
 
 ```python
-CONTEXT_CHAR_LIMIT = 50000
+CHARS_PER_TOKEN = 4
+CONTEXT_TOKEN_LIMIT = 128000
+CONTEXT_CHAR_LIMIT = CONTEXT_TOKEN_LIMIT * CHARS_PER_TOKEN  # 512000
 
 def estimate_chars(messages):
     return len(json.dumps(messages, default=str, ensure_ascii=False))
@@ -328,7 +330,7 @@ s08_context_compact/code.py と s09_memory/code.py を比較し、
 現在のコンテキストと永続メモリの管理方法を説明してください。
 ```
 
-ファイル結果によって `estimate_chars(messages)` が 50000 を超えると、ターミナルに `[auto compact]` と transcript のパスが表示されます。次の呼び出しは `[Compacted]` の要約から続行します。
+ファイル結果によって `estimate_chars(messages)` が 512000（約 128k トークン、1 トークン ≈ 4 文字で換算）を超えると、ターミナルに `[auto compact]` と transcript のパスが表示されます。次の呼び出しは `[Compacted]` の要約から続行します。
 
 `.transcripts/` と `.task_outputs/tool-results/` を確認すると、履歴の保存と大きな結果の転送をそれぞれ観察できます。
 

@@ -139,6 +139,15 @@ def prepare_context(module, messages, active_request="continue"):
     return module.prepare_context(messages, active_request)
 
 
+def set_context_limit(module, chars: int):
+    """Pin the chapter's character budget so tests do not depend on the default."""
+    api = compaction_api(module)
+    if hasattr(api, "CONTEXT_CHAR_LIMIT"):
+        api.CONTEXT_CHAR_LIMIT = chars
+    else:
+        module.CONTEXT_LIMIT = chars
+
+
 class CompactionToolPairTests(unittest.TestCase):
     def test_prepare_preserves_consumed_results_below_pressure_limit(self):
         for name, path in MODULES.items():
@@ -184,6 +193,7 @@ class CompactionToolPairTests(unittest.TestCase):
                     }]},
                 ]
                 module = load_module(f"{name}_latest_result", path, Path(tmp))
+                set_context_limit(module, 50000)  # result must exceed the budget
                 api = compaction_api(module)
                 api.summarize_history = lambda _messages: (_ for _ in ()).throw(
                     AssertionError("full compaction should not run"))

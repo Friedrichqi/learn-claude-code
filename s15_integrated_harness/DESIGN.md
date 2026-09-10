@@ -30,8 +30,10 @@ All statements below are grounded in the actual code in this directory
 
 | Constant | Value | Meaning |
 | --- | --- | --- |
-| `CONTEXT_LIMIT` | `50000` | Character budget for the message list |
-| shrink target | `int(CONTEXT_LIMIT * 0.8)` = `40000` | Target size for `micro_compact` / `fit_tool_results` |
+| `CONTEXT_TOKEN_LIMIT` | `128000` | Token budget for the message list |
+| `CHARS_PER_TOKEN` | `4` | Rough chars-per-token estimate (no local tokenizer) |
+| `CONTEXT_LIMIT` | `CONTEXT_TOKEN_LIMIT * CHARS_PER_TOKEN` = `512000` | Character budget the pipeline actually compares against |
+| shrink target | `int(CONTEXT_LIMIT * 0.8)` = `409600` | Target size for `micro_compact` / `fit_tool_results` |
 | `KEEP_RECENT_TOOL_RESULTS` | `3` | Newest consumed tool results micro_compact never touches |
 | `PERSIST_THRESHOLD` | `30000` | Output size above which `persist_large_output` persists to disk |
 | `tool_result_budget` cap | `200000` | Max total chars of tool_result blocks in the *latest* message |

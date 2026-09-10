@@ -50,7 +50,7 @@ message ranges to `.transcripts/`, keep head 3 + tail 46), `micro_compact`
 `fit_tool_results` (largest results → 1000-char persisted previews), and
 `compact_history` (full model summarization into one `[Compacted]` message) —
 the last firing only while the estimated size (`estimate_size`,
-`len(json.dumps(...))`) still exceeds `CONTEXT_LIMIT` (50000 chars). Two
+`len(json.dumps(...))`) still exceeds `CONTEXT_LIMIT` (512000 chars, i.e. 128k tokens at 4 chars/token). Two
 additional entry points exist: the `compact` tool (special-cased in
 `agent_loop`) and `reactive_compact` on prompt-too-long errors (at most once
 per turn).

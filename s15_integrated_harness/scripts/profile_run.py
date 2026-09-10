@@ -16,6 +16,12 @@ Behaviour
     bash, glob, ...), which read_file paths were present, how many results had already been
     replaced by compaction placeholders, plus provider usage.  This measures how many times the
     same file content is re-sent to the model (input reuse), which the trace alone cannot show.
+  * Also writes <trace>.reads.jsonl: the FULL text of every tool_result block the first time it
+    appears in an agent's request (tool name and arguments resolved from the matching tool_use
+    block), plus a record whenever an already-sent result is rewritten (compaction placeholder).
+    Together with the per-call list of tool_result ids in the inputs sidecar this reconstructs the
+    exact bytes of file input each agent's model calls contained -- the basis for byte-level
+    redundancy measurements (scripts/input_redundancy.py).
   * Drives one or more user turns, then waits until teammates are idle (or --max-seconds), sends
     them a graceful shutdown while holding the lead lock, and closes the trace.
   * Fresh .memory/.tasks/.mailboxes/.transcripts/.task_outputs state at the repo root per run.
@@ -24,8 +30,10 @@ Behaviour
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
+import subprocess
 import os
 import random
 import re
@@ -70,6 +78,10 @@ def parse_args():
                         help="intervention: override CONTEXT_LIMIT (chars) of the lead compaction pipeline")
     parser.add_argument("--no-retry-429", action="store_true",
                         help="disable the driver-level retry of provider 429s (the harness itself retries only lead calls, 3x)")
+    parser.add_argument("--trace-output", choices=["summary", "full"], default="summary",
+                        help="HARNESS_TRACE_OUTPUT mode: 'full' stores every tool result verbatim in the trace")
+    parser.add_argument("--no-reads-log", action="store_true",
+                        help="do not write the <trace>.reads.jsonl content sidecar")
     return parser.parse_args()
 
 
@@ -96,7 +108,7 @@ def main() -> int:
     os.chdir(REPO)
     os.environ["HARNESS_TRACE"] = "1"
     os.environ["HARNESS_TRACE_DIR"] = args.trace_dir
-    os.environ.setdefault("HARNESS_TRACE_OUTPUT", "summary")
+    os.environ["HARNESS_TRACE_OUTPUT"] = args.trace_output
     if not args.keep_state:
         wipe_run_state()
 
@@ -114,12 +126,22 @@ def main() -> int:
                                if not section.startswith("Current time:"))
 
         mod.assemble_system_prompt = assemble_without_time
+    try:
+        git_head = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
+                                  cwd=REPO, check=True).stdout.strip()
+    except Exception:
+        git_head = None
     trace.emit("profile_meta", {"label": args.label, "prompts": args.prompt,
                                 "allow_writes": args.allow_writes, "driver": "scripts/profile_run.py",
-                                "no_timestamp": args.no_timestamp, "context_limit": mod.CONTEXT_LIMIT})
+                                "no_timestamp": args.no_timestamp, "context_limit": mod.CONTEXT_LIMIT,
+                                "git_head": git_head, "trace_output": args.trace_output,
+                                "reads_log": not args.no_reads_log})
     inputs_path = Path(str(trace.path).removesuffix(".jsonl") + ".inputs.jsonl")
+    reads_path = Path(str(trace.path).removesuffix(".jsonl") + ".reads.jsonl")
     inputs_lock = threading.Lock()
     print(f"[profile] label={args.label} trace={trace.path} inputs={inputs_path}", flush=True)
+    if not args.no_reads_log:
+        print(f"[profile] reads={reads_path}", flush=True)
 
     # -- permission policy: auto-approve, but keep the repository read-only ----------------
     calls: dict[str, dict] = {}
@@ -157,6 +179,33 @@ def main() -> int:
             return len(content)
         return len(json.dumps(content, default=str))
 
+    def block_field(block, field):
+        if isinstance(block, dict):
+            return block.get(field)
+        return getattr(block, field, None)
+
+    def tool_use_index(messages) -> dict:
+        # tool_use blocks in assistant turns carry the id, tool name and arguments that the
+        # matching tool_result refers to (works for every agent kind, hooks or not)
+        index = {}
+        for message in messages:
+            if not isinstance(message, dict) or message.get("role") != "assistant":
+                continue
+            content = message.get("content")
+            if not isinstance(content, list):
+                continue
+            for block in content:
+                if block_field(block, "type") == "tool_use":
+                    index[block_field(block, "id")] = (block_field(block, "name"), block_field(block, "input"))
+        return index
+
+    seen_results: dict[tuple[str, str], str] = {}  # (agent, tool_use_id) -> sha1 of the content sent
+    seen_lock = threading.Lock()
+
+    def is_placeholder(text) -> bool:
+        return isinstance(text, str) and (text.startswith("[Earlier tool result saved at")
+                                          or text.startswith("<persisted-output>"))
+
     def profiled_create(**kwargs):
         ctx = trace.capture_context()
         messages = kwargs.get("messages", []) or []
@@ -166,7 +215,11 @@ def main() -> int:
         placeholders = 0
         placeholder_chars = 0
         read_paths = []
+        result_ids = []
         unknown = 0
+        agent = ctx.get("agent_id") or "agent-root"
+        tool_uses = tool_use_index(messages)
+        new_contents = []
         for message in messages:
             content = message.get("content") if isinstance(message, dict) else None
             if message.get("role") != "user" or not isinstance(content, list):
@@ -176,20 +229,44 @@ def main() -> int:
                     continue
                 text = block.get("content", "")
                 chars = block_chars(text)
-                info = calls.get(block.get("tool_use_id"))
-                tool = info["tool"] if info else "unknown"
-                if not info:
+                use_id = block.get("tool_use_id")
+                info = calls.get(use_id)
+                if use_id in tool_uses:
+                    tool, tool_input = tool_uses[use_id]
+                elif info:
+                    tool, tool_input = info["tool"], info["input"]
+                else:
+                    tool, tool_input = "unknown", None
                     unknown += 1
                 by_tool[tool] += chars
                 results_by_tool[tool] += 1
-                if isinstance(text, str) and (text.startswith("[Earlier tool result saved at")
-                                              or text.startswith("<persisted-output>")):
+                result_ids.append(use_id)
+                if is_placeholder(text):
                     placeholders += 1
                     placeholder_chars += chars
-                elif tool == "read_file" and info:
-                    read_paths.append(info["input"].get("path"))
-        agent = ctx.get("agent_id") or "agent-root"
+                elif tool == "read_file" and isinstance(tool_input, dict):
+                    read_paths.append(tool_input.get("path"))
+                if not args.no_reads_log:
+                    payload = text if isinstance(text, str) else json.dumps(text, default=str)
+                    digest = hashlib.sha1(payload.encode("utf-8", "surrogatepass")).hexdigest()
+                    key = (agent, use_id)
+                    with seen_lock:
+                        previous = seen_results.get(key)
+                        if previous != digest:
+                            seen_results[key] = digest
+                            new_contents.append({
+                                "event": "result" if previous is None else "replaced",
+                                "tool_use_id": use_id, "tool": tool, "input": tool_input,
+                                "chars": chars, "placeholder": is_placeholder(text), "content": payload,
+                            })
         seq[agent] += 1
+        if new_contents:
+            with inputs_lock, reads_path.open("a", encoding="utf-8") as handle:
+                for item in new_contents:
+                    item.update({"ts": time.time(), "agent_id": agent,
+                                 "agent_kind": ctx.get("agent_kind") or "lead",
+                                 "call_index": seq[agent], "turn_id": ctx.get("turn_id")})
+                    handle.write(json.dumps(item, default=str) + "\n")
         record = {
             "ts": time.time(),
             "agent_id": agent,
@@ -205,6 +282,7 @@ def main() -> int:
             "compacted_placeholders": placeholders,
             "compacted_placeholder_chars": placeholder_chars,
             "read_file_paths_in_context": read_paths,
+            "tool_result_ids": result_ids,
             "unknown_tool_results": unknown,
         }
         started = time.perf_counter()
@@ -232,10 +310,22 @@ def main() -> int:
                 raise
         record["rate_limit_retries"] = attempt
         usage = getattr(response, "usage", None)
+        out_text = out_think = out_tool_input = 0
+        for block in getattr(response, "content", None) or []:
+            btype = block_field(block, "type")
+            if btype == "text":
+                out_text += len(block_field(block, "text") or "")
+            elif btype in {"thinking", "redacted_thinking"}:
+                out_think += len(block_field(block, "thinking") or "")
+            elif btype == "tool_use":
+                out_tool_input += block_chars(block_field(block, "input") or {})
         record.update({
             "status": "ok",
             "duration_ms": (time.perf_counter() - started) * 1000,
             "stop_reason": getattr(response, "stop_reason", None),
+            "output_text_chars": out_text,
+            "output_thinking_chars": out_think,
+            "output_tool_input_chars": out_tool_input,
             "usage": {
                 "input_tokens": getattr(usage, "input_tokens", None),
                 "output_tokens": getattr(usage, "output_tokens", None),
@@ -342,7 +432,7 @@ def main() -> int:
                                    "wall_seconds": round(time.monotonic() - started, 1)})
         mod.close_tracing(status)
         print(f"\n[profile] done status={status} denials={dict(denials)} rate_limit_retries={dict(rate_limited)} wall={time.monotonic() - started:.0f}s", flush=True)
-        print(f"[profile] trace={trace.path}\n[profile] inputs={inputs_path}", flush=True)
+        print(f"[profile] trace={trace.path}\n[profile] inputs={inputs_path}\n[profile] reads={reads_path}", flush=True)
     return 0 if status in {"completed", "teammates-idle"} else 1
 
 

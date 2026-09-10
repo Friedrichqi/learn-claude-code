@@ -147,7 +147,9 @@ The first two steps run every round. Step 3 runs only when the context is above 
 After `micro_compact` and `fit_tool_results`, the code estimates the context again with `estimate_chars(messages)`:
 
 ```python
-CONTEXT_CHAR_LIMIT = 50000
+CHARS_PER_TOKEN = 4
+CONTEXT_TOKEN_LIMIT = 128000
+CONTEXT_CHAR_LIMIT = CONTEXT_TOKEN_LIMIT * CHARS_PER_TOKEN  # 512000
 
 def estimate_chars(messages):
     return len(json.dumps(messages, default=str, ensure_ascii=False))
@@ -328,7 +330,7 @@ Compare s08_context_compact/code.py with s09_memory/code.py.
 Explain how they manage current context and persistent memory.
 ```
 
-When the file results push `estimate_chars(messages)` above 50000, the terminal prints `[auto compact]` and a transcript path. The next call continues from the `[Compacted]` summary.
+When the file results push `estimate_chars(messages)` above 512000 (about 128k tokens at 4 characters per token), the terminal prints `[auto compact]` and a transcript path. The next call continues from the `[Compacted]` summary.
 
 Inspect `.transcripts/` and `.task_outputs/tool-results/` to see history archives and persisted large outputs.
 

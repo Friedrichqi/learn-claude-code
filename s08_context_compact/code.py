@@ -245,7 +245,9 @@ def execute_tool(block) -> str:
 # -- Context compaction --
 
 class ContextCompactor:
-    CONTEXT_CHAR_LIMIT = 50000
+    CHARS_PER_TOKEN = 4  # rough estimate; no provider tokenizer is available locally
+    CONTEXT_TOKEN_LIMIT = 128000
+    CONTEXT_CHAR_LIMIT = CONTEXT_TOKEN_LIMIT * CHARS_PER_TOKEN  # 512000 chars
     TOOL_RESULT_BATCH_CHAR_LIMIT = 200000
     LARGE_RESULT_CHAR_LIMIT = 30000
     SUMMARY_INPUT_CHAR_LIMIT = 80000
