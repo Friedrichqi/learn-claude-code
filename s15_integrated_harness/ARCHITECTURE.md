@@ -237,7 +237,7 @@ Compaction --`), which is traced as a `context_prepare`/`context_prepared`
 span with before/after character counts.
 
 Budget: context size is estimated as `len(json.dumps(messages))`;
-`CONTEXT_LIMIT = 50000` characters.
+`CONTEXT_LIMIT = CONTEXT_TOKEN_LIMIT * CHARS_PER_TOKEN` = 128 000 tokens × 4 chars = 512 000 characters.
 
 | Order | Layer | Trigger | Action |
 | --- | --- | --- | --- |

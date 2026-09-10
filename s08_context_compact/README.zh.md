@@ -147,7 +147,9 @@ for _, _, block in consumed[:-self.KEEP_RECENT_RESULTS]:
 `micro_compact` 和 `fit_tool_results` 执行后，代码会再次用 `estimate_chars(messages)` 估算上下文：
 
 ```python
-CONTEXT_CHAR_LIMIT = 50000
+CHARS_PER_TOKEN = 4
+CONTEXT_TOKEN_LIMIT = 128000
+CONTEXT_CHAR_LIMIT = CONTEXT_TOKEN_LIMIT * CHARS_PER_TOKEN  # 512000
 
 def estimate_chars(messages):
     return len(json.dumps(messages, default=str, ensure_ascii=False))
@@ -328,7 +330,7 @@ python s08_context_compact/code.py
 说明它们分别怎样管理当前上下文和持久记忆。
 ```
 
-当读取结果使 `estimate_chars(messages)` 超过 50000 时，终端会打印 `[auto compact]` 和 transcript 路径。后续调用使用 `[Compacted]` 摘要继续完成比较。
+当读取结果使 `estimate_chars(messages)` 超过 512000（约 128k token，按 4 字符/token 估算）时，终端会打印 `[auto compact]` 和 transcript 路径。后续调用使用 `[Compacted]` 摘要继续完成比较。
 
 观察 `.transcripts/` 和 `.task_outputs/tool-results/`，可以分别看到历史留档与大结果转存。
 
