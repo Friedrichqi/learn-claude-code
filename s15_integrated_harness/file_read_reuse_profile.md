@@ -289,6 +289,78 @@ use). It is neither freed nor reused by the harness, and only that teammate's ow
 (same prefix) can hit it; a teammate that idles longer than the TTL re-pays the full prompt on its
 next task.
 
+### 3.8 X3 budget sweep: the small budget costs rounds, not decode (five runs)
+
+The X3 prompt (read all 17 chapter READMEs, 162,526 chars ~ 41k tokens, and compare them) was run
+at three `CONTEXT_LIMIT` values: 50k twice, 100k three times, 200k twice. Wall time includes the profiling
+driver's 429 back-off (34-65 s in three runs), so model time (sum of successful lead calls) is the
+fairer column. "Re-acquisition" = any way the lead fetched content it had already fetched once:
+re-reading the README, reading the harness's own spill file under `.task_outputs/tool-results/`
+(the path the compaction placeholder points to), or grepping a README it had already read.
+
+| budget (chars) | run | lead rounds | model time | wall | README re-reads | spill-file reads | greps on already-read READMEs | rounds containing a re-acquisition | uncached prompt tokens | output tokens | live READMEs (median / max) |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| 50,000 | r1 | 99 | 794 s | 808 s | 53 | 0 | 34 | 75 (76%) | 916,664 | 13,263 | 3 / 7 |
+| 50,000 | r2 | 45 | 463 s | 546 s | 0 | 13 | 31 | 30 (67%) | 458,956 | 13,716 | 0 / 6 |
+| 100,000 | r1 | 120 | 995 s | 1,114 s | 0 | 24 | 111 | 110 (92%) | 2,259,806 | 27,655 | 0 / 12 |
+| 100,000 | r2 | 30 | 466 s | 492 s | 0 | 0 | 0 | 0 (0%) | 535,552 | 16,677 | 0 / 10 |
+| 100,000 | r3 | 41 | 500 s | 546 s | 0 | 15 | 34 | 30 (73%) | 743,891 | 15,173 | 0 / 9 |
+| 200,000 | r1 | 6 | 138 s | 168 s | 0 | 0 | 0 | 0 | 115,411 | 4,931 | 9 / 17 |
+| 200,000 | r2 | 7 | 149 s | 180 s | 0 | 0 | 0 | 0 | 128,731 | 5,591 | 8 / 17 |
+
+Per-round autopsy of the 50k r1 run (99 rounds): rounds 2-13 read the corpus once (1-2 files per
+round); rounds 16-45 and 47-73 are two more full sequential passes s01 -> s17, one README per
+round, 17-31 output tokens per round; rounds 74-97 are grep/sed rounds that re-locate sentences
+for the "quote one sentence" requirement; the answer is written in rounds 92-99. For 35 of the 53
+re-reads the file's result had already been replaced by a placeholder or a 1,000-char preview at
+the time of the request; the other 18 fetched the second half of a README whose first half had
+been fetched one round earlier. Of the 656 s model-time gap to the 200k r1 run: re-read rounds
+277 s (42%), extra small acquisition rounds 93 s (14%), re-locate greps 89 s (14%), slower answer
+production 160 s (24%), other 36 s. The 78 cheap tool rounds cost a median of 4.7 s each with a
+median of 30 output tokens. A direct streaming probe of the endpoint (2026-09-10, fresh prompts of
+0.4k-36k tokens, `max_tokens=8`) puts time-to-first-token at 4.6 s + 0.052 ms per uncached token
+(prefill ~19k tok/s) and decode at ~90-150 tok/s, so a cheap round is ~80% fixed per-call latency
+(network + provider queue), ~10% prefill of the 9-19k-token uncached context, ~5% decode, and
+under 1% tool execution and harness bookkeeping (read_file 1 ms, bash 7 ms, context pipeline and
+bookkeeping 20-50 ms per round). Consistently, the 100k run's cheap rounds carried twice the
+uncached tokens (19.4k vs 9.4k) at the same ~4.5 s. The pooled regression used in the earlier
+latency-headroom estimate (0.42 ms/token, ~2,400 tok/s) was confounded by long-output calls and
+overstates per-token prefill about 8x; the prefill-reuse headroom quoted there shrinks accordingly.
+The 200k runs read the corpus in 3 rounds (6+6+5 files) and spend 84% of their model time
+decoding the answer.
+
+Takeaways:
+
+- **Below the working set every run serialises; above it none does.** With 50k or 100k the lead
+  needed 30-120 rounds and 463-995 s of model time (3.1-7.2x the 200k runs); with 200k it needed
+  6-7 rounds and 138-149 s, with zero re-acquisitions, in both replications. The threshold that
+  matters is whether the whole working set fits: the 100k arm (holds ~60% of the corpus) was not
+  consistently better than 50k (~25%): 120 / 30 / 41 rounds against 99 / 45. Even the best
+  sub-working-set run (100k r2, zero re-acquisitions) took 30 rounds and 3.2x the time, because with
+  the files evicted (median live READMEs 0) it worked chapter by chapter through its own notes
+  instead of seeing everything once and writing the answer in two rounds.
+- **Why a bigger-but-insufficient budget does not help.** `micro_compact` evicts consumed tool
+  results oldest-first (keeping the 3 newest) whenever the history exceeds the budget, and the
+  model's access pattern is a sequential pass over the 17 files followed by revisits. That is the
+  LRU sequential-scan case: with a capacity below the working set every revisit misses whether the
+  capacity is 25% or 60% of it. Measured: 100% of the 155 re-acquisitions in the 100k run and of
+  the 44 in 50k r2 targeted a README that was already a placeholder; in 50k r1, 77 of 95 (the
+  other 18 were second windows of a file just re-read). After the first pass the median number of
+  live READMEs was 3 (50k r1), 0 (50k r2) and 0 (100k), because the model's own drafts and notes
+  (27.7k output tokens in the 100k run) also occupy the budget and are never micro-compacted, so
+  the tool results are what gets pushed out.
+- **The modality varies, the cost does not.** One run re-read the READMEs (53 times), three read
+  spill files (13-24) and grepped (31-111), one took notes instead and never re-acquired. All are
+  extra rounds: ~4.5-5 s each when they are tool calls, more when they carry note-taking output.
+- **It is a round-count problem, not a decoding or prefill problem.** The extra rounds emit 17-90
+  tokens and their cost is ~80% fixed per-call latency; prefill of the 9-19k-token uncached context
+  is ~10% and tool execution is negligible. Decoding dominates only the answer rounds (~120 s).
+- **The budget meant to save tokens multiplied them.** 459k-2.26M uncached prompt tokens below the
+  working set versus 115-129k above it (4-20x), and 2.4-5.6x more output tokens.
+- Variance below the threshold is large (30-120 rounds, strategy-dependent); above it tight
+  (6-7 rounds). HEAD has since raised the default to 512,000 chars (128k tokens x 4), above this
+  working set.
+
 ## 4. Qualitative conclusions
 
 1. **Path-level repetition is the norm, byte-level repetition is rare in count.** Roughly six
@@ -308,8 +380,10 @@ next task.
 4. **Duplication scales with task overlap, not with team size.** Three teammates on one file
    tripled the file's presence (plus the lead's copy); three teammates on three files duplicated
    nothing. The one-shot pattern duplicates whenever the parent verifies the child's reading.
-5. **For this workload the default limit is counter-productive.** The 200k-char run of X3 was
-   14x fewer calls and 5x faster with no loss in answer quality, and its lead never re-read.
+5. **For this workload the default limit is counter-productive.** Across five X3 runs, budgets
+   below the 162k-char working set needed 45-120 rounds (67-92% of them re-acquiring evicted
+   content) and 463-995 s of model time; budgets above it needed 6-7 rounds and 138-149 s, with no
+   loss in answer quality (section 3.8).
 
 ## 5. What would reduce the repetition
 

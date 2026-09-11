@@ -259,6 +259,10 @@ class Run:
         self.output_mode = None
         self.agent_kind: dict[str, str] = {"agent-root": "lead"}
         self.agent_name: dict[str, str] = {"agent-root": "lead"}
+        self.context_limit = None
+        self.shrinks = 0
+        self.summary_compactions = 0
+        self.teammates_spawned = 0
         self.tool_calls: list[dict] = []
         self.model_calls: list[dict] = []
         self.items: list[dict] = []
@@ -344,12 +348,26 @@ class Run:
             elif event == "profile_meta":
                 self.label = data.get("label")
                 self.git_head = data.get("git_head")
+                self.context_limit = data.get("context_limit")
+            elif event == "context_prepare":
+                starts[rec.get("span_id")] = rec
+            elif event == "context_prepared":
+                start = starts.pop(rec.get("span_id"), None)
+                if start is not None:
+                    before = (start.get("data") or {}).get("characters_before", 0) or 0
+                    after = data.get("characters_after", before) or 0
+                    if after < before:
+                        self.shrinks += 1
+            elif event == "context_compact":
+                self.summary_compactions += 1
             elif event == "run_end":
                 self.status = data.get("status")
                 self.wall_ms = rec.get("elapsed_ms", 0.0)
             elif event == "agent_create":
                 self.agent_kind[agent] = rec.get("agent_kind") or "child"
                 self.agent_name[agent] = data.get("name") or agent
+                if rec.get("agent_kind") == "teammate":
+                    self.teammates_spawned += 1
             elif event == "agent_start" and agent not in self.agent_name and data.get("name"):
                 self.agent_name[agent] = data["name"]
             elif event in {"tool_start", "model_request"}:
@@ -995,6 +1013,21 @@ def summary_tables(runs: list[Run]) -> str:
     return "\n".join(out)
 
 
+def lead_table(runs: list[Run]) -> str:
+    """Lead-side view per run: how the lead's context budget shaped the run."""
+    out = ["**L. Lead and run shape** (context shrinks = `context_prepared` events that reduced the history; the lead's cross column counts lead-fetched bytes a teammate already held)",
+           "| run | context limit (chars) | status / wall | teammates spawned | lead calls | lead prompt tok | lead cache hit | lead output tok | context shrinks | summary compactions | lead file bytes fetched | lead bytes already held by a teammate | teammate calls | teammate prompt tok |",
+           "|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    for run in runs:
+        lead = run.work.get("lead", Counter())
+        tm = run.work.get("teammate", Counter())
+        lead_range = run.stats["all"]["range"].get("lead", Counter())
+        out.append(f"| {run.label or run.path.stem} | {fmt(run.context_limit) if run.context_limit else '?'} | {run.status} / {run.wall_ms / 1000:.0f}s | {run.teammates_spawned} | "
+                   f"{lead['calls']} | {fmt(lead['prompt'])} | {pct(lead['cached'], lead['prompt'])} | {fmt(lead['output'])} | {run.shrinks} | {run.summary_compactions} | "
+                   f"{fmt(lead_range['total'])} | {pct(lead_range['cross'], lead_range['total'])} | {tm['calls']} | {fmt(tm['prompt'])} |")
+    return "\n".join(out)
+
+
 def collect(targets: list[str]) -> list[Path]:
     files = []
     for target in targets:
@@ -1021,6 +1054,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-aggregate", action="store_true")
     parser.add_argument("--max-pairs", type=int, default=15, help="pairwise rows to print (largest overlaps first)")
     parser.add_argument("--tables", action="store_true", help="print only the four compact cross-run summary tables")
+    parser.add_argument("--lead-table", action="store_true", help="print only the lead/run-shape table")
     parser.add_argument("--sort", choices=["time", "label"], default="time", help="run order in the output")
     args = parser.parse_args(argv)
     exclude = re.compile(args.exclude) if args.exclude else None
@@ -1032,8 +1066,13 @@ def main(argv: list[str] | None = None) -> int:
         runs.append(run)
     if args.sort == "label":
         runs.sort(key=lambda r: (r.label or r.path.stem))
-    if args.tables:
-        print(summary_tables(runs))
+    if args.tables or args.lead_table:
+        if args.tables:
+            print(summary_tables(runs))
+        if args.lead_table:
+            if args.tables:
+                print()
+            print(lead_table(runs))
     else:
         for run in runs:
             print(run.report())

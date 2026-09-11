@@ -2,6 +2,7 @@
 """Run the byte-level input-redundancy workloads (lead + 3 teammates each) one after another.
 
     python3 s15_integrated_harness/scripts/redundancy_workloads.py --rep r1 [--only PF-S,DC-S] [--max-seconds 1200]
+        [--trace-dir DIR]   # default traces/redundancy_profiling; use another directory per harness configuration
 
 Each workload is one non-interactive s15 session driven by scripts/profile_run.py with the
 content sidecar enabled (<trace>.reads.jsonl) and full tool outputs in the trace.  Two axes:
@@ -90,14 +91,16 @@ def main() -> int:
     parser.add_argument("--max-seconds", type=float, default=1200.0)
     parser.add_argument("--quiet-seconds", type=float, default=30.0)
     parser.add_argument("--pause", type=float, default=20.0, help="seconds between runs (lets provider limits settle)")
+    parser.add_argument("--trace-dir", default=str(TRACE_DIR), help="where traces, sidecars and console logs go")
     args = parser.parse_args()
     ids = args.only.split(",") if args.only else list(WORKLOADS)
-    TRACE_DIR.mkdir(parents=True, exist_ok=True)
+    trace_dir = Path(args.trace_dir)
+    trace_dir.mkdir(parents=True, exist_ok=True)
     for wid in ids:
         label = f"{wid}-{args.rep}"
-        log = TRACE_DIR / f"{label}.console.log"
+        log = trace_dir / f"{label}.console.log"
         cmd = [sys.executable, str(REPO / "s15_integrated_harness" / "scripts" / "profile_run.py"),
-               "--label", label, "--trace-output", "full", "--trace-dir", str(TRACE_DIR),
+               "--label", label, "--trace-output", "full", "--trace-dir", str(trace_dir),
                "--max-seconds", str(args.max_seconds), "--quiet-seconds", str(args.quiet_seconds),
                "--prompt", WORKLOADS[wid]]
         print(f"[workloads] {time.strftime('%H:%M:%S')} start {label} (log {log})", flush=True)
