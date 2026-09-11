@@ -35,6 +35,9 @@ Short answer (two repetitions per workload, lead + 3 teammates, `glm-5.3-flash`)
   in PF-S, ~64k in PF-P, 9-15k in DC-S. The larger effects are context growth and KV memory.
 
 Per-run reports for every run (workload runs, X2, X5, Qwen) are in `input_redundancy_runs.md`.
+Section 6 repeats all eight runs after the lead's context budget was raised from 50k to 512k
+characters (commit `e7351e6`): the lead stops compacting and every run completes, while the
+teammates' byte-level redundancy stays where it was.
 
 ## 1. Method
 
@@ -326,14 +329,88 @@ idle lifetime could not serve them even if prefixes matched, which they do not.
   classifier removes the re-read fallbacks observed in PF-S.
 
 
+## 6. Rerun with the lead's context budget at 512,000 characters
+
+Commit `e7351e6` set `CONTEXT_LIMIT = CONTEXT_TOKEN_LIMIT (128,000) * CHARS_PER_TOKEN (4)`, ten
+times the earlier 50,000. The budget governs only the lead's compaction pipeline (placeholder
+rewrites, `fit_tool_results`, summary compaction); teammates never compact, and `snip_compact`
+still archives the middle of the lead's history above 50 messages. Same prompts, two repetitions,
+traces in `traces/redundancy_profiling_ctx512k/` (labels `*-c512-r1/r2`).
+
+**Side by side (50k r1 / r2 -> 512k r1 / r2)**
+
+| workload | cross-teammate redundancy (`range`) | teammates spawned | status / wall | lead calls | lead summary compactions + shrinks | lead cache hit | teammate prompt tok | redundant share of teammate prompt tok |
+|---|---|---|---|---|---|---|---|---|
+| PF-S | 68.8 / 64.1 -> **61.3 / 61.5%** | 4 / 3 -> 3 / 3 | timeout 1324 s / 467 s -> 788 s / 447 s | 49 / 18 -> 36 / 17 | 2+6 / 0 -> 0+7 / 0 | 25 / 26 -> 9 / 18% | 2.93M / 1.35M -> 2.08M / 2.08M | 45 / 54 -> 47 / 53% |
+| PF-P | 52.8 / 52.8 -> **52.8 / 52.8%** | 3 / 3 -> 3 / 3 | 258 s / 338 s -> 317 s / 275 s | 14 / 16 -> 15 / 15 | 0 / 0 -> 0 / 0 | 33 / 28 -> 21 / 23% | 370k / 837k -> 1.01M / 426k | 50 / 46 -> 48 / 47% |
+| DC-S | 66.7 / 80.0 -> **66.7 / 59.9%** | 3 / 5 -> 3 / 3 | timeout 1334 s / timeout 1365 s -> 673 s / 518 s | 52 / 55 -> 56 / 26 | 4+6 / 4+4 -> 0 / 0 | 17 / 15 -> 6 / 10% | 379k / 815k -> 140k / 90k | 15 / 14 -> 24 / 27% |
+| DC-P | 0.0 / 0.0 -> **0.0 / 0.0%** | 3 / 3 -> 3 / 3 | 293 s / 335 s -> 783 s / 238 s | 14 / 17 -> 18 / 20 | 1+1 / 1+1 -> 0 / 0 | 21 / 24 -> 4 / 22% | 59k / 71k -> 825k / 66k | 0 / 0 -> 0 / 0% |
+
+**Granularities, 512k runs** (cross-teammate share of teammate bytes)
+
+| run | `whole` | `range` | `line` | `cdc256` | `cdc1k` | teammate bytes | resident copies |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| PF-S-c512 r1 / r2 | 4.0 / 9.4% | 61.3 / 61.5% | 52.8 / 53.0% | 59.7 / 59.5% | 52.9 / 51.1% | 549 / 547 KB | 3.0x / 3.0x |
+| PF-P-c512 r1 / r2 | 1.3 / 26.4% | 52.8 / 52.8% | 46.9 / 46.8% | 50.6 / 52.5% | 32.9 / 48.8% | 554 / 555 KB | 2.1x / 2.1x |
+| DC-S-c512 r1 / r2 | 66.7 / 59.9% | 66.7 / 59.9% | 66.3 / 59.6% | 66.7 / 59.9% | 66.7 / 59.9% | 39 / 43 KB | 3.0x / 3.0x |
+| DC-P-c512 r1 / r2 | 0.0 / 0.0% | 0.0 / 0.0% | 10.5 / 0.9% | 2.0 / 0.0% | 1.1 / 0.0% | 83 / 49 KB | 1.0x / 1.0x |
+
+**Workload shape, 512k runs (teammates)**
+
+| run | calls | prompt tok | cache hit | output tok | thinking share | output / prompt | est. decode share | file content share of prompt | redundant first sends (tok) | share of uncached | duplicates within 60 s |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| PF-S-c512-r1 | 63 | 2,076,999 | 90.9% | 58,837 | 88% | 0.028 | 72% | 75% | 73,595 | 39% | 50% (all < 170 s) |
+| PF-S-c512-r2 | 60 | 2,078,948 | 92.3% | 32,051 | 82% | 0.015 | 59% | 82% | 72,704 | 46% | 100% |
+| PF-P-c512-r1 | 45 | 1,010,037 | 86.4% | 12,500 | 78% | 0.012 | 47% | 88% | 64,169 | 47% | 79% (all < 75 s) |
+| PF-P-c512-r2 | 15 | 425,862 | 67.2% | 13,464 | 78% | 0.032 | 66% | 89% | 63,585 | 46% | 100% |
+| DC-S-c512-r1 | 15 | 139,914 | 52.9% | 52,054 | 49% | 0.372 | 93% | 24% | 9,052 | 14% | 100% |
+| DC-S-c512-r2 | 13 | 89,911 | 27.7% | 40,347 | 55% | 0.449 | 92% | 31% | 10,455 | 16% | 100% |
+| DC-P-c512-r1 | 46 | 824,936 | 91.6% | 46,220 | 49% | 0.056 | 79% | 32% | 0 | 0% | - |
+| DC-P-c512-r2 | 15 | 65,809 | 68.1% | 13,980 | 37% | 0.212 | 83% | 69% | 0 | 0% | - |
+
+What changed and what did not:
+
+- **Teammate-side redundancy is unchanged.** PF-P is 52.8% in all four runs; PF-S is 61% twice
+  (a few points under the 50k runs' 64-69% because no fourth teammate appeared and the auditors
+  took more of their input through shell searches); DC-S is 66.7% and 59.9% (one writer also
+  pulled 4.4 KB of `find` output); DC-P stays at 0%. With three teammates the shared bytes cannot
+  exceed (N-1)/N = 66.7% redundancy, and every shared-corpus run sits at or just under it.
+- **The lead-side pathologies disappeared.** Zero summary compactions and zero placeholder
+  rewrites in all eight runs (five of the eight 50k runs had 1-4 summary compactions), so no
+  report was lost to compaction, the lead never re-requested a result, created a duplicate task or
+  spawned a second wave, and every run finished before the ceiling: PF-S 788 / 447 s (was a
+  timeout and 467 s), DC-S 673 / 518 s (was two timeouts). `snip_compact` still shrank the PF-S
+  run-1 lead history seven times once it passed 50 messages (52-58k chars).
+- **The lead's cache hit rate fell** from 15-33% to 4-23%: its history is no longer shortened, so
+  the ~2.1k always-cached tokens (tools + system prompt before the per-second timestamp) are a
+  smaller share of each prompt, and the timestamp still breaks the prefix on every call.
+- **Decode-heavy teammates wrote less** (40-52k output tokens versus 93-165k) because nobody
+  re-engaged them, so the three glossary copies are a larger share of their prompts (24-27%
+  versus 14-15%) although the redundancy rate is the same.
+- **Shell denials still cost time.** DC-P run 1 took 783 s because one writer ran about thirty
+  `echo "..." | wc -w` word counts on its own prose, seventeen of them denied (double quotes plus
+  a pipe); another writer noted that shell approval was unavailable and delivered its tutorial
+  anyway. Whole-result hashing stayed erratic (PF-P 1.3% and 26.4% for identical `range` results).
+
+Conclusion of the rerun: a larger lead budget fixes the lead (no compaction, no lost reports, no
+second waves, no timeouts, 1.7-2.6x shorter wall time where runs had hit the ceiling) and leaves
+the teammates' byte-level redundancy exactly where corpus overlap and team size put it. The
+remedies in section 5 stand; the lead's budget should stay large, and the remaining lead-side item
+is a cacheable prefix.
+
 ## Appendix: reproduce
 
 ```sh
 # four workloads, one repetition (traces + sidecars + console logs in traces/redundancy_profiling/)
 python3 s15_integrated_harness/scripts/redundancy_workloads.py --rep r1
 
-# byte-level report for every run in a directory (sidecar mode), or for old traces via git reconstruction
+# the same four workloads under another harness configuration (here: after raising CONTEXT_LIMIT), kept apart by directory
+python3 s15_integrated_harness/scripts/redundancy_workloads.py --rep c512-r1 --trace-dir s15_integrated_harness/traces/redundancy_profiling_ctx512k
+
+# byte-level report for every run in a directory (sidecar mode), or for old traces via git reconstruction;
+# --tables prints the four summary tables, --lead-table the lead/run-shape view
 python3 s15_integrated_harness/scripts/input_redundancy.py s15_integrated_harness/traces/redundancy_profiling
+python3 s15_integrated_harness/scripts/input_redundancy.py s15_integrated_harness/traces/redundancy_profiling_ctx512k --tables --lead-table --sort label
 python3 s15_integrated_harness/scripts/input_redundancy.py s15_integrated_harness/traces/reuse_profiling/run_20260908T150237_103264Z_67505088.jsonl --git-rev f48d5b8
 python3 s15_integrated_harness/scripts/input_redundancy.py s15_integrated_harness/traces/run_20260902T004901_584576Z_dc6a9685.jsonl --git-rev 6218dd6 --exclude 'traces/|\.task_outputs'
 ```
