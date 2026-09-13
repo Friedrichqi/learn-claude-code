@@ -67,6 +67,33 @@ Batch delivery, the variable that mediates intervention 1:
 | ALL-r1 / ALL-r2 | 50k | 4 / 5 | 0 / 37, 0 / 46 (0%) | 46 / 148 | 7/17, 6/17 |
 | **I1-100-batch-r1** | **100k** | 26 | **45 / 52 (86%)** | **56** | **17/17** |
 
+### Shell-denied matrix (fixed driver, 2026-09-12)
+
+Same workload with `--deny-bash`, so every acquisition goes through `read_file`/`read_files` and
+`chapters read` is a valid completion proxy. These runs use the post-review driver (batch char cap,
+rebased outline offsets), so they supersede the `unfixed` batch and outline rows above. Wall time is
+1,800 s per turn; `timeout` means the lead never returned an answer. Answers were not blind-judged.
+
+| arm | budget | rounds | model time | status | cache hit | uncached prompt tok | reads | re-acq rounds | summary compactions | chapters | notes |
+|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---|---|
+| NB-base-r1 | 50k | 319 | 2,247 s | timeout | 19% | 2,804k | 409 | 295 | 4 | 17/17 | paged READMEs in 45-line windows; 87% of re-reads windowed |
+| NB-base-r2 | 50k | 14 | 343 s | completed | 14% | 121k | 17 | 7 | 0 | 17/17 | took notes; 24 spill-file reads |
+| NB-I1-r1 (batch) | 50k | 20 | 188 s | completed | 18% | 178k | 26 | 9 | 0 | 17/17 | 17 batch calls, 26/45 delivered, 6 truncated by the cap |
+| NB-I1-r2 (batch) | 50k | 20 | 348 s | completed | 15% | 190k | 30 | 11 | 1 | 17/17 | 9 calls, 10/31 delivered, 9 truncated |
+| NB-I2-r1 (outline) | 50k | 242 | 3,973 s | timeout | 21% | 1,706k | **809** | 171 | **37** | 17/17 | 241 outlines; 146k output tokens; 1,090 chars per evicted slot, 16.4k of budget |
+| NB-I2-r2 (outline) | 50k | 87 | 1,174 s | timeout | 20% | 656k | 252 | 66 | 11 | 17/17 | 59 outlines; 1,131 chars per slot, 22.6k of budget |
+| NB-I4-r1 (stable) | 50k | 11 | 336 s | completed | **39%** | **66k** | 17 | 6 | 1 | 17/17 | |
+| NB200-base-r1 | 200k | 5 | 182 s | completed | 4% | 117k | 17 | 0 | 0 | 17/17 | |
+| NB200-I1-r1 (batch) | 200k | 7 | 150 s | completed | 5% | 162k | 17 | 0 | 0 | 17/17 | 4 calls, 17/24 delivered, zero re-acquisition |
+
+What the shell ban changes: the baseline's escape hatch (grepping a README it already read) is gone,
+so it either pages the corpus in small windows until it times out (r1) or takes notes (r2). Batching
+becomes the most consistent 50k arm (20 and 20 rounds) even though the 12.5k-char cap truncates most
+batches and delivers 32-58% of what was asked. The outline arm is the worst: 33-45% of the budget goes
+to outlines, 11-37 summary compactions follow, and the lead loops outline -> offset re-read -> eviction
+(720 of the 809 reads in r1 are re-reads of evicted READMEs) without finishing. At 200k nothing
+misses, with or without batching.
+
 ## Answer quality (blind, 3 judges per answer, 45 judgements)
 
 Every run's final answer was scored 0-5 on four axes by three independent judges who were given the
@@ -152,6 +179,12 @@ help the model find.
 These runs used the pre-review outline (offsets not rebased for windowed or batched reads, and
 `persisted_preview` also patched), so part of the round penalty may be bug-driven. The budget
 arithmetic, however, is independent of those bugs and is the dominant effect.
+
+The fixed-driver, shell-denied re-run (matrix above) removes that doubt: with rebased offsets and
+the preview untouched, both outline runs timed out (242 and 87 rounds, 37 and 11 summary
+compactions), with outlines at 1,090-1,131 chars per evicted slot occupying 16-23k of the 50k
+budget. The representation is not wrong in kind, since 25-28% of its re-reads were offset-targeted,
+but at this size it manufactures more re-read rounds than it saves.
 
 ## Conclusions
 
@@ -265,14 +298,17 @@ Sources (all read 2026-09-11):
 - **Strategy variance dominates round count.** Baseline ranged 27-153 rounds at a fixed budget
   because the model chooses between reading files and shelling out. Mechanism-level metrics (cache
   hits, delivery rate, placeholder budget, rewrite events) are stable; round count is not. The
-  `--deny-bash` condition exists to remove this and has not yet produced usable data.
-- **The provider's 5-hour usage cap** truncated the shell-denied matrix: 16 runs returned zero
-  successful model calls after 18 rate-limit retries each. Those runs are quarantined under
-  `traces/context_interventions/quota_killed/` and are queued to re-run after the cap resets.
+  `--deny-bash` condition removes the shell escape but not the variance: the shell-denied baseline
+  ranged 14-319 rounds at 50k.
+- **The provider's 5-hour usage cap** killed the first shell-denied matrix: 16 runs returned zero
+  successful model calls after 18 rate-limit retries each (quarantined under
+  `traces/context_interventions/quota_killed/`). The matrix was re-run after the reset on
+  2026-09-12 with n=1-2 per arm; its answers have not been blind-judged.
 - **`chapters read` undercounts in the free-strategy condition**, because a chapter read with
   `cat` through the shell is not attributed to a chapter. It is a valid completion proxy only in
   the shell-denied condition.
-- Intervention 1 has n=1 at the budget where it works, and intervention 2 has no post-review run.
+- Intervention 1 has n=1 at each budget where it works (100k with shell, 200k without), and
+  intervention 2's only post-review runs are the two shell-denied timeouts.
 - The trace-derived timing model is client-observed latency, and a direct streaming probe of this
   endpoint puts a cheap round at ~80% fixed latency, ~10% prefill, ~5% decode.
 
