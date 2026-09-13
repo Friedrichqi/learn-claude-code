@@ -111,105 +111,109 @@ the three runs, ~5 s each) are the cost that matters, which is why sub-question 
 
 ## 3. Replay results (Qwen2.5-1.5B, three runs replayed end to end)
 
-The three runs give 99 lead calls, 57 of them edit steps (45 with placeholders, 21 with a snip
-marker, 2 summary compactions; several steps carry more than one kind). Per-run and pooled tables
-are reproduced in full in section 6; the numbers quoted here are the pooled ones.
+The three runs give 117 lead calls, 69 of them edit steps (56 with placeholders, 24 with a snip
+marker, 2 summary compactions; a step can carry several kinds). 135 tool results totalling 174k
+tokens were evicted. Full per-run and pooled tables are in `traces/kv_splice/kv_splice_tables.md`;
+the numbers below are pooled.
 
 ### 3.1 Cost: what the model has to run
 
 | policy | tokens computed over the three runs | on edit steps | share of recompute |
 |---|---:|---:|---:|
-| recompute (provider today) | 493k | 424k | 100% |
-| shift / gap (splice) | 192k | 123k | 39% |
-| oracle (nothing evicted) | 102k | 102k | 21% |
+| recompute (what providers do) | 575,670 | 498,665 | 100% |
+| shift / gap (splice) | 225,565 | 148,560 | 39% |
+| shift1 (splice from an exact cache) | 148,560 | 148,560 | 26% |
+| oracle (this step's eviction undone) | 123,494 | 123,494 | 21% |
 
-Both policies must run the tail (170k tokens of new tool results and messages); the difference is
-the 7.6k-token median suffix that `recompute` re-runs on every edit step. The splice removes 61% of
-the prefill tokens of these runs, which at the provider profile of section 2.1 is worth 1.3-2.6% of
-wall time.
+Both policies must run the tail (199k tokens of genuinely new input); the difference is the
+7,137-token median suffix that `recompute` re-runs on every edit step. The splice removes 61% of the
+prefill tokens of these runs.
 
 ### 3.2 Fidelity: how far the next output moves
 
-Teacher-forced over GLM's real response at every edit step (57 steps):
+Teacher-forced over GLM's real response at every edit step (n = 69):
 
-| policy | KL from recompute, nats/token (mean / median / p90 / max) | top-1 agreement with recompute | NLL of GLM's real tokens (recompute = 0.446) |
+| policy | KL from recompute, nats/token (mean / median / p90 / max) | top-1 agreement with recompute | NLL of GLM's real tokens (recompute = 0.464) |
 |---|---|---:|---:|
-| shift (compounded, RoPE-corrected) | 0.037 / 0.028 / 0.073 / 0.19 | 97.3% | 0.456 (+2%) |
-| shift1 (one edit of staleness) | 0.014 / 0.009 / 0.033 / 0.07 | 98.3% | 0.441 (-1%) |
-| gap (positions not corrected) | 0.086 / 0.044 / 0.162 / 1.02 | 96.1% | 0.503 (+13%) |
-| oracle (one step's eviction undone, for scale) | 0.050 / 0.013 / 0.097 / 0.75 | 97.1% | 0.464 (+4%) |
+| shift (compounded, RoPE-corrected) | 0.045 / 0.032 / 0.092 / 0.29 | 96.8% | 0.471 (+1.5%) |
+| shift1 (one edit of staleness) | 0.014 / 0.010 / 0.033 / 0.07 | 98.1% | 0.459 (-1.1%) |
+| gap (positions not corrected) | 0.089 / 0.046 / 0.179 / 1.02 | 95.5% | 0.508 (+9.5%) |
+| oracle (one step's eviction undone) | 0.046 / 0.014 / 0.093 / 0.75 | 97.0% | 0.476 (+2.6%) |
 
-Three readings:
+Four readings:
 
-- **The stale suffix moves the distribution about as much as the eviction it accompanies.** The
-  corrected splice sits 0.037 nats/token from what a full re-prefill would produce; undoing a single
-  step's eviction (recompute vs oracle) moves it 0.050. Per step, the real response's NLL
-  under `shift` is within 1% of `recompute` at the median and within 13-32% at p90 (per run).
-- **Staleness does not accumulate.** Bucketing edit steps by how many splices the cache has already
-  absorbed gives mean KL 0.044 (1-3 splices), 0.033 (4-10), 0.038 (11-20), 0.035 (21+). Run r3 is the
-  clean test: it never summary-compacted, so its cache absorbs 24 consecutive splices with no reset.
-  Regressing its per-step KL on the splice index gives a slope of **-0.0004 nats/token per splice**
-  (mean 0.043; first five edits 0.056, last five 0.030). Each splice adds a one-off perturbation and
-  the compounded cache settles at about 3.6x the one-shot value (`shift` 0.043 vs `shift1` 0.012)
-  rather than growing with the number of edits.
+- **A stale suffix moves the distribution about as much as the eviction it accompanies.** The
+  corrected splice sits 0.045 nats/token from a full re-prefill; undoing a single step's eviction
+  (recompute vs oracle) moves it 0.046. Whatever error the splice introduces is the same order as an
+  edit the harness already makes deliberately, and 96.8% of argmax decisions are unchanged.
 - **Leaving RoPE uncorrected is not neutral.** `gap` keeps every stale key at its original position,
-  so the position counter grows with everything the session has ever seen rather than with what is
-  resident: with 10-15k tokens resident, the largest position reached 35.7k in r2 and 64.5k in r3
-  (r1's summary compaction reset it from 51k to 16k). Qwen2.5-1.5B is trained to 32k positions, and
-  once past it the divergence tail opens (p90 0.16, max 1.02 nats/token; NLL +13%). The correction is
-  a rotation of the cached keys by R(dθ) and costs nothing; the self-test shows it reproduces truly
-  shifted keys to 2e-6. The damage is concentrated exactly where the positions run away: in r3,
-  `gap` stays near `shift` for the first seven edits (KL 0.02-0.12, positions below 32k) and then
-  produces 0.67, 0.32 and 1.01 nats/token at edits 8-10, once the counter passes the trained range.
-
-The first generated token has the same argmax as `recompute` in 95% of edit steps under `shift`
-(91% under `gap`); the disagreements are text-vs-`<tool_call>` flips.
+  so the counter grows with everything the session has ever seen rather than with what is resident:
+  against 10-15k resident tokens the largest position reached 35.7k in r2 and 64.5k in r3 (r1's
+  summary compaction reset it from 51k to 16k). Qwen2.5-1.5B is trained to 32k, and the divergence
+  tail opens once past it: in r3 `gap` tracks `shift` for the first seven edits (KL 0.02-0.12) and
+  then produces 0.67, 0.32 and 1.02 nats/token at edits 8-10. The correction is one rotation of the
+  cached keys by R(dθ), costs nothing, and the self-test reproduces truly shifted keys to 2e-6.
+- **Compounding is weak but not zero.** Per-run regressions of `shift` KL on the splice index give
+  +0.0021 (r1, 28 edits), +0.0011 (r2, 17 edits) and -0.0004 (r3, 24 edits) nats/token per splice;
+  pooled correlation with the splice index is r = 0.23. The one-shot `shift1` has a flat-to-negative
+  slope in all three runs, so the drift is genuinely from repeated splicing rather than from later
+  steps being intrinsically harder. It is not explained by how much of the prompt is stale (pooled
+  r = -0.01 with the stale fraction; means by stale-fraction quartile 0.042 / 0.042 / 0.058 / 0.038).
+  Over the 17-45 edits per run it stays around 0.03-0.08, but a much longer session would want a
+  periodic full re-anchor; the natural place is the summary-compaction boundary, where the prompt is
+  rebuilt anyway.
+- **The first generated token is the most sensitive point.** Median first-token KL is 0.165 for
+  `shift` and its argmax matches `recompute` in 87% of edit steps (91% for `shift1` and `oracle`).
+  The disagreements are text-versus-`<tool_call>` flips at the very start of the response.
 
 ### 3.3 Behaviour: does the model act differently, and does it re-fetch less?
 
 Greedy next action (up to 64 tokens) at each edit step, re-parsed from the stored text:
 
-| policy | emits a tool call | same tool as recompute | identical text to recompute | re-fetches the content evicted at this step | re-fetches any evicted content |
+| policy | emits a tool call | same tool as recompute | identical text to recompute | re-fetches content evicted at this step | re-fetches any evicted content |
 |---|---:|---:|---:|---:|---:|
-| recompute | 83% | 100% | 100% | 3% | 28% |
-| shift | 86% | 76% | 47% | 3% | 38% |
-| gap | 84% | 81% | 40% | 5% | 31% |
-| shift1 | 88% | 86% | 55% | 7% | 34% |
-| oracle | 86% | 86% | 57% | 5% | 31% |
+| recompute | 78% | 100% | 100% | 3% | 29% |
+| shift | 77% | 71% | 39% | 3% | 36% |
+| gap | 75% | 75% | 35% | 4% | 30% |
+| shift1 | 83% | 85% | 49% | 6% | 38% |
+| oracle | 81% | 85% | 52% | 4% | 35% |
 
-The splice changes the exact action text about half the time and the tool one time in four, which is
-the same order as the gap between the compacted prompt and the uncompacted one (`oracle`: 57% and
-86%). It does **not** reduce re-fetching. Content evicted at the current step is almost never
-re-fetched immediately by any policy, and older evicted content is re-fetched *more* often under the
-spliced caches (38%) than under recompute (28%). The oracle row is the calibration: even with the
-content present in context, this small model re-reads it in 31% of steps, so the immediate next
-action is a noisy instrument; the probes below are the direct test.
+The splice changes the exact action text about 60% of the time and the tool about 29% of the time.
+That is the same order as the difference between the compacted prompt and the uncompacted one
+(`oracle`: 48% and 15%), so the action is perturbed, not derailed.
+
+It does **not** reduce re-fetching. Content evicted at the current step is almost never re-fetched
+immediately under any policy, and older evicted content is re-fetched slightly *more* often under the
+spliced caches (36%) than under recompute (29%). The oracle row is the calibration: even with the
+content present in the prompt this small model re-reads it in 35% of steps, so a single greedy action
+is a noisy instrument. The probes below test retention directly.
 
 ### 3.4 Retention: does the stale suffix remember the evicted file?
 
-For the largest result evicted at each edit step (44 items with enough text: READMEs and `sed -n`
-windows of READMEs), four questions are asked as the next user turn and scored by the NLL per token
-the model assigns to the *true* answer, plus a forced yes/no choice for phrase presence:
+For the largest result evicted at each edit step (55 items: chapter READMEs and `sed -n` windows of
+them), four questions are asked as the next user turn and scored by the NLL per token the model
+assigns to the *true* answer, plus a forced choice between "Yes" and "No" for phrase presence:
 
 | probe (truth scored) | recompute | shift | gap | oracle | n |
 |---|---:|---:|---:|---:|---:|
-| list the file's headings | 3.51 | 3.63 | 3.65 | **0.82** | 44 |
-| complete a sentence from the file | 4.57 | 4.63 | 4.66 | **0.85** | 44 |
-| continue a passage verbatim (30 words) | 3.40 | 3.42 | 3.46 | **0.48** | 43 |
-| phrase present, forced choice correct (true phrase) | 82% | 89% | 93% | 95% | 44 |
-| phrase present, forced choice correct (false phrase) | 27% | 14% | 16% | 27% | 44 |
-| balanced presence accuracy | 55% | 51% | 55% | 61% | |
+| list the file's headings | 3.56 | 3.66 | 3.68 | **0.75** | 55 |
+| complete a sentence from the file | 4.56 | 4.61 | 4.63 | **0.78** | 55 |
+| continue a passage verbatim (30 words) | 3.50 | 3.52 | 3.55 | **0.44** | 54 |
+| phrase-presence forced choice, true phrase | 82% | 87% | 95% | 96% | 55 |
+| phrase-presence forced choice, false phrase | 33% | 15% | 15% | 29% | 55 |
+| balanced presence accuracy | 57% | 51% | 55% | 63% | |
 
-When the file is in context (oracle) the model reproduces headings, sentences and passages at
-0.5-0.9 nats/token; with the placeholder (recompute) it is at the language-model prior, 3.4-4.6.
-The spliced caches are **at the prior too**, in fact 0.03-0.14 nats/token *worse* than recompute on
-every recall probe. Presence looks better only on true phrases: the stale suffix raises the log-odds
-of "yes" by about 0.5 nats for true *and* false phrases alike, so it adds a yes-bias, not knowledge;
-balanced accuracy is unchanged at 51-55% (oracle 61%).
+With the file still in the prompt (oracle) the model reproduces headings, sentences and passages at
+0.44-0.78 nats/token. With the placeholder (recompute) it is at the language-model prior, 3.5-4.6.
+**The spliced caches are at the prior too** — in fact 0.02-0.12 nats/token *worse* than recompute on
+every recall probe, never better. Presence looks better only on true phrases because the stale suffix
+raises the log-odds of "Yes" by about 0.46 nats for true and false phrases alike: that is a yes-bias,
+not knowledge, and balanced accuracy does not improve (51% for `shift` against 57% for recompute and
+63% for oracle).
 
-This is not an artefact of *where* the evicted blocks sit. `micro_compact` evicts the oldest
-consumed results, so a probed block has a median 5.4-6.3k tokens of prompt after it, 46-47% of the
-request; the p10 is still 2.4-3.5k. There is ample stale suffix that could have carried the content.
+This is not an artefact of *where* the evicted blocks sit. `micro_compact` evicts the oldest consumed
+results, so a probed block has a median 5.4-6.3k tokens of prompt after it, 46-47% of the request,
+with a p10 of 2.4-3.5k. There is ample stale suffix that could have carried the content.
 
 | run | evicted blocks > 800 chars | suffix tokens, all blocks (median / p10) | suffix tokens, probed block (median / min) | suffix share of prompt (median) |
 |---|---:|---|---|---:|
@@ -217,52 +221,98 @@ request; the p10 is still 2.4-3.5k. There is ample stale suffix that could have 
 | r2 | 38 | 5,676 / 3,030 | 5,676 / 1,112 | 46% |
 | r3 | 33 | 6,303 / 3,541 | 6,303 / 2,940 | 46% |
 
-Mechanistically this is what the K/V vectors say. On the reused blocks after an edit the stale keys
-have cosine 0.987 to the recomputed ones (values 0.963), with layer 0 at 1.000 falling to 0.96-0.98
-in layers 16-23; only 1.5% of tokens fall below 0.9. The suffix entries are *almost the same* vectors
-the recomputed prompt produces, i.e. they encode the file's presence weakly enough that a
-re-prefill without the file barely changes them. The information about the file lived in the
-file's own KV entries, which the edit drops.
+The K/V vectors say why. On the blocks reused after an edit, the stale keys have cosine 0.987 to the
+recomputed ones (values 0.963), layer 0 at 1.000 falling to 0.96-0.98 in layers 16-23, and only 1.6%
+of tokens fall below 0.9. The suffix entries are *nearly the same vectors* the recomputed prompt
+produces, which is another way of saying they barely encoded the evicted file in the first place: a
+re-prefill without the file changes them by 1-4%. The information about a file lives in that file's
+own KV entries, and the edit drops exactly those.
 
 ### 3.5 Confirmation on Qwen2.5-7B
 
-_(pending: replay of r3 with `recompute, shift, gap, oracle`)_
+Run r3 was replayed again on Qwen2.5-7B-Instruct (fp32, same four policies minus `shift1`), giving
+32 steps and 23 edit steps. Everything qualitative reproduces; the splice error is larger on the
+bigger model:
+
+| metric (edit steps, n = 23) | Qwen2.5-1.5B (r3) | Qwen2.5-7B (r3) |
+|---|---|---|
+| shift: KL from recompute (mean / median / max) | 0.043 / 0.033 / 0.19 | 0.085 / 0.066 / 0.28 |
+| shift: top-1 agreement with recompute | 97.4% | 96.3% |
+| shift: NLL of GLM's real response vs recompute | +2% | +13% (0.451 vs 0.400) |
+| oracle: KL from recompute (one eviction undone) | 0.055 | 0.043 |
+| gap: KL from recompute (mean / max) | 0.147 / 1.02 | 0.168 / 0.78 |
+| gap: NLL of real response vs recompute | +14% | +33% |
+| stale vs recomputed keys: cosine (values) | 0.987 (0.963) | 0.970 (0.914) |
+| tokens computed, splice vs recompute | 31% | 32% |
+
+On the 7B model the compounded splice costs about twice what one step's eviction costs
+(0.085 against 0.043) rather than matching it, its stale keys deviate more (7.3% of tokens below
+cosine 0.9 against 1.6%), and the drift across a run is again mildly upward (0.057, 0.065, 0.086
+nats/token for the first 3, next 7 and next 6 splices). The direction of every conclusion is
+unchanged, but the size of the perturbation is model-dependent and grows with model size here, so a
+production decision should be validated on the serving model rather than extrapolated from these.
+
+Retention is, if anything, more clearly absent on the 7B: with the file evicted it scores the true
+headings at 2.99 nats/token under `shift` against 2.72 under recompute and **0.33** under oracle;
+verbatim continuation 3.65 / 3.48 / **0.28**; greedy verbatim overlap 0.14 / 0.14 / **0.74**. The
+phrase-presence probe degenerates on this model (it answers "No" to essentially everything once the
+file is gone: 100% correct on false phrases, 0% on true ones, under every policy including
+recompute), which removes even the yes-bias the 1.5B showed.
+
+One process note: the 7B run's output file was unlinked while the process held it open, so the
+records were recovered from the live file descriptor. 32 of 33 steps were captured; the final step's
+record was written after the last copy and is missing from the table above.
 
 ## 4. What this means for the harness
 
-1. **Splicing with RoPE re-rotation is a legitimate serving optimisation.** At the 50k budget it
-   removes ~60% of prefill tokens, perturbs the next-token distribution by ~0.03-0.04 nats/token
-   (no worse than the compaction edit itself), does not compound over a session, and keeps 97% of
-   argmax decisions. A provider that exposed "edit the prompt in place" could use it; the harness
-   cannot do it through the Messages API today.
+1. **Splicing with RoPE re-rotation is a legitimate serving optimisation, within limits.** At the
+   50k budget it removes 61% of prefill tokens, keeps 96-97% of argmax decisions, and drifts only
+   weakly over dozens of successive edits. Its perturbation is the same order as the compaction edit
+   it is serving: 1.0x on Qwen2.5-1.5B (0.045 against 0.046 nats/token) and 2.0x on Qwen2.5-7B
+   (0.085 against 0.043). That the ratio doubled with model size is the one result that should stop
+   a production rollout from being decided here; it needs checking on the serving model. A provider
+   that exposed "edit the prompt in place" could offer this, and the harness cannot reach it through
+   the Messages API today.
 2. **The RoPE correction is mandatory, not cosmetic.** Without it the position counter tracks the
-   cumulative history (64k positions for 12k resident tokens here) and leaves the trained range.
-3. **It does not buy back the rounds.** The cost that dominates these runs is the re-acquisition
-   round (39 / 21 / 10 per run at ~5 s each, section 2), and the stale suffix carries no usable
-   trace of the evicted text: recall probes are at the prior, and the model re-fetches as often as
-   before. The latency saving is 1.3-2.6% of wall time.
-4. **Where the information is.** The oracle rows show what recovering it looks like (0.5 nats/token
-   verbatim recall, +6 points on presence). That information sits in the evicted block's own KV
-   entries, not in what follows them. The design that would remove zoom-in rounds is therefore
-   *keep the evicted block's KV resident in a lower tier and re-attach it when it is needed*, rather
-   than re-reading the text through a tool call; splicing is the mechanism that makes such a
-   re-attach cheap (the suffix does not have to be recomputed), but on its own it is a FLOP saver.
+   cumulative history rather than the resident context (64k positions against 12k resident tokens
+   here), leaves the trained range, and the divergence tail reaches 1.0 nats/token.
+3. **It saves FLOPs, not rounds.** The cost that dominates these runs is the re-acquisition round
+   (39, 21 and 10 per run at roughly 5 s each), and the splice does not remove any of them: the
+   stale suffix carries no usable trace of the evicted text, recall probes sit at the prior, and the
+   model re-fetches as often as before. The latency saving is 1.3-2.6% of wall time.
+4. **Where the information actually is.** The oracle rows show what having it looks like: verbatim
+   recall at 0.44 nats/token instead of 3.5, and +6 points of balanced presence accuracy. That
+   information sits in the evicted block's own KV entries, not in the entries that follow them. So
+   the design that would remove zoom-in rounds is *keeping the evicted block's KV in a lower tier and
+   re-attaching it when needed*, rather than re-reading the text through a tool call. Splicing is the
+   mechanism that makes such a re-attach affordable, because the suffix does not have to be
+   recomputed around the re-inserted block; on its own it is only a FLOP saver.
 
 ## 5. Limitations
 
 - The provider model's cache is not observable, so all fidelity and retention numbers come from
-  Qwen2.5-1.5B (and the 7B subset) replaying GLM's transcripts; the real responses were produced by
+  Qwen2.5-1.5B (three runs) and Qwen2.5-7B (one run) replaying GLM's transcripts; the real responses were produced by
   GLM under the `recompute` context, which is why NLL is reported relative to that policy.
 - The replay fixes the system prompt's per-second timestamp; the harness itself still breaks the
   provider prefix every round (16-19% cache hit in these runs), a separate, already-measured cost.
-- Behaviour is a single greedy action from a 1.5B model; the probes are structural/verbatim recall
+- Behaviour is a single greedy action; the probes are structural/verbatim recall
   and yes/no phrase presence. A weaker "gist" retention that none of these detect cannot be
   excluded, but the presence probe would be the natural place for it to show, and it does not.
+- The compounding slope is measured over 17-45 consecutive edits per run and two of the three runs
+  summary-compacted mid-way, which partially rebuilds the cache. It bounds drift over a session of
+  this length, not over an arbitrarily long one.
 - One workload (X3), three runs, one budget (50k chars, ~12k tokens), fp32 CPU replay.
 
 ## 6. Full analyzer output
 
-_(regenerated with `python3 scripts/kv_analyze.py traces/kv_splice/*.replay.jsonl --tables`)_
+Per-run and pooled tables for every metric above are in
+`traces/kv_splice/kv_splice_tables.md`, regenerated with:
+
+```
+python3 s15_integrated_harness/scripts/kv_analyze.py \
+    s15_integrated_harness/traces/kv_splice/*.replay.jsonl --tables > \
+    s15_integrated_harness/traces/kv_splice/kv_splice_tables.md
+```
 
 ## 7. Reproduction
 
