@@ -1,0 +1,746 @@
+{
+  "probe_files": [
+    "s15_integrated_harness/traces/tool_latency/run_20260915T201117_531820Z_313a25f7.records.jsonl",
+    "s15_integrated_harness/traces/tool_latency/run_20260915T201133_281733Z_97e47bdf.records.jsonl"
+  ],
+  "probe": {
+    "lead/create_worktree_denied": {
+      "n": 48,
+      "mean_ms": 0.26709374999999996,
+      "median_ms": 0.29655,
+      "p90_ms": 0.366,
+      "max_ms": 0.4283,
+      "status": {
+        "denied": 48
+      }
+    },
+    "lead/task_dispatch_only": {
+      "n": 48,
+      "mean_ms": 0.8470520833333333,
+      "median_ms": 0.9339,
+      "p90_ms": 1.1544,
+      "max_ms": 1.2742,
+      "status": {
+        "error": 48
+      }
+    },
+    "lead/schedule_cron": {
+      "n": 48,
+      "mean_ms": 0.65305,
+      "median_ms": 0.659,
+      "p90_ms": 0.9169,
+      "max_ms": 1.1684,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/list_crons": {
+      "n": 48,
+      "mean_ms": 0.43345833333333333,
+      "median_ms": 0.4293,
+      "p90_ms": 0.6107,
+      "max_ms": 0.6777,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/cancel_cron": {
+      "n": 48,
+      "mean_ms": 0.41348125,
+      "median_ms": 0.39735,
+      "p90_ms": 0.5864,
+      "max_ms": 0.6102,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/connect_mcp_cold": {
+      "n": 48,
+      "mean_ms": 0.45531666666666665,
+      "median_ms": 0.4547,
+      "p90_ms": 0.636,
+      "max_ms": 0.9051,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/bash_denied_mutating": {
+      "n": 48,
+      "mean_ms": 0.24756041666666664,
+      "median_ms": 0.2792,
+      "p90_ms": 0.3293,
+      "max_ms": 0.4784,
+      "status": {
+        "denied": 48
+      }
+    },
+    "teammate/tm_submit_plan": {
+      "n": 48,
+      "mean_ms": 1.16101875,
+      "median_ms": 1.07955,
+      "p90_ms": 1.7141,
+      "max_ms": 1.8705,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/mcp_deploy_status": {
+      "n": 48,
+      "mean_ms": 0.43325416666666666,
+      "median_ms": 0.47065,
+      "p90_ms": 0.6046,
+      "max_ms": 0.7025,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/read_file_26KB": {
+      "n": 48,
+      "mean_ms": 9.987327083333334,
+      "median_ms": 9.732500000000002,
+      "p90_ms": 14.5722,
+      "max_ms": 16.037,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_bash_display": {
+      "n": 48,
+      "mean_ms": 8.957691666666667,
+      "median_ms": 8.91915,
+      "p90_ms": 9.6553,
+      "max_ms": 10.7562,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/list_tasks": {
+      "n": 48,
+      "mean_ms": 1.5706625,
+      "median_ms": 1.35115,
+      "p90_ms": 1.5406,
+      "max_ms": 20.2175,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/mcp_docs_get_version": {
+      "n": 48,
+      "mean_ms": 0.3712,
+      "median_ms": 0.34645,
+      "p90_ms": 0.5445,
+      "max_ms": 0.6599,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/update_task": {
+      "n": 48,
+      "mean_ms": 2.1247625,
+      "median_ms": 2.2611499999999998,
+      "p90_ms": 3.076,
+      "max_ms": 3.5963,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/bash_background_start": {
+      "n": 48,
+      "mean_ms": 2.3909854166666666,
+      "median_ms": 2.3991499999999997,
+      "p90_ms": 2.8006,
+      "max_ms": 6.8753,
+      "status": {
+        "scheduled": 48
+      }
+    },
+    "lead/read_file_13KB": {
+      "n": 48,
+      "mean_ms": 6.387510416666667,
+      "median_ms": 6.81265,
+      "p90_ms": 8.771,
+      "max_ms": 10.0537,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/read_file_146KB": {
+      "n": 48,
+      "mean_ms": 37.323345833333335,
+      "median_ms": 39.499849999999995,
+      "p90_ms": 50.7445,
+      "max_ms": 51.1634,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/mcp_deploy_trigger_confirm": {
+      "n": 48,
+      "mean_ms": 0.7633958333333334,
+      "median_ms": 0.75315,
+      "p90_ms": 0.888,
+      "max_ms": 6.8689,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_write_file_2KB": {
+      "n": 48,
+      "mean_ms": 3.6773375,
+      "median_ms": 4.3278,
+      "p90_ms": 4.7625,
+      "max_ms": 5.9846,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/compact_marker": {
+      "n": 48,
+      "mean_ms": 0.1972104166666667,
+      "median_ms": 0.2234,
+      "p90_ms": 0.2949,
+      "max_ms": 0.4312,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_bash_denied_async": {
+      "n": 48,
+      "mean_ms": 0.9999645833333334,
+      "median_ms": 0.9855,
+      "p90_ms": 1.0436,
+      "max_ms": 1.3274,
+      "status": {
+        "denied": 48
+      }
+    },
+    "lead/read_file_limit50": {
+      "n": 48,
+      "mean_ms": 2.8775895833333336,
+      "median_ms": 3.4575,
+      "p90_ms": 3.8656,
+      "max_ms": 4.2141,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/spawn_teammate": {
+      "n": 48,
+      "mean_ms": 1.8878833333333331,
+      "median_ms": 1.90495,
+      "p90_ms": 2.1761,
+      "max_ms": 6.8238,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_plan_gate_blocked": {
+      "n": 48,
+      "mean_ms": 0.4371479166666667,
+      "median_ms": 0.48895,
+      "p90_ms": 0.5595,
+      "max_ms": 0.8068,
+      "status": {
+        "denied": 48
+      }
+    },
+    "lead/edit_file_small": {
+      "n": 48,
+      "mean_ms": 2.2877125,
+      "median_ms": 2.82145,
+      "p90_ms": 3.0915,
+      "max_ms": 3.2259,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/send_message": {
+      "n": 48,
+      "mean_ms": 1.2099854166666668,
+      "median_ms": 1.3195999999999999,
+      "p90_ms": 1.5217,
+      "max_ms": 1.7795,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/glob_deep_recursive": {
+      "n": 48,
+      "mean_ms": 23.129781249999997,
+      "median_ms": 25.846449999999997,
+      "p90_ms": 34.4322,
+      "max_ms": 34.885,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_read_file_13KB": {
+      "n": 48,
+      "mean_ms": 7.942939583333334,
+      "median_ms": 8.5206,
+      "p90_ms": 9.9266,
+      "max_ms": 10.0883,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/mcp_docs_search": {
+      "n": 48,
+      "mean_ms": 0.41721458333333333,
+      "median_ms": 0.42369999999999997,
+      "p90_ms": 0.5892,
+      "max_ms": 0.816,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_glob_deep_recursive": {
+      "n": 48,
+      "mean_ms": 24.39770625,
+      "median_ms": 20.726599999999998,
+      "p90_ms": 35.6117,
+      "max_ms": 45.4283,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/load_skill_miss": {
+      "n": 48,
+      "mean_ms": 0.5082770833333333,
+      "median_ms": 0.5394,
+      "p90_ms": 0.6583,
+      "max_ms": 2.6584,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/create_task": {
+      "n": 48,
+      "mean_ms": 1.4336416666666667,
+      "median_ms": 1.6844000000000001,
+      "p90_ms": 1.9089,
+      "max_ms": 2.7066,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_list_tasks": {
+      "n": 48,
+      "mean_ms": 1.3664500000000002,
+      "median_ms": 1.56305,
+      "p90_ms": 1.7277,
+      "max_ms": 2.6293,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/review_plan": {
+      "n": 48,
+      "mean_ms": 1.2082645833333332,
+      "median_ms": 1.3529499999999999,
+      "p90_ms": 1.4845,
+      "max_ms": 1.5373,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/glob_shallow": {
+      "n": 48,
+      "mean_ms": 2.052379166666667,
+      "median_ms": 1.9654,
+      "p90_ms": 2.3996,
+      "max_ms": 18.281,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/write_file_200B": {
+      "n": 48,
+      "mean_ms": 2.1296708333333334,
+      "median_ms": 1.9125,
+      "p90_ms": 3.0754,
+      "max_ms": 3.6136,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_send_message": {
+      "n": 48,
+      "mean_ms": 1.5529125,
+      "median_ms": 1.19735,
+      "p90_ms": 1.8732,
+      "max_ms": 16.8314,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/todo_write_5": {
+      "n": 48,
+      "mean_ms": 0.5910208333333333,
+      "median_ms": 0.49470000000000003,
+      "p90_ms": 0.873,
+      "max_ms": 1.2634,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/request_plan": {
+      "n": 48,
+      "mean_ms": 0.9225875,
+      "median_ms": 0.8695999999999999,
+      "p90_ms": 1.3589,
+      "max_ms": 1.7079,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_claim_task": {
+      "n": 48,
+      "mean_ms": 3.183802083333333,
+      "median_ms": 3.4936499999999997,
+      "p90_ms": 4.2534,
+      "max_ms": 4.5398,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_complete_task": {
+      "n": 48,
+      "mean_ms": 2.849027083333333,
+      "median_ms": 3.0562500000000004,
+      "p90_ms": 3.8406,
+      "max_ms": 4.2152,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/list_teammates": {
+      "n": 48,
+      "mean_ms": 0.4604333333333333,
+      "median_ms": 0.35040000000000004,
+      "p90_ms": 0.5943,
+      "max_ms": 4.5949,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/get_task": {
+      "n": 48,
+      "mean_ms": 1.0491770833333334,
+      "median_ms": 1.08515,
+      "p90_ms": 1.4598,
+      "max_ms": 2.1787,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/request_shutdown": {
+      "n": 48,
+      "mean_ms": 1.1133729166666666,
+      "median_ms": 1.34635,
+      "p90_ms": 1.5764,
+      "max_ms": 1.9932,
+      "status": {
+        "ok": 48
+      }
+    },
+    "teammate/tm_edit_file_small": {
+      "n": 48,
+      "mean_ms": 2.7001895833333336,
+      "median_ms": 2.5818000000000003,
+      "p90_ms": 3.9746,
+      "max_ms": 4.9788,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/read_file_45KB": {
+      "n": 48,
+      "mean_ms": 16.377495833333334,
+      "median_ms": 14.82525,
+      "p90_ms": 23.5734,
+      "max_ms": 24.0078,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/bash_python_file": {
+      "n": 48,
+      "mean_ms": 134.98736875,
+      "median_ms": 133.99065000000002,
+      "p90_ms": 135.6695,
+      "max_ms": 158.6764,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/bash_grep": {
+      "n": 48,
+      "mean_ms": 10.873775,
+      "median_ms": 8.63155,
+      "p90_ms": 9.4403,
+      "max_ms": 51.6724,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/write_file_20KB": {
+      "n": 48,
+      "mean_ms": 6.10214375,
+      "median_ms": 7.103899999999999,
+      "p90_ms": 7.6435,
+      "max_ms": 10.0329,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/bash_ls": {
+      "n": 48,
+      "mean_ms": 8.658552083333333,
+      "median_ms": 7.5533,
+      "p90_ms": 8.7277,
+      "max_ms": 34.9731,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/load_skill_hit": {
+      "n": 48,
+      "mean_ms": 1.6566041666666667,
+      "median_ms": 1.7497,
+      "p90_ms": 2.3957,
+      "max_ms": 2.6826,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/claim_task": {
+      "n": 48,
+      "mean_ms": 2.76729375,
+      "median_ms": 3.3819,
+      "p90_ms": 3.8687,
+      "max_ms": 4.2331,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/complete_task": {
+      "n": 48,
+      "mean_ms": 2.5008125,
+      "median_ms": 3.19705,
+      "p90_ms": 3.4465,
+      "max_ms": 3.9214,
+      "status": {
+        "ok": 48
+      }
+    },
+    "lead/create_worktree_real": {
+      "n": 12,
+      "mean_ms": 607.4477333333333,
+      "median_ms": 580.91315,
+      "p90_ms": 680.4393,
+      "max_ms": 707.0369,
+      "status": {
+        "ok": 12
+      }
+    }
+  },
+  "observational": {
+    "lead/create_task": {
+      "n": 45,
+      "mean_ms": 2.441359288888889,
+      "median_ms": 2.028499,
+      "p90_ms": 3.473907,
+      "max_ms": 4.785834,
+      "status": {
+        "ok": 45
+      }
+    },
+    "lead/glob": {
+      "n": 4,
+      "mean_ms": 5.5034575,
+      "median_ms": 4.3619535,
+      "p90_ms": 9.198418,
+      "max_ms": 9.198418,
+      "status": {
+        "ok": 4
+      }
+    },
+    "lead/todo_write": {
+      "n": 82,
+      "mean_ms": 0.9519108658536586,
+      "median_ms": 0.932264,
+      "p90_ms": 1.027008,
+      "max_ms": 1.619554,
+      "status": {
+        "ok": 82
+      }
+    },
+    "lead/bash": {
+      "n": 22,
+      "mean_ms": 102.43654550000001,
+      "median_ms": 133.8301555,
+      "p90_ms": 187.300771,
+      "max_ms": 192.57119,
+      "status": {
+        "denied": 4,
+        "error": 5,
+        "ok": 13
+      }
+    },
+    "lead/spawn_teammate": {
+      "n": 45,
+      "mean_ms": 21.07631011111111,
+      "median_ms": 23.889695,
+      "p90_ms": 40.440244,
+      "max_ms": 61.148253,
+      "status": {
+        "ok": 45
+      }
+    },
+    "teammate/claim_task": {
+      "n": 22,
+      "mean_ms": 1.6396713636363636,
+      "median_ms": 1.5965505,
+      "p90_ms": 1.751777,
+      "max_ms": 1.851416,
+      "status": {
+        "ok": 22
+      }
+    },
+    "teammate/glob": {
+      "n": 17,
+      "mean_ms": 9.431511117647059,
+      "median_ms": 10.374559,
+      "p90_ms": 11.684588,
+      "max_ms": 18.7246,
+      "status": {
+        "ok": 17
+      }
+    },
+    "teammate/read_file": {
+      "n": 57,
+      "mean_ms": 13.535137877192982,
+      "median_ms": 11.972132,
+      "p90_ms": 23.833517,
+      "max_ms": 46.581784,
+      "status": {
+        "ok": 57
+      }
+    },
+    "teammate/bash": {
+      "n": 59,
+      "mean_ms": 70.88788657627119,
+      "median_ms": 64.034609,
+      "p90_ms": 184.08645,
+      "max_ms": 219.998913,
+      "status": {
+        "error": 4,
+        "ok": 36,
+        "denied": 19
+      }
+    },
+    "teammate/complete_task": {
+      "n": 33,
+      "mean_ms": 4.830742939393939,
+      "median_ms": 4.82905,
+      "p90_ms": 4.991912,
+      "max_ms": 5.074301,
+      "status": {
+        "ok": 33
+      }
+    },
+    "lead/request_shutdown": {
+      "n": 45,
+      "mean_ms": 5.034302177777778,
+      "median_ms": 2.708692,
+      "p90_ms": 10.752672,
+      "max_ms": 15.470002,
+      "status": {
+        "ok": 45
+      }
+    },
+    "teammate/write_file": {
+      "n": 15,
+      "mean_ms": 8.535620733333333,
+      "median_ms": 5.719925,
+      "p90_ms": 25.13112,
+      "max_ms": 29.777926,
+      "status": {
+        "ok": 15
+      }
+    },
+    "teammate/edit_file": {
+      "n": 9,
+      "mean_ms": 4.627986888888889,
+      "median_ms": 5.033407,
+      "p90_ms": 5.322108,
+      "max_ms": 5.349992,
+      "status": {
+        "denied": 1,
+        "error": 1,
+        "ok": 7
+      }
+    },
+    "teammate/list_tasks": {
+      "n": 5,
+      "mean_ms": 2.750626,
+      "median_ms": 2.816371,
+      "p90_ms": 2.96844,
+      "max_ms": 2.96844,
+      "status": {
+        "ok": 5
+      }
+    },
+    "lead/send_message": {
+      "n": 1,
+      "mean_ms": 2.996836,
+      "median_ms": 2.996836,
+      "p90_ms": 2.996836,
+      "max_ms": 2.996836,
+      "status": {
+        "ok": 1
+      }
+    },
+    "teammate/send_message": {
+      "n": 5,
+      "mean_ms": 4.4048346,
+      "median_ms": 2.681013,
+      "p90_ms": 8.220756,
+      "max_ms": 8.220756,
+      "status": {
+        "ok": 5
+      }
+    },
+    "lead/read_file": {
+      "n": 21,
+      "mean_ms": 10.682692047619048,
+      "median_ms": 6.324439,
+      "p90_ms": 25.460831,
+      "max_ms": 43.677212,
+      "status": {
+        "ok": 21
+      }
+    },
+    "lead/write_file": {
+      "n": 9,
+      "mean_ms": 3.1311316666666666,
+      "median_ms": 3.171319,
+      "p90_ms": 3.203069,
+      "max_ms": 3.515935,
+      "status": {
+        "ok": 9
+      }
+    },
+    "lead/edit_file": {
+      "n": 7,
+      "mean_ms": 2.9438608571428575,
+      "median_ms": 2.83681,
+      "p90_ms": 3.133308,
+      "max_ms": 3.725535,
+      "status": {
+        "ok": 7
+      }
+    }
+  }
+}

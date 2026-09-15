@@ -1,0 +1,469 @@
+[
+  {
+    "label": "plain-r0",
+    "arm": "plain",
+    "rep": 0,
+    "workload": "constants",
+    "trace": "run_20260914T221025_309077Z_b29decb7.jsonl",
+    "tool_cost": null,
+    "tool_cost_default": null,
+    "model_calls": 4,
+    "wall_s": 43.7,
+    "tools": {
+      "bash": 3,
+      "todo_write": 1
+    },
+    "n_read_file": 0,
+    "n_bash": 3,
+    "n_glob": 0,
+    "grep_like_bash": 3,
+    "read_chars": 0,
+    "bash_chars": 3577,
+    "total_tool_chars": 3592,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A 12 -i \"compaction\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md | head -50",
+      "grep -n -E \"PERSIST_THRESHOLD|KEEP_RECENT_TOOL_RESULTS|CONTEXT_TOKEN_LIMIT\" /home/yq335/learn-claude-code/s15_integrated_harness/code.py | head -10",
+      "grep -n -A 12 -i \"error recovery\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md | head -50"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "advertise-r0",
+    "arm": "advertise",
+    "rep": 0,
+    "workload": "constants",
+    "trace": "run_20260914T221109_941182Z_d346598e.jsonl",
+    "tool_cost": "read_file=5.0",
+    "tool_cost_default": 0.05,
+    "model_calls": 3,
+    "wall_s": 43.6,
+    "tools": {
+      "bash": 2
+    },
+    "n_read_file": 0,
+    "n_bash": 2,
+    "n_glob": 0,
+    "grep_like_bash": 2,
+    "read_chars": 0,
+    "bash_chars": 1796,
+    "total_tool_chars": 1796,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A 15 \"Compaction\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md | head -60",
+      "grep -n -E \"PERSIST_THRESHOLD|KEEP_RECENT_TOOL_RESULTS|CONTEXT_TOKEN_LIMIT\" /home/yq335/learn-claude-code/s15_integrated_harness/code.py | head -10; grep -n -A 10 \"Error recovery\" /home/yq335/learn-cl"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "policy-r0",
+    "arm": "policy",
+    "rep": 0,
+    "workload": "constants",
+    "trace": "run_20260914T221154_451628Z_b42d6069.jsonl",
+    "tool_cost": "read_file=5.0",
+    "tool_cost_default": 0.05,
+    "model_calls": 3,
+    "wall_s": 40.5,
+    "tools": {
+      "bash": 3
+    },
+    "n_read_file": 0,
+    "n_bash": 3,
+    "n_glob": 0,
+    "grep_like_bash": 3,
+    "read_chars": 0,
+    "bash_chars": 1403,
+    "total_tool_chars": 1403,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A 8 \"Compaction\" s15_integrated_harness/GLOSSARY.md | head -40",
+      "grep -n \"PERSIST_THRESHOLD\\|KEEP_RECENT_TOOL_RESULTS\\|CONTEXT_TOKEN_LIMIT\" s15_integrated_harness/code.py | head",
+      "grep -n -A 8 \"Error recovery\" s15_integrated_harness/GLOSSARY.md | head -20"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "plain-r1",
+    "arm": "plain",
+    "rep": 1,
+    "workload": "constants",
+    "trace": "run_20260914T221235_906561Z_85a5be73.jsonl",
+    "tool_cost": null,
+    "tool_cost_default": null,
+    "model_calls": 3,
+    "wall_s": 35.0,
+    "tools": {
+      "bash": 2
+    },
+    "n_read_file": 0,
+    "n_bash": 2,
+    "n_glob": 0,
+    "grep_like_bash": 2,
+    "read_chars": 0,
+    "bash_chars": 1762,
+    "total_tool_chars": 1762,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A 12 \"Compaction\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md | head -40",
+      "grep -n \"PERSIST_THRESHOLD\\|KEEP_RECENT_TOOL_RESULTS\\|CONTEXT_TOKEN_LIMIT\" /home/yq335/learn-claude-code/s15_integrated_harness/code.py | head -10; grep -n -A 10 \"Error recovery\" /home/yq335/learn-cla"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "advertise-r1",
+    "arm": "advertise",
+    "rep": 1,
+    "workload": "constants",
+    "trace": "run_20260914T221311_847239Z_c32bef1e.jsonl",
+    "tool_cost": "read_file=5.0",
+    "tool_cost_default": 0.05,
+    "model_calls": 3,
+    "wall_s": 34.5,
+    "tools": {
+      "bash": 1
+    },
+    "n_read_file": 0,
+    "n_bash": 1,
+    "n_glob": 0,
+    "grep_like_bash": 1,
+    "read_chars": 0,
+    "bash_chars": 1709,
+    "total_tool_chars": 1709,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A 12 \"Compaction\" s15_integrated_harness/GLOSSARY.md; echo \"-----\"; grep -n -A 10 \"Error recovery\" s15_integrated_harness/GLOSSARY.md; echo \"-----\"; grep -n \"PERSIST_THRESHOLD\\|KEEP_RECENT_TO"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "policy-r1",
+    "arm": "policy",
+    "rep": 1,
+    "workload": "constants",
+    "trace": "run_20260914T221347_208483Z_7ed40b13.jsonl",
+    "tool_cost": "read_file=5.0",
+    "tool_cost_default": 0.05,
+    "model_calls": 4,
+    "wall_s": 40.6,
+    "tools": {
+      "bash": 2
+    },
+    "n_read_file": 0,
+    "n_bash": 2,
+    "n_glob": 0,
+    "grep_like_bash": 2,
+    "read_chars": 0,
+    "bash_chars": 3175,
+    "total_tool_chars": 3175,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A6 -i \"compaction\\|error recovery\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md; grep -n \"PERSIST_THRESHOLD\\|KEEP_RECENT_TOOL_RESULTS\\|CONTEXT_TOKEN_LIMIT\" /home/yq335/lea",
+      "sed -n 43,58p /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "plain-r2",
+    "arm": "plain",
+    "rep": 2,
+    "workload": "constants",
+    "trace": "run_20260914T221428_717869Z_15c3fe61.jsonl",
+    "tool_cost": null,
+    "tool_cost_default": null,
+    "model_calls": 3,
+    "wall_s": 36.1,
+    "tools": {
+      "bash": 1
+    },
+    "n_read_file": 0,
+    "n_bash": 1,
+    "n_glob": 0,
+    "grep_like_bash": 1,
+    "read_chars": 0,
+    "bash_chars": 1413,
+    "total_tool_chars": 1413,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A 8 \"Compaction\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md; echo ---; grep -n -E \"PERSIST_THRESHOLD|KEEP_RECENT_TOOL_RESULTS|CONTEXT_TOKEN_LIMIT\" /home/yq335/learn-clau"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "advertise-r2",
+    "arm": "advertise",
+    "rep": 2,
+    "workload": "constants",
+    "trace": "run_20260914T221505_733199Z_da3c426a.jsonl",
+    "tool_cost": "read_file=5.0",
+    "tool_cost_default": 0.05,
+    "model_calls": 3,
+    "wall_s": 38.1,
+    "tools": {
+      "bash": 1
+    },
+    "n_read_file": 0,
+    "n_bash": 1,
+    "n_glob": 0,
+    "grep_like_bash": 1,
+    "read_chars": 0,
+    "bash_chars": 3044,
+    "total_tool_chars": 3044,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A 8 -i \"compaction\\|error recovery\" s15_integrated_harness/GLOSSARY.md | head -60; echo ---; grep -n \"PERSIST_THRESHOLD\\|KEEP_RECENT_TOOL_RESULTS\\|CONTEXT_TOKEN_LIMIT\" s15_integrated_harness/"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "policy-r2",
+    "arm": "policy",
+    "rep": 2,
+    "workload": "constants",
+    "trace": "run_20260914T221544_741375Z_610ee84b.jsonl",
+    "tool_cost": "read_file=5.0",
+    "tool_cost_default": 0.05,
+    "model_calls": 3,
+    "wall_s": 38.0,
+    "tools": {
+      "bash": 1
+    },
+    "n_read_file": 0,
+    "n_bash": 1,
+    "n_glob": 0,
+    "grep_like_bash": 1,
+    "read_chars": 0,
+    "bash_chars": 3049,
+    "total_tool_chars": 3049,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A 8 -i \"compaction\" s15_integrated_harness/GLOSSARY.md; echo \"-----\"; grep -n -A 8 -i \"error recovery\" s15_integrated_harness/GLOSSARY.md; echo \"-----\"; grep -n -E \"PERSIST_THRESHOLD|KEEP_REC"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "plain-r3",
+    "arm": "plain",
+    "rep": 3,
+    "workload": "constants",
+    "trace": "run_20260914T221623_753232Z_e24ab2ba.jsonl",
+    "tool_cost": null,
+    "tool_cost_default": null,
+    "model_calls": 4,
+    "wall_s": 41.4,
+    "tools": {
+      "bash": 2
+    },
+    "n_read_file": 0,
+    "n_bash": 2,
+    "n_glob": 0,
+    "grep_like_bash": 2,
+    "read_chars": 0,
+    "bash_chars": 3254,
+    "total_tool_chars": 3254,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -i -A6 \"Compaction\\|Error recovery\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md; grep -n \"PERSIST_THRESHOLD\\|KEEP_RECENT_TOOL_RESULTS\\|CONTEXT_TOKEN_LIMIT\" /home/yq335/lea",
+      "sed -n '43,60p' /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "advertise-r3",
+    "arm": "advertise",
+    "rep": 3,
+    "workload": "constants",
+    "trace": "run_20260914T221706_098541Z_ff34ba10.jsonl",
+    "tool_cost": "read_file=5.0",
+    "tool_cost_default": 0.05,
+    "model_calls": 3,
+    "wall_s": 37.6,
+    "tools": {
+      "bash": 2
+    },
+    "n_read_file": 0,
+    "n_bash": 2,
+    "n_glob": 0,
+    "grep_like_bash": 2,
+    "read_chars": 0,
+    "bash_chars": 3822,
+    "total_tool_chars": 3822,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A 15 -i \"compaction\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md | head -60",
+      "grep -n -E \"PERSIST_THRESHOLD|KEEP_RECENT_TOOL_RESULTS|CONTEXT_TOKEN_LIMIT\" /home/yq335/learn-claude-code/s15_integrated_harness/code.py | head -20; grep -n -A 10 -i \"error recovery\" /home/yq335/learn"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  },
+  {
+    "label": "policy-r3",
+    "arm": "policy",
+    "rep": 3,
+    "workload": "constants",
+    "trace": "run_20260914T221744_596375Z_b72b6fba.jsonl",
+    "tool_cost": "read_file=5.0",
+    "tool_cost_default": 0.05,
+    "model_calls": 3,
+    "wall_s": 36.9,
+    "tools": {
+      "bash": 2
+    },
+    "n_read_file": 0,
+    "n_bash": 2,
+    "n_glob": 0,
+    "grep_like_bash": 2,
+    "read_chars": 0,
+    "bash_chars": 3054,
+    "total_tool_chars": 3054,
+    "read_paths": [],
+    "bash_commands": [
+      "grep -n -A 12 -i \"compaction\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md | head -40",
+      "grep -n -E \"PERSIST_THRESHOLD|KEEP_RECENT_TOOL_RESULTS|CONTEXT_TOKEN_LIMIT\" /home/yq335/learn-claude-code/s15_integrated_harness/code.py | head -10; grep -n -A 12 -i \"error recovery\" /home/yq335/learn"
+    ],
+    "coverage": 1.0,
+    "hits": {
+      "q1_tool_result_budget": true,
+      "q1_snip_compact": true,
+      "q1_micro_compact": true,
+      "q1_fit_tool_results": true,
+      "q1_compact_history": true,
+      "q2_persist_threshold": true,
+      "q2_keep_recent": true,
+      "q2_context_limit": true,
+      "q3_base_delay": true,
+      "q3_cap": true
+    }
+  }
+]

@@ -6,7 +6,8 @@ Weekly progress, 2026-09-16 (experiment run 2026-09-12 evening). Full report:
 Tooling: `scripts/profile_run.py` (`--stream`, `--write-root/--sandbox-from`, `--allow-python`,
 `profile_timing` events), `scripts/latency_workloads.py` (workloads + scoring),
 `scripts/latency_breakdown.py` (round reconstruction + tables), bench problems in
-`scripts/latency_bench/coding/`.
+`scripts/latency_bench/coding/`. Sections 4 and 5 were added on 2026-09-13 after follow-up probes
+of the provider's timing and cache behaviour and a re-measurement of the 50k-limit runs.
 
 ## 1. Questions
 
@@ -104,13 +105,119 @@ Lead: 84-91% re-sent but only 20-42% cache reads (per-second timestamp + memory 
 Totals over 24 runs: agent calls 4,704 s, turn-end memory work 1,364 s, context preparation 32 s,
 tool execution 9.4 s, wall 3,946 s.
 
-## 4. Conclusions
+## 4. How prefill and decode were separated (probes, 2026-09-13)
+
+The provider's API returns no timing. `usage` carries token counts only, and
+`cache_creation_input_tokens` is always null. The HTTP response does carry `x-process-time`, the
+server's own processing seconds, next to `x-log-id` and `x-request-id`. On a streaming request with
+a 27k-token prompt it reads 2.2-2.7 s when the prompt is new and 1.0 s when the same prompt is
+served from cache, so it does track prefill; the client meanwhile waits 3.3-5.5 s for the first
+block, which puts 2-3 s of the fixed component outside anything the server counts.
+
+Client-side streaming timing cannot serve as a prefill measure directly, for three reasons visible
+in the runs:
+
+- **Burst delivery.** The provider withholds thinking and tool_use blocks and ships them when
+  generation ends: 29-59% of agent calls had a streamed tail under 0.1 s, so for those the time to
+  the first block is the whole call.
+- **Delta timing is not token timing.** The median gap between `content_block_delta` events is
+  0.2 ms while the mean is 13.4 ms, because server-sent events arrive in bursts. Only the aggregate
+  rate, output tokens over the streamed tail, is usable.
+- **The fixed component jitters more than prefill costs.** It moves by +-2 s between calls, while
+  the whole prefill term at these prompt sizes is 30-150 ms.
+
+Prefill and decode are therefore separated by regressing call duration on uncached prompt tokens and
+output tokens. A dedicated sweep confirms the coefficient by two independent routes: a prompt-size
+sweep with the output held fixed, and re-sending an identical prompt so its tokens come from cache.
+Both, plus the cache test and the header dump below, are `scripts/provider_probe.py`
+(`--prefill`, `--cache`, `--headers`).
+
+| method | fixed part | per uncached token | implied prefill rate |
+|---|---:|---:|---:|
+| size sweep 460 -> 32,565 uncached tokens, 300-token output, no tools (r2 0.88) | 3.34 s | 0.0384 ms | 26,000 tok/s |
+| identical resend, 11,584 tokens served from cache | | 0.0342 ms saved | |
+| identical resend, 32,512 tokens served from cache | | 0.0416 ms saved | |
+| in-run regression over all 446 agent calls (r2 0.96) | 3.72 s | 0.033 ms | 30,000 tok/s |
+| direct probe of 2026-09-10, separate session | 4.6 s | 0.052 ms | 19,000 tok/s |
+
+Decode measured the same way is 81 tokens/s for 300-token outputs and 39 tokens/s for a 1,200-token
+output, that is 12-26 ms per token, bracketing the regression's 17.4 ms. The share of a round that
+prefill occupies is therefore set by the uncached tokens per call: 0.4-1.6% at this week's 0.9-3.8k,
+about 10% at the 9-19k of the X3 runs (`agent_e2e_bottleneck.md` Q2), and seconds only above roughly
+50k per call.
+
+Two further facts from the probes:
+
+- **The provider's prompt cache is strictly prefix-based.** An identical resend came back 99.9%
+  cached; the same body behind a new prefix 0%; a unique block inserted mid-prompt 0%; a document
+  never sent before 0% on each of two sends. A shared file block is reusable only if it sits at the
+  same position in the same prefix, which is exactly the constraint on next step 5 of
+  `tiered_memory_conclusion.md`.
+- **SDK retries can masquerade as cache hits.** One nominally fresh call in the sweep returned
+  99.8% cached with an elevated first-block time; the SDK retries twice by default and the retry
+  hits the entry its failed attempt created. Cache measurements have to check the retry count.
+
+## 5. Why the context-preparation share is small here, when earlier runs showed 52-80% redundancy
+
+Two different quantities have been called a context cost this week. The share in section 3 is
+**harness wall time** spent preparing a request. The figures of `teammate_input_redundancy.md` are
+shares of **input bytes or tokens** that are repeated: 52-80% of the bytes a teammate loads are
+copies another teammate already holds when they share files, and file content is 70-89% of teammate
+prompt tokens in the prefill-heavy runs. Both quantities were measured in these runs too, and the
+repetition is still there:
+
+| team runs | re-sent from that teammate's own previous call | file content as a share of teammate prompt tokens | bytes another teammate fetched first |
+|---|---:|---:|---:|
+| FQA | 33-58% | 76-86% | 12-23% |
+| CODE | 76-86% | 21-30% | 0% |
+| MATH | 45-63% | 0% | no file reads |
+
+What changed is that none of it converts into time. The repeated prefix is cache-served, 28-79% of
+teammate prompt tokens, and at 0.038 ms per uncached token re-sending a 5k-token history costs
+0.19 s, about 2% of a round.
+
+**Cross-teammate sharing is set by the workload, exactly.** The measured rate equals each workload's
+design ceiling, so it says nothing about the harness:
+
+| workload | what the teammates read | ceiling | measured |
+|---|---|---:|---|
+| FQA, this week | a private doc plus the shared 12,871-byte glossary | 22.8% | 22.8, 22.8, 22.8, 15.6, 12.4% |
+| CODE, this week | three disjoint problem directories | 0% | 0% in all five runs |
+| MATH, this week | no files at all | n/a | 0 bytes fetched |
+| PF-S, 2026-09-10 | all three read the same two files in full | 66.7% | 61.3, 61.5% |
+
+Teammate self re-reads were 0.0% in all ten team runs measured: every agent fetched each byte once.
+
+**The larger difference from the codebase experiments is context pressure, not file sharing.** Those
+runs (X3 workload, the `traces/kv_splice` baselines) sat at the 50k-character limit, where eviction
+forces re-acquisition:
+
+| | X3 codebase task, 50k limit | this week, 512k limit |
+|---|---|---|
+| lead rounds per run | 33-65, for one task | 2-20, for three tasks |
+| wall per run | 363-807 s | 82-249 s |
+| context shrink events | 18-45 | 0 |
+| placeholders resident in one call | 26-35 | 0 |
+| summary compactions | 0-1 | 0 |
+| lead file bytes that were re-reads | 46 / 7 / 0% | 0% in all 24 runs |
+| lead cache-read share | 16-19% | 20-42% |
+| preparation per round | 0.65 s, 5.6% | 0.01 s, 0.1% |
+
+The last row resolves the question. Even under heavy eviction, preparation per round is 0.65 s, and
+0.62 s of that is one summary-compaction model call amortised over the run; the compaction code
+itself costs 25 ms. Redundancy and eviction are paid in **round count**, three to five times here,
+and in KV memory, not in preparation time. Neither experiment could have shown a large preparation
+share.
+
+## 6. Conclusions
 
 1. **Per round, the agent call is everything (93-99.9%); context preparation and tool execution are
    about 10 ms and 10-50 ms.** Preparation only costs when the harness calls the model to do it.
-2. **Prefill is under 2% of call time; the fixed provider component (3.7 s) and decode (17 ms per
-   token) are the rest.** Re-prefilling a 5k-token history costs about 0.17 s. KV/prefix reuse
-   cannot shorten these rounds measurably; its value is capacity, not latency.
+2. **Prefill is under 2% of call time; the fixed provider component (3.3-3.7 s) and decode
+   (12-26 ms per token) are the rest.** Three independent measurements agree on 0.033-0.042 ms per
+   uncached token, so re-prefilling a 5k-token history costs about 0.19 s, and prefill becomes
+   seconds only above roughly 50k tokens per call. KV or prefix reuse cannot shorten these rounds
+   measurably; its value at this scale is capacity, not latency.
 3. **The harness's turn-end memory extraction (13-21 s per lead turn, every team event is a turn)
    is the largest non-agent cost: 35% of all wall time, 42-58% of the lead's busy time in team runs.**
    Running it once per user request or asynchronously would cut team-run wall time by 28-48%.
@@ -118,8 +225,25 @@ tool execution 9.4 s, wall 3,946 s.
    cross-teammate duplication is 8-27% of prompt tokens only when tasks share files.**
 5. **Rounds per task: math 3, file Q&A 4, coding 7.5 (teammate); the lead adds 10-11 orchestration
    rounds per run.** For these small tasks a solo lead was 1.4-1.8x faster end to end at equal quality.
+6. **That repetition is as high as in the earlier runs; it simply does not buy latency.** Cross-team
+   duplication tracks each workload's design ceiling exactly, 22.8% measured against a 22.8% ceiling
+   in file Q&A and 0% with disjoint problems, so it measures how the tasks were cut rather than the
+   harness; and at 0.038 ms per uncached token the repeated input costs tokens and KV memory, not
+   time.
+7. **Under context pressure the bill arrives as rounds.** At the 50k limit the same harness needed
+   33-65 rounds and 363-807 s for a single task, with 18-45 shrink events and up to 46% of the
+   lead's file bytes re-read, while preparation per round was still 0.65 s of which 95% was one
+   summary call. Sizing the resident set stays the lever (`agent_e2e_bottleneck.md` Q1).
 
-Caveats: single provider/model on one evening (fixed component varies 1.5-7 s); streaming vs plain
-requests were checked (7.5 vs 8.3 s, no inflation); 24 denied tool calls (mostly a driver filter
-false positive on `>` inside quoted python, fixed) cost about one round per run; scoring is
-heuristic for file Q&A.
+Caveats: single provider and model on one evening, with the fixed component varying 1.5-7 s between
+probes; streaming against plain requests was checked (7.5 against 8.3 s, no inflation);
+`x-process-time` excludes whatever queueing happens before the server starts counting; 24 denied
+tool calls, mostly a driver-filter false positive on `>` inside quoted python and fixed afterwards,
+cost about one round per run; file-Q&A scoring is keyword coverage, not a reader.
+
+Two analyzer fixes made while checking these numbers, both affecting reproduction:
+`latency_breakdown.py` no longer collects `.requests.` or `.replay.` sidecars as traces, and its
+compaction column no longer double counts the summary-compaction model call, which runs inside the
+`context_prepare` span and is now reported separately. `input_redundancy.py`'s file-content share
+assumes an item stays resident in every later call of that agent, so it overstates for runs with
+eviction or lead-side persistence; it is used here only for runs where nothing was evicted.

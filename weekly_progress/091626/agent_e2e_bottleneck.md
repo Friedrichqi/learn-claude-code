@@ -75,6 +75,13 @@ per-token prefill.
   headroom shrinks by the same factor (X2 run 2 teammates: ~12 s, not 95 s). The conclusion is
   unchanged and stronger: reuse headroom is small, round count is the lever.
 
+- Confirmed on 2026-09-13 across three other task classes (`latency_breakdown.md`, 24 runs): a
+  regression over 446 agent calls gives 3.7 s fixed + 0.033 ms per uncached token + 17.4 ms per
+  output token (r2 0.96), and a dedicated size sweep gives 0.0384 ms per token (26,000 tok/s), so
+  the 0.052 ms/token above holds to within a factor of 1.4. The prefill *share* scales with the
+  uncached tokens a call carries: about 10% at the 9-19k of these runs, 0.4-1.6% at the 0.9-3.8k of
+  the file-Q&A, coding and math workloads, and seconds only above roughly 50k per call.
+
 **Answer.** A round is a fixed-cost event. Skipping the prefill of repeated content saves at most
 ~10% of a round; removing the round saves all of it. Decoding dominates only the answer rounds.
 
@@ -98,6 +105,21 @@ the bottleneck is the harness tier's eviction policy and the round trip per miss
 | 5 | teammate task-boundary compaction, respawn on low overlap | teammate tier | bound the N resident copies (see `teammate_input_redundancy.md`) |
 | 6 | shared, position-stable file block per team | provider cache | prefill a shared file once |
 | 7 | in-engine execution / KV splice for whitelisted fetch tools | engine | remove the round trip per miss |
+| 8 | publish the tier costs in the tool descriptions or the system prompt | model-side routing | let the model avoid the expensive tier by itself |
+
+**Item 8 was tested on 2026-09-14 and does not work in a mixed pool**
+(`s15_integrated_harness/tool_cost_profile.md`). Annotating `read_file` at anything from 0.05 to
+60 s, in stated seconds, in hardware terms or as the word "slow", leaves it at 45% of first moves
+against a 44% baseline over 160 trials (p = 1.000); the model mentions the cost in 0-3% of those
+replies, because it routes on task fit and never consults the price. It is not insensitive: between
+two tools described as interchangeable the same numbers decide 97-100% of choices against a 53%
+baseline, but as a tie-break that ignores magnitude (a 5x gap and a 7500x gap are
+indistinguishable). Adding one sentence of objective -- "prefer the cheapest tool that can still
+answer the question correctly" -- is what moves a mixed pool, 31% to 9%. In the real harness neither
+arm had room to act: a value-lookup workload was already answered with `bash` and grep in 12 runs of
+12, and a comprehension workload read the whole file in 12 runs of 12 in every arm, correctly. So
+item 8 belongs only alongside item 6 or 7, where a hot and a cold route to the same bytes make the
+two tools genuine substitutes.
 
 ---
 
@@ -242,3 +264,7 @@ product does today.
   `traces/context_interventions/` (valid runs at top level; `unfixed_driver/`, `quota_killed/`).
 - `weekly_progress/090926/teammate_overlap.md` section 4: the original latency-headroom estimate and
   its correction.
+- `s15_integrated_harness/tool_cost_profile.md` and `weekly_progress/091626/tool_cost_exposure.md`:
+  ladder item 8 tested over three stages (893 single-shot trials, 80 multi-round runs, 24 s15
+  sessions); `scripts/tool_cost_{probe,loop,harness,analyze}.py`, `profile_run.py --tool-cost`,
+  traces in `traces/tool_cost/`.

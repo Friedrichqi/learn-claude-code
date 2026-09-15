@@ -34,7 +34,8 @@ passed its tests (24/24), every math answer was correct (24/24) and the file-Q&A
   is 5.5-9.2 s per round in team mode, i.e. **context maintenance is 42-58% of the lead's busy time**
   (6-22% in solo runs, which have one turn).
 - **The agent call is 93-99.9% of a round.** A regression over all 446 agent calls gives
-  `duration = 3.7 s + 0.033 ms x uncached prompt tokens + 17.4 ms x output tokens` (r2 0.96):
+  `duration = 3.7 s + 0.033 ms x uncached prompt tokens + 17.4 ms x output tokens` (r2 0.96), and a
+  direct prompt-size sweep run afterwards agrees at 0.038 ms per uncached token (section 2.5.1):
   a fixed provider component (9-52% of call time by group), **prefill of uncached tokens under 2%
   everywhere**, and decode 50-89%. Decode dominates reasoning rounds (math teammates 77%, solo math
   lead 89%); the fixed component dominates short tool-call rounds (lead 38-52%). The client-side
@@ -115,6 +116,8 @@ bytes a teammate fetched that another teammate had fetched first (exact (file, l
 - `scripts/latency_workloads.py`: workload prompts, sequential runner, scoring.
 - `scripts/latency_breakdown.py`: round reconstruction and all tables in this report
   (`--per-run`, `--tools`, `--json`).
+- `scripts/provider_probe.py`: direct probes of the provider used in section 2.5.1 (prefill sweep,
+  cached resends, decode rate, prefix-cache semantics, response headers).
 
 ### 1.3 Workloads
 
@@ -261,6 +264,44 @@ third to a half of all responses arrive in one burst after the model has finishe
 holds thinking and tool_use blocks back and streams only visible text. The regression on token
 counts is therefore the measure of prefill and decode used in the short answer.
 
+#### 2.5.1 Direct probe of the provider (2026-09-13)
+
+The regression coefficient was checked afterwards against two measurements that do not depend on it
+(`scripts/provider_probe.py --prefill`): a prompt-size sweep with the output length held fixed and
+no tools, so the provider streams incrementally and the first-block time is a real time to first
+token; and re-sending an identical prompt so the same tokens come back from the cache, where the
+difference in first-block time is what those tokens cost to prefill.
+
+| method | fixed part | per uncached token | implied prefill rate |
+|---|---:|---:|---:|
+| size sweep 460 -> 32,565 uncached tokens, 300-token output (r2 0.88) | 3.34 s | 0.0384 ms | 26,000 tok/s |
+| identical resend, 11,584 tokens served from cache | | 0.0342 ms saved | |
+| identical resend, 32,512 tokens served from cache | | 0.0416 ms saved | |
+| the regression above, 446 agent calls (r2 0.96) | 3.72 s | 0.033 ms | 30,000 tok/s |
+| direct probe of 2026-09-10, separate session | 4.6 s | 0.052 ms | 19,000 tok/s |
+
+Decode measured the same way is 81 tokens/s for 300-token outputs and 39 tokens/s for a 1,200-token
+output, i.e. 12-26 ms per token, bracketing the regression's 17.44 ms. Pooling the sweep's three
+repetitions gives a much weaker fit (0.027 ms/token, r2 0.08) than one clean sweep does, because the
+fixed component drifts by seconds between repetitions; that drift, not the token count, is what the
+low r2 of the per-group first-block fits above reflects.
+
+Three further facts the probe settled:
+
+- **The API exposes no timing, but the HTTP response does.** `usage` carries token counts only and
+  `cache_creation_input_tokens` is always null; the response headers carry `x-process-time`, the
+  server's own processing seconds. On a streaming 27k-token request it reads 2.2-2.7 s fresh against
+  1.0 s for the same prompt served from cache, so it tracks prefill, while the client waits
+  3.3-5.5 s for the first block. Two to three seconds of the fixed component is therefore outside
+  anything the server counts, which is why the intercept is a provider-and-evening property.
+- **The prompt cache is strictly prefix-based** (`--cache`): an identical resend came back 99.9%
+  cached, the same body behind a new prefix 0%, a unique block inserted mid-prompt 0%, and a
+  document never sent before 0% on each of two sends. Content is reusable only where it sits at the
+  same position in the same prefix.
+- **SDK retries can look like cache hits.** One nominally fresh call in an early sweep returned
+  99.8% cached with an elevated first-block time; the client retries twice by default and the retry
+  hits the entry its failed attempt created. The probe script disables retries for this reason.
+
 ### 2.6 The harness's own model calls
 
 **Auxiliary model calls made by the harness itself** (context maintenance: memory recall inside update_context before a lead call, memory extraction after a lead turn, summary compaction; pooled by group)
@@ -371,9 +412,11 @@ one user turn of 7.2 rounds on average plus 17.1 s of turn-end work.
    about 0.17 s per call, under 2% of the call; the fixed component (network, queueing, the
    provider's scheduling and first-token latency) and the decoded tokens are the rest. A KV-cache or
    prefix-reuse mechanism can therefore not shorten these rounds measurably; its value at this scale
-   is capacity (fewer resident copies) rather than latency. The prefill slope is consistent with the
-   0.052 ms/token direct probe of last week and with the 61-91% cache reads the provider already
-   delivers to teammates.
+   is capacity (fewer resident copies) rather than latency. Three independent measurements bracket
+   the slope at 0.033-0.042 ms/token (section 2.5.1, and the 0.052 ms/token probe of last week), and
+   the provider already serves 61-91% of teammate prompt tokens from its cache. Prefill turns into
+   seconds only above roughly 50k tokens per call, which is where this argument would have to be
+   re-made.
 2. **The harness's own model calls are the largest non-agent cost.** Turn-end memory extraction
    took 1,364 s over 24 runs, 35% of the total wall time and 8-58% of the lead's busy time per group,
    and it is serial with the lead's next turn because the turn holds the agent lock. In team runs
@@ -422,7 +465,9 @@ preparation 0.01 s except DC-S (1.85 s from memory recall, 0.40 calls per round)
   times between 1.5 and 6.9 s with no consistent effect of the tool definitions (means 2.7-2.8 s in
   three arms, 5.0-6.1 s in two); the harness calls sat at 5.6-6.1 s. The 3.2-4.1 s fixed intercept
   therefore reflects z.ai's scheduling and reasoning start-up on this evening (US Eastern), not the
-  harness; it would differ on another provider or at another time.
+  harness; it would differ on another provider or at another time. The server's own
+  `x-process-time` accounts for only part of it (2.2-2.7 s of a 3.3-5.5 s wait on a 27k-token
+  request), so between 2 and 3 s is queueing or transport that neither side attributes.
 - **Permission denials cost about one extra round per run.** 24 tool calls were denied across the
   24 runs: 15 `python3 -c` arithmetic checks whose quoted code contained a `>` comparison (a false
   positive of the driver's read-only filter, which treated it as a redirect; fixed in
@@ -500,6 +545,8 @@ python3 s15_integrated_harness/scripts/latency_workloads.py --rep r6 --mode team
 python3 s15_integrated_harness/scripts/latency_workloads.py --rep r4 --mode solo --repo /home/yq335/lanes/latency
 # tables (add --json OUT for the per-round data behind them)
 python3 s15_integrated_harness/scripts/latency_breakdown.py s15_integrated_harness/traces/latency_profiling --per-run --tools
+# the provider probes behind section 2.5.1 (about 25 calls; --headers alone is one call)
+python3 s15_integrated_harness/scripts/provider_probe.py --all --json /tmp/provider_probe.json
 ```
 
 Reference solutions for the three coding problems are in

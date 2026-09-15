@@ -1,0 +1,181 @@
+{
+  "probeA": {
+    "none/tool_desc": {
+      "cheap": 17,
+      "n": 32
+    },
+    "seconds/tool_desc": {
+      "cheap": 32,
+      "n": 32
+    },
+    "seconds/system_prompt": {
+      "cheap": 32,
+      "n": 32
+    },
+    "seconds/both": {
+      "cheap": 32,
+      "n": 32
+    },
+    "hardware/tool_desc": {
+      "cheap": 31,
+      "n": 32
+    },
+    "hardware/system_prompt": {
+      "cheap": 32,
+      "n": 32
+    },
+    "hardware/both": {
+      "cheap": 32,
+      "n": 32
+    },
+    "qualitative/tool_desc": {
+      "cheap": 32,
+      "n": 32
+    },
+    "qualitative/system_prompt": {
+      "cheap": 32,
+      "n": 32
+    },
+    "qualitative/both": {
+      "cheap": 32,
+      "n": 32
+    }
+  },
+  "probeB": {
+    "0.04": {
+      "cheap": 15,
+      "n": 32
+    },
+    "0.2": {
+      "cheap": 32,
+      "n": 32
+    },
+    "1.0": {
+      "cheap": 32,
+      "n": 32
+    },
+    "5.0": {
+      "cheap": 32,
+      "n": 32
+    },
+    "30.0": {
+      "cheap": 32,
+      "n": 32
+    },
+    "300.0": {
+      "cheap": 32,
+      "n": 32
+    }
+  },
+  "probeB_fit": {
+    "separated": true,
+    "smallest_ratio_tested": 5.000000000000001
+  },
+  "probeC": {
+    "None/0.0/none": {
+      "read_file_first": 14,
+      "n": 32
+    },
+    "read_file/0.05/seconds": {
+      "read_file_first": 17,
+      "n": 32
+    },
+    "read_file/5.0/seconds": {
+      "read_file_first": 14,
+      "n": 32
+    },
+    "read_file/60.0/seconds": {
+      "read_file_first": 11,
+      "n": 32
+    },
+    "read_file/5.0/hardware": {
+      "read_file_first": 19,
+      "n": 32
+    },
+    "read_file/5.0/qualitative": {
+      "read_file_first": 11,
+      "n": 32
+    },
+    "grep/5.0/seconds": {
+      "read_file_first": 20,
+      "n": 32
+    }
+  },
+  "probeD": {
+    "table=False,policy=False,budget=False": {
+      "read_file_first": 10,
+      "n": 32,
+      "mentions_cost": 0
+    },
+    "table=True,policy=False,budget=False": {
+      "read_file_first": 10,
+      "n": 31,
+      "mentions_cost": 1
+    },
+    "table=False,policy=True,budget=False": {
+      "read_file_first": 5,
+      "n": 30,
+      "mentions_cost": 0
+    },
+    "table=True,policy=True,budget=False": {
+      "read_file_first": 3,
+      "n": 32,
+      "mentions_cost": 5
+    },
+    "table=True,policy=True,budget=True": {
+      "read_file_first": 3,
+      "n": 32,
+      "mentions_cost": 22
+    }
+  },
+  "stage2": {
+    "plain": {
+      "n": 20,
+      "rounds": 2.8,
+      "read": 0.9,
+      "grep": 0.9,
+      "recall": 0.0,
+      "kb": 10.01474609375,
+      "bill": 4.551,
+      "real": 0.0,
+      "wall": 23.8582,
+      "correct": 19
+    },
+    "advertise": {
+      "n": 20,
+      "rounds": 2.7,
+      "read": 0.85,
+      "grep": 0.85,
+      "recall": 0.0,
+      "kb": 3.28837890625,
+      "bill": 4.3015,
+      "real": 0.0,
+      "wall": 18.82835,
+      "correct": 20
+    },
+    "enforce": {
+      "n": 20,
+      "rounds": 2.65,
+      "read": 0.75,
+      "grep": 0.85,
+      "recall": 0.0,
+      "kb": 3.938134765625,
+      "bill": 3.803,
+      "real": 3.803,
+      "wall": 24.10795,
+      "correct": 19
+    },
+    "both": {
+      "n": 20,
+      "rounds": 2.75,
+      "read": 0.75,
+      "grep": 0.9,
+      "recall": 0.0,
+      "kb": 4.873779296875,
+      "bill": 3.8145,
+      "real": 3.8145,
+      "wall": 24.22185,
+      "correct": 20
+    }
+  }
+}
