@@ -90,6 +90,69 @@ def is_mutating(command: str) -> bool:
     return bool(MUTATE_CMD.search(text))
 
 
+COST_POLICY = ("Tool calls are not free. Prefer the cheapest tool that can still complete the "
+               "step correctly.")
+SLOW_THRESHOLD_S = 1.0
+PCIE_GBPS = 25          # PCIe 4.0 x16, effective
+HBM_TBPS = 3.35         # HBM3
+
+
+def parse_tool_costs(spec: str | None) -> dict[str, float]:
+    costs: dict[str, float] = {}
+    for item in (spec or "").split(","):
+        item = item.strip()
+        if not item:
+            continue
+        name, _, value = item.partition("=")
+        costs[name.strip()] = float(value)
+    return costs
+
+
+def cost_note(seconds: float, framing: str) -> str:
+    """One sentence of advertised cost, in the requested wording."""
+    if framing == "seconds":
+        return f"Measured latency: {seconds:.2f} s per call."
+    if framing == "qualitative":
+        return ("This tool is slow." if seconds >= SLOW_THRESHOLD_S else "This tool is fast.")
+    if framing == "hardware":
+        if seconds >= SLOW_THRESHOLD_S:
+            gib = seconds * PCIE_GBPS / 1.0737
+            return (f"Each call stages about {gib:.0f} GiB from host DRAM across PCIe 4.0 x16 "
+                    f"({PCIE_GBPS} GB/s effective) into HBM3 before it can return.")
+        return (f"The working set for this tool is resident in HBM3 on the accelerator "
+                f"({HBM_TBPS} TB/s); a call performs no host transfer.")
+    raise ValueError(f"unknown framing {framing!r}")
+
+
+def annotate_tools(tools, costs: dict[str, float], default: float | None,
+                   framing: str, placement: str) -> tuple[list, str]:
+    """Return (tools with cost sentences appended, cost table for the system prompt).
+
+    Tools arrive as dicts from the harness tool tables; they are copied, never mutated in place,
+    so the harness's own BUILTIN_TOOLS/SUB_TOOLS stay clean across calls.
+    """
+    in_desc = placement in ("tool_desc", "both")
+    in_sys = placement in ("system_prompt", "both")
+    out, table = [], []
+    for tool in tools or []:
+        if not isinstance(tool, dict):
+            out.append(tool)
+            continue
+        name = tool.get("name")
+        seconds = costs.get(name, default)
+        if seconds is None:
+            out.append(tool)
+            continue
+        note = cost_note(seconds, framing)
+        copy = dict(tool)
+        if in_desc:
+            copy["description"] = f"{tool.get('description', '').rstrip()} {note}".strip()
+        out.append(copy)
+        table.append(f"- {name}: {note}")
+    return out, ("Tool cost table (measured on this host):\n" + "\n".join(table)
+                 if in_sys and table else "")
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--label", required=True, help="experiment label written into the trace run_start data")
@@ -118,6 +181,22 @@ def parse_args():
                         help="intervention: drop the per-second 'Current time' line from the lead system prompt")
     parser.add_argument("--context-limit", type=int, default=None,
                         help="intervention: override CONTEXT_LIMIT (chars) of the lead compaction pipeline")
+    parser.add_argument("--tool-cost", default=None,
+                        help="intervention: advertise a per-call latency in the tool descriptions, "
+                             "as 'name=seconds' pairs, e.g. 'read_file=5.0,bash=0.08'")
+    parser.add_argument("--tool-cost-default", type=float, default=None,
+                        help="advertised latency for every tool NOT named in --tool-cost "
+                             "(omit to annotate only the named tools)")
+    parser.add_argument("--tool-cost-framing", choices=["seconds", "qualitative", "hardware"],
+                        default="seconds",
+                        help="how the advertised cost is worded")
+    parser.add_argument("--tool-cost-placement", choices=["tool_desc", "system_prompt", "both"],
+                        default="tool_desc",
+                        help="where the cost is shown: in each tool description, in a cost table "
+                             "appended to the system prompt, or both")
+    parser.add_argument("--tool-cost-policy", action="store_true",
+                        help="also append a one-line cost-aware policy to the system prompt "
+                             "(exposing the cost is not the same as asking the agent to act on it)")
     parser.add_argument("--no-retry-429", action="store_true",
                         help="disable the driver-level retry of provider 429s (the harness itself retries only lead calls, 3x)")
     parser.add_argument("--trace-output", choices=["summary", "full"], default="summary",
@@ -293,6 +372,10 @@ def main() -> int:
                                 "reads_log": not args.no_reads_log, "stream": args.stream,
                                 "write_root": args.write_root, "sandbox_from": args.sandbox_from,
                                 "allow_python": args.allow_python, "prep_timing": not args.no_prep_timing,
+                                "tool_cost": args.tool_cost, "tool_cost_default": args.tool_cost_default,
+                                "tool_cost_framing": args.tool_cost_framing,
+                                "tool_cost_placement": args.tool_cost_placement,
+                                "tool_cost_policy": args.tool_cost_policy,
                                 "repo": str(REPO)})
     inputs_path = Path(str(trace.path).removesuffix(".jsonl") + ".inputs.jsonl")
     reads_path = Path(str(trace.path).removesuffix(".jsonl") + ".reads.jsonl")
@@ -364,6 +447,10 @@ def main() -> int:
 
     # -- input-composition profiler around the traced client ------------------------------
     traced_messages = mod.client.messages
+    tool_costs = parse_tool_costs(args.tool_cost)
+    if tool_costs or args.tool_cost_default is not None:
+        print(f"[profile] tool cost: {tool_costs or '{}'} default={args.tool_cost_default} "
+              f"framing={args.tool_cost_framing} placement={args.tool_cost_placement}", flush=True)
     stream_local = threading.local()
     if args.stream:
         traced_messages._raw_messages = StreamingMessages(traced_messages._raw_messages, stream_local)
@@ -403,6 +490,19 @@ def main() -> int:
                                           or text.startswith("<persisted-output>"))
 
     def profiled_create(**kwargs):
+        # -- advertised-tool-cost intervention ---------------------------------------------
+        # Rewriting the request here (rather than the harness's tool tables) annotates the lead,
+        # the teammates and the one-shot subagents in one place, and keeps the annotation out of
+        # the auxiliary calls that carry no tools at all (memory extraction, summarisation).
+        if (tool_costs or args.tool_cost_default is not None) and kwargs.get("tools"):
+            annotated, table = annotate_tools(kwargs["tools"], tool_costs,
+                                              args.tool_cost_default, args.tool_cost_framing,
+                                              args.tool_cost_placement)
+            kwargs = dict(kwargs, tools=annotated)
+            extra = "\n\n".join(part for part in
+                                 (table, COST_POLICY if args.tool_cost_policy else "") if part)
+            if extra:
+                kwargs["system"] = ((kwargs.get("system") or "") + "\n\n" + extra).strip()
         ctx = trace.capture_context()
         messages = kwargs.get("messages", []) or []
         system = kwargs.get("system", "")
