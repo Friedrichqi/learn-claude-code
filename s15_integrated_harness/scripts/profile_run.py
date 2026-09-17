@@ -57,7 +57,7 @@ import shutil
 import sys
 import threading
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -203,6 +203,24 @@ def parse_args():
                         help="HARNESS_TRACE_OUTPUT mode: 'full' stores every tool result verbatim in the trace")
     parser.add_argument("--no-reads-log", action="store_true",
                         help="do not write the <trace>.reads.jsonl content sidecar")
+    parser.add_argument("--prewarm", choices=["none", "oracle", "dag", "pollute", "summary"],
+                        default="none",
+                        help="emulate KV inheritance: give a teammate the file content a predecessor "
+                             "task already read, as a synthetic read_file tool_use/tool_result pair "
+                             "at the head of its history. 'dag' takes the predecessors' reads live "
+                             "from this run; 'oracle' takes them from --prewarm-spec; 'pollute' sends "
+                             "an equal-size irrelevant file; 'summary' sends the predecessors' result "
+                             "text instead of the bytes")
+    parser.add_argument("--prewarm-spec", default=None,
+                        help="JSON written by --prewarm-dump on a baseline run: per task-creation "
+                             "index, the reads to inject (used by oracle and to size pollute)")
+    parser.add_argument("--prewarm-pollute", default="s15_integrated_harness/ARCHITECTURE.md",
+                        help="file the pollute arm injects (truncated to the matched size)")
+    parser.add_argument("--prewarm-max-bytes", type=int, default=200_000,
+                        help="cap on injected bytes per teammate")
+    parser.add_argument("--prewarm-dump", default=None,
+                        help="write per-task read sets and result texts of this run to this JSON "
+                             "(this is how an oracle spec is built from a baseline run)")
     args = parser.parse_args()
     if args.sandbox_from and not args.write_root:
         parser.error("--sandbox-from requires --write-root")
@@ -365,7 +383,9 @@ def main() -> int:
                                   cwd=REPO, check=True).stdout.strip()
     except Exception:
         git_head = os.environ.get("PROFILE_GIT_HEAD")
-    trace.emit("profile_meta", {"label": args.label, "prompts": args.prompt,
+    trace.emit("profile_meta", {
+        "prewarm": {"arm": args.prewarm, "spec": args.prewarm_spec,
+                    "pollute": args.prewarm_pollute, "max_bytes": args.prewarm_max_bytes},"label": args.label, "prompts": args.prompt,
                                 "allow_writes": args.allow_writes, "driver": "scripts/profile_run.py",
                                 "no_timestamp": args.no_timestamp, "context_limit": mod.CONTEXT_LIMIT,
                                 "git_head": git_head, "trace_output": args.trace_output,
@@ -445,6 +465,209 @@ def main() -> int:
     hooks.insert(0, record_call)
     mod.CONSOLE.reader = lambda prompt: "y"
 
+    # -- context handoff: emulate inheriting a predecessor agent's KV ----------------------
+    # The provider cannot transfer KV, so we hand the successor the same TOKENS instead: the exact
+    # assistant tool_use / user tool_result pair a real read_file would have produced.  What that
+    # removes is the agent-loop round the successor would have spent opening the file; what it costs
+    # is prefill of bytes the baseline prefills one round later anyway.
+    prewarm_order: list[str] = []            # task ids in creation order (the spec's key)
+    prewarm_reads: dict[str, list[dict]] = defaultdict(list)   # task id -> reads it issued
+    prewarm_agent_reads: dict[str, list[dict]] = defaultdict(list)   # agent name -> reads it issued
+    prewarm_results: dict[str, str] = {}     # task id -> the result text it sent to the lead
+    prewarm_blocks: dict[str, list] = defaultdict(list)        # agent id -> injected messages
+    prewarm_done: dict[str, set] = defaultdict(set)            # agent id -> tasks already injected
+    prewarm_log: list[dict] = []
+    prewarm_skips: dict[str, int] = {}
+    prewarm_lock = threading.Lock()
+    prewarm_spec = {}
+    if args.prewarm_spec:
+        prewarm_spec = json.loads(Path(args.prewarm_spec).read_text(encoding="utf-8"))
+
+    def current_owner() -> str | None:
+        name = threading.current_thread().name
+        return name[len("teammate-"):] if name.startswith("teammate-") else None
+
+    def current_task(owner: str | None) -> str | None:
+        if not owner:
+            return None
+        assignment = mod.teammate_assignments.get(owner) or {}
+        return assignment.get("task_id")
+
+    original_create_task = mod.create_task
+
+    def traced_create_task(subject, description=""):
+        task = original_create_task(subject, description)
+        with prewarm_lock:
+            prewarm_order.append(task.id)
+        return task
+
+    mod.create_task = traced_create_task
+
+    original_send = mod.BUS.send
+
+    def traced_send(from_agent, to_agent, content, msg_type="message", metadata=None):
+        if msg_type == "result":
+            task_id = current_task(from_agent)
+            if task_id:
+                with prewarm_lock:
+                    prewarm_results[task_id] = content
+        return original_send(from_agent, to_agent, content, msg_type, metadata)
+
+    mod.BUS.send = traced_send
+
+    def record_read(block):
+        """Second PreToolUse hook: index every read by the task that issued it."""
+        if block.name not in {"read_file", "bash"}:
+            return None
+        task_id = current_task(current_owner())
+        if not task_id:
+            return None
+        payload = dict(block.input or {})
+        entry = ({"tool": "read_file", "path": payload.get("path"),
+                  "offset": payload.get("offset") or 0, "limit": payload.get("limit")}
+                 if block.name == "read_file" else
+                 {"tool": "bash", "command": payload.get("command", "")})
+        owner = current_owner()
+        with prewarm_lock:
+            if entry not in prewarm_reads[task_id]:
+                prewarm_reads[task_id].append(entry)
+            if owner and entry not in prewarm_agent_reads[owner]:
+                prewarm_agent_reads[owner].append(entry)
+        return None
+
+    hooks.insert(0, record_read)
+
+    def read_bytes(entry: dict) -> tuple[str, str] | None:
+        """Reproduce a recorded read with the harness's own reader, so the injected tokens are the
+        ones a real read would have produced."""
+        if entry.get("tool") != "read_file" or not entry.get("path"):
+            return None
+        text = mod.run_read(entry["path"], entry.get("limit"), entry.get("offset") or 0,
+                            cwd=mod.WORKDIR)
+        if text.startswith("Error:"):
+            return None
+        return entry["path"], text
+
+    def sources_for(task_id: str) -> list[str]:
+        try:
+            return list(mod.load_task(task_id).blockedBy)
+        except Exception:
+            return []
+
+    def spec_reads(task_id: str) -> list[dict]:
+        """The oracle arm's frozen read set, keyed by the task's creation index."""
+        try:
+            index = prewarm_order.index(task_id)
+        except ValueError:
+            return []
+        return (prewarm_spec.get("tasks") or {}).get(str(index), {}).get("reads", [])
+
+    def build_blocks(task_id: str) -> list[dict]:
+        """The (assistant tool_use, user tool_result) pairs to prepend for this task."""
+        arm = args.prewarm
+        entries: list[dict] = []
+        if arm == "oracle":
+            seen = set()
+            for entry in spec_reads(task_id):
+                key = (entry.get("tool"), entry.get("path"), entry.get("offset"), entry.get("limit"))
+                if key not in seen:
+                    seen.add(key)
+                    entries.append(entry)
+        elif arm in {"dag", "pollute"}:
+            # several predecessors usually read the SAME file; dedupe on (path, offset, limit) so a
+            # fan-in does not inject three copies of it
+            seen = set()
+            with prewarm_lock:
+                for source in sources_for(task_id):
+                    for entry in prewarm_reads.get(source, []):
+                        key = (entry.get("tool"), entry.get("path"), entry.get("offset"),
+                               entry.get("limit"), entry.get("command"))
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                        entries.append(entry)
+        elif arm == "summary":
+            with prewarm_lock:
+                texts = [prewarm_results.get(s) for s in sources_for(task_id)]
+            texts = [t for t in texts if t]
+            if not texts:
+                return []
+            joined = "\n\n".join(texts)[: args.prewarm_max_bytes]
+            return _pair("prior_result", {"from_tasks": sources_for(task_id)}, joined)
+        if arm == "pollute":
+            # match the size the content arm would have sent, with an irrelevant file
+            want = sum(len((read_bytes(e) or ("", ""))[1]) for e in entries if e.get("tool") == "read_file")
+            if not want:
+                return []
+            text = mod.run_read(args.prewarm_pollute, None, 0, cwd=mod.WORKDIR)[:want]
+            return _pair("read_file", {"path": args.prewarm_pollute}, text)
+        # do not send what the successor already holds: its own history is never cleared, so a file
+        # it read under an earlier task is still resident and re-sending it only costs prefill
+        owner = current_owner()
+        with prewarm_lock:
+            resident = {(e.get("path"), e.get("offset"), e.get("limit"))
+                        for e in prewarm_agent_reads.get(owner or "", [])
+                        if e.get("tool") == "read_file"}
+        blocks: list[dict] = []
+        budget = args.prewarm_max_bytes
+        skipped = 0
+        for entry in entries:
+            if (entry.get("path"), entry.get("offset"), entry.get("limit")) in resident:
+                skipped += 1
+                continue
+            got = read_bytes(entry)
+            if not got:
+                continue
+            path, text = got
+            if len(text) > budget:
+                break
+            budget -= len(text)
+            payload = {"path": path}
+            if entry.get("offset"):
+                payload["offset"] = entry["offset"]
+            if entry.get("limit"):
+                payload["limit"] = entry["limit"]
+            blocks.extend(_pair("read_file", payload, text))
+        prewarm_skips[task_id] = skipped
+        return blocks
+
+    def _pair(tool: str, payload: dict, text: str) -> list[dict]:
+        use_id = "prewarm_" + hashlib.sha1(
+            f"{tool}{json.dumps(payload, sort_keys=True)}{len(text)}".encode()).hexdigest()[:16]
+        return [{"role": "assistant",
+                 "content": [{"type": "tool_use", "id": use_id, "name": tool, "input": payload}]},
+                {"role": "user",
+                 "content": [{"type": "tool_result", "tool_use_id": use_id, "content": text}]}]
+
+    def prewarm_messages(ctx: dict, messages: list) -> list:
+        """Prepend this agent's inherited blocks after its opening user turn.  Blocks are built once
+        per (agent, task) and reused verbatim, so the injected prefix is byte-stable and the
+        provider's prefix cache behaves exactly as it does without the injection."""
+        agent = ctx.get("agent_id")
+        owner = current_owner()
+        task_id = current_task(owner)
+        if not agent or not messages:
+            return messages
+        if task_id and task_id not in prewarm_done[agent]:
+            prewarm_done[agent].add(task_id)
+            blocks = build_blocks(task_id)
+            if blocks:
+                prewarm_blocks[agent].extend(blocks)
+                chars = sum(len(b["content"][0].get("content", ""))
+                            for b in blocks if b["role"] == "user")
+                record = {"agent_id": agent, "owner": owner, "task_id": task_id,
+                          "arm": args.prewarm, "pairs": len(blocks) // 2, "chars": chars,
+                          "sources": sources_for(task_id),
+                          "skipped_resident": prewarm_skips.get(task_id, 0)}
+                prewarm_log.append(record)
+                trace.emit("context_injection", record)
+                print(f"  \033[36m[prewarm] {owner} task={task_id} arm={args.prewarm} "
+                      f"pairs={len(blocks) // 2} chars={chars}\033[0m", flush=True)
+        blocks = prewarm_blocks.get(agent)
+        if not blocks:
+            return messages
+        return [messages[0]] + blocks + list(messages[1:])
+
     # -- input-composition profiler around the traced client ------------------------------
     traced_messages = mod.client.messages
     tool_costs = parse_tool_costs(args.tool_cost)
@@ -504,6 +727,13 @@ def main() -> int:
             if extra:
                 kwargs["system"] = ((kwargs.get("system") or "") + "\n\n" + extra).strip()
         ctx = trace.capture_context()
+        # -- context-handoff injection (must precede the accounting below so the injected bytes are
+        # counted by the same instruments as everything else) -------------------------------------
+        if (args.prewarm != "none" and ctx.get("agent_kind") == "teammate"
+                and ctx.get("model_purpose") in (None, "teammate") and kwargs.get("messages")):
+            rewritten = prewarm_messages(ctx, kwargs["messages"])
+            if rewritten is not kwargs["messages"]:
+                kwargs = dict(kwargs, messages=rewritten)
         messages = kwargs.get("messages", []) or []
         system = kwargs.get("system", "")
         by_tool: Counter = Counter()
@@ -748,6 +978,15 @@ def main() -> int:
                                    "rate_limit_retries": dict(rate_limited),
                                    "wall_seconds": round(time.monotonic() - started, 1)})
         mod.close_tracing(status)
+        if args.prewarm_dump:
+            dump = {"label": args.label, "arm": args.prewarm,
+                    "tasks": {str(i): {"task_id": tid,
+                                       "reads": prewarm_reads.get(tid, []),
+                                       "result_chars": len(prewarm_results.get(tid, ""))}
+                              for i, tid in enumerate(prewarm_order)},
+                    "injections": prewarm_log}
+            Path(args.prewarm_dump).write_text(json.dumps(dump, indent=2), encoding="utf-8")
+            print(f"[profile] prewarm dump={args.prewarm_dump}", flush=True)
         try:
             archive_sandbox()
         except Exception as exc:
