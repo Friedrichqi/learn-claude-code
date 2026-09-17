@@ -1,0 +1,246 @@
+{
+  "label": "W5-L2-pollute-r2",
+  "arm": "pollute",
+  "tasks": {
+    "0": {
+      "task_id": "task_431f8d3c",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "grep -n \"def \" /home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py"
+        },
+        {
+          "tool": "bash",
+          "command": "sed -n 47,130p /home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py; echo ----; sed -n 267,330p /home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py; echo ----; sed -n 448,520p /home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py",
+          "offset": 40,
+          "limit": 140
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py",
+          "offset": 265,
+          "limit": 245
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py",
+          "offset": 512,
+          "limit": 85
+        }
+      ],
+      "result_chars": 1744
+    },
+    "1": {
+      "task_id": "task_e3e9ebda",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"^def \\|^    def \\|^@\" /home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py | head -40"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py",
+          "offset": 370,
+          "limit": 30
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py",
+          "offset": 440,
+          "limit": 120
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py",
+          "offset": 560,
+          "limit": 87
+        }
+      ],
+      "result_chars": 1599
+    },
+    "2": {
+      "task_id": "task_550380f1",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "ls /home/yq335/learn-claude-code/s15_integrated_harness/ && wc -l /home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"^def \\|^    def \\|^class \" /home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"def \\|class \" /home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 55,
+          "limit": 70
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 40,
+          "limit": 30
+        },
+        {
+          "tool": "bash",
+          "command": "python3 -c \"import ast,sys; src=open('/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py').read(); [print(n.lineno, n.name) for n in ast.walk(ast.parse(src)) if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef))]\""
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 60,
+          "limit": 2
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 61,
+          "limit": 2
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 83,
+          "limit": 3
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 84,
+          "limit": 3
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 148,
+          "limit": 8
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 116,
+          "limit": 6
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 136,
+          "limit": 6
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 142,
+          "limit": 9
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 173,
+          "limit": 4
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 187,
+          "limit": 13
+        }
+      ],
+      "result_chars": 1205
+    },
+    "3": {
+      "task_id": "task_1005f635",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py",
+          "offset": 0,
+          "limit": 120
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py",
+          "offset": 120,
+          "limit": 140
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py",
+          "offset": 260,
+          "limit": 120
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 60,
+          "limit": 10
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py",
+          "offset": 263,
+          "limit": 22
+        }
+      ],
+      "result_chars": 1100
+    },
+    "4": {
+      "task_id": "task_09969715",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "grep -n -i \"tool\" /home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py",
+          "offset": 191,
+          "limit": 80
+        }
+      ],
+      "result_chars": 1438
+    }
+  },
+  "injections": [
+    {
+      "agent_id": "agent-team_000002",
+      "owner": "W5polluter2-2",
+      "task_id": "task_1005f635",
+      "arm": "pollute",
+      "pairs": 1,
+      "chars": 44301,
+      "sources": [
+        "task_431f8d3c",
+        "task_e3e9ebda",
+        "task_550380f1"
+      ],
+      "skipped_resident": 0
+    }
+  ]
+}

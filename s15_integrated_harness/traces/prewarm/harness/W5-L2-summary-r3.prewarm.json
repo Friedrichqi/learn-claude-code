@@ -1,0 +1,174 @@
+{
+  "label": "W5-L2-summary-r3",
+  "arm": "summary",
+  "tasks": {
+    "0": {
+      "task_id": "task_84595192",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "find /home/yq335/learn-claude-code -maxdepth 2 -name \"trace_runtime.py\" 2>/dev/null"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"^def \\|^    def \\|^class \" /home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py 2>/dev/null | head -50"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/trace_runtime.py",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/trace_runtime.py",
+          "offset": 1,
+          "limit": 80
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/trace_runtime.py",
+          "offset": 81,
+          "limit": 80
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/trace_runtime.py",
+          "offset": 161,
+          "limit": 80
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/trace_runtime.py",
+          "offset": 241,
+          "limit": 80
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/trace_runtime.py",
+          "offset": 321,
+          "limit": 80
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/trace_runtime.py",
+          "offset": 401,
+          "limit": 80
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/trace_runtime.py",
+          "offset": 481,
+          "limit": 80
+        }
+      ],
+      "result_chars": 1783
+    },
+    "1": {
+      "task_id": "task_ba5cfdd7",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "grep -n \"def \" /home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py | head -60"
+        },
+        {
+          "tool": "bash",
+          "command": "wc -l /home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py"
+        },
+        {
+          "tool": "bash",
+          "command": "sed -n 377,445p /home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py; echo ----; sed -n 445,520p /home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py",
+          "offset": 370,
+          "limit": 240
+        }
+      ],
+      "result_chars": 970
+    },
+    "2": {
+      "task_id": "task_8e5416dc",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "ls /home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py && grep -n \"^def \\|^    def \\|^async def \" /home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 0,
+          "limit": null
+        }
+      ],
+      "result_chars": 1389
+    },
+    "3": {
+      "task_id": "task_2c5c72bb",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 170,
+          "limit": 30
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_view.py",
+          "offset": 394,
+          "limit": 3
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_stats.py",
+          "offset": 176,
+          "limit": 3
+        }
+      ],
+      "result_chars": 1235
+    },
+    "4": {
+      "task_id": "task_de51bcd5",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "grep -n \"write\\|append\\|open\\|dump\\|jsonl\\|def \\|tool\" /home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py | head -60"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py",
+          "offset": 0,
+          "limit": 400
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py",
+          "offset": 400,
+          "limit": 250
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"self.path = directory\\|os.open(\\|def _write\\|def emit\\|def span\\|def safe_value\\|def summarize_output\\|def finish_run\\|_SECRET_KEY = re\\|DEFAULT_PREVIEW_CHARS =\\|DEFAULT_ARGUMENT_CHARS =\\|buffering=1\\|model_request\\|def create(\" /home/yq335/learn-claude-code/s15_integrated_harness/trace_runtime.py"
+        }
+      ],
+      "result_chars": 1179
+    }
+  },
+  "injections": [
+    {
+      "agent_id": "agent-team_000002",
+      "owner": "inventory-b",
+      "task_id": "task_2c5c72bb",
+      "arm": "summary",
+      "pairs": 1,
+      "chars": 2361,
+      "sources": [
+        "task_84595192",
+        "task_ba5cfdd7",
+        "task_8e5416dc"
+      ],
+      "skipped_resident": 0
+    }
+  ]
+}

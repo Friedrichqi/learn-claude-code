@@ -484,7 +484,8 @@ class Run:
             self.sources[source] += 1
             item = {"agent": call["agent"], "kind": call["kind"], "name": self.agent_name.get(call["agent"], call["agent"]),
                     "t": call["t"], "tool": tool, "path": path, "command": command, "content": content,
-                    "bytes": len(content.encode("utf-8", "surrogatepass")), "source": source}
+                    "bytes": len(content.encode("utf-8", "surrogatepass")), "source": source,
+                    "call_id": call["id"]}
             if tool == "read_file":
                 item["offset"] = int(args.get("offset") or 0)
                 item["limit"] = args.get("limit")
@@ -1033,8 +1034,9 @@ def collect(targets: list[str]) -> list[Path]:
     for target in targets:
         path = Path(target)
         if path.is_dir():
-            files.extend(sorted(p for p in path.glob("*.jsonl")
-                                if not p.name.endswith((".inputs.jsonl", ".reads.jsonl"))))
+            # a run trace has exactly one dot in its name; every sidecar (.inputs/.reads/.requests/
+            # .records/.replay) has two, and ingesting one as a trace yields silent nonsense
+            files.extend(sorted(p for p in path.glob("*.jsonl") if p.name.count(".") == 1))
         elif path.exists():
             files.append(path)
     return files
