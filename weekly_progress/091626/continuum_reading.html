@@ -1,0 +1,587 @@
+<title>Continuum's Per-Turn Bubble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #eef1f5;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --ink: #141922;
+  --ink-2: #47505f;
+  --muted: #7a8391;
+  --hair: #d5dbe3;
+  --hair-2: #e6eaf0;
+  --lead: #2a78d6;
+  --lead-soft: #cde2fb;
+  --lead-ink: #1c5cab;
+  --mate: #eb6834;
+  --mate-soft: #fbd9c9;
+  --mate-ink: #b8451c;
+  --mate-4: #b8451c;
+  --shot: #1baf7a;
+  --shot-ink: #10805a;
+  --warn: #d03b3b;
+  --focus: #1c5cab;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1117;
+    --surface: #161c25;
+    --surface-2: #1c232e;
+    --ink: #eef1f5;
+    --ink-2: #b9c1cd;
+    --muted: #8791a0;
+    --hair: #2b3441;
+    --hair-2: #232b36;
+    --lead: #3987e5;
+    --lead-soft: #1c355a;
+    --lead-ink: #8dbcf5;
+    --mate: #d95926;
+    --mate-soft: #4a2416;
+    --mate-ink: #f0a17e;
+    --mate-4: #f29d76;
+    --shot: #199e70;
+    --shot-ink: #4ec99e;
+    --warn: #e66767;
+    --focus: #8dbcf5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1117;
+  --surface: #161c25;
+  --surface-2: #1c232e;
+  --ink: #eef1f5;
+  --ink-2: #b9c1cd;
+  --muted: #8791a0;
+  --hair: #2b3441;
+  --hair-2: #232b36;
+  --lead: #3987e5;
+  --lead-soft: #1c355a;
+  --lead-ink: #8dbcf5;
+  --mate: #d95926;
+  --mate-soft: #4a2416;
+  --mate-ink: #f0a17e;
+  --mate-4: #f29d76;
+  --shot: #199e70;
+  --shot-ink: #4ec99e;
+  --warn: #e66767;
+  --focus: #8dbcf5;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { margin: 0; font-family: var(--display); font-weight: 700; letter-spacing: -0.015em; text-wrap: balance; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; }
+a { color: var(--lead-ink); text-decoration-color: color-mix(in srgb, var(--lead) 45%, transparent); text-underline-offset: 2px; }
+a:hover { text-decoration-color: var(--lead); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+code, .mono { font-family: var(--mono); font-size: 0.9em; }
+em { font-style: italic; }
+strong, b { font-weight: 600; }
+
+/* ---------- shell ---------- */
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-inline: 20px;
+  padding-block: 0 72px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+@media (min-width: 1000px) {
+  .wrap { grid-template-columns: 178px minmax(0, 1fr); gap: 52px; align-items: start; }
+}
+
+/* ---------- masthead ---------- */
+.masthead {
+  grid-column: 1 / -1;
+  padding-block: 48px 30px;
+  border-bottom: 1px solid var(--hair);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.kicker {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px;
+  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.kicker .mono { letter-spacing: 0; font-size: 11.5px; color: var(--ink-2); }
+.masthead h1 { font-size: clamp(34px, 5.4vw, 54px); line-height: 1.04; font-weight: 800; max-width: 22ch; }
+.masthead h1 .thin { font-weight: 500; color: var(--muted); }
+.standfirst { font-size: clamp(17px, 2.1vw, 20px); line-height: 1.5; color: var(--ink-2); max-width: 62ch; }
+.byline {
+  display: flex; flex-wrap: wrap; gap: 4px 28px;
+  font-size: 13px; color: var(--muted); padding-top: 4px;
+}
+.byline b { display: block; color: var(--ink); font-weight: 500; font-size: 13px; }
+
+/* ---------- rail ---------- */
+.rail { display: none; }
+@media (min-width: 1000px) {
+  .rail {
+    display: block; position: sticky; top: 28px;
+    font-size: 13px; line-height: 1.45;
+    border-left: 2px solid var(--hair);
+    padding-left: 14px;
+  }
+  .rail ol { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+  .rail a { display: grid; grid-template-columns: 20px 1fr; gap: 6px; color: var(--ink-2); text-decoration: none; }
+  .rail a:hover { color: var(--lead-ink); }
+  .rail a .n { font-family: var(--mono); font-size: 11.5px; color: var(--muted); padding-top: 1px; }
+  .rail .tail { margin-top: 20px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+}
+
+/* ---------- article ---------- */
+article { display: flex; flex-direction: column; gap: 46px; min-width: 0; }
+section { display: flex; flex-direction: column; gap: 18px; scroll-margin-top: 24px; }
+.sec-head { display: flex; flex-direction: column; gap: 8px; }
+.sec-num {
+  font-family: var(--mono); font-size: 12px; color: var(--lead-ink);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+section h2 { font-size: clamp(24px, 3.2vw, 31px); line-height: 1.16; max-width: 34ch; }
+section h3 { font-family: var(--display); font-size: 18px; line-height: 1.3; }
+.prose { max-width: 68ch; font-size: 16px; }
+.prose + .prose { margin-top: -4px; }
+
+/* problems as a typed list */
+.findings { display: flex; flex-direction: column; gap: 16px; }
+.finding {
+  display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 4px 18px;
+  padding-bottom: 16px; border-bottom: 1px solid var(--hair-2);
+}
+.finding:last-child { border-bottom: 0; padding-bottom: 0; }
+.finding .tagno {
+  font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--mate-ink);
+  padding-top: 3px;
+}
+.finding h3 { grid-column: 2; }
+.finding .prose { grid-column: 2; }
+.finding.key .tagno { color: var(--lead-ink); }
+@media (max-width: 620px) {
+  .finding { grid-template-columns: 1fr; gap: 6px; }
+  .finding h3, .finding .prose { grid-column: 1; }
+}
+
+/* pull quote / tldr */
+.tldr {
+  background: var(--surface);
+  border-left: 5px solid var(--lead);
+  padding: 26px 30px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.tldr p {
+  font-family: var(--display); font-weight: 500;
+  font-size: clamp(18px, 2.5vw, 23px); line-height: 1.42; letter-spacing: -0.012em;
+  max-width: 54ch;
+}
+.tldr .mono { font-size: 0.82em; }
+
+/* callout */
+.callout {
+  background: var(--surface-2); border: 1px solid var(--hair-2);
+  padding: 18px 22px; display: flex; flex-direction: column; gap: 10px;
+}
+.callout .label { font-size: 11.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--mate-ink); font-weight: 600; }
+.callout .prose { font-size: 15px; }
+
+/* the cost model */
+.model { display: flex; flex-direction: column; gap: 14px; }
+.eq {
+  background: var(--surface); border: 1px solid var(--hair);
+  padding: 16px 20px; display: flex; flex-direction: column; gap: 7px;
+  overflow-x: auto;
+}
+.eq .line { font-family: var(--mono); font-size: 14.5px; white-space: nowrap; color: var(--ink); }
+.eq .line b { color: var(--lead-ink); font-weight: 500; }
+.eq .line .cost { color: var(--mate-ink); }
+.eq .gloss { font-size: 13.5px; color: var(--muted); line-height: 1.5; white-space: normal; }
+.eta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 720px) { .eta { grid-template-columns: 1fr; } }
+.eta .case {
+  background: var(--surface); border: 1px solid var(--hair-2); border-top: 3px solid var(--hair);
+  padding: 13px 15px; display: flex; flex-direction: column; gap: 5px;
+}
+.eta .case.one { border-top-color: var(--shot); }
+.eta .case.zero { border-top-color: var(--muted); }
+.eta .case.neg { border-top-color: var(--mate); }
+.eta .v { font-family: var(--mono); font-size: 14px; font-weight: 500; }
+.eta .what { font-size: 13.5px; line-height: 1.45; color: var(--ink-2); }
+.eta .what b { color: var(--ink); }
+
+/* figures */
+figure { margin: 0; display: flex; flex-direction: column; gap: 12px; }
+figure svg { width: 100%; max-width: 100%; height: auto; display: block; }
+.figbox { background: var(--surface); border: 1px solid var(--hair); padding: 18px 20px 14px; }
+figcaption { font-size: 13.5px; line-height: 1.5; color: var(--muted); max-width: 78ch; }
+figcaption b { color: var(--ink-2); }
+svg text { font-family: var(--body); fill: var(--ink); }
+svg .t-title { font-family: var(--display); font-weight: 700; }
+svg .t-mono { font-family: var(--mono); }
+svg .t-muted { fill: var(--muted); }
+svg .t-ink2 { fill: var(--ink-2); }
+svg .t-lead { fill: var(--lead-ink); }
+svg .t-mate { fill: var(--mate-ink); }
+svg .box-lead { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.2; }
+svg .box-mate { fill: var(--mate-soft); stroke: var(--mate); stroke-width: 1.2; }
+svg .box-dash { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+svg .edge-dash { stroke: var(--muted); stroke-width: 1.1; fill: none; stroke-dasharray: 4 3; }
+svg .edge-mate { stroke: var(--mate); stroke-width: 1.4; fill: none; }
+
+/* tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--hair); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--hair-2); vertical-align: top; }
+thead th {
+  font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
+  font-weight: 500; border-bottom: 1px solid var(--hair); white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: 0; }
+td.n, th.n { text-align: right; font-family: var(--mono); font-size: 13px; }
+td small { display: block; font-family: var(--mono); font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+tr.hi td { background: var(--surface-2); }
+.yes { color: var(--shot-ink); font-weight: 600; }
+.no { color: var(--muted); }
+
+/* lists */
+.bullets { display: flex; flex-direction: column; gap: 11px; list-style: none; max-width: 68ch; }
+.bullets li { padding-left: 18px; position: relative; font-size: 15.5px; line-height: 1.55; }
+.bullets li::before {
+  content: ""; position: absolute; left: 0; top: 0.62em;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--muted);
+}
+.bullets.num { counter-reset: c; }
+.bullets.num li { padding-left: 30px; }
+.bullets.num li::before {
+  counter-increment: c; content: counter(c); background: none; border-radius: 0;
+  width: auto; height: auto; top: 0; font-family: var(--mono); font-size: 12.5px; color: var(--mate-ink);
+}
+.bullets li b { font-weight: 600; }
+
+/* colophon */
+.colophon {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--hair);
+  padding-top: 22px;
+  display: flex; flex-wrap: wrap; gap: 10px 34px;
+  font-size: 13px; color: var(--muted); line-height: 1.55;
+}
+.colophon p { max-width: 58ch; }
+.colophon .mono { font-size: 12px; color: var(--ink-2); }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker">
+      <span>Paper read</span>
+      <span class="mono">arXiv:2511.02230v7 [cs.OS] · PVLDB 20(1), 2027</span>
+      <span class="mono">read 2026-09-16</span>
+    </div>
+    <h1>Continuum's <span class="thin">per-turn</span> bubble</h1>
+    <p class="standfirst">An inference engine frees a request's KV cache the moment decoding ends, because it assumes the request is done. For a ReAct agent, "decoding ended" means "about to call a tool" — and the same 70,000-token context returns about a second later. Continuum prices what that mistake costs, and finds a term nobody had modelled.</p>
+    <div class="byline">
+      <div><b>Paper</b>Li, He, Mang, Q. Zhang, Mao, Chen, Zhou, H. Zhang, Cheung, Gonzalez, Stoica</div>
+      <div><b>Affiliations</b>UC Berkeley · Stanford · Tsinghua</div>
+      <div><b>Code</b><span class="mono">github.com/Hanchenli/vllm-continuum</span></div>
+    </div>
+  </header>
+
+  <nav class="rail" aria-label="Sections">
+    <ol>
+      <li><a href="#problems"><span class="n">01</span><span>The problems</span></a></li>
+      <li><a href="#prior"><span class="n">02</span><span>Why prior work misses them</span></a></li>
+      <li><a href="#method"><span class="n">03</span><span>The method</span></a></li>
+      <li><a href="#tldr"><span class="n">04</span><span>One sentence</span></a></li>
+      <li><a href="#caveats"><span class="n">05</span><span>Caveats</span></a></li>
+      <li><a href="#us"><span class="n">06</span><span>What it changes for us</span></a></li>
+    </ol>
+    <p class="tail">Full notes in <span class="mono">weekly_progress/091626/continuum_paper_reading.md</span></p>
+  </nav>
+
+  <article>
+
+    <!-- ============ 1 ============ -->
+    <section id="problems">
+      <div class="sec-head">
+        <p class="sec-num">01 · The problems it names</p>
+        <h2>End-of-turn eviction, and the bubble it charges every turn</h2>
+      </div>
+
+      <figure>
+        <div class="figbox">
+          <svg viewBox="-34 0 714 284" role="img" aria-label="Three timelines of one turn boundary. Under vLLM the KV cache is evicted when the tool call is emitted, so the next request pays a re-prefill and then a queueing bubble waiting for GPU memory. InferCept with fast DRAM offload shrinks the reload but leaves the queueing bubble unchanged. Continuum pins the KV for a computed time-to-live, so the next request resumes as soon as the tool returns.">
+            <line class="edge-dash" x1="210" y1="48" x2="210" y2="236"></line>
+            <line class="edge-dash" x1="262" y1="48" x2="262" y2="236"></line>
+            <text class="t-muted" x="206" y="42" font-size="10" text-anchor="end">tool call emitted</text>
+            <text class="t-muted" x="266" y="42" font-size="10">tool returns</text>
+            <text class="t-muted t-mono" x="660" y="42" font-size="10" text-anchor="end">time →</text>
+
+            <text class="t-title" x="90" y="76" font-size="11.5" text-anchor="end">vLLM, SGLang</text>
+            <text class="t-muted t-mono" x="90" y="88" font-size="9.5" text-anchor="end">end-of-turn eviction</text>
+            <rect class="box-lead" x="100" y="66" width="110" height="26" rx="2"></rect>
+            <text x="155" y="83" font-size="11" text-anchor="middle">LLM request i</text>
+            <rect class="box-dash" x="210" y="66" width="52" height="26" rx="2"></rect>
+            <text class="t-ink2" x="236" y="77" font-size="10" text-anchor="middle">tool</text>
+            <text class="t-ink2 t-mono" x="236" y="88" font-size="9.5" text-anchor="middle">925 ms</text>
+            <rect class="box-mate" x="262" y="66" width="78" height="26" rx="2"></rect>
+            <text class="t-mate" x="301" y="77" font-size="10" text-anchor="middle">re-prefill</text>
+            <text class="t-mate t-mono" x="301" y="88" font-size="9.5" text-anchor="middle">70k tok</text>
+            <rect x="340" y="66" width="100" height="26" rx="2" fill="var(--mate)" stroke="var(--mate-4)" stroke-width="1"></rect>
+            <text x="390" y="77" font-size="10.5" text-anchor="middle" fill="#ffffff" font-weight="600">queue bubble</text>
+            <text x="390" y="88" font-size="9.5" text-anchor="middle" fill="#ffffff" class="t-mono">waits for HBM</text>
+            <rect class="box-lead" x="440" y="66" width="110" height="26" rx="2"></rect>
+            <text x="495" y="83" font-size="11" text-anchor="middle">LLM request i+1</text>
+            <text class="t-muted t-mono" x="558" y="83" font-size="10">… × 10.9 turns</text>
+
+            <text class="t-title" x="90" y="144" font-size="11.5" text-anchor="end">InferCept</text>
+            <text class="t-muted t-mono" x="90" y="156" font-size="9.5" text-anchor="end">+ fast DRAM offload</text>
+            <text class="t-mate t-mono" x="277" y="127" font-size="9.5" text-anchor="middle">reload</text>
+            <line class="edge-dash" x1="277" y1="130" x2="277" y2="134"></line>
+            <rect class="box-lead" x="100" y="134" width="110" height="26" rx="2"></rect>
+            <text x="155" y="151" font-size="11" text-anchor="middle">LLM request i</text>
+            <rect class="box-dash" x="210" y="134" width="52" height="26" rx="2"></rect>
+            <text class="t-ink2" x="236" y="151" font-size="10" text-anchor="middle">tool</text>
+            <rect class="box-mate" x="262" y="134" width="30" height="26" rx="2"></rect>
+            <rect x="292" y="134" width="100" height="26" rx="2" fill="var(--mate)" stroke="var(--mate-4)" stroke-width="1"></rect>
+            <text x="342" y="145" font-size="10.5" text-anchor="middle" fill="#ffffff" font-weight="600">queue bubble</text>
+            <text x="342" y="156" font-size="9.5" text-anchor="middle" fill="#ffffff" class="t-mono">unchanged</text>
+            <rect class="box-lead" x="392" y="134" width="110" height="26" rx="2"></rect>
+            <text x="447" y="151" font-size="11" text-anchor="middle">LLM request i+1</text>
+            <text class="t-mate" x="510" y="147" font-size="10">their Fig. 4: total wait</text>
+            <text class="t-mate" x="510" y="159" font-size="10">≈ vanilla vLLM</text>
+
+            <text class="t-title" x="90" y="212" font-size="11.5" text-anchor="end">Continuum</text>
+            <text class="t-muted t-mono" x="90" y="224" font-size="9.5" text-anchor="end">TTL pin</text>
+            <rect x="210" y="188" width="82" height="7" rx="2" fill="var(--lead)"></rect>
+            <text class="t-lead t-mono" x="210" y="181" font-size="10">KV pinned for τ*</text>
+            <rect class="box-lead" x="100" y="202" width="110" height="26" rx="2"></rect>
+            <text x="155" y="219" font-size="11" text-anchor="middle">LLM request i</text>
+            <rect class="box-dash" x="210" y="202" width="52" height="26" rx="2"></rect>
+            <text class="t-ink2" x="236" y="219" font-size="10" text-anchor="middle">tool</text>
+            <rect class="box-lead" x="262" y="202" width="110" height="26" rx="2"></rect>
+            <text x="317" y="219" font-size="11" text-anchor="middle">LLM request i+1</text>
+            <text class="t-lead" x="380" y="219" font-size="10">resumes at once</text>
+
+            <line class="edge-mate" x1="262" y1="252" x2="440" y2="252"></line>
+            <line class="edge-mate" x1="262" y1="246" x2="262" y2="258"></line>
+            <line class="edge-mate" x1="440" y1="246" x2="440" y2="258"></line>
+            <text class="t-mate" x="351" y="272" font-size="10.5" text-anchor="middle" font-weight="600">removed on every one of ~11 turns</text>
+          </svg>
+        </div>
+        <figcaption>One turn boundary, three policies, one time axis; block widths are schematic and the labels carry the measured magnitudes. <b>Row B is the paper's central claim:</b> cheap reload cannot remove a bubble caused by memory contention, so the bubble is paid per turn and accumulates linearly in turn count. If the tool overruns τ*, Continuum drops the pin rather than holding it.</figcaption>
+      </figure>
+
+      <div class="findings">
+        <div class="finding">
+          <p class="tagno">P1</p>
+          <h3>Turn-based eviction re-prefills a very long prefix, about eleven times per program</h3>
+          <p class="prose">vLLM and SGLang free a request's KV blocks as soon as decoding ends if anything is waiting. When the tool returns, the engine must redo the full prefill, or reload from DRAM where offloading is on. Their illustrative SWE-agent trace has model steps of 1.3–5.2 s separated by tool calls of 8 ms (<span class="mono">sed</span>), 10 ms, and 137 ms (<span class="mono">grep</span>) — with one 14 s <span class="mono">pytest</span>.</p>
+        </div>
+        <div class="finding key">
+          <p class="tagno">P2</p>
+          <h3>Per-turn queueing delay — the term nobody had modelled</h3>
+          <p class="prose">Even when reload is free, an evicted program pays a scheduling bubble every turn, because its next request must re-enter the waiting queue and wait for GPU <em>memory</em> to be released by other requests' in-flight prefill and decode. Three properties make it the paper's real contribution: it <b>survives fast offloading</b>, since bandwidth cannot fix a scheduling problem; it <b>accumulates linearly in turns</b>, exactly the regime agents operate in; and it is <b>invisible to offline profiling</b>, because it depends on live scheduler state — which is precisely why every prior cost model leaves it out. It also destroys program ordering, and raising the returning request's priority does not help, because it is blocked by computation already resident on the GPU rather than by queue position.</p>
+        </div>
+        <div class="finding">
+          <p class="tagno">P3</p>
+          <h3>Tool durations are long-tailed, so any static "preserve" is unsafe</h3>
+          <p class="prose">The slowest 10% of BFCL <span class="mono">fetch_url</span> calls account for <b>52.5%</b> of total delay; the slowest 10% of SWE-Bench <span class="mono">cd</span> calls account for <b>94.1%</b>. Pinning "until the next request arrives" therefore lets one hung tool hold GPU memory indefinitely, and in the limit every block is pinned by a program whose tool has not returned — the scheduling loop deadlocks.</p>
+        </div>
+        <div class="finding">
+          <p class="tagno">P4</p>
+          <h3>The TTL is a two-sided trap</h3>
+          <p class="prose">Too long, and pinned KV blocks other requests and costs throughput. Too short, and the cache is evicted just before the tool returns — so you paid the memory occupancy <em>and</em> still pay the prefill and the bubble, strictly worse than never pinning. This is what forces a real cost model rather than a tuned constant.</p>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <caption class="sr-only" hidden>Workload statistics from 100 mini-swe-agent and 100 BFCL v4 traces</caption>
+          <thead>
+            <tr><th>workload</th><th class="n">turns / program</th><th class="n">tool time (ms)</th><th class="n">tokens / program</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>SWE-Bench <small>100 mini-swe-agent traces</small></td><td class="n">10.9 ± 2.1</td><td class="n">925 ± 3,550</td><td class="n">70,126 ± 19,732</td></tr>
+            <tr><td>BFCL v4 <small>Web Search category</small></td><td class="n">6.3 ± 2.3</td><td class="n">1,923 ± 2,133</td><td class="n">93,256 ± 68,687</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose" style="font-size:14px;color:var(--muted)">Both workloads were collected with GPT-5 as the base model, "for the better model capabilities to ensure that the workflow generated are mostly correct." Note the standard deviations: the mean tool call is under two seconds, and its spread is larger than itself.</p>
+
+      <p class="prose">One further observation licenses the scheduling half of the design: expected <em>remaining</em> tokens fall as a program advances, on both workloads. So "prioritise programs that arrived earlier, or have executed more turns" approximates clairvoyant shortest-remaining-time-first — which is where the <span class="mono">η</span> term in §03 comes from.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section id="prior">
+      <div class="sec-head">
+        <p class="sec-num">02 · Why prior work does not solve it</p>
+        <h2>Everyone has one of the three properties; nobody had all three</h2>
+      </div>
+
+      <p class="prose">The paper reduces the field to three axes — does the system retain KV across the tool pause, does it model per-turn queueing delay, does it bound how long retention lasts. Reproduced from their Table 1:</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>system</th><th>retains KV</th><th>models queueing delay</th><th>bounds retention</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>vLLM</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+            <tr><td>Autellix <small>program-level attained service</small></td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+            <tr><td>Pie <small>SOSP 2025</small></td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td></tr>
+            <tr><td>InferCept <small>ICML 2024</small></td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td></tr>
+            <tr class="hi"><td><b>Continuum</b></td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ul class="bullets">
+        <li><b>InferCept</b> is the closest work and the one they argue against hardest: right mechanism, wrong policy. Its <span class="mono">preserve</span> compares reload cost against GPU occupancy <em>for the immediate next turn only</em>, so with non-blocking LMCache offload reload is cheap and the condition <b>rarely fires</b> — the program is evicted and eats the bubble InferCept never modelled. And the pin is static and unbounded, which P3 turns into memory waste and deadlock. Their verdict: "impractical for real-world deployment."</li>
+        <li><b>Autellix</b> gets program-level scheduling right but <b>keeps end-of-turn eviction entirely</b>, so it never addresses retention. Its heuristic — longer attained service implies longer remaining — is also empirically wrong on SWE-Bench, where it loses to plain vLLM even though it wins on BFCL.</li>
+        <li><b>Pie</b> is mechanism without policy: programmable handlers let a developer express custom tool handling, but the developer must hand-design scheduling per agent, and nothing adapts to dynamic tool latency.</li>
+        <li><b>Parrot, Alto and Teola/Ayo</b> are excluded by construction. All assume a static or deterministically defined DAG, and a ReAct agent's dependency graph only exists at runtime — the next tool depends on the last tool's output.</li>
+        <li><b>Per-request schedulers</b> — Apt-Serve, AlignedServe, Tempo — optimise individual requests, prefix-aware batching, or mixed-SLO classes, and <b>Cache-Craft</b> reuses chunk caches for RAG documents rather than request-specific agent state spanning a pause.</li>
+        <li><b>The whole offloading line</b> (LMCache, AttentionStore, CacheGen, CacheBlend, HiCache) is orthogonal, and the paper proves it rather than asserting it: gains hold on top of DRAM offload and on top of SSD offload at both 400 GB and 800 GB.</li>
+        <li><b>Classical TTL work</b> (DNS, CDN, memcached) bounds <em>staleness</em> over independent entries with semantic correctness constraints. Here entries are coupled through memory pressure, prefill cost and scheduling fairness — hence the claim to be the first system to set a KV TTL from predicted tool duration, scheduling-side delay propagation and workload pattern.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section id="method">
+      <div class="sec-head">
+        <p class="sec-num">03 · The method</p>
+        <h2>A time-to-live priced in seconds, not tuned as a constant</h2>
+      </div>
+
+      <p class="prose">Everything is denominated in seconds of job-completion latency, so cost and benefit are directly comparable. The cost of pinning is opportunity cost: <span class="mono">MemUsage(r)/M</span> is how many average-sized requests get blocked, under the stated assumption that the queue is always backlogged enough for that blocking to be real.</p>
+
+      <div class="model">
+        <div class="eq">
+          <p class="line"><span class="cost">Cost(τ, r)</span> = (MemUsage(r) / M) · τ</p>
+          <p class="line"><b>Benefit(r)</b> = (MemUsage(r) / M) · Prefill-Reload(r) &nbsp;+&nbsp; (T / M) · MemUsage(r) · η</p>
+          <p class="gloss">The second term is the one prior policies omit. <span class="mono">Prefill-Reload</span> comes from a sub-ten-minute offline profile per model and hardware pair — offload bandwidth, plus a quadratic fit of prefill time against context length. <span class="mono">T</span> is a sliding-window average of the queueing delay evicted requests actually experienced, measured <em>online</em>, which is the only way to capture it at all.</p>
+        </div>
+        <div class="eq">
+          <p class="line">τ* = argmax<sub>τ</sub> &nbsp; P(τ, f) · <b>Benefit(r)</b> − <span class="cost">Cost(τ, r)</span></p>
+          <p class="line">&nbsp;&nbsp;&nbsp;= argmax<sub>τ</sub> &nbsp; P(τ, f) · ( T·η + Prefill-Reload(r) ) − τ</p>
+          <p class="gloss">The shared <span class="mono">MemUsage(r)/M</span> factor cancels, which is why the implementation only needs <span class="mono">T</span> and <span class="mono">P</span>. <span class="mono">P(τ, f)</span> is the empirical CDF of tool <span class="mono">f</span>'s historical durations, and the argmax is solved by enumerating the observed durations — plus τ = 0, meaning "do not pin" — as candidates. Cold start falls back through three tiers with threshold K = 100: per-tool CDF, then a global CDF over all tools, then a fixed default derived from the same model under an Exp(1) duration and η = 1.</p>
+        </div>
+      </div>
+
+      <h3>The memoryfulness factor is the idea worth stealing</h3>
+      <p class="prose"><span class="mono">η = −Corr(k, N − k)</span> over requests already served and requests remaining, per program. In one scalar it says: <em>the value of preserving program continuity is exactly how predictable the remaining work is.</em></p>
+      <div class="eta">
+        <div class="case one">
+          <p class="v">η = 1</p>
+          <p class="what"><b>Fixed turn count.</b> Corr(k, −k) = −1, so preserving order genuinely approximates shortest-job-first and the queueing saving is real.</p>
+        </div>
+        <div class="case zero">
+          <p class="v">η = 0</p>
+          <p class="what"><b>Geometric, memoryless.</b> Expected remaining work is constant regardless of progress, so keeping order buys nothing and the queueing term vanishes.</p>
+        </div>
+        <div class="case neg">
+          <p class="v">η &lt; 0</p>
+          <p class="what"><b>Anti-memoryful.</b> Progress reveals <em>more</em> remaining work, so serve each program briefly and switch often. Designed for; never observed in their traces.</p>
+        </div>
+      </div>
+
+      <h3>Scheduling and system</h3>
+      <ul class="bullets">
+        <li><b>Priority is a multi-key tuple</b>, in order: preempted requests first, as in stock vLLM; then requests pinned within their TTL window; then <b>program-level arrival time</b> — first-come-first-serve over programs rather than requests, which is what restores the continuity eviction destroys.</li>
+        <li><b>About 1,000 lines of Python on vLLM.</b> Clients attach a <span class="mono">program_id</span>; a Tool-Call Handler runs on request arrival and completion through three hooks, parses the OpenAI function-call schema (for SWE-Bench, the first word inside the bash block), and returns a TTL.</li>
+        <li><b>Tool duration is measured purely server-side</b>, as the inter-request interval within a program — no client instrumentation. Worth marking: that interval contains everything between the two requests, not only tool execution.</li>
+        <li><b>Unpinning</b> is scanned at the head of every scheduling step, but skips programs whose follow-up request is already queued, so a cache whose consumer has arrived is not evicted out from under it. Program termination unpins proactively.</li>
+        <li><b>Deadlock is broken</b> by evicting pinned victims with the latest program arrival time until the head of the queue fits.</li>
+      </ul>
+
+      <h3>Evaluation</h3>
+      <p class="prose">Trace replay with Poisson program arrivals, on Llama-3.1 8B and 70B and Gemma-3 12B, across A100, H100 and B200; baselines are vLLM, PLAS-from-Autellix reimplemented with LMCache (Autellix+), and InferCept reimplemented with its cost model updated for non-blocking offload.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>setting</th><th>result</th></tr></thead>
+          <tbody>
+            <tr><td>Trace replay <small>SWE-Bench · BFCL v4 · OpenHands</small></td><td><b>1.12–3.66×</b> lower delay, <b>1.10–3.22×</b> higher throughput; better P90 and P95</td></tr>
+            <tr><td>Turn scaling <small>1× to 5×, 10.9 → 50.6 turns</small></td><td>gains <em>grow</em> to 3.7× while every baseline degrades; Continuum stays flat</td></tr>
+            <tr><td>Robustness <small>batch 16–256, chunk 256–4096, SSD 400/800 GB</small></td><td>improvement stable across every engine configuration and storage tier</td></tr>
+            <tr><td>Scheduler overhead</td><td>0.96 ms without offload, 2.30 ms with — against vLLM's 0.95 and 2.33 ms</td></tr>
+            <tr><td>Ablation</td><td>program-level FCFS alone &lt; plus static cold-start TTL &lt; full cost model</td></tr>
+            <tr class="hi"><td><b>Real distributed SWE-agent</b> <small>500 SWE-Bench-Verified tasks, H100</small></td><td>up to <b>8.18×</b> lower delay than SGLang cache-aware routing and Dynamo 1P1D, at a <em>higher</em> pass rate</td></tr>
+            <tr><td>RL rollout <small>OpenHands + GLM-4.5-fp8, 8×H100</small></td><td>144.9 steps/min against ThunderAgent's 114.8 and vLLM's 93.4</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose">Declared scope: the design assumes the sequential <span class="mono">reason → tool → reason</span> rhythm, and parallel tool calls are fine. Speculative branching, asynchronous multi-agent coordination and context folding violate it, and are left to future work.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section id="tldr">
+      <div class="sec-head">
+        <p class="sec-num">04 · Too long, didn't read</p>
+        <h2>The whole paper in one sentence</h2>
+      </div>
+      <div class="tldr">
+        <p>Continuum observes that an inference engine evicting an agent's KV cache the moment it emits a tool call costs not just a re-prefill but a fresh queueing bubble on every one of about eleven turns — a cost fast DRAM offloading cannot remove and no prior policy models — and fixes it by pinning the cache with a per-tool, cost-modelled time-to-live, balancing GPU occupancy against <span class="mono">P(tool finishes in τ) × (re-prefill + queueing delay × how predictable the program's remaining work is)</span>, plus program-level FCFS, buying 1.1–3.7× lower job completion time in trace replay and up to 8.18× on a real distributed SWE-agent deployment for about a thousand lines on top of vLLM and a millisecond of scheduling overhead.</p>
+      </div>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section id="caveats">
+      <div class="sec-head">
+        <p class="sec-num">05 · Reading against the grain</p>
+        <h2>Eight things to keep straight before citing it</h2>
+      </div>
+      <ol class="bullets num">
+        <li><b>Two very different headline numbers.</b> The abstract's "over 8×" and the introduction's "1.12× to 3.66×" are not the same experiment. The 8.18× is the distributed real-agent run against SGLang and Dynamo, where part of the margin comes from SWE-Bench's 15-minute Docker limit converting latency into scored failures. Cite 1.12–3.66× for the controlled comparison.</li>
+        <li><b>Model-coverage mismatch.</b> The abstract advertises "Llama-3.1 8B/70B, Gemma-3 12B, and GLM-4.5 355B". GLM-4.5 appears only in the RL rollout micro-benchmark, never in the end-to-end delay or throughput curves.</li>
+        <li><b>Prefill-Reload is approximated as full prefill</b>, ignoring pages that survive in GPU memory. They argue the residue is small under contention; it is acknowledged, not measured.</li>
+        <li><b>η is one workload-global scalar</b> estimated from history and applied to every request. The interesting η &lt; 0 regime is designed for but never exercised.</li>
+        <li><b>The cost model assumes a backlogged queue.</b> Under light load it overstates the real opportunity cost, so TTLs come out too short — precisely the regime where pinning is nearly free.</li>
+        <li><b>Deadlock victim selection inverts the priority rule.</b> FCFS favours early-arriving programs, but when memory runs out the victims are the latest-arriving pins. Self-consistent, but tail programs absorb all the memory pressure and no tail-fairness analysis is given.</li>
+        <li><b>Tool duration is inferred from the server-side inter-request interval</b>, so it silently includes client, network and harness time rather than tool execution. This matters a great deal for a harness like ours — see §06.</li>
+        <li><b>This is the append-only case.</b> Continuum pins KV across a tool pause assuming the context grows by appending the tool result. It says nothing about <b>compaction</b>, which rewrites the prefix and destroys the value of the pin — the gap our own related-work survey names, and this paper does not close it.</li>
+      </ol>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section id="us">
+      <div class="sec-head">
+        <p class="sec-num">06 · What it changes for us</p>
+        <h2>It names the term our round latency has been paying all along</h2>
+      </div>
+      <ul class="bullets">
+        <li><b>Per-turn queueing delay is the published name for our 3.7 s fixed round term.</b> Our latency breakdown regresses round latency to 3.7 s fixed plus 0.033 ms per uncached token plus 17.4 ms per output token, and roughly 80% of a hosted fault round is fixed provider latency — queue plus a TTFT floor that holds even for a 371-token request. This is the paper to cite for the claim that the floor is scheduling, not compute.</li>
+        <li><b>Our tool calls are 20–90× shorter than theirs.</b> We measure tools at 10–50 ms against their 925 ms and 1,923 ms means. Shorter pauses push <span class="mono">P(τ, f)</span> toward 1 at tiny τ, so on our workload the TTL decision should be close to unconditional — retention is almost free. Continuum's mechanism is <em>more</em> favourable for a Claude-Code-shaped harness than for the agents it was evaluated on.</li>
+        <li><b>But the harness, not the tool, sets the length of the pause.</b> Our <span class="mono">memory_extract</span> step costs 13–21 s per turn — an order of magnitude longer than any tool call in their traces — and it lands inside exactly the inter-request interval Continuum measures as "tool duration". Pinning 70–90k tokens of KV for 13–21 s inverts their cost-benefit: <span class="mono">Cost</span> grows linearly in that interval while <span class="mono">Benefit</span> is fixed.</li>
+      </ul>
+      <div class="callout">
+        <p class="label">The gap worth claiming</p>
+        <p class="prose"><b>Harness-side turn-end work is a first-class input to a TTL policy, and no paper models it.</b> Their η captures the turn structure of the workload; an s15-shaped policy would need a second term for the pause structure the harness itself imposes. Continuum remains the strongest prior art for keeping KV resident across a tool pause — it simply does not touch the two costs we measure after <em>compaction</em>, and it explicitly excludes the asynchronous multi-agent coordination where our teammate-context work lives.</p>
+      </div>
+    </section>
+
+  </article>
+
+  <footer class="colophon">
+    <p><b>Source.</b> Li, He, Mang, Q. Zhang, Mao, Chen, Zhou, H. Zhang, Cheung, Gonzalez, Stoica. <em>Continuum: Efficient and Robust Multi-Turn LLM Agent Scheduling with KV Cache Time-to-Live.</em> arXiv:2511.02230v7 [cs.OS], 8 September 2026; submitted to PVLDB 20(1), 2027.</p>
+    <p><b>Notation.</b> Their <span class="mono">request</span> is one model call inside what we call a round; their <span class="mono">program</span> is one session. The paper's body spells the system "Continnum"; the title, abstract and repository use "Continuum".</p>
+    <p><b>Full notes.</b> <span class="mono">weekly_progress/091626/continuum_paper_reading.md</span>, read 2026-09-16. Numbers quoted here were taken from the PDF text, not from the figures.</p>
+  </footer>
+
+</div>
