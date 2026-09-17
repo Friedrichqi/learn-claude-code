@@ -1,0 +1,1069 @@
+<title>s15 Tier Boundaries</title>
+<meta name="description" content="Weekly progress, 16 September 2026: what one round, one resident copy and one compaction cost in the s15 harness, who pays at each tier boundary, and which levers belong to the harness.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #eef1f5;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --ink: #141922;
+  --ink-2: #47505f;
+  --muted: #7a8391;
+  --hair: #d5dbe3;
+  --hair-2: #e6eaf0;
+  --lead: #2a78d6;
+  --lead-soft: #cde2fb;
+  --lead-ink: #1c5cab;
+  --mate: #eb6834;
+  --mate-soft: #fbd9c9;
+  --mate-ink: #b8451c;
+  --mate-1: #f7c9b3;
+  --mate-2: #f29d76;
+  --mate-3: #eb6834;
+  --mate-4: #b8451c;
+  --shot: #1baf7a;
+  --grey-mark: #aeb6c2;
+  --warn: #d03b3b;
+  --focus: #1c5cab;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1117;
+    --surface: #161c25;
+    --surface-2: #1c232e;
+    --ink: #eef1f5;
+    --ink-2: #b9c1cd;
+    --muted: #8791a0;
+    --hair: #2b3441;
+    --hair-2: #232b36;
+    --lead: #3987e5;
+    --lead-soft: #1c355a;
+    --lead-ink: #8dbcf5;
+    --mate: #d95926;
+    --mate-soft: #4a2416;
+    --mate-ink: #f0a17e;
+    --mate-1: #5a2d1c;
+    --mate-2: #9a4222;
+    --mate-3: #d95926;
+    --mate-4: #f29d76;
+    --shot: #199e70;
+    --grey-mark: #5c6673;
+    --warn: #e66767;
+    --focus: #8dbcf5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1117;
+  --surface: #161c25;
+  --surface-2: #1c232e;
+  --ink: #eef1f5;
+  --ink-2: #b9c1cd;
+  --muted: #8791a0;
+  --hair: #2b3441;
+  --hair-2: #232b36;
+  --lead: #3987e5;
+  --lead-soft: #1c355a;
+  --lead-ink: #8dbcf5;
+  --mate: #d95926;
+  --mate-soft: #4a2416;
+  --mate-ink: #f0a17e;
+  --mate-1: #5a2d1c;
+  --mate-2: #9a4222;
+  --mate-3: #d95926;
+  --mate-4: #f29d76;
+  --shot: #199e70;
+  --grey-mark: #5c6673;
+  --warn: #e66767;
+  --focus: #8dbcf5;
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.4;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+h1, h2, h3 { margin: 0; font-family: var(--display); font-weight: 700; text-wrap: balance; letter-spacing: -0.015em; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+b, strong { font-weight: 600; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- deck chrome ---------- */
+.deck { position: fixed; inset: 0; }
+.stage {
+  position: absolute;
+  width: 1280px; height: 720px;
+  left: calc((100vw - 1280px * var(--s, 1)) / 2);
+  top: calc((100vh - 720px * var(--s, 1)) / 2);
+  transform: scale(var(--s, 1));
+  transform-origin: top left;
+}
+.slide {
+  position: absolute; inset: 0;
+  width: 1280px; height: 720px;
+  padding: 44px 64px 40px;
+  background: var(--surface);
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+  border: 1px solid var(--hair);
+}
+.slide.active { display: flex; }
+.slide-head { display: flex; flex-direction: column; gap: 8px; }
+.eyebrow {
+  display: flex; align-items: baseline; gap: 14px;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.eyebrow .num { font-family: var(--mono); letter-spacing: 0; color: var(--ink-2); }
+.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--hair); transform: translateY(-4px); }
+.slide h2 { font-size: 32px; line-height: 1.12; max-width: 1100px; }
+.slide h2 .dim { color: var(--muted); font-weight: 500; }
+.body { flex: 1; min-height: 0; display: grid; gap: 28px; }
+.foot {
+  display: flex; gap: 22px; align-items: baseline;
+  font-size: 11.5px; color: var(--muted); line-height: 1.35;
+  border-top: 1px solid var(--hair-2); padding-top: 10px;
+}
+.foot .mono { font-size: 11px; color: var(--ink-2); }
+.foot p { max-width: none; }
+
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 3px; background: var(--hair-2);
+}
+.hud .bar { height: 100%; width: 0; background: var(--lead); transition: width 200ms ease; }
+.counter {
+  position: fixed; right: 18px; bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted);
+  display: flex; gap: 14px; align-items: center;
+}
+.counter button {
+  font: inherit; color: var(--ink-2); background: var(--surface); border: 1px solid var(--hair); border-radius: 4px;
+  padding: 2px 8px; cursor: pointer;
+}
+.counter button:hover { border-color: var(--muted); }
+.hint { position: fixed; left: 18px; bottom: 10px; font-size: 12px; color: var(--muted); }
+
+/* overview mode */
+body.overview { overflow: auto; }
+body.overview .deck { position: static; }
+body.overview .stage { position: static; transform: none; width: auto; height: auto; display: grid;
+  grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 24px; }
+body.overview .slide { display: flex; position: relative; zoom: 0.3; cursor: pointer; }
+body.overview .slide:hover { outline: 6px solid var(--lead); }
+body.overview .hud, body.overview .hint { display: none; }
+
+body.export .hud, body.export .counter, body.export .hint { display: none; }
+body.export .slide { border: 0; }
+
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .deck, .stage { position: static; transform: none; width: auto; height: auto; }
+  .slide { display: flex; position: relative; page-break-after: always; break-after: page; border: 0; }
+  .hud, .counter, .hint { display: none; }
+}
+
+/* ---------- content primitives ---------- */
+.two { grid-template-columns: 1fr 1fr; }
+.wide-left { grid-template-columns: 1.25fr 1fr; }
+.wide-right { grid-template-columns: 1fr 1.25fr; }
+.stack { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.label {
+  font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.label.lead { color: var(--lead-ink); }
+.label.mate { color: var(--mate-ink); }
+.claim { font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.25; letter-spacing: -0.01em; }
+.note { font-size: 13.5px; color: var(--ink-2); max-width: 62ch; }
+.list { display: flex; flex-direction: column; gap: 9px; list-style: none; font-size: 14.5px; color: var(--ink); }
+.list li { padding-left: 16px; position: relative; }
+.list li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+.list.tight { gap: 6px; font-size: 13.5px; }
+.list li b { font-weight: 600; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; align-items: baseline; }
+.kv dt { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.kv dd { margin: 0; color: var(--ink); }
+figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 11.5px; padding: 1px 7px; border: 1px solid var(--hair); border-radius: 3px; color: var(--ink-2); background: var(--surface-2); }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.swatch.lead { background: var(--lead); } .swatch.mate { background: var(--mate); } .swatch.shot { background: var(--shot); } .swatch.grey { background: var(--grey-mark); }
+
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.data th, table.data td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--hair-2); vertical-align: top; }
+table.data th { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--hair); }
+table.data td.n, table.data th.n { text-align: right; }
+table.data td.mono { font-size: 12px; }
+table.data tr.hi td { background: var(--surface-2); }
+
+/* diagram text */
+svg text { font-family: var(--body); fill: var(--ink); }
+svg .t-title { font-family: var(--display); font-weight: 700; }
+svg .t-mono { font-family: var(--mono); }
+svg .t-muted { fill: var(--muted); }
+svg .t-ink2 { fill: var(--ink-2); }
+svg .t-lead { fill: var(--lead-ink); }
+svg .t-mate { fill: var(--mate-ink); }
+svg .box { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .box-soft { fill: var(--surface-2); stroke: var(--hair); stroke-width: 1; }
+svg .box-lead { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.2; }
+svg .box-mate { fill: var(--mate-soft); stroke: var(--mate); stroke-width: 1.2; }
+svg .box-dash { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+svg .edge { stroke: var(--ink-2); stroke-width: 1.3; fill: none; }
+svg .edge-lead { stroke: var(--lead); stroke-width: 1.4; fill: none; }
+svg .edge-mate { stroke: var(--mate); stroke-width: 1.4; fill: none; }
+svg .edge-dash { stroke: var(--muted); stroke-width: 1.2; fill: none; stroke-dasharray: 4 3; }
+svg .grid { stroke: var(--hair-2); stroke-width: 1; }
+svg .axis { stroke: var(--hair); stroke-width: 1; }
+svg .f-lead { fill: var(--lead); } svg .f-mate { fill: var(--mate); } svg .f-grey { fill: var(--grey-mark); } svg .f-shot { fill: var(--shot); }
+svg .f-m1 { fill: var(--mate-1); } svg .f-m2 { fill: var(--mate-2); } svg .f-m3 { fill: var(--mate-3); } svg .f-m4 { fill: var(--mate-4); }
+svg .f-surface { fill: var(--surface); }
+svg .node-done { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.3; }
+svg .node-open { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .node-ghost { fill: var(--surface-2); stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+
+/* bar table (slide 5) */
+.bartable { display: grid; grid-template-columns: 250px 1fr 58px 58px; gap: 8px 14px; align-items: center; font-size: 13.5px; }
+.bartable .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.bartable .m { color: var(--ink); line-height: 1.25; }
+.bartable .bars { display: flex; flex-direction: column; gap: 3px; }
+.bartable .bar { height: 11px; border-radius: 0 3px 3px 0; position: relative; }
+.bartable .bar.lead { background: var(--lead); }
+.bartable .bar.mate { background: var(--mate); }
+.bartable .v { font-variant-numeric: tabular-nums; text-align: right; font-family: var(--mono); font-size: 13px; }
+.bartable .v.lead { color: var(--lead-ink); } .bartable .v.mate { color: var(--mate-ink); }
+
+/* dumbbells (slide 6) */
+.dumbbells { display: grid; grid-template-columns: 130px 1fr; gap: 16px 18px; align-items: center; font-size: 13.5px; }
+.dumbbells .m { color: var(--ink); }
+.dumbbells .track { position: relative; height: 26px; }
+.dumbbells .track::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 1px; background: var(--hair); }
+.dumbbells .seg { position: absolute; top: 11.5px; height: 2px; background: var(--ink-2); }
+.dumbbells .dot { position: absolute; top: 6px; width: 14px; height: 14px; border-radius: 50%; transform: translateX(-50%); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--hair); }
+.dumbbells .dot.a { background: var(--grey-mark); } .dumbbells .dot.b { background: var(--lead); }
+.dumbbells .lab { position: absolute; top: -8px; transform: translateX(-50%); font-family: var(--mono); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.dumbbells .lab.b { color: var(--lead-ink); top: 22px; }
+
+/* tiers (last slide) */
+.tiers { display: grid; grid-template-rows: repeat(4, 1fr); gap: 10px; min-height: 0; }
+.tier { display: grid; grid-template-columns: 160px 1fr; gap: 14px; padding: 10px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.tier .name { font-family: var(--display); font-weight: 700; font-size: 15.5px; line-height: 1.2; }
+.tier .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0; }
+.tier .what { font-size: 12.5px; line-height: 1.38; color: var(--ink-2); }
+.tier .what b { color: var(--ink); }
+.tier.hot { border-left-color: var(--lead); }
+.tier.warm { border-left-color: var(--mate); }
+.tier.cold { border-left-color: var(--grey-mark); }
+.tier.drop { border-left-color: var(--warn); }
+
+/* cover */
+.cover { justify-content: space-between; background: var(--surface); }
+.cover .title { font-size: 58px; line-height: 1.02; letter-spacing: -0.03em; max-width: 1000px; font-weight: 800; }
+.cover .sub { font-size: 21px; color: var(--ink-2); max-width: 820px; line-height: 1.35; margin-top: 18px; }
+.cover .meta { display: flex; gap: 40px; font-size: 13px; color: var(--muted); }
+.cover .meta b { display: block; color: var(--ink); font-weight: 500; }
+.cover .rule { height: 6px; width: 120px; background: var(--lead); }
+
+/* questions */
+.qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 44px; align-content: start; padding-top: 8px; }
+.q { display: grid; grid-template-columns: 36px 1fr; gap: 10px; font-size: 17px; line-height: 1.38; }
+.q .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 22px; line-height: 1.1; }
+.q b { font-weight: 600; }
+
+/* ---------- additions for the 2026-09-16 deck ---------- */
+/* tier ladder: rungs are tiers, gaps are the boundaries between them */
+.ladder { display: flex; flex-direction: column; min-height: 0; }
+.rung { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 9px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.rung .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
+.rung .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 10.5px; color: var(--muted); margin-top: 3px; }
+.rung .what { font-size: 12px; line-height: 1.36; color: var(--ink-2); }
+.rung .what b { color: var(--ink); }
+.rung.gpu { border-left-color: var(--lead); } .rung.cache { border-left-color: var(--shot); } .rung.prompt { border-left-color: var(--mate); } .rung.disk { border-left-color: var(--grey-mark); }
+.gapx { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 5px 14px 5px 18px; align-items: center; }
+.gapx .arrow { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.3; }
+.gapx .price { font-size: 12px; color: var(--ink); background: var(--surface); border: 1px dashed var(--hair); border-radius: 4px; padding: 5px 10px; line-height: 1.35; }
+.gapx .price b { color: var(--lead-ink); font-family: var(--mono); font-weight: 500; }
+.gapx .price.ask { font-family: var(--display); font-weight: 700; color: var(--muted); font-size: 15px; padding: 3px 10px; }
+/* paired bars (slides 3 and 5): ghost = baseline, filled = the measured arm */
+.pairs { display: grid; grid-template-columns: 1fr 300px 90px; gap: 7px 14px; align-items: center; font-size: 12.5px; }
+.pairs .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.pairs .m { color: var(--ink); line-height: 1.25; }
+.pairs .m small { display: block; color: var(--muted); font-size: 11px; }
+.pairs .bars { display: flex; flex-direction: column; gap: 3px; }
+.pairs .bar { height: 9px; border-radius: 0 3px 3px 0; }
+.pairs .bar.ghost { background: var(--grey-mark); opacity: 0.55; }
+.pairs .bar.mate { background: var(--mate); }
+.pairs .bar.lead { background: var(--lead); }
+.pairs .v { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); line-height: 1.3; }
+.pairs .v b { color: var(--ink); font-weight: 500; }
+/* dense grids */
+.three { grid-template-columns: 1fr 1fr 1fr; }
+.list.tight.xs { font-size: 12.5px; gap: 5px; }
+.note.xs { font-size: 12px; }
+table.data.xs { font-size: 12px; } table.data.xs th, table.data.xs td { padding: 4px 8px; }
+.tag { display: inline-block; font-family: var(--mono); font-size: 10.5px; padding: 0 6px; border-radius: 3px; border: 1px solid var(--hair); color: var(--ink-2); background: var(--surface-2); margin-right: 4px; vertical-align: 1px; }
+.tag.m { color: var(--lead-ink); border-color: var(--lead-soft); background: var(--lead-soft); }
+.tag.r { color: var(--mate-ink); border-color: var(--mate-soft); background: var(--mate-soft); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 22px; align-content: start; }
+.nw { white-space: nowrap; }
+table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
+.step { display: grid; grid-template-columns: 26px 1fr; gap: 8px; font-size: 12.5px; line-height: 1.35; }
+.step .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 15px; line-height: 1.15; }
+.step b { font-weight: 600; }
+.step .group { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+</style>
+
+<div class="deck" id="deck">
+<div class="stage" id="stage">
+
+<!-- ===================== 0 · COVER ===================== -->
+<section class="slide cover" data-title="Cover">
+  <div>
+    <div class="eyebrow"><span>Weekly progress</span><span class="num">2026-09-16</span></div>
+    <div class="rule" style="margin:34px 0 26px"></div>
+    <h1 class="title">Pricing the tier boundaries of the s15 harness</h1>
+    <p class="sub">What one round, one resident copy and one compaction cost as agent contexts grow; who pays at each boundary between repository, harness prompt, provider prefix cache and GPU KV; and which levers are the harness's to pull.</p>
+  </div>
+  <div class="meta">
+    <div><b>yq335@cornell.edu</b>learn-claude-code · branch <span class="mono">claude_develop</span> · covers 2026-09-10 to 2026-09-15</div>
+    <div><b>Harness</b>s15 integrated harness (lead + teammates) · nine notes, all committed at <span class="mono">e0e522b</span></div>
+    <div><b>Models</b>glm-5.3-flash via z.ai · Qwen2.5-1.5B / 7B replaying GLM transcripts (KV splice)</div>
+    <div><b>Synthesis</b><span class="mono">weekly_progress/091626/tiered_memory_conclusion.md</span></div>
+  </div>
+</section>
+
+<!-- ===================== 1 · PAPER READ: CONTINUUM ===================== -->
+<section class="slide" data-title="Paper read: Continuum">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">1</span><span>Paper read · Continuum, PVLDB 2027 · the cost faster offload cannot remove</span></div>
+    <h2>Evicting an agent's KV at the tool call costs a queueing bubble on every turn</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 668px 1fr; gap:26px">
+    <div class="stack" style="gap:12px">
+      <figure>
+        <svg viewBox="-34 0 714 284" role="img" aria-label="Three timelines of one turn boundary. Under vLLM the KV cache is evicted when the tool call is emitted, so the next request pays a re-prefill and then a queueing bubble waiting for GPU memory. InferCept with fast DRAM offload shrinks the reload but leaves the queueing bubble unchanged. Continuum pins the KV for a computed time-to-live, so the next request resumes as soon as the tool returns.">
+          <!-- shared boundaries -->
+          <line class="edge-dash" x1="210" y1="48" x2="210" y2="236"></line>
+          <line class="edge-dash" x1="262" y1="48" x2="262" y2="236"></line>
+          <text class="t-muted" x="206" y="42" font-size="10" text-anchor="end">tool call emitted</text>
+          <text class="t-muted" x="266" y="42" font-size="10">tool returns</text>
+          <text class="t-muted t-mono" x="660" y="42" font-size="10" text-anchor="end">time →</text>
+
+          <!-- row A: vLLM -->
+          <text class="t-title" x="90" y="76" font-size="11.5" text-anchor="end">vLLM, SGLang</text>
+          <text class="t-muted t-mono" x="90" y="88" font-size="9.5" text-anchor="end">end-of-turn eviction</text>
+          <rect class="box-lead" x="100" y="66" width="110" height="26" rx="2"></rect>
+          <text x="155" y="83" font-size="11" text-anchor="middle">LLM request i</text>
+          <rect class="box-dash" x="210" y="66" width="52" height="26" rx="2"></rect>
+          <text class="t-ink2" x="236" y="77" font-size="10" text-anchor="middle">tool</text>
+          <text class="t-ink2 t-mono" x="236" y="88" font-size="9.5" text-anchor="middle">925 ms</text>
+          <rect class="box-mate" x="262" y="66" width="78" height="26" rx="2"></rect>
+          <text class="t-mate" x="301" y="77" font-size="10" text-anchor="middle">re-prefill</text>
+          <text class="t-mate t-mono" x="301" y="88" font-size="9.5" text-anchor="middle">70k tok</text>
+          <rect x="340" y="66" width="100" height="26" rx="2" fill="var(--mate)" stroke="var(--mate-4)" stroke-width="1"></rect>
+          <text x="390" y="77" font-size="10.5" text-anchor="middle" fill="#ffffff" font-weight="600">queue bubble</text>
+          <text x="390" y="88" font-size="9.5" text-anchor="middle" fill="#ffffff" class="t-mono">waits for HBM</text>
+          <rect class="box-lead" x="440" y="66" width="110" height="26" rx="2"></rect>
+          <text x="495" y="83" font-size="11" text-anchor="middle">LLM request i+1</text>
+          <text class="t-muted t-mono" x="558" y="83" font-size="10">… × 10.9 turns</text>
+
+          <!-- row B: InferCept -->
+          <text class="t-title" x="90" y="144" font-size="11.5" text-anchor="end">InferCept</text>
+          <text class="t-muted t-mono" x="90" y="156" font-size="9.5" text-anchor="end">+ fast DRAM offload</text>
+          <text class="t-mate t-mono" x="277" y="127" font-size="9.5" text-anchor="middle">reload</text>
+          <line class="edge-dash" x1="277" y1="130" x2="277" y2="134"></line>
+          <rect class="box-lead" x="100" y="134" width="110" height="26" rx="2"></rect>
+          <text x="155" y="151" font-size="11" text-anchor="middle">LLM request i</text>
+          <rect class="box-dash" x="210" y="134" width="52" height="26" rx="2"></rect>
+          <text class="t-ink2" x="236" y="151" font-size="10" text-anchor="middle">tool</text>
+          <rect class="box-mate" x="262" y="134" width="30" height="26" rx="2"></rect>
+          <rect x="292" y="134" width="100" height="26" rx="2" fill="var(--mate)" stroke="var(--mate-4)" stroke-width="1"></rect>
+          <text x="342" y="145" font-size="10.5" text-anchor="middle" fill="#ffffff" font-weight="600">queue bubble</text>
+          <text x="342" y="156" font-size="9.5" text-anchor="middle" fill="#ffffff" class="t-mono">unchanged</text>
+          <rect class="box-lead" x="392" y="134" width="110" height="26" rx="2"></rect>
+          <text x="447" y="151" font-size="11" text-anchor="middle">LLM request i+1</text>
+          <text class="t-mate" x="510" y="147" font-size="10">their Fig. 4: total wait</text>
+          <text class="t-mate" x="510" y="159" font-size="10">≈ vanilla vLLM</text>
+
+          <!-- row C: Continuum -->
+          <text class="t-title" x="90" y="212" font-size="11.5" text-anchor="end">Continuum</text>
+          <text class="t-muted t-mono" x="90" y="224" font-size="9.5" text-anchor="end">TTL pin</text>
+          <rect x="210" y="188" width="82" height="7" rx="2" fill="var(--lead)"></rect>
+          <text class="t-lead t-mono" x="210" y="181" font-size="10">KV pinned for τ*</text>
+          <rect class="box-lead" x="100" y="202" width="110" height="26" rx="2"></rect>
+          <text x="155" y="219" font-size="11" text-anchor="middle">LLM request i</text>
+          <rect class="box-dash" x="210" y="202" width="52" height="26" rx="2"></rect>
+          <text class="t-ink2" x="236" y="219" font-size="10" text-anchor="middle">tool</text>
+          <rect class="box-lead" x="262" y="202" width="110" height="26" rx="2"></rect>
+          <text x="317" y="219" font-size="11" text-anchor="middle">LLM request i+1</text>
+          <text class="t-lead" x="380" y="219" font-size="10">resumes at once</text>
+
+          <!-- the difference -->
+          <line class="edge-mate" x1="262" y1="252" x2="440" y2="252"></line>
+          <line class="edge-mate" x1="262" y1="246" x2="262" y2="258"></line>
+          <line class="edge-mate" x1="440" y1="246" x2="440" y2="258"></line>
+          <text class="t-mate" x="351" y="272" font-size="10.5" text-anchor="middle" font-weight="600">removed on every one of ~11 turns</text>
+        </svg>
+        <figcaption>One turn boundary, three policies, one time axis; widths are schematic and the labels carry the measured magnitudes. Row B is the claim: cheap reload cannot remove a bubble caused by <em>memory contention</em>, so it is paid every turn. If the tool overruns τ*, the pin is dropped rather than held.</figcaption>
+      </figure>
+      <dl class="kv" style="font-size:12.5px">
+        <dt>traces</dt><dd>SWE-Bench 10.9 turns · 925 ms mean tool (σ 3,550) · 70k tok · BFCL v4 6.3 · 1,923 ms · 93k tok</dd>
+        <dt>replay</dt><dd><b>1.12–3.66×</b> delay and <b>1.10–3.22×</b> throughput over vLLM, Autellix+, InferCept</dd>
+        <dt>turns</dt><dd>gains <em>grow</em> with turn count — 3.7× at 50.6 turns, where every baseline degrades</dd>
+        <dt>real</dt><dd>up to <b>8.18×</b> on 500 SWE-Bench-Verified tasks on an H100 testbed, at a <em>higher</em> pass rate</dd>
+      </dl>
+    </div>
+    <div class="stack" style="gap:11px">
+      <div class="stack" style="gap:5px">
+        <p class="label">The gap, as their Table 1 draws it</p>
+        <table class="data xs xxs">
+          <thead><tr><th>system</th><th>retains</th><th>queue</th><th>bounded</th></tr></thead>
+          <tbody>
+            <tr><td>vLLM, SGLang, Autellix</td><td><span style="color:var(--muted)">✗</span></td><td><span style="color:var(--muted)">✗</span></td><td><span style="color:var(--muted)">✗</span></td></tr>
+            <tr><td>Pie <small class="mono" style="color:var(--muted)">mechanism, no policy</small></td><td><span style="color:var(--shot)">✓</span></td><td><span style="color:var(--muted)">✗</span></td><td><span style="color:var(--muted)">✗</span></td></tr>
+            <tr><td>InferCept <small class="mono" style="color:var(--muted)">next-turn reload only</small></td><td><span style="color:var(--shot)">✓</span></td><td><span style="color:var(--muted)">✗</span></td><td><span style="color:var(--muted)">✗</span></td></tr>
+            <tr class="hi"><td><b>Continuum</b></td><td><span style="color:var(--shot)">✓</span></td><td><span style="color:var(--shot)">✓</span></td><td><span style="color:var(--shot)">✓</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="stack" style="gap:5px">
+        <p class="label lead">Method · a TTL priced in seconds, not a constant</p>
+        <ul class="list tight xs">
+          <li><span class="mono">τ* = argmax<sub>τ</sub> P(τ,f)·(T·η + Prefill-Reload) − τ</span>, over that tool's own observed durations. <b><span class="mono">T</span> is measured online</b> — the queueing term is invisible to offline profiling, which is why no prior cost model carries it.</li>
+          <li><b><span class="mono">η = −Corr(k, N−k)</span></b>: continuity is worth exactly what remaining work is predictable. 1 fixed turn count, 0 geometric, negative for a long tail.</li>
+          <li>Program-level FCFS, pinned-first; deadlock broken by evicting the latest pin. <b>~1k lines on vLLM</b>, ~1 ms overhead.</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:5px">
+        <p class="label mate">What it changes for us</p>
+        <ul class="list tight xs">
+          <li>Their per-turn queueing delay is the published name for our <b>3.7 s fixed round term</b>, and for the ~80% of a hosted fault round that is queue plus TTFT floor.</li>
+          <li>Our tools cost <b>10–50 ms</b>, 20–90× shorter than their 925 ms, so <span class="mono">P(τ,f)</span> ≈ 1 at tiny τ: retention should be near-unconditional on s15.</li>
+          <li><b>But they read tool duration off the inter-request interval</b>, which on s15 also holds 13–21 s of <span class="mono">memory_extract</span>. Cost grows in τ while benefit is fixed, so harness turn-end work inverts their model — the gap next to steps 12 and 13.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><p>Source: Li, He, Mang, Q. Zhang, Mao, Chen, Zhou, H. Zhang, Cheung, Gonzalez, Stoica. <em>Continuum</em> (Berkeley · Stanford · Tsinghua), arXiv:2511.02230v7 [cs.OS], 8 Sep 2026; submitted to PVLDB 20(1). Code <span class="mono">github.com/Hanchenli/vllm-continuum</span>; full read in <span class="mono">weekly_progress/091626/continuum_paper_reading.md</span>. Replay on Llama-3.1 8B/70B and Gemma-3 12B over A100, H100 and B200. Parrot, Alto and Ayo are excluded by construction: they optimise a static DAG, and a ReAct graph only exists at runtime. Keep straight that the abstract's "over 8×" is the distributed run — part of that margin is SWE-Bench's 15-minute Docker limit turning slowness into scored failures — while the controlled range is 1.12–3.66×, and GLM-4.5 appears only in the RL rollout table.</p></div>
+</section>
+
+<!-- ===================== 2 · THE SYSTEM UNDER TEST ===================== -->
+<section class="slide" data-title="The system under test">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">2</span><span>The system under test · orientation for anyone new to this deck</span></div>
+    <h2>One <span class="mono" style="font-size:0.8em">turn</span> is a lead activation; one <span class="mono" style="font-size:0.8em">round</span> is a trip through this loop</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 700px 1fr; gap:26px">
+    <div class="stack" style="gap:10px">
+      <figure style="gap:6px">
+        <svg viewBox="0 0 640 162" role="img" aria-label="The lead agent loop as a left-to-right cycle. Each round injects pending cron, team and background events, runs prepare_context which is where all compaction happens, calls the model once, then checks whether the reply contains tool calls. If it does, the tools run and their results are appended and the arc above returns to the start for the next round. If it does not, the Stop hook fires and memory extraction runs for 13 to 21 seconds, which ends the turn.">
+          <defs>
+            <marker id="arwL" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M0 1 L9 5 L0 9 z" fill="var(--ink-2)"></path>
+            </marker>
+            <marker id="arwLm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M0 1 L9 5 L0 9 z" fill="var(--mate)"></path>
+            </marker>
+          </defs>
+
+          <!-- the round: the return arc is the loop -->
+          <text class="t-muted t-mono" x="326" y="13" font-size="10.5" text-anchor="middle">ONE ROUND · returns here while the model keeps calling tools</text>
+          <path class="edge" d="M586 36 V22 H66 V34" marker-end="url(#arwL)"></path>
+
+          <rect class="box-soft" x="10" y="38" width="112" height="46" rx="3"></rect>
+          <text class="t-title" x="66" y="58" font-size="11.5" text-anchor="middle">inject events</text>
+          <text class="t-muted" x="66" y="73" font-size="9.5" text-anchor="middle">cron · team · background</text>
+
+          <rect class="box-mate" x="140" y="38" width="130" height="46" rx="3"></rect>
+          <text class="t-title t-mate" x="205" y="57" font-size="11.5" text-anchor="middle">prepare_context()</text>
+          <text class="t-mate" x="205" y="72" font-size="9.5" text-anchor="middle">ALL compaction is here</text>
+
+          <rect class="box-lead" x="288" y="38" width="122" height="46" rx="3"></rect>
+          <text class="t-title t-lead" x="349" y="57" font-size="11.5" text-anchor="middle">call_llm()</text>
+          <text class="t-lead" x="349" y="72" font-size="9.5" text-anchor="middle">93-99.9% of the round</text>
+
+          <rect class="box-dash" x="428" y="38" width="94" height="46" rx="3"></rect>
+          <text x="475" y="57" font-size="10.5" text-anchor="middle">tool calls</text>
+          <text x="475" y="72" font-size="10.5" text-anchor="middle">in the reply?</text>
+
+          <rect class="box-soft" x="540" y="38" width="92" height="46" rx="3"></rect>
+          <text class="t-title" x="586" y="57" font-size="11" text-anchor="middle">run tools,</text>
+          <text class="t-title" x="586" y="71" font-size="11" text-anchor="middle">append results</text>
+
+          <line class="edge" x1="124" y1="61" x2="136" y2="61" marker-end="url(#arwL)"></line>
+          <line class="edge" x1="272" y1="61" x2="284" y2="61" marker-end="url(#arwL)"></line>
+          <line class="edge" x1="412" y1="61" x2="424" y2="61" marker-end="url(#arwL)"></line>
+          <line class="edge" x1="524" y1="61" x2="536" y2="61" marker-end="url(#arwL)"></line>
+          <text class="t-muted t-mono" x="530" y="54" font-size="9.5">yes</text>
+
+          <!-- turn end -->
+          <path class="edge-mate" d="M475 86 V126 H400" marker-end="url(#arwLm)"></path>
+          <text class="t-mate t-mono" x="482" y="112" font-size="10">no</text>
+          <rect class="box-mate" x="200" y="104" width="196" height="44" rx="3"></rect>
+          <text class="t-title t-mate" x="298" y="122" font-size="11" text-anchor="middle">Stop hook → memory_extract</text>
+          <text class="t-mate" x="298" y="137" font-size="9.5" text-anchor="middle">13-21 s, holding the agent lock</text>
+          <path class="edge-mate" d="M200 126 H128" marker-end="url(#arwLm)"></path>
+          <text class="t-mate t-mono" x="122" y="123" font-size="10.5" text-anchor="end">the turn ends</text>
+        </svg>
+        <figcaption>One <span class="mono">turn</span> is one lead activation and runs 1 to N rounds, ending on the first reply with no tool calls. A turn starts from a console message, or from a <b>1 s poller</b> that finds cron fires, team inbox events or finished background work. This is <span class="mono">agent_loop()</span>, the <em>lead's</em> loop only.</figcaption>
+      </figure>
+
+      <figure style="gap:6px">
+        <svg viewBox="0 0 520 100" role="img" aria-label="Team topology as a cycle. The lead creates tasks on a file-backed board whose tasks carry blockedBy edges. Teammates pull work by claiming the first still-available task. When a teammate completes a task or sends a message it lands in the lead inbox, and the one-second poller turns that into the lead's next turn.">
+          <defs>
+            <marker id="arwT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M0 1 L9 5 L0 9 z" fill="var(--ink-2)"></path>
+            </marker>
+          </defs>
+          <rect class="box-lead" x="4" y="20" width="76" height="36" rx="3"></rect>
+          <text class="t-title t-lead" x="42" y="38" font-size="11.5" text-anchor="middle">Lead</text>
+          <text class="t-lead" x="42" y="51" font-size="9" text-anchor="middle">26 tools</text>
+
+          <rect class="box-dash" x="112" y="10" width="158" height="54" rx="3"></rect>
+          <text class="t-muted t-mono" x="191" y="22" font-size="9.5" text-anchor="middle">.tasks/task_*.json</text>
+          <rect class="node-done" x="122" y="28" width="38" height="18" rx="2"></rect>
+          <rect class="node-open" x="172" y="28" width="38" height="18" rx="2"></rect>
+          <rect class="node-ghost" x="222" y="28" width="38" height="18" rx="2"></rect>
+          <line class="edge" x1="161" y1="37" x2="170" y2="37" marker-end="url(#arwT)"></line>
+          <line class="edge" x1="211" y1="37" x2="220" y2="37" marker-end="url(#arwT)"></line>
+          <text class="t-muted" x="191" y="59" font-size="9.5" text-anchor="middle">blockedBy edges</text>
+
+          <rect class="box" x="302" y="10" width="92" height="17" rx="2"></rect>
+          <rect class="box" x="302" y="30" width="92" height="17" rx="2"></rect>
+          <rect class="box" x="302" y="50" width="92" height="17" rx="2"></rect>
+          <text x="348" y="23" font-size="9.5" text-anchor="middle">teammate</text>
+          <text x="348" y="43" font-size="9.5" text-anchor="middle">teammate</text>
+          <text x="348" y="63" font-size="9.5" text-anchor="middle">teammate</text>
+          <text class="t-muted t-mono" x="404" y="43" font-size="9.5">3, up to 5</text>
+
+          <line class="edge" x1="84" y1="37" x2="108" y2="37" marker-end="url(#arwT)"></line>
+          <text class="t-muted t-mono" x="96" y="31" font-size="8.5" text-anchor="middle">create</text>
+          <line class="edge" x1="274" y1="37" x2="298" y2="37" marker-end="url(#arwT)"></line>
+          <text class="t-muted t-mono" x="286" y="31" font-size="8.5" text-anchor="middle">claim</text>
+
+          <path class="edge" d="M348 69 V84 H42 V60" marker-end="url(#arwT)"></path>
+          <text class="t-muted" x="200" y="96" font-size="9.5" text-anchor="middle">complete_task · send_message → lead inbox → the poller starts the next lead turn</text>
+        </svg>
+        <figcaption>Allocation is <b>pull, first-free-task</b>: a teammate claims the first still-available task and is refused a second while one is in progress. Tasks go <span class="mono">pending → in_progress → done</span>, and abandoned work returns to the board when its thread exits. The lead can also push — <span class="mono">spawn_teammate(name, role, task_id)</span> claims on spawn.</figcaption>
+      </figure>
+    </div>
+
+    <div class="stack" style="gap:11px">
+      <div class="stack" style="gap:5px">
+        <p class="label mate">Inside <span class="mono">prepare_context()</span> · the cascade, in order</p>
+        <table class="data xs xxs">
+          <thead><tr><th>step</th><th>when</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">tool_result_budget<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">caps tool results at 200 KB</small></td><td class="nw">every round</td></tr>
+            <tr><td class="mono">snip_compact<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">keeps the last 50 messages</small></td><td class="nw">every round</td></tr>
+            <tr><td class="mono">micro_compact<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">keeps the 3 newest, points at the rest on disk</small></td><td class="nw">over 512k chars</td></tr>
+            <tr><td class="mono">fit_tool_results<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">trims the rest to 0.8 × the limit</small></td><td class="nw">if still over</td></tr>
+            <tr class="hi"><td class="mono">compact_history<small style="display:block;font-family:var(--body);color:var(--mate-ink);font-size:11px;line-height:1.35;margin-top:2px">a summary MODEL CALL · 0.62 s of a 50k-budget round</small></td><td class="nw">if still over</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="stack" style="gap:5px">
+        <p class="label lead">Who runs, on what, at what scale</p>
+        <table class="data xs xxs">
+          <tbody>
+            <tr><td class="nw"><b>Lead</b></td><td>26 built-ins + MCP · 512k-char budget · the only agent that compacts · <b>3.8-5.4 turns and 10-11 rounds per run</b></td></tr>
+            <tr><td class="nw"><b>Teammate</b></td><td>10 tools · never compacts · own message list · plan gate on <span class="mono">bash</span>/write/edit · <b>2.9 · 4.0 · 7.5 rounds per MATH · FQA · CODE task</b></td></tr>
+            <tr><td class="nw"><b>Subagent</b></td><td>returns only its final summary to the caller · one per <span class="mono">task</span> call</td></tr>
+            <tr><td class="nw"><b>Memory</b></td><td>own prompt, writes <span class="mono">.memory/</span> · <b>13-21 s after every lead turn</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note xs" style="max-width:none"><b>One model behind every box:</b> <span class="mono">glm-5.3-flash</span> via z.ai's Anthropic-compatible API. Budget is 128k tokens × 4 chars = <b>512,000 chars</b>, raised from 50,000 on 2026-09-12.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">s15_integrated_harness/code.py</span> — <span class="mono">agent_loop</span> :3466, <span class="mono">prepare_context</span> :3407, <span class="mono">remember_after_turn</span> :3393, <span class="mono">async_event_loop</span> :3693 (the poller), <span class="mono">claim_next_task</span> :1376, <span class="mono">spawn_teammate_thread</span> :1499, <span class="mono">BUILTIN_TOOLS</span> :3193. <span class="mono">max_tokens</span> 8,000, rising to 16,000 once on truncation; <span class="mono">FALLBACK_MODEL_ID</span> takes over after two consecutive 529s. Scales from <span class="mono">latency_breakdown.md</span> §3 and §5 over 24 runs (three task classes × five team + three solo), totalling wall 3,946 s, model calls 4,704 s, turn-end memory 1,364 s, context preparation 32 s, tool execution 9.4 s; slide 4 breaks one round down. Both a lead turn and the poller take the single <span class="mono">agent_lock</span>, so turns never overlap, while teammates run as threads outside it. The Qwen2.5 models on the cover appear only in the KV-splice replay, never in the live harness.</p></div>
+</section>
+
+<!-- ===================== 3 · MAP ===================== -->
+<section class="slide" data-title="Last week, this week">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">3</span><span>Last week, this week</span></div>
+    <h2>Last week proposed a memory hierarchy for the team's KV cache; this week priced each of its boundaries</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 440px 1fr; gap:30px">
+    <div class="ladder">
+      <div class="rung gpu"><div class="name">GPU KV<small>HBM · engine memory</small></div><div class="what">Every in-flight request's KV; rationed by the engine, priced by the provider, invisible to the harness.</div></div>
+      <div class="gapx" style="grid-template-columns:1fr;padding:3px 14px 3px 18px"><div class="price ask">boundary · ? who holds an idle teammate's KV, and for how long</div></div>
+      <div class="rung cache"><div class="name">Provider prefix cache<small>provider prompt cache</small></div><div class="what">Serves a re-sent prefix without prefill. <b>Strictly prefix-based</b>; expires after minutes idle; never shared between agents.</div></div>
+      <div class="gapx" style="grid-template-columns:1fr;padding:3px 14px 3px 18px"><div class="price ask">boundary · ? what a re-sent or edited prompt costs</div></div>
+      <div class="rung prompt"><div class="name">Harness live prompt<small>CONTEXT_LIMIT · cascade</small></div><div class="what">The lead's message list under a 50k → 512k-char budget and a five-rung compaction cascade. <b>Teammates never compact.</b></div></div>
+      <div class="gapx" style="grid-template-columns:1fr;padding:3px 14px 3px 18px"><div class="price ask">boundary · ? what one fetch round costs, and how many there are</div></div>
+      <div class="rung disk"><div class="name">Repository, spill files<small>disk · .transcripts/</small></div><div class="what">Source files, archived history, persisted results behind placeholders; reached only through a tool round.</div></div>
+    </div>
+    <div class="stack" style="gap:8px">
+      <p class="label">Nine notes, one question each · <span class="tag m">m</span> measured on s15 traces · <span class="tag r">r</span> read from docs, source and papers</p>
+      <table class="data xs" style="font-size:11.5px">
+        <thead><tr><th>note</th><th>question it answers</th><th>boundary</th></tr></thead>
+        <tbody>
+          <tr><td class="mono nw">latency_breakdown <span class="tag m">m</span></td><td>what one round costs end to end on three task classes, team against solo</td><td>prompt ↔ cache</td></tr>
+          <tr><td class="mono nw">tool_execution_cost <span class="tag m">m</span></td><td>the harness-side price of every tool a lead or teammate can call (new, 09-15)</td><td>disk ↔ prompt</td></tr>
+          <tr><td class="mono nw">tool_cost_exposure <span class="tag m">m</span></td><td>does publishing measured costs to the model change its tool choice</td><td>routing</td></tr>
+          <tr><td class="mono nw">teammate_input_redundancy <span class="tag m">m</span></td><td>how many teammate bytes are copies another teammate holds; rerun at 512k</td><td>prompt ↔ cache</td></tr>
+          <tr><td class="mono nw">agent_e2e_bottleneck <span class="tag m">m</span></td><td>do evicted files force rounds; do batch read, outline, stable prefix help</td><td>disk ↔ prompt</td></tr>
+          <tr><td class="mono nw">kv_splice_profile <span class="tag m">m</span></td><td>can the lead keep its KV across a compaction edit by splice + RoPE shift (finding 3)</td><td>cache ↔ GPU KV</td></tr>
+          <tr><td class="mono nw">compaction_kv_reread_related_work <span class="tag r">r</span></td><td>has anyone named, measured or solved re-prefill and re-read after compaction</td><td>prompt ↔ cache</td></tr>
+          <tr><td class="mono nw">teammate_memory_management <span class="tag r">r</span></td><td>how a Claude Code teammate carries context across tasks; the compaction ladder</td><td>prompt</td></tr>
+          <tr><td class="mono nw">serving_memory_balancing <span class="tag r">r</span></td><td>how engines, clusters and providers ration HBM between concurrent requests</td><td>GPU KV</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="foot"><p>Evidence base: 24 latency runs (three task classes × five team + three solo), 8 + 8 redundancy runs at 50k and 512k, 893 + 80 + 24 cost-exposure trials, 2,556 timed tool dispatches, the X3 budget sweep and intervention matrices, three replayed splice runs. Last week's closing slide sorted the same memory by agent state; the four storage tiers here are the synthesis's framing. A <span class="mono">turn</span> is one lead activation, a <span class="mono">round</span> one agent-loop iteration. Slides 4 to 9 answer the lower two question marks; the cache-to-HBM boundary is covered in the notes rather than presented here, and returns on the next-steps slide.</p></div>
+</section>
+
+<!-- ===================== 4 · ROUND ANATOMY ===================== -->
+<section class="slide" data-title="Round anatomy">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">4</span><span>Result · one agentic round</span></div>
+    <h2>A round is a fixed-cost provider event: the agent call is 93-99.9% of it, context preparation about 10 ms, tool execution 10-50 ms</h2>
+  </div>
+  <div class="body wide-left" style="gap:40px">
+    <figure>
+      <svg viewBox="0 0 640 372" role="img" aria-label="Top: one round drawn to scale, the agent call filling the whole bar with preparation and tool execution too thin to see. Below: seven bars splitting the agent call into fixed provider component, prefill of uncached tokens and decode for each group of the 24 runs; prefill is a sliver of 0.2 to 1.5 percent in every row, fixed 9 to 52 percent, decode 50 to 89 percent.">
+        <g color="var(--ink-2)">
+        <text x="0" y="14" class="t-title" font-size="12.5">One round to scale · FQA lead, 9.7 s mean</text>
+        <rect x="106" y="26" width="440" height="16" class="f-lead" opacity="0.28"/>
+        <rect x="106" y="26" width="1" height="16" fill="var(--ink-2)"/>
+        <rect x="545" y="26" width="1" height="16" fill="var(--ink-2)"/>
+        <text x="326" y="38" font-size="11" text-anchor="middle" class="t-lead">agent call · 99.8% of the round</text>
+        <path d="M106 42 V56" class="edge"/><text x="106" y="68" font-size="10.5" class="t-ink2">prep ≈ 10 ms · 0.1% (compaction pipeline 2 ms, prompt and tool assembly under 1 ms)</text>
+        <path d="M546 42 V78" class="edge"/><text x="546" y="90" font-size="10.5" class="t-ink2" text-anchor="end">tools 10-50 ms · 0.1-0.4%</text>
+
+        <text x="0" y="118" class="t-title" font-size="12.5">Inside the agent call · shares attributed by the pooled regression</text>
+        <!-- rows: labels x=100 end-anchored; bars 106..546; values at 554 -->
+        <g font-size="11" class="t-ink2" text-anchor="end">
+          <text x="100" y="147">FQA lead</text><text x="100" y="179">FQA teammate</text><text x="100" y="211">CODE lead</text><text x="100" y="243">CODE teammate</text><text x="100" y="275">MATH lead</text><text x="100" y="307">MATH teammate</text><text x="100" y="339">solo MATH lead</text>
+        </g>
+        <!-- FQA lead 38 / 1.3 / 62 -->
+        <rect x="106" y="136" width="165.3" height="14" class="f-grey"/><rect x="273.3" y="136" width="3.7" height="14" class="f-mate"/><rect x="279" y="136" width="267" height="14" class="f-lead"/>
+        <!-- FQA teammate 42 / 1.0 / 58 -->
+        <rect x="106" y="168" width="181.4" height="14" class="f-grey"/><rect x="289.4" y="168" width="2.4" height="14" class="f-mate"/><rect x="293.8" y="168" width="252.2" height="14" class="f-lead"/>
+        <!-- CODE lead 52 / 1.4 / 56 -->
+        <rect x="106" y="200" width="207.4" height="14" class="f-grey"/><rect x="315.4" y="200" width="3.7" height="14" class="f-mate"/><rect x="321.1" y="200" width="224.9" height="14" class="f-lead"/>
+        <!-- CODE teammate 37 / 0.3 / 59 -->
+        <rect x="106" y="232" width="169.1" height="14" class="f-grey"/><rect x="276.1" y="232" width="2" height="14" class="f-mate"/><rect x="279.1" y="232" width="266.9" height="14" class="f-lead"/>
+        <!-- MATH lead 49 / 1.5 / 50 -->
+        <rect x="106" y="264" width="214.6" height="14" class="f-grey"/><rect x="322.6" y="264" width="4.6" height="14" class="f-mate"/><rect x="329.2" y="264" width="216.8" height="14" class="f-lead"/>
+        <!-- MATH teammate 22 / 0.2 / 77 -->
+        <rect x="106" y="296" width="95.3" height="14" class="f-grey"/><rect x="202.3" y="296" width="2" height="14" class="f-mate"/><rect x="205.3" y="296" width="340.7" height="14" class="f-lead"/>
+        <!-- solo MATH lead 9 / 0.2 / 89 -->
+        <rect x="106" y="328" width="39.5" height="14" class="f-grey"/><rect x="146.5" y="328" width="2" height="14" class="f-mate"/><rect x="149.5" y="328" width="396.5" height="14" class="f-lead"/>
+        <g font-size="10.5" class="t-mono t-ink2">
+          <text x="554" y="147">38 · 1.3 · 62</text><text x="554" y="179">42 · 1.0 · 58</text><text x="554" y="211">52 · 1.4 · 56</text><text x="554" y="243">37 · 0.3 · 59</text><text x="554" y="275">49 · 1.5 · 50</text><text x="554" y="307">22 · 0.2 · 77</text><text x="554" y="339">9 · 0.2 · 89</text>
+        </g>
+        <g font-size="10.5" class="t-ink2">
+          <rect x="106" y="358" width="10" height="10" class="f-grey"/><text x="120" y="367">fixed: network, queue, start-up</text>
+          <rect x="290" y="358" width="10" height="10" class="f-mate"/><text x="304" y="367">prefill of uncached tokens</text>
+          <rect x="450" y="358" width="10" height="10" class="f-lead"/><text x="464" y="367">decode</text>
+        </g>
+        </g>
+      </svg>
+      <figcaption>Team mode unless marked solo; means over pooled rounds. The one visible exception to the top bar is the CODE lead, whose memory recall is 7.0% of its round; every other group prepares in 0.0-0.1%.</figcaption>
+    </figure>
+    <div class="stack" style="gap:14px">
+      <div>
+        <p class="label">Per round, team mode</p>
+        <dl class="kv" style="margin-top:8px">
+          <dt>lead</dt><dd>7.6-9.7 s gross, 93-99.9% agent call</dd>
+          <dt>teammate</dt><dd>8.9-17.2 s, 99.6-99.9% agent call</dd>
+          <dt>solo lead</dt><dd>9.5-41.5 s: it decodes the answers itself</dd>
+        </dl>
+      </div>
+      <div>
+        <p class="label">Inside the call · 446 agent calls</p>
+        <p class="mono" style="margin-top:8px;font-size:12.5px;line-height:1.6;color:var(--ink)">duration = 3.7 s<br>&nbsp;+ 0.033 ms × uncached prompt token<br>&nbsp;+ 17.4 ms × output token &nbsp;(r² 0.96)</p>
+      </div>
+      <ul class="list tight" style="font-size:13px">
+        <li><b>Three routes agree on the prefill slope:</b> a prompt-size sweep gives 0.0384 ms per token (26,000 tok/s, r² 0.88); identical prompts re-served from cache save 0.034-0.042 ms per token; the in-run regression 0.033. Headline value: <b>0.038 ms per uncached token</b>.</li>
+        <li>Re-sending a 5k-token history therefore costs 0.19 s, about 2% of a round; prefill turns into seconds only above roughly 50k tokens per call.</li>
+        <li><b>Decode is 12-26 ms per token</b> (81 tok/s at 300-token outputs, 39 tok/s at 1,200), so the fixed component dominates short tool-call rounds and decode dominates answer rounds.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">latency_breakdown.md</span> §3 A-B and §4; <span class="mono">s15_integrated_harness/latency_profile.md</span> §2.5. The shares inside the call apply one pooled regression to each group's own token counts and sum to 96-109% of that group's call time (CODE-team lead residual −9.4%); the bars are scaled to the attributed sum. Correction to the 2026-09-09 deck: its 0.42 ms/token fit was confounded by long-output calls and overstated prefill about 8x; the 2026-09-10 probe's 0.052 ms/token is within 1.4x of this week's value.</p></div>
+</section>
+
+<!-- ===================== 5 · MEMORY TAX ===================== -->
+<section class="slide" data-title="Memory tax">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">5</span><span>Result · the harness's own model calls</span></div>
+    <h2>The only expensive harness-side work is the harness calling the model about its own memory: 35% of all wall time, serial with the next turn under the agent lock</h2>
+  </div>
+  <div class="body wide-left" style="gap:40px">
+    <div class="stack" style="gap:12px">
+      <p class="label">Wall time per run, and the part spent in turn-end memory extraction</p>
+      <div class="pairs" style="grid-template-columns: 140px 280px 1fr">
+        <div class="h">run</div><div class="h">wall · extraction (280 px = 215 s)</div><div class="h">extraction</div>
+        <div class="m">FQA, team<small>lead + 3 teammates</small></div><div class="bars"><div class="bar ghost" style="width:234px"></div><div class="bar mate" style="width:102px"></div></div><div class="v"><b>78 s of 180 s</b> · 43%</div>
+        <div class="m">CODE, team</div><div class="bars"><div class="bar ghost" style="width:280px"></div><div class="bar mate" style="width:134px"></div></div><div class="v"><b>103 s of 215 s</b> · 48%</div>
+        <div class="m">MATH, team</div><div class="bars"><div class="bar ghost" style="width:215px"></div><div class="bar mate" style="width:78px"></div></div><div class="v"><b>60 s of 165 s</b> · 36%</div>
+        <div class="m">FQA, solo<small>one turn per run</small></div><div class="bars"><div class="bar ghost" style="width:132px"></div><div class="bar mate" style="width:29px"></div></div><div class="v"><b>22 s of 101 s</b> · 22%</div>
+        <div class="m">CODE, solo</div><div class="bars"><div class="bar ghost" style="width:210px"></div><div class="bar mate" style="width:13px"></div></div><div class="v"><b>10 s of 161 s</b> · 6%</div>
+        <div class="m">MATH, solo</div><div class="bars"><div class="bar ghost" style="width:154px"></div><div class="bar mate" style="width:25px"></div></div><div class="v"><b>19 s of 118 s</b> · 16%</div>
+      </div>
+      <p class="note xs"><span class="swatch grey"></span>wall per run (mean of 5 team / 3 solo runs) <span class="swatch mate" style="margin-left:14px"></span>turn-end memory extraction (<span class="mono">remember_after_turn</span>) summed over the run's lead turns. Team runs have 3.8-5.4 lead turns per run because every team event wakes one; solo runs have one.</p>
+      <table class="data xs" style="margin-top:4px">
+        <thead><tr><th>rounds per task</th><th class="n">MATH</th><th class="n">FQA</th><th class="n">CODE</th><th>plus</th></tr></thead>
+        <tbody>
+          <tr><td>teammate rounds per task, mean</td><td class="n">2.9</td><td class="n">4.0</td><td class="n">7.5</td><td>10-11 lead orchestration rounds per run</td></tr>
+          <tr><td>wall per task, team → solo</td><td class="n nw">55 → 39 s</td><td class="n nw">60 → 34 s</td><td class="n nw">72 → 54 s</td><td>solo lead 1.4-1.8× faster at equal quality</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="stack" style="gap:14px">
+      <div>
+        <p class="label">Why it is the cost that shows</p>
+        <ul class="list tight" style="margin-top:8px;font-size:13px">
+          <li><b>It runs after every lead turn</b>, including the short turns that team events wake: 13-21 s each, 42-58% of the lead's busy time in team mode, <b>1,364 s of 3,946 s</b> over the 24 runs.</li>
+          <li><b>It holds the agent lock</b>, so the next turn waits for it; 35-74% of these calls in team mode hit the memory runtime's 1,000-token cap, the model still thinking when cut off.</li>
+          <li><b>Memory recall</b> costs 4.9 s per call once records exist: the 7% of a CODE-lead round on slide 4.</li>
+          <li><b>Under context pressure the other model-driven cost appears.</b> At the 50k-char limit preparation per round was 0.65 s, of which 0.62 s was one summary-compaction call amortised over the run and 25 ms the compaction code; at 512k the whole pipeline costs 2 ms.</li>
+        </ul>
+      </div>
+      <p class="claim" style="font-size:17px">Running the extraction once per user request, or asynchronously outside the lock, would cut team-run wall time by 28-48%. Preparation only costs when the harness calls the model to do it.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">latency_breakdown.md</span> §3 A and E, §5, §6; <span class="mono">latency_profile.md</span> §2.6. Totals over 24 runs: agent calls 4,704 s, turn-end memory work 1,364 s, context preparation 32 s, tool execution 9.4 s, wall 3,946 s; calls exceed wall because teammates run in parallel with the lead. Every run solved every task (coding 24/24 tests pass, math 24/24 correct, file Q&amp;A 97-100% keyword coverage).</p></div>
+</section>
+
+<!-- ===================== 6 · TOOL PRICES ===================== -->
+<section class="slide" data-title="Tool prices">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">6</span><span>Result · the price of one tool call (new, 2026-09-15)</span></div>
+    <h2>Every tool costs 0.2-10 ms except four that scale with their arguments; the dearest, <span class="mono">create_worktree</span> at 607 ms, is one sixth of a call's 3.72 s fixed component</h2>
+  </div>
+  <div class="body wide-left" style="gap:36px">
+    <figure>
+      <svg viewBox="0 0 600 400" role="img" aria-label="Dot plot on a logarithmic axis from 0.1 millisecond to 10 seconds. Twelve rows of tools cluster between 0.2 and 3 milliseconds; read_file rises from 2.9 to 37 milliseconds with the bytes returned, bash from 2.4 to 135 milliseconds with the command, glob from 2.1 to 27 milliseconds, and create_worktree sits alone at 607 milliseconds. A reference line at 3,720 milliseconds marks the fixed component of one model call. Hollow dots show the means observed in the 24 latency runs.">
+        <g color="var(--ink-2)">
+        <g class="grid"><line x1="200.0" y1="30" x2="200.0" y2="362"/><line x1="276.0" y1="30" x2="276.0" y2="362"/><line x1="352.0" y1="30" x2="352.0" y2="362"/><line x1="428.0" y1="30" x2="428.0" y2="362"/><line x1="504.0" y1="30" x2="504.0" y2="362"/><line x1="580.0" y1="30" x2="580.0" y2="362"/></g>
+        <line x1="200" y1="362" x2="580" y2="362" class="axis"/>
+        <g font-size="10" class="t-mono t-muted" text-anchor="middle"><text x="200.0" y="378">0.1 ms</text><text x="276.0" y="378">1</text><text x="352.0" y="378">10</text><text x="428.0" y="378">100</text><text x="504.0" y="378">1,000</text><text x="580.0" y="378">10 s</text></g>
+        <line x1="547.4" y1="14" x2="547.4" y2="362" stroke="var(--ink-2)" stroke-width="1.5"/><text x="542.4" y="12" font-size="10.5" class="t-ink2" text-anchor="end">one model call's fixed component · 3.72 s</text>
+        <g font-size="10" class="t-ink2" text-anchor="end"><text x="192" y="48">compact marker</text><text x="192" y="73">cron tools</text><text x="192" y="98">mock MCP tools ×4</text><text x="192" y="123">todo_write · load_skill</text><text x="192" y="148">team protocol ×6</text><text x="192" y="173">task board ×6</text><text x="192" y="198">denials ×4</text><text x="192" y="223">glob: shallow · recursive</text><text x="192" y="248">read_file: 50 lines · 13 · 146 KB</text><text x="192" y="273">bash: bg · ls · grep · unit tests</text><text x="192" y="298">create_worktree, real git</text><text x="192" y="323">observed in the 24 runs</text></g>
+        <g class="f-lead" stroke="var(--surface)" stroke-width="2"><circle cx="222.9" cy="44" r="4.5"/><line x1="245.8" y1="69" x2="264.2" y2="69" stroke="var(--lead)" stroke-width="2"/><circle cx="245.8" cy="69" r="4.5"/><circle cx="264.2" cy="69" r="4.5"/><line x1="245.8" y1="94" x2="268.6" y2="94" stroke="var(--lead)" stroke-width="2"/><circle cx="245.8" cy="94" r="4.5"/><circle cx="268.6" cy="94" r="4.5"/><circle cx="259.1" cy="119" r="4.5"/><line x1="253.1" y1="119" x2="293.5" y2="119" stroke="var(--lead)" stroke-width="2"/><circle cx="253.1" cy="119" r="4.5"/><circle cx="293.5" cy="119" r="4.5"/><line x1="253.1" y1="144" x2="297.2" y2="144" stroke="var(--lead)" stroke-width="2"/><circle cx="253.1" cy="144" r="4.5"/><circle cx="297.2" cy="144" r="4.5"/><line x1="279.1" y1="169" x2="310.0" y2="169" stroke="var(--lead)" stroke-width="2"/><circle cx="279.1" cy="169" r="4.5"/><circle cx="310.0" cy="169" r="4.5"/><circle cx="300.5" cy="219" r="4.5"/><line x1="379.5" y1="219" x2="384.8" y2="219" stroke="var(--lead)" stroke-width="2"/><circle cx="379.5" cy="219" r="4.5"/><circle cx="384.8" cy="219" r="4.5"/><circle cx="311.1" cy="244" r="4.5"/><circle cx="337.3" cy="244" r="4.5"/><circle cx="395.4" cy="244" r="4.5"/><circle cx="304.9" cy="269" r="4.5"/><circle cx="347.4" cy="269" r="4.5"/><line x1="348.5" y1="269" x2="355.1" y2="269" stroke="var(--lead)" stroke-width="2"/><circle cx="348.5" cy="269" r="4.5"/><circle cx="355.1" cy="269" r="4.5"/><circle cx="437.9" cy="269" r="4.5"/><circle cx="487.5" cy="294" r="4.5"/></g>
+        <g class="f-grey" stroke="var(--surface)" stroke-width="2"><circle cx="236.3" cy="194" r="4.5"/><circle cx="245.8" cy="194" r="4.5"/><circle cx="276.0" cy="194" r="4.5"/></g>
+        <g fill="var(--surface)" stroke="var(--lead)" stroke-width="1.6"><circle cx="354.2" cy="319" r="4.5"/><circle cx="361.9" cy="319" r="4.5"/><circle cx="376.6" cy="319" r="4.5"/><circle cx="416.6" cy="319" r="4.5"/><circle cx="428.7" cy="319" r="4.5"/></g>
+        <g font-size="9.5" class="t-mono t-ink2"><text x="230.9" y="48">0.2</text><text x="272.2" y="73">0.4-0.7</text><text x="276.6" y="98">0.4-0.8</text><text x="301.5" y="123">0.6 · 0.5-1.7</text><text x="305.2" y="148">0.5-1.9</text><text x="318.0" y="173">1.1-2.8</text><text x="284.0" y="198">0.3 · 0.4 · 1.0</text><text x="308.5" y="223">2.1</text><text x="392.8" y="223">23-27</text><text x="319.1" y="248">2.9</text><text x="345.3" y="248">6.4</text><text x="403.4" y="248">37.3</text><text x="312.9" y="273">2.4</text><text x="363.1" y="273">8.7 · 9-11</text><text x="445.9" y="273">135</text><text x="495.5" y="298">607 ms</text><text x="436.7" y="318">read_file 10.7 / 13.5 · spawn 21</text><text x="436.7" y="329">bash 71 / 102</text></g>
+        <g font-size="10" class="t-ink2"><circle cx="206" cy="394" r="4" class="f-lead"/><text x="215" y="397">probe median, 24 dispatches × 2 runs</text><circle cx="418" cy="394" r="4" class="f-grey"/><text x="427" y="397">denied</text><circle cx="478" cy="394" r="4" fill="var(--surface)" stroke="var(--lead)" stroke-width="1.6"/><text x="487" y="397">observed mean</text></g>
+        </g>
+        </svg>
+    </figure>
+    <div class="stack" style="gap:12px">
+      <div>
+        <p class="label">What was run</p>
+        <p class="note xs" style="margin-top:6px">54 case labels (42 lead-side, 12 teammate-side) dispatched through the same code the agent loops use: trace span, permission hooks, handler, PostToolUse hook. The provider client is patched to raise, so no model call is spent. One warm-up plus 24 timed dispatches per case, shuffled, two independent runs: <b>2,556 timed dispatches, zero errors</b>, about 15 s per run.</p>
+      </div>
+      <ul class="list tight xs">
+        <li><b>A flat floor of 0.5-3 ms across both pools.</b> <span class="mono">read_file</span> ≈ 3.5 ms + 0.23 ms per KB returned, so a windowed read (<span class="mono">limit=50</span>, 2.9 ms) is 2-12x cheaper than the whole file at these sizes.</li>
+        <li><b><span class="mono">bash</span> is the command:</b> <span class="mono">ls</span> 8.7 ms, a scoped grep 9-11 ms, <span class="mono">python3</span> on a unit-test file 135 ms.</li>
+        <li><b>Denial is 10-100x cheaper than execution</b> (0.3-1.0 ms); a refused call costs the extra model round it triggers, never the refusal.</li>
+        <li><b>The teammate tax is permission, not machinery:</b> identical operations land within a millisecond of the lead's (recursive glob 24.4 vs 23.1 ms, 13 KB read 7.9 vs 6.4 ms). What distinguishes a teammate is its 10-tool pool and the async rule that denies its non-display shell in 1.0 ms.</li>
+        <li><b>Scale:</b> the median tool call, 1-3 ms, is three orders of magnitude below one model call; the worst realistic case, a 135 ms test run, is 3.6% of the fixed component.</li>
+      </ul>
+      <p class="claim" style="font-size:16px">A per-tool cost table is now measured rather than guessed: a lookup for the 22 flat tools, argument-aware pricing for <span class="mono">bash</span>, <span class="mono">read_file</span>, <span class="mono">glob</span> and <span class="mono">create_worktree</span>.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">tool_execution_cost.md</span> §2-4; <span class="mono">s15_integrated_harness/tool_latency_profile.md</span>; tables in <span class="mono">traces/tool_latency/</span>. Tool-side optimisation stays closed; the levers remain round count, decode and turn-end memory work. The list is also what a hot/cold tool pool would advertise (slide 7): publication alone is pointless, but the prices are now exact.</p></div>
+</section>
+
+<!-- ===================== 7 · COST EXPOSURE ===================== -->
+<section class="slide" data-title="Cost exposure">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">7</span><span>Result · can the model schedule itself</span></div>
+    <h2>Publishing the price list does not move the model; an objective does, and cost decides only between tools described as substitutes</h2>
+  </div>
+  <div class="body wide-left" style="gap:36px">
+    <div class="stack" style="gap:12px">
+      <div class="pairs" style="grid-template-columns: 1fr 240px 130px">
+        <div class="h">arm · what was counted</div><div class="h">without → with cost shown</div><div class="h">values · p</div>
+        <div class="m">Realistic pool, first move is <span class="mono">read_file</span><small>probe C · 160 trials · 0.05 / 5 / 60 s, three framings</small></div><div class="bars"><div class="bar ghost" style="width:106px"></div><div class="bar mate" style="width:108px"></div></div><div class="v">44% → <b>45%</b><br>p = 1.000</div>
+        <div class="m">Realistic pool, cost table alone<small>probe D, separate batch</small></div><div class="bars"><div class="bar ghost" style="width:74px"></div><div class="bar mate" style="width:77px"></div></div><div class="v">31% → <b>32%</b></div>
+        <div class="m">Realistic pool + one policy sentence<small>probe D · "prefer the cheapest tool that still answers"</small></div><div class="bars"><div class="bar ghost" style="width:74px"></div><div class="bar mate" style="width:22px"></div></div><div class="v">31% → <b>9%</b><br>p = 0.0098</div>
+        <div class="m">Stage 2, 80 real multi-round runs: used <span class="mono">read_file</span><small>tools really execute · 2×2 advertised × enforced sleep</small></div><div class="bars"><div class="bar ghost" style="width:198px"></div><div class="bar mate" style="width:192px"></div></div><div class="v">33/40 → <b>32/40</b><br>p = 1.000</div>
+        <div class="m">Two readers described as interchangeable: chose the cheaper<small>probe A · 9 cells of framing × placement</small></div><div class="bars"><div class="bar ghost" style="width:127px"></div><div class="bar mate" style="width:237px"></div></div><div class="v">53% → <b>97-100%</b><br>p = 7e-06</div>
+        <div class="m">Same pair: chose the habitually preferred name</div><div class="bars"><div class="bar ghost" style="width:218px"></div><div class="bar mate" style="width:120px"></div></div><div class="v">91% → <b>50%</b></div>
+        <div class="m">Dose sweep, 5x to 7500x gap: chose the cheaper<small>probe B · a tie returns it to chance</small></div><div class="bars"><div class="bar ghost" style="width:113px"></div><div class="bar mate" style="width:240px"></div></div><div class="v">47% → <b>100%</b><br>at every gap</div>
+        
+      </div>
+      <p class="note xs"><span class="swatch grey"></span>baseline arm <span class="swatch mate" style="margin-left:14px"></span>cost shown. <b>Stage 3, the real s15 harness (24 sessions):</b> value lookups went through <span class="mono">bash</span> + grep in 12 of 12 runs with <span class="mono">read_file</span> never called in any arm; comprehension questions read the whole 12.5 KB file in 12 of 12 runs in every arm, correctly.</p>
+    </div>
+    <div class="stack" style="gap:12px">
+      <ul class="list tight xs">
+        <li><b>In a mixed pool the model picks on task fit and never consults the price:</b> it raised the cost in 0-3% of its replies whatever the label said.</li>
+        <li><b>Between substitutes cost is a tie-break, not a budget.</b> A 5x gap and a 7500x gap are avoided at the same rate and a tie returns it to chance, so published costs need only be in the right order, not accurate; an agent that respects them is not thereby scheduling well.</li>
+        <li><b>What moves a mixed pool is being told to care.</b> One sentence, "Tool calls are not free. Prefer the cheapest tool that can still answer the question correctly", cut <span class="mono">read_file</span> from 31% to 9% of first moves; the same table without it did nothing. A hard latency budget on top changed no choice but made the model narrate the cost.</li>
+        <li><b>Labels are nearly free to send</b> (about 230 tokens, all in the cached prefix) and cost most when used: replies grow by 18-31 tokens, a third to half a second of decode.</li>
+      </ul>
+      <p class="claim" style="font-size:16.5px">Cost-aware routing stays in the harness. The exception is the tiered-memory case itself: a hot and a cold route to the same bytes are exactly the substitutable pair the effect needs. Nine tokens of description moved the model from 53% to 100%, with no loss of accuracy.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">tool_cost_exposure.md</span> §2-4; <span class="mono">s15_integrated_harness/tool_cost_profile.md</span>; page <span class="mono">claude.ai/code/artifact/6de7f01b-27ae-4151-911f-42293a286e98</span>. Noise floor: a stage-2 arm whose reader really slept 5 s without telling the model differed by about 15 points, so nothing under 12-15 points in stages 2-3 is signal. Probes C and D are separate batches with their own baselines (44% and 31%). One model on one provider; the mixed-pool null is the claim to re-check on a second model (15 minutes with the scripts as they stand).</p></div>
+</section>
+
+<!-- ===================== 8 · REDUNDANCY CEILING ===================== -->
+<section class="slide" data-title="Redundancy ceiling">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">8</span><span>Result · cross-teammate copies</span></div>
+    <h2>Cross-teammate duplication equals (N−1)/N exactly: it measures how the tasks were cut, not the harness, and no context budget touches it</h2>
+  </div>
+  <div class="body wide-left" style="gap:40px">
+    <figure>
+      <p class="label">Share of teammate-fetched bytes another teammate already held · ceiling vs measured, per run</p>
+      <svg viewBox="0 0 640 330" role="img" aria-label="Dot plot of eight workloads on a 0 to 100 percent axis. For each, a hollow diamond marks the arithmetic ceiling (N minus one over N of the shared bytes) and orange dots mark the measured runs; every measured value sits on or just below its ceiling: 61 to 64 percent against 66.7 for the shared corpus with three teammates, 52.8 against 52.8 for partial overlap, 22.8 against 22.8 for file Q and A, zero against zero for disjoint corpora." style="margin-top:6px">
+        <g color="var(--ink-2)">
+        <g class="grid"><line x1="265" y1="26" x2="265" y2="296"/><line x1="380" y1="26" x2="380" y2="296"/><line x1="495" y1="26" x2="495" y2="296"/><line x1="610" y1="26" x2="610" y2="296"/></g>
+        <line x1="150" y1="26" x2="150" y2="296" class="axis"/><line x1="150" y1="296" x2="610" y2="296" class="axis"/>
+        <g font-size="10" class="t-mono t-muted" text-anchor="middle"><text x="150" y="312">0%</text><text x="265" y="312">25%</text><text x="380" y="312">50%</text><text x="495" y="312">75%</text><text x="610" y="312">100%</text></g>
+        <g font-size="10.5" class="t-ink2" text-anchor="end">
+          <text x="142" y="44">PF-S · shared corpus, N=3</text>
+          <text x="142" y="78">PF-S r1 @50k · N=4</text>
+          <text x="142" y="112">PF-P · partial overlap, N=3</text>
+          <text x="142" y="146">DC-S · shared glossary, N=3</text>
+          <text x="142" y="180">DC-S r2 @50k · N=5</text>
+          <text x="142" y="214">DC-P · disjoint chapters</text>
+          <text x="142" y="248">FQA · private doc + glossary</text>
+          <text x="142" y="282">CODE · disjoint problem dirs</text>
+        </g>
+        <!-- ceilings: hollow diamonds -->
+        <g fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.5">
+          <path d="M456.8 34 l6 6 -6 6 -6 -6z"/><path d="M495 68 l6 6 -6 6 -6 -6z"/><path d="M392.9 102 l6 6 -6 6 -6 -6z"/><path d="M456.8 136 l6 6 -6 6 -6 -6z"/><path d="M518 170 l6 6 -6 6 -6 -6z"/><path d="M150 204 l6 6 -6 6 -6 -6z"/><path d="M254.9 238 l6 6 -6 6 -6 -6z"/><path d="M150 272 l6 6 -6 6 -6 -6z"/>
+        </g>
+        <!-- measured: orange dots with surface ring -->
+        <g class="f-mate" stroke="var(--surface)" stroke-width="2">
+          <circle cx="444.9" cy="40" r="4.5"/><circle cx="432" cy="40" r="4.5"/><circle cx="432.9" cy="40" r="4.5"/>
+          <circle cx="466.5" cy="74" r="4.5"/>
+          <circle cx="392.9" cy="108" r="4.5"/>
+          <circle cx="456.8" cy="142" r="4.5"/><circle cx="425.5" cy="142" r="4.5"/>
+          <circle cx="518" cy="176" r="4.5"/>
+          <circle cx="150" cy="210" r="4.5"/>
+          <circle cx="254.9" cy="244" r="4.5"/><circle cx="221.8" cy="244" r="4.5"/><circle cx="207" cy="244" r="4.5"/>
+          <circle cx="150" cy="278" r="4.5"/>
+        </g>
+        <g font-size="9.5" class="t-mono t-ink2">
+          <text x="466" y="44">66.7 · runs 64.1, 61.3, 61.5</text>
+          <text x="504" y="78">75 · run 68.8</text>
+          <text x="402" y="112">52.8 = ⅔ × 79% · all four runs 52.8</text>
+          <text x="466" y="146">66.7 · runs 66.7, 66.7, 59.9</text>
+          <text x="527" y="180">80 · run 80.0</text>
+          <text x="160" y="214">0 · all four runs 0</text>
+          <text x="264" y="248">22.8 · runs 22.8 ×3, 15.6, 12.4</text>
+          <text x="160" y="282">0 · all five runs 0</text>
+        </g>
+        </g>
+      </svg>
+      <figcaption><span style="display:inline-block;width:9px;height:9px;border:1.5px solid var(--ink-2);transform:rotate(45deg);margin-right:8px;vertical-align:-1px"></span>ceiling: (N−1)/N of the shared bytes, diluted by private files <span class="swatch mate" style="margin-left:14px"></span>measured on bytes with exact (file, line) provenance. Whole-result SHA-256 sees 0-3% of the same runs because paging windows differ; ~350 B content-defined chunks agree with the byte measure within 1-4 points.</figcaption>
+    </figure>
+    <div class="stack" style="gap:12px">
+      <div>
+        <p class="label">What the copies cost</p>
+        <ul class="list tight xs" style="margin-top:8px">
+          <li>When teammates share a file, <b>52-80%</b> of the bytes they load are copies another teammate already holds; with disjoint corpora, <b>0%</b>. In prefill-heavy runs the duplicates are <b>45-54% of all teammate prompt tokens</b> (39-49% of the uncached ones); in decode-heavy runs the rate is as high but the volume small, 14-31%.</li>
+          <li>Teammates never compact, so the team ends a run holding <b>2-5 resident copies</b> of the same file.</li>
+          <li>94-100% of duplicates arrive <b>within 60 s</b> in a single wave; second waves re-fetch them <b>6-16 min</b> later, past the provider cache's roughly 5-minute idle lifetime.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="label">Raising the lead's budget 50k → 512k chars</p>
+        <ul class="list tight xs" style="margin-top:8px">
+          <li><b>Fixed the lead:</b> zero summary compactions and zero placeholder rewrites in all eight runs, no report lost, no duplicate task or second wave, no timeout; wall 1.7-2.6× shorter where runs had hit the 1,200 s ceiling (PF-S 788 / 447 s, DC-S 673 / 518 s).</li>
+          <li><b>Left the teammates unchanged:</b> 61-67% for shared corpora, 52.8% in all four PF-P runs, 0% disjoint. The lead's own cache hit rate fell to 4-23% because <span class="mono">snip_compact</span> still rewrites its history past 50 messages.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">teammate_input_redundancy.md</span> §3 A-E, §5-6; <span class="mono">latency_breakdown.md</span> §5 (FQA and CODE rows; MATH read no files). PF-S run 1 at 50k spawned a fourth teammate 16 min in, hence N=4; DC-S run 2 at 50k spawned two extra after provider 429s. The provider's cache is strictly prefix-based (identical resend 99.9% cached, same body behind a new prefix 0%, a unique block mid-prompt 0%), so a shared block is reusable only at the same position in the same prefix: the constraint on next step 5.</p></div>
+</section>
+
+<!-- ===================== 9 · ROUNDS AND RESIDENCY ===================== -->
+<section class="slide" data-title="Rounds and residency">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">9</span><span>Result · the lead under a budget</span></div>
+    <h2>Rounds are set by residency: sizing removes them, a stable prefix only makes them cheaper, batching needs headroom, outlines cost rounds</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1.25fr; gap:32px">
+    <div class="stack" style="gap:9px">
+      <p class="label">X3 budget sweep · read all 17 chapter READMEs (162,526 chars, ~41k tokens) and compare</p>
+      <table class="data xs">
+        <thead><tr><th>lead budget</th><th class="n">rounds</th><th class="n">model time</th><th class="n">re-acq. rounds</th><th class="n">uncached tok</th></tr></thead>
+        <tbody>
+          <tr><td class="nw">50k chars · 2 runs</td><td class="n nw">99, 45</td><td class="n nw">794, 463 s</td><td class="n nw">76%, 67%</td><td class="n nw">917k, 459k</td></tr>
+          <tr><td class="nw">100k · 3 runs</td><td class="n nw">120, 30, 41</td><td class="n nw">995, 466, 500 s</td><td class="n nw">92%, 0%, 73%</td><td class="n nw">2,260k, 536k, 744k</td></tr>
+          <tr class="hi"><td class="nw">200k · 2 runs</td><td class="n nw">6, 7</td><td class="n nw">138, 149 s</td><td class="n nw">0, 0</td><td class="n nw">115k, 129k</td></tr>
+        </tbody>
+      </table>
+      <div>
+        <p class="label">Autopsy of the 656 s gap, worst 50k run against 200k</p>
+        <svg viewBox="0 0 520 40" role="img" aria-label="Stacked bar splitting the 656 second gap between the worst 50k run and the 200k run: re-read rounds 42 percent, extra small acquisition rounds 14 percent, re-locate greps 14 percent, slower answer production 24 percent." style="margin-top:6px">
+          <rect x="0" y="2" width="216.4" height="13" class="f-mate"/><rect x="218.4" y="2" width="70.1" height="13" class="f-mate" opacity="0.7"/><rect x="290.5" y="2" width="70.1" height="13" class="f-mate" opacity="0.45"/><rect x="362.6" y="2" width="122.7" height="13" class="f-lead"/><rect x="487.3" y="2" width="30.7" height="13" class="f-grey" opacity="0.5"/>
+          <g font-size="10" class="t-ink2"><text x="0" y="30">re-read rounds 42%</text><text x="218" y="30">small acquisition rounds 14% · re-locate greps 14%</text><text x="484" y="30" text-anchor="end" style="display:none">.</text></g>
+          <g font-size="10" class="t-ink2"><text x="362" y="30" style="display:none">.</text></g>
+        </svg>
+        <p class="note xs" style="margin-top:2px">Blue: slower answer production 24%; grey: the rest. Rounds 16-73 of that run were two more full sequential passes, one README per round at 17-31 output tokens each.</p>
+      </div>
+      <ul class="list tight xs">
+        <li><b>The miss rate is independent of budget:</b> 100% of re-acquisitions at 100k and 77-100% at 50k hit a README that was already a pointer. A sequential scan over 17 files with oldest-first eviction misses on every revisit below the working set; 100k holds ~60% of the corpus and still misses.</li>
+        <li>The budget meant to save tokens <b>multiplied them 4-20×</b> (output tokens 2.4-5.6×). Above the working set the corpus is read in 3 rounds and 84% of model time goes to the answer.</li>
+      </ul>
+    </div>
+    <div class="stack" style="gap:9px">
+      <p class="label">Three lead-side interventions · shell allowed · n=3 at 50k, n=1 at 100k · three blind judges</p>
+      <table class="data xs">
+        <thead><tr><th>arm</th><th class="n">rounds</th><th class="n">model time</th><th class="n">cache hit</th><th class="n">uncached tok</th><th class="n">chapters</th><th class="n">judges /20</th></tr></thead>
+        <tbody>
+          <tr><td class="nw">baseline @50k</td><td class="n nw">69 (27-153)</td><td class="n">429 s</td><td class="n">15%</td><td class="n">633k</td><td class="n">17/17</td><td class="n">18</td></tr>
+          <tr class="hi"><td class="nw">stable prefix @50k</td><td class="n nw">57 (51-66)</td><td class="n">437 s</td><td class="n"><b>60%</b></td><td class="n"><b>219k</b></td><td class="n">13/17</td><td class="n"><b>14</b></td></tr>
+          <tr><td class="nw">outline @50k</td><td class="n">129</td><td class="n">982 s</td><td class="n">17%</td><td class="n">1,258k</td><td class="n">17/17</td><td class="n"><b>19</b></td></tr>
+          <tr><td class="nw">baseline @100k</td><td class="n">134</td><td class="n">964 s</td><td class="n">9%</td><td class="n">2,576k</td><td class="n">17/17</td><td class="n"></td></tr>
+          <tr class="hi"><td class="nw">batch read @100k</td><td class="n"><b>56</b></td><td class="n"><b>600 s</b></td><td class="n">10%</td><td class="n">966k</td><td class="n nw">17/17 · 45/52 files</td><td class="n"></td></tr>
+        </tbody>
+      </table>
+      <ul class="list tight xs">
+        <li><b>Transfer path · stable prefix.</b> Cache hit 15% → 60%, uncached tokens 633k → 219k, rewrite events 60 → 15, rounds unchanged. The only arm that lost quality (14 against 18); which sub-change causes it is unattributed.</li>
+        <li><b>Capacity · batch read.</b> With headroom: 134 → 56 rounds, 964 → 600 s, 17/17 chapters, zero re-acquisition at 200k. At 50k the 12.5k-char cap truncates 6-9 batches and delivers 32-58% of what was asked.</li>
+        <li><b>Representation · outline demotion.</b> 856-1,131 chars per evicted slot against 201-538 for the pointer, 33-45% of a 50k budget: 4 summary compactions here, 11-37 with the shell denied, and the most rounds. Best answers with the shell (19/20) from targeted re-reads; the worst arm without it (809 reads, timeouts).</li>
+        <li><b>Sizing.</b> 200k: 5-7 rounds, 150-182 s, zero re-acquisition, shell or no shell, batch or no batch. The only change so far with no quality cost.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">agent_e2e_bottleneck.md</span> Q1, Q2, Q4; <span class="mono">s15_integrated_harness/context_intervention_profile.md</span>. Shell-denied matrix, fixed driver: baseline @50k 14 and 319 rounds (one timeout), batch 20 and 20, outline 242 and 87 (both timeouts), stable prefix 11 rounds at 39% cache hit and 66k uncached tokens. At the 50k limit one task took 33-65 rounds and 363-807 s with 18-45 shrink events and 26-35 placeholders resident; at 512k three tasks took 2-20 rounds and 82-249 s with none.</p></div>
+</section>
+
+<!-- ===================== 10 · NEXT STEPS ===================== -->
+<section class="slide" data-title="Next steps">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">10</span><span>Next steps</span></div>
+    <h2>Next: attack the eviction order rather than the prefill, and turn the task board into a retention policy the engine can act on</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1.15fr 1fr; gap:34px">
+    <div class="stack" style="gap:13px">
+      <p class="label">Two directions for next week</p>
+      <div class="step"><span class="n">12</span><div>
+        <span class="group">eviction order · the harness tier</span>
+        <p style="font-size:13.5px;line-height:1.3"><b>The extra rounds come from the eviction order, so cache reuse should be judged on rounds removed, not prefill saved.</b></p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li><span class="mono">micro_compact</span> keeps the three newest tool results and replaces the rest with a pointer, oldest first. For a pass over a corpus that is then revisited, oldest-first is the worst possible order: <b>77 to 100% of re-acquisitions hit a result that had already become a pointer</b>.</li>
+          <li>Every miss buys a whole round: one model call carrying 3.7 s of fixed latency, a tool call, and a fresh prefill of bytes the context already held. Three replayed runs spent 39, 21 and 10 rounds this way. The prefill is the cheap part, under 2% of a call, <b>so keeping the KV is worth it for the round that never happens, not for the FLOPs</b>.</li>
+          <li><b>To run:</b> replace oldest-first with a reuse-aware order, and keep the evicted block addressable so a recall costs neither a tool call nor a prefill. Score it on re-acquisition rounds, not on prefill tokens.</li>
+        </ul>
+      </div></div>
+      <div class="step"><span class="n">13</span><div>
+        <span class="group">DAG-aware eviction · the engine tier</span>
+        <p style="font-size:13.5px;line-height:1.3"><b>Nothing caps a request's share of HBM except capacity itself, so the harness should publish what its task graph already implies.</b></p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li>No engine rejects on capacity. LRU decides, and it evicts exactly the prefix an idle teammate will want next: <b>18.5% of a KV pool sits idle on tool calls and 40 to 60% of session time is paused</b>.</li>
+          <li>The harness holds what the engine lacks. The task board is a dependency graph: which teammate is blocked and on what, which is about to be unblocked, which has finished, and how long each has been idle. Continuum pins a session's KV for a computed TTL (slide 1) and KVFlow evicts by steps-to-execution, but neither is driven by a task DAG the client already maintains.</li>
+          <li><b>To run:</b> derive a per-session retention directive from the board, hold, demote or drop, and test it on the self-hosted vLLM where blocks can be pinned. Watch idle against active KV, and who is retracted when <span class="mono">--max-num-seqs</span> forces preemption.</li>
+        </ul>
+      </div></div>
+    </div>
+    <div class="stack" style="gap:10px">
+      <p class="label">Carried over from the week's notes</p>
+      <ol class="list tight xs" style="list-style:none;font-size:11.5px;gap:6px">
+        <li><b>1</b> Take memory extraction off the lead's critical path: once per user request, asynchronously outside the agent lock, or with a smaller budget. Worth 28 to 48% of team wall time.</li>
+        <li><b>2</b> Give teammates a task-boundary compaction and the lead a respawn rule for low file overlap.</li>
+        <li><b>3</b> Attribute the stable-prefix quality loss to the snip, the archive marker or the timestamp.</li>
+        <li><b>4</b> Make <span class="mono">compact_history</span> cache-sharing and restore the working set afterwards.</li>
+        <li><b>5</b> Prototype the shared file block: one position-stable prefix per team, prefilled once.</li>
+        <li><b>6</b> Prototype KV re-attach on the Qwen replay and compare recall probes against the oracle.</li>
+        <li><b>7</b> Measure the self-hosted vLLM: KV held by idle versus active teammates, forced preemption, session-sticky routing.</li>
+        <li><b>8</b> Re-check the splice error ratio on a production-size model before the claim leaves the replay.</li>
+        <li><b>9</b> Re-run the latency breakdown above 50k tokens per call, where prefill starts to matter.</li>
+        <li><b>10</b> Give the tiered prototype two advertised routes; re-run the stage-1 probe on a second model first.</li>
+        <li><b>11</b> Housekeeping: the notes are committed; decide whether to restore section 7 of the redundancy note; rerun the shell-denied matrix once the provider's cap resets.</li>
+      </ol>
+      <p class="note xs" style="margin-top:2px">The two new directions are not additions to the backlog so much as a reading of it. <b>12</b> gives items 5 and 6 their success metric, which is round count rather than prefill tokens. <b>13</b> turns item 7 from a measurement into a control.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">tiered_memory_conclusion.md</span> §4 for items 1-11, numbering as in the note; <span class="mono">agent_e2e_bottleneck.md</span> Q1 and Q4 behind direction 12, where the eviction figures come from the X3 budget sweep; <span class="mono">serving_memory_balancing.md</span> §6.3 behind direction 13, which cites the idle-KV figures to TokenCake and vLLM RFC #37003.</p></div>
+</section>
+
+</div>
+</div>
+<div class="hud"><div class="bar" id="bar"></div></div>
+<div class="hint">← → navigate · O overview · P print</div>
+<div class="counter"><span id="ctr">1 / 11</span><button id="ovbtn" type="button" aria-label="Toggle overview">overview</button></div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var body = document.body;
+  var bar = document.getElementById('bar');
+  var ctr = document.getElementById('ctr');
+  var idx = 0;
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    document.documentElement.style.setProperty('--s', String(s));
+  }
+  function show(i, push) {
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === idx); });
+    bar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    ctr.textContent = (idx + 1) + ' / ' + slides.length;
+    document.title = (slides[idx].dataset.title ? slides[idx].dataset.title + ' · ' : '') + 's15 Tier Boundaries';
+    if (push !== false) { try { history.replaceState(null, '', '#' + (idx + 1)); } catch (e) {} }
+  }
+  function fromHash() {
+    var n = parseInt((location.hash || '#1').slice(1), 10);
+    show(isNaN(n) ? 0 : n - 1, false);
+  }
+  function toggleOverview(force) {
+    var on = typeof force === 'boolean' ? force : !body.classList.contains('overview');
+    body.classList.toggle('overview', on);
+    if (!on) { show(idx); window.scrollTo(0, 0); }
+  }
+
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', fromHash);
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'l': case 'j':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx + 1); } break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'h': case 'k':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx - 1); } break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End': e.preventDefault(); show(slides.length - 1); break;
+      case 'o': case 'O': toggleOverview(); break;
+      case 'Escape': toggleOverview(false); break;
+      case 'p': case 'P': window.print(); break;
+    }
+  });
+  slides.forEach(function (el, k) {
+    el.addEventListener('click', function (e) {
+      if (body.classList.contains('overview')) { show(k); toggleOverview(false); return; }
+      var r = stage.getBoundingClientRect();
+      if (e.clientX - r.left > r.width * 0.5) show(idx + 1); else show(idx - 1);
+    });
+  });
+  document.getElementById('ovbtn').addEventListener('click', function () { toggleOverview(); });
+  window.addEventListener('beforeprint', function () { body.classList.remove('overview'); });
+
+  if (location.search.indexOf('export') !== -1) body.classList.add('export');
+  fit();
+  fromHash();
+})();
+</script>
