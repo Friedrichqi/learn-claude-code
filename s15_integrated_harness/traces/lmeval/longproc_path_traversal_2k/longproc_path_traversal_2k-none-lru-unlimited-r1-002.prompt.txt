@@ -1,0 +1,249 @@
+[TASK]
+In a completely hypothetical world, there are a number of cities. Each city has a one-way connection to only one other city via a specific transit method (bus, train, plane, or ferry). Your task is to provide a route from a city to another city. You should follow the specific instruction provided later and output the route following the format provided in the instruction.
+
+
+[IMPORTANT NOTES]
+- All connections are one-way. If city A is connected to city B, you can travel from A to B, but not the other way around.
+- Because each city is connected to only one other city, so there's only one possible route. To find the route, you can simply start from the starting city, identify the next city it's connected to, and repeat the process until you reach the destination city.
+- Please follow the exact format specified below when outputting the route.
+
+
+[OUTPUT FORMAT]
+Please mark the route with <Route> and </Route> tags. The route should be in the following format, where one line is one step of the route:
+<Route>
+From <CITY_NAME>, take a <TRANSIT_METHOD> to <CITY_NAME>.
+...
+From <CITY_NAME>, take a <TRANSIT_METHOD> to <CITY_NAME>.
+</Route>
+
+
+[EXAMPLE]
+In a hypothetical world, there are a number of cities. Each city has a one-way connection to only one other city via a specific transit method. The details of the cities are as follows:
+Fort Worth is a lively city. You can travel from Fort Worth to Manchester by ferry.
+Leeds is a lively city. You can travel from Leeds to London by bus.
+Manchester is a lively city. You can travel from Manchester to Indianapolis by plane.
+Houston is a lively city. You can travel from Houston to London by ferry.
+Charlotte is a lively city. You can travel from Charlotte to Charlotte by bus.
+London is a lively city. You can travel from London to San Antonio by train.
+San Antonio is a lively city. You can travel from San Antonio to Kitchener by train.
+Seattle is a lively city. You can travel from Seattle to London by train.
+Indianapolis is a lively city. You can travel from Indianapolis to Houston by ferry.
+
+Now find the route from Manchester to Kitchener based on the information above.
+
+<Route>
+From Manchester, take a plane to Indianapolis.
+From Indianapolis, take a ferry to Houston.
+From Houston, take a ferry to London.
+From London, take a train to San Antonio.
+From San Antonio, take a train to Kitchener.
+</Route>
+
+
+[PROBLEM]
+In a hypothetical world, there are a number of cities. Each city has a one-way connection to only one other city via a specific transit method. The details of the cities are as follows:
+Potton is a lively city. You can travel from Potton to Genoa by ferry.
+Omsk is a lively city. You can travel from Omsk to Vienna by train.
+Royston is a lively city. You can travel from Royston to Versailles by ferry.
+Moose Jaw is a lively city. You can travel from Moose Jaw to Krefeld by train.
+Mildenhall is a lively city. You can travel from Mildenhall to Naples by ferry.
+Thatcham is a lively city. You can travel from Thatcham to Genoa by ferry.
+Kazan is a lively city. You can travel from Kazan to Kursk by plane.
+Bromley is a lively city. You can travel from Bromley to Bromsgrove by bus.
+Zagreb is a lively city. You can travel from Zagreb to Oberhausen by train.
+Woodstock is a lively city. You can travel from Woodstock to Wokingham by bus.
+Irkutsk is a lively city. You can travel from Irkutsk to Reigate by train.
+Norwich is a lively city. You can travel from Norwich to Ipswich by ferry.
+Nuremberg is a lively city. You can travel from Nuremberg to Thunder Bay by ferry.
+Tampa is a lively city. You can travel from Tampa to Oldham by plane.
+Kemerovo is a lively city. You can travel from Kemerovo to Vilnius by train.
+Overland Park is a lively city. You can travel from Overland Park to Sudbury by bus.
+Gothenburg is a lively city. You can travel from Gothenburg to Tucson by ferry.
+Carlisle is a lively city. You can travel from Carlisle to Kamloops by plane.
+Reno is a lively city. You can travel from Reno to Orpington by train.
+Fresno is a lively city. You can travel from Fresno to Buxton by plane.
+Stevenage is a lively city. You can travel from Stevenage to Moncton by train.
+Maribor is a lively city. You can travel from Maribor to Barnaul by bus.
+Magdeburg is a lively city. You can travel from Magdeburg to Kyiv by ferry.
+Orpington is a lively city. You can travel from Orpington to Palmdale by ferry.
+Florence is a lively city. You can travel from Florence to Raleigh by bus.
+Basingstoke is a lively city. You can travel from Basingstoke to Maribor by plane.
+Sidcup is a lively city. You can travel from Sidcup to Banja Luka by plane.
+Krasnoyarsk is a lively city. You can travel from Krasnoyarsk to Cape Coral by plane.
+Tampere is a lively city. You can travel from Tampere to Gdansk by plane.
+Redhill is a lively city. You can travel from Redhill to Wokingham by plane.
+Mesa is a lively city. You can travel from Mesa to Stuttgart by bus.
+Lubbock is a lively city. You can travel from Lubbock to Elk Grove by bus.
+Fayetteville is a lively city. You can travel from Fayetteville to Zadar by plane.
+Lichfield is a lively city. You can travel from Lichfield to Rome by ferry.
+Harrogate is a lively city. You can travel from Harrogate to Kent by train.
+Timmins is a lively city. You can travel from Timmins to Boston by ferry.
+Livorno is a lively city. You can travel from Livorno to Bordon by ferry.
+Parma is a lively city. You can travel from Parma to Lubbock by bus.
+Boston is a lively city. You can travel from Boston to Lafayette by plane.
+Minsk is a lively city. You can travel from Minsk to Redruth by train.
+Moncton is a lively city. You can travel from Moncton to Milwaukee by train.
+Cape Coral is a lively city. You can travel from Cape Coral to Basingstoke by train.
+Nice is a lively city. You can travel from Nice to Kazan by ferry.
+Truro is a lively city. You can travel from Truro to Lichfield by train.
+Salisbury is a lively city. You can travel from Salisbury to Harrogate by train.
+Siracusa is a lively city. You can travel from Siracusa to Warrington by plane.
+Bromsgrove is a lively city. You can travel from Bromsgrove to Workington by plane.
+Bratislava is a lively city. You can travel from Bratislava to Madison by ferry.
+Stockholm is a lively city. You can travel from Stockholm to Norwich by bus.
+Hastings is a lively city. You can travel from Hastings to Pistoia by plane.
+Brussels is a lively city. You can travel from Brussels to Telford by bus.
+Skegness is a lively city. You can travel from Skegness to Redditch by ferry.
+Raleigh is a lively city. You can travel from Raleigh to Gatineau by plane.
+Lviv is a lively city. You can travel from Lviv to Minsk by ferry.
+Angers is a lively city. You can travel from Angers to Baton Rouge by train.
+Margate is a lively city. You can travel from Margate to Haslemere by train.
+Genoa is a lively city. You can travel from Genoa to Parma by train.
+Sioux Falls is a lively city. You can travel from Sioux Falls to Zagreb by plane.
+Tartu is a lively city. You can travel from Tartu to Freiburg by ferry.
+Madison is a lively city. You can travel from Madison to Reno by bus.
+Karlsruhe is a lively city. You can travel from Karlsruhe to Cincinnati by ferry.
+Sudbury is a lively city. You can travel from Sudbury to Shreveport by plane.
+Moscow is a lively city. You can travel from Moscow to Foggia by ferry.
+Aarhus is a lively city. You can travel from Aarhus to Chesterfield by train.
+Thunder Bay is a lively city. You can travel from Thunder Bay to Aurora by train.
+Montpellier is a lively city. You can travel from Montpellier to Zadar by train.
+Reims is a lively city. You can travel from Reims to Cedar Rapids by ferry.
+Workington is a lively city. You can travel from Workington to Potton by train.
+Harpenden is a lively city. You can travel from Harpenden to Montgomery by plane.
+Vienna is a lively city. You can travel from Vienna to Berkhamsted by bus.
+Elk Grove is a lively city. You can travel from Elk Grove to Perugia by ferry.
+Farnborough is a lively city. You can travel from Farnborough to Brussels by plane.
+Ivanovo is a lively city. You can travel from Ivanovo to Benfleet by bus.
+Giugliano in Campania is a lively city. You can travel from Giugliano in Campania to Maribor by bus.
+Stockport is a lively city. You can travel from Stockport to Paris by plane.
+Warrington is a lively city. You can travel from Warrington to Madison by ferry.
+Ludwigshafen is a lively city. You can travel from Ludwigshafen to Naperville by bus.
+Mostar is a lively city. You can travel from Mostar to Carlisle by plane.
+Reigate is a lively city. You can travel from Reigate to Nice by plane.
+Paris is a lively city. You can travel from Paris to Sterling Heights by ferry.
+West Valley City is a lively city. You can travel from West Valley City to Izhevsk by ferry.
+Kamloops is a lively city. You can travel from Kamloops to Sioux Falls by train.
+Nantes is a lively city. You can travel from Nantes to Tartu by train.
+Budapest is a lively city. You can travel from Budapest to Woodstock by train.
+Vladivostok is a lively city. You can travel from Vladivostok to Coral Springs by bus.
+Wigan is a lively city. You can travel from Wigan to Naperville by bus.
+Loughborough is a lively city. You can travel from Loughborough to Moose Jaw by train.
+Augsburg is a lively city. You can travel from Augsburg to Irkutsk by ferry.
+Pistoia is a lively city. You can travel from Pistoia to Crewe by plane.
+Charlottetown is a lively city. You can travel from Charlottetown to Bratislava by bus.
+Redruth is a lively city. You can travel from Redruth to Columbia by bus.
+Wokingham is a lively city. You can travel from Wokingham to Farnborough by train.
+Worksop is a lively city. You can travel from Worksop to Columbia by ferry.
+Rome is a lively city. You can travel from Rome to York by bus.
+Henderson is a lively city. You can travel from Henderson to Loughborough by plane.
+Halesowen is a lively city. You can travel from Halesowen to Bratislava by bus.
+Versailles is a lively city. You can travel from Versailles to Moscow by ferry.
+Terni is a lively city. You can travel from Terni to Zadar by ferry.
+Milwaukee is a lively city. You can travel from Milwaukee to Bolzano by bus.
+Ljubljana is a lively city. You can travel from Ljubljana to Magnitogorsk by ferry.
+Laredo is a lively city. You can travel from Laredo to Kent by train.
+Buxton is a lively city. You can travel from Buxton to Livorno by bus.
+Krakow is a lively city. You can travel from Krakow to Mesa by ferry.
+Reykjavik is a lively city. You can travel from Reykjavik to Banja Luka by train.
+Izhevsk is a lively city. You can travel from Izhevsk to Ljubljana by bus.
+Grenoble is a lively city. You can travel from Grenoble to Piacenza by bus.
+Kursk is a lively city. You can travel from Kursk to Dayton by train.
+Rugby is a lively city. You can travel from Rugby to Fullerton by ferry.
+Burnley is a lively city. You can travel from Burnley to Scunthorpe by ferry.
+Vicenza is a lively city. You can travel from Vicenza to Harpenden by plane.
+Concord is a lively city. You can travel from Concord to Ufa by train.
+Krefeld is a lively city. You can travel from Krefeld to Magdeburg by bus.
+Abingdon is a lively city. You can travel from Abingdon to Nuremberg by train.
+Des Moines is a lively city. You can travel from Des Moines to Oldham by train.
+Worthing is a lively city. You can travel from Worthing to Stockport by train.
+Villeurbanne is a lively city. You can travel from Villeurbanne to Riverside by train.
+Coral Springs is a lively city. You can travel from Coral Springs to Charlottetown by bus.
+Miramar is a lively city. You can travel from Miramar to Harrogate by bus.
+Foggia is a lively city. You can travel from Foggia to Mildenhall by bus.
+Lincoln is a lively city. You can travel from Lincoln to Augsburg by ferry.
+Grande Prairie is a lively city. You can travel from Grande Prairie to Arlington by plane.
+Dresden is a lively city. You can travel from Dresden to West Valley City by ferry.
+Milan is a lively city. You can travel from Milan to Lviv by ferry.
+Zadar is a lively city. You can travel from Zadar to Wigan by bus.
+Swindon is a lively city. You can travel from Swindon to Hastings by bus.
+Haverhill is a lively city. You can travel from Haverhill to Riverside by ferry.
+Perugia is a lively city. You can travel from Perugia to Budapest by bus.
+Baton Rouge is a lively city. You can travel from Baton Rouge to Vladivostok by ferry.
+Salt Lake City is a lively city. You can travel from Salt Lake City to Milan by ferry.
+Gatineau is a lively city. You can travel from Gatineau to Wisbech by plane.
+Banja Luka is a lively city. You can travel from Banja Luka to Debrecen by plane.
+Charleston is a lively city. You can travel from Charleston to Elk Grove by ferry.
+Colorado Springs is a lively city. You can travel from Colorado Springs to Dresden by train.
+Lafayette is a lively city. You can travel from Lafayette to Stockholm by train.
+Debrecen is a lively city. You can travel from Debrecen to Grande Prairie by bus.
+Erfurt is a lively city. You can travel from Erfurt to Huddersfield by ferry.
+Tucson is a lively city. You can travel from Tucson to Royston by ferry.
+Scunthorpe is a lively city. You can travel from Scunthorpe to Widnes by plane.
+Venice is a lively city. You can travel from Venice to Florence by bus.
+Kent is a lively city. You can travel from Kent to Stevenage by train.
+Fullerton is a lively city. You can travel from Fullerton to Ivanovo by train.
+Kyiv is a lively city. You can travel from Kyiv to Tampere by ferry.
+Oldham is a lively city. You can travel from Oldham to Erfurt by bus.
+Ufa is a lively city. You can travel from Ufa to Mesa by ferry.
+Aurora is a lively city. You can travel from Aurora to Baltimore by bus.
+Mobile is a lively city. You can travel from Mobile to Rugby by ferry.
+Huddersfield is a lively city. You can travel from Huddersfield to Reykjavik by plane.
+Redditch is a lively city. You can travel from Redditch to Tolyatti by plane.
+Athens is a lively city. You can travel from Athens to West Valley City by bus.
+Widnes is a lively city. You can travel from Widnes to Des Moines by bus.
+Haslemere is a lively city. You can travel from Haslemere to Anaheim by plane.
+Buffalo is a lively city. You can travel from Buffalo to Krasnoyarsk by bus.
+Arlington is a lively city. You can travel from Arlington to Grenoble by train.
+Witham is a lively city. You can travel from Witham to Ivanovo by bus.
+Bordon is a lively city. You can travel from Bordon to Venice by plane.
+Tolyatti is a lively city. You can travel from Tolyatti to Swindon by ferry.
+Podgorica is a lively city. You can travel from Podgorica to Mesa by bus.
+Naples is a lively city. You can travel from Naples to Penrith by train.
+Telford is a lively city. You can travel from Telford to Thaxted by train.
+Piacenza is a lively city. You can travel from Piacenza to Villeurbanne by bus.
+Bari is a lively city. You can travel from Bari to Banja Luka by ferry.
+Stuttgart is a lively city. You can travel from Stuttgart to Reims by plane.
+Fleet is a lively city. You can travel from Fleet to Ivanovo by plane.
+Shreveport is a lively city. You can travel from Shreveport to Burnley by ferry.
+Riverside is a lively city. You can travel from Riverside to Concord by ferry.
+Naperville is a lively city. You can travel from Naperville to Margate by ferry.
+Glendale is a lively city. You can travel from Glendale to Venice by plane.
+Wisbech is a lively city. You can travel from Wisbech to Fayetteville by ferry.
+Visalia is a lively city. You can travel from Visalia to Bromley by train.
+Garden Grove is a lively city. You can travel from Garden Grove to Orpington by train.
+Thaxted is a lively city. You can travel from Thaxted to Gothenburg by train.
+Oberhausen is a lively city. You can travel from Oberhausen to Worthing by train.
+Prato is a lively city. You can travel from Prato to Gatineau by train.
+Crewe is a lively city. You can travel from Crewe to Ivanovo by ferry.
+Peterborough is a lively city. You can travel from Peterborough to Rome by bus.
+Sterling Heights is a lively city. You can travel from Sterling Heights to Tartu by bus.
+York is a lively city. You can travel from York to Angers by train.
+Guelph is a lively city. You can travel from Guelph to Bromley by train.
+Columbia is a lively city. You can travel from Columbia to Colorado Springs by train.
+Montgomery is a lively city. You can travel from Montgomery to Omsk by bus.
+Vilnius is a lively city. You can travel from Vilnius to Penrith by ferry.
+Palmdale is a lively city. You can travel from Palmdale to Henderson by bus.
+Barnaul is a lively city. You can travel from Barnaul to Abingdon by ferry.
+Cedar Rapids is a lively city. You can travel from Cedar Rapids to Skegness by train.
+Baltimore is a lively city. You can travel from Baltimore to Overland Park by bus.
+Berkhamsted is a lively city. You can travel from Berkhamsted to Buxton by plane.
+Fort McMurray is a lively city. You can travel from Fort McMurray to Arlington by ferry.
+Rimini is a lively city. You can travel from Rimini to Salt Lake City by train.
+Bolzano is a lively city. You can travel from Bolzano to Mostar by bus.
+Benfleet is a lively city. You can travel from Benfleet to Vicenza by plane.
+Tulsa is a lively city. You can travel from Tulsa to Redditch by plane.
+Penrith is a lively city. You can travel from Penrith to Rimini by bus.
+Chesterfield is a lively city. You can travel from Chesterfield to Fullerton by plane.
+Dayton is a lively city. You can travel from Dayton to Salisbury by train.
+Gdansk is a lively city. You can travel from Gdansk to Lincoln by plane.
+Anaheim is a lively city. You can travel from Anaheim to Timmins by ferry.
+Ipswich is a lively city. You can travel from Ipswich to Guelph by bus.
+Freiburg is a lively city. You can travel from Freiburg to Krasnoyarsk by train.
+Magnitogorsk is a lively city. You can travel from Magnitogorsk to Karlsruhe by plane.
+
+Now find the route from Lichfield to Cincinnati based on the information above. Some reminders:
+- All connections are one-way. You can solve the problem by iteratively finding the next city to travel to until you reach the destination city.
+- Follow the specific format for the route output. Mark the route with <Route> and </Route> tags.
+
+End your final message with the answer on its own line, prefixed `ANSWER:`.

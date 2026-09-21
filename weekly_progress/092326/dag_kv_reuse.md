@@ -13,6 +13,66 @@ Provider: z.ai `glm-5.3-flash`. Companion notes: `../091626/tiered_memory_conclu
 Terminology as in the 2026-09-09 deck: a *turn* is one lead activation, a *round* is one agent-loop
 iteration.
 
+## 0. In one page
+
+**The idea being tested.** When the lead splits work into tasks, some tasks depend on others. If a
+successor is likely to open the same files its predecessor opened, a serving system could hand the
+successor that content (its KV) instead of making it spend agent-loop rounds opening the files again.
+Two questions follow: *does the dependency graph tell you which content to keep* (experiment 1), and
+*is handing it over actually worth anything* (experiment 2).
+
+**What the five workloads are.** Each is one lead prompt that makes the lead build a task board of a
+particular shape. They differ only in shape, so that the shape is the variable:
+
+| id | shape | why it exists |
+|----|-------|---------------|
+| **W1 CHAIN** | two 2-step chains over two different files, plus two unattached audits | the normal case: A must finish before B |
+| **W2 FANIN** | three audits of *one* file, then a synthesis that waits for all three | the join case |
+| **W5 FANIN-DISJOINT** | three inventories of *three different* files, then a synthesis | the only shape where the successor is genuinely missing something |
+| **W3 PIPELINE** | each step reads the previous step's *output file*, not its input | **control**: dependencies that by construction share no source files |
+| **W4 PLACEBO** | W1's text word for word, but the board edges wired to the **wrong** branch | **the decisive test**: does overlap follow the graph, or the words? |
+
+W3 and W4 are built to show zero. They are there so that a positive result in W1/W2/W5 can be
+attributed to the dependency rather than to "these tasks were about similar things".
+
+**What a board actually looks like.** Small, wide and shallow -- median 5 tasks, 3 edges, 2 layers,
+and **only 23% of tasks have any predecessor at all** (163 tasks over 32 runs). A typical W5 board:
+
+```
+#1 inventory trace_runtime.py  (scout-runtime, done 261s) ┐
+#2 inventory trace_view.py     (scout-view,    done 317s) ├─► #4 synthesis (scout-runtime, starts 414s)
+#3 inventory trace_stats.py    (scout-stats,   done 412s) ┘
+#5 standalone item             (scout-runtime)   -- no edges
+```
+
+Three facts in that one picture, and they matter more than the graph theory:
+* the join waits for its **slowest** predecessor, so #1's output is already 153 s old when #4 starts;
+* #4 was claimed by **scout-runtime, which did #1 itself** -- it already holds one of the three files
+  and is missing the other two. Across 35 successors, 2.5 predecessors each, **67% of those
+  predecessor links cross agents**, and 33 of 35 successors are missing something;
+* three teammates handle five items, so agents are reused and their context is never cleared.
+
+**The three results, in plain terms.**
+
+1. **The dependency edge is a good predictor -- but only because it repeats what the task text
+   already says.** In aligned boards an edge predicts +46 points more content overlap than an
+   unrelated earlier task. In W4, where the text says one thing and the board says another, the board
+   edges predict **nothing at all** (-1.0, both runs): the agent read what its *description* pointed
+   at. So a serving system that is shown only the graph is reading a shadow.
+2. **The crudest policy wins anyway.** "Keep everything every earlier task read" recalls 85.6% of
+   what a successor needs; "keep what its direct predecessors read" recalls 36.0%. Sending three
+   quarters more than needed costs 3.9 s of prefill against 63 s of rounds removed, so there is no
+   precision argument to set against that. **The engine-tier question is capacity, not prediction.**
+3. **Handing over the content is worth a lot.** A successor given the bytes runs in 2.50 rounds
+   instead of 7.22 (scripted, n=128) and 3.00 instead of 5.17 (real harness, n=6/arm), with
+   correctness no worse. Two controls say the bytes are what does it: an equal-size **irrelevant**
+   file changes nothing and actually cost 2 of 5 successors their task, and a **summary** of the
+   predecessor's findings is worth nothing measurable in either stage.
+
+**The one operational thing to fix.** `spawn_teammate` claims a task before starting the agent, and a
+claim on a blocked task is refused -- so a lead that assigns a successor at spawn time loses it
+silently. In the first probe the synthesis item was never claimed by anyone.
+
 ## 1. Questions
 
 The 2026-09-16 deck closes on a proposal — emit a retention directive to the engine from the task

@@ -1,0 +1,173 @@
+{
+  "label": "RW-FQA-ancestors-r1",
+  "arm": "ancestors",
+  "tasks": {
+    "0": {
+      "task_id": "task_871b1f01",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "grep -n -A3 -E \"Compaction|Hook|Skill catalog\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        }
+      ],
+      "result_chars": 1271
+    },
+    "1": {
+      "task_id": "task_c99a37a4",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "grep -n '^#\\|^##\\|^###' s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n -i 'compaction\\|hook\\|skill' s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n '^### Compaction\\|^### Hook\\|^### Skill catalog' s15_integrated_harness/GLOSSARY.md; sed -n 205,207p; sed -n 231,233p; sed -n 430,440p s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n '^### Compaction' s15_integrated_harness/GLOSSARY.md && grep -n '^### Hook' s15_integrated_harness/GLOSSARY.md && grep -n '^### Skill catalog' s15_integrated_harness/GLOSSARY.md && sed -n '231,233p' s15_integrated_harness/ARCHITECTURE.md && sed -n '430,443p' s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md",
+          "offset": 40,
+          "limit": 55
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md",
+          "offset": 72,
+          "limit": 5
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md",
+          "offset": 91,
+          "limit": 6
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md",
+          "offset": 140,
+          "limit": 40
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 204,
+          "limit": 6
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 230,
+          "limit": 6
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 429,
+          "limit": 15
+        }
+      ],
+      "result_chars": 318
+    },
+    "2": {
+      "task_id": "task_e7f0fdb4",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 1,
+          "limit": 4
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 1,
+          "limit": 4
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 200,
+          "limit": 60
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 260,
+          "limit": 75
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 425,
+          "limit": 22
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 242,
+          "limit": 7
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 439,
+          "limit": 4
+        }
+      ],
+      "result_chars": 1560
+    }
+  },
+  "injections": [
+    {
+      "agent_id": "agent-team_000002",
+      "owner": "architecture-mapper",
+      "task_id": "task_c99a37a4",
+      "arm": "ancestors",
+      "pairs": 1,
+      "chars": 12815,
+      "sources": [
+        "task_871b1f01"
+      ],
+      "ancestors": [
+        "task_871b1f01"
+      ],
+      "skipped_resident": 0
+    },
+    {
+      "agent_id": "agent-team_000003",
+      "owner": "reconciler",
+      "task_id": "task_e7f0fdb4",
+      "arm": "ancestors",
+      "pairs": 8,
+      "chars": 19770,
+      "sources": [
+        "task_c99a37a4"
+      ],
+      "ancestors": [
+        "task_871b1f01",
+        "task_c99a37a4"
+      ],
+      "skipped_resident": 0
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "label": "RW-FQA-dag-r2",
+  "arm": "dag",
+  "tasks": {
+    "0": {
+      "task_id": "task_fe2f57fa",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "grep -n -i \"Compaction\\|Hook\\|Skill catalog\" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"^### Compaction\" -A 0 /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"^### \" /home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/.tasks/task_40aa5aa4.json",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/.tasks/task_b94dd6df.json",
+          "offset": 0,
+          "limit": null
+        }
+      ],
+      "result_chars": 1437
+    },
+    "1": {
+      "task_id": "task_b94dd6df",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 0,
+          "limit": null
+        }
+      ],
+      "result_chars": 2997
+    },
+    "2": {
+      "task_id": "task_40aa5aa4",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "/home/yq335/learn-claude-code/s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        }
+      ],
+      "result_chars": 3269
+    }
+  },
+  "injections": [
+    {
+      "agent_id": "agent-team_000003",
+      "owner": "Runner-C",
+      "task_id": "task_b94dd6df",
+      "arm": "dag",
+      "pairs": 1,
+      "chars": 12815,
+      "sources": [
+        "task_fe2f57fa"
+      ],
+      "ancestors": [
+        "task_fe2f57fa"
+      ],
+      "skipped_resident": 0
+    },
+    {
+      "agent_id": "agent-team_000002",
+      "owner": "Runner-B",
+      "task_id": "task_40aa5aa4",
+      "arm": "dag",
+      "pairs": 1,
+      "chars": 44301,
+      "sources": [
+        "task_b94dd6df"
+      ],
+      "ancestors": [
+        "task_fe2f57fa",
+        "task_b94dd6df"
+      ],
+      "skipped_resident": 0
+    }
+  ]
+}
