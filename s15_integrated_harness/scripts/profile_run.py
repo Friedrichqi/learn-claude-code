@@ -60,6 +60,10 @@ import time
 from collections import Counter, defaultdict
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from input_redundancy import classify_bash                                          # noqa: E402
+import evict_policies as ep                                                         # noqa: E402
+
 REPO = Path(__file__).resolve().parents[2]
 HARMLESS_REDIRECT = re.compile(r"\d?>\s*&\s*\d|\d?>\s*/dev/null|<<\s*'?\w+'?")
 MUTATE_CMD = re.compile(
@@ -78,6 +82,29 @@ PYTHON_PREFIXES = {"cd", "timeout", "env", "true"}
 
 QUOTED = re.compile(r"'[^']*'|\"[^\"]*\"")
 REDIRECT = re.compile(r">(?!>)\s*\S|>>|\btee\b")
+
+
+EVICT_CHOICES = tuple(ep.POLICIES)
+
+
+def parse_budget(text: str) -> int | None:
+    """'8k' | '16384' | 'unlimited' -> bytes or None.  KiB, matching evict_policies.BUDGETS."""
+    value = (text or "").strip().lower()
+    if value in {"", "none", "unlimited", "inf"}:
+        return None
+    if value.endswith(("k", "kb", "kib")):
+        return int(float(value.rstrip("bik")) * 1024)
+    if value.endswith(("m", "mb", "mib")):
+        return int(float(value.rstrip("bim")) * 1024 * 1024)
+    return int(value)
+
+
+def resident_key(entry: dict) -> tuple:
+    """Identity of one recorded read, for residency-skip and for dedupe across predecessors.
+    Covers both shapes: a `read_file` span is (path, offset, limit), a `bash` read is its command."""
+    if entry.get("tool") == "bash":
+        return ("bash", entry.get("command"))
+    return ("read_file", entry.get("path"), entry.get("offset") or 0, entry.get("limit"))
 
 
 def is_mutating(command: str) -> bool:
@@ -156,7 +183,7 @@ def annotate_tools(tools, costs: dict[str, float], default: float | None,
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--label", required=True, help="experiment label written into the trace run_start data")
-    parser.add_argument("--prompt", action="append", required=True, help="user turn(s), in order")
+    parser.add_argument("--prompt", action="append", default=[], help="user turn(s), in order")
     parser.add_argument("--followup-if-no-team", default=None,
                         help="extra user turn sent once if the first turn spawned no teammate")
     parser.add_argument("--max-seconds", type=float, default=900.0)
@@ -203,11 +230,14 @@ def parse_args():
                         help="HARNESS_TRACE_OUTPUT mode: 'full' stores every tool result verbatim in the trace")
     parser.add_argument("--no-reads-log", action="store_true",
                         help="do not write the <trace>.reads.jsonl content sidecar")
-    parser.add_argument("--prewarm", choices=["none", "oracle", "dag", "pollute", "summary"],
+    parser.add_argument("--prewarm",
+                        choices=["none", "oracle", "dag", "ancestors", "pollute", "summary"],
                         default="none",
                         help="emulate KV inheritance: give a teammate the file content a predecessor "
                              "task already read, as a synthetic read_file tool_use/tool_result pair "
-                             "at the head of its history. 'dag' takes the predecessors' reads live "
+                             "at the head of its history. 'dag' takes the DIRECT predecessors' "
+                             "reads live from this run; 'ancestors' takes the whole transitive "
+                             "closure (predecessors of predecessors too); "
                              "from this run; 'oracle' takes them from --prewarm-spec; 'pollute' sends "
                              "an equal-size irrelevant file; 'summary' sends the predecessors' result "
                              "text instead of the bytes")
@@ -218,10 +248,44 @@ def parse_args():
                         help="file the pollute arm injects (truncated to the matched size)")
     parser.add_argument("--prewarm-max-bytes", type=int, default=200_000,
                         help="cap on injected bytes per teammate")
+    parser.add_argument("--prewarm-evict", default="lru", choices=EVICT_CHOICES,
+                        help="how the inherited pool is cut down to --prewarm-budget.  The pool is "
+                             "the arm's candidate set; the policy decides what survives.  See "
+                             "scripts/evict_policies.py -- the same module the offline sweep uses, "
+                             "so live and replayed cells are comparable.")
+    parser.add_argument("--prewarm-budget", default="unlimited",
+                        help="byte cap on what one agent inherits: an int, '8k'/'16k'/'32k'/'64k', "
+                             "or 'unlimited'.  Distinct from --prewarm-max-bytes, which is the old "
+                             "unconditional cap and stays as an outer safety limit.")
+    parser.add_argument("--prompt-file", action="append", default=[],
+                        help="read a user turn from this file instead of argv.  Long-context task "
+                             "prompts (longbench2, graphwalks, ruler) exceed Linux's 128 KB "
+                             "MAX_ARG_STRLEN and fail the exec with Errno 7 before the harness "
+                             "starts, so any driver feeding real benchmark documents needs this.")
+    parser.add_argument("--model", default=None,
+                        help="override MODEL_ID for this run.  code.py:77 calls "
+                             "load_dotenv(override=True), so the .env wins over the process "
+                             "environment and exporting MODEL_ID has no effect -- this patches the "
+                             "loaded module's globals instead, which is why the earlier studies "
+                             "concluded a cross-model run needed a whole separate lane.")
+    parser.add_argument("--answer-out", default=None,
+                        help="write the lead's final assistant text here.  This is how the lm-eval "
+                             "endpoint gets an answer back out of an agentic session: lm-eval hands "
+                             "us a task prompt, the harness runs its rounds, and the last thing the "
+                             "lead says is scored by the task's own process_results.")
     parser.add_argument("--prewarm-dump", default=None,
                         help="write per-task read sets and result texts of this run to this JSON "
                              "(this is how an oracle spec is built from a baseline run)")
     args = parser.parse_args()
+    if args.prompt_file:
+        args.prompt = list(args.prompt or []) + [
+            Path(f).read_text(encoding="utf-8") for f in args.prompt_file]
+    if not args.prompt:
+        parser.error("pass --prompt or --prompt-file")
+    if args.prewarm_evict in ep.CEILING:
+        parser.error(f"--prewarm-evict {args.prewarm_evict} is a CEILING: it ranks on what the "
+                     "successor will go on to read, which no engine knows at handoff time.  It is "
+                     "computable offline in replay_sweep.py and nowhere else.")
     if args.sandbox_from and not args.write_root:
         parser.error("--sandbox-from requires --write-root")
     return args
@@ -363,6 +427,14 @@ def main() -> int:
         print(f"[profile] sandbox {source} -> {write_root}", flush=True)
 
     mod = load_harness()
+    if args.model:
+        # every call site reads the module global at call time (code.py:1739, 2182, 2451), and the
+        # retry state machine seeds itself from PRIMARY_MODEL, so both have to move together
+        mod.MODEL = mod.PRIMARY_MODEL = args.model
+        # MEMORY_RUNTIME is the s09 module loaded at import time with a COPY of MODEL, so the
+        # memory-extraction calls would keep using the old id unless it is moved too
+        mod.MEMORY_RUNTIME.MODEL = args.model
+        print(f"[profile] MODEL_ID overridden -> {args.model}", flush=True)
     mod.CLI_ACTIVE = False
     trace = mod.initialize_tracing("s15")
     if args.context_limit:
@@ -385,7 +457,8 @@ def main() -> int:
         git_head = os.environ.get("PROFILE_GIT_HEAD")
     trace.emit("profile_meta", {
         "prewarm": {"arm": args.prewarm, "spec": args.prewarm_spec,
-                    "pollute": args.prewarm_pollute, "max_bytes": args.prewarm_max_bytes},"label": args.label, "prompts": args.prompt,
+                    "pollute": args.prewarm_pollute, "max_bytes": args.prewarm_max_bytes,
+                    "evict": args.prewarm_evict, "budget": parse_budget(args.prewarm_budget)},"label": args.label, "prompts": args.prompt,
                                 "allow_writes": args.allow_writes, "driver": "scripts/profile_run.py",
                                 "no_timestamp": args.no_timestamp, "context_limit": mod.CONTEXT_LIMIT,
                                 "git_head": git_head, "trace_output": args.trace_output,
@@ -479,6 +552,7 @@ def main() -> int:
     prewarm_log: list[dict] = []
     prewarm_skips: dict[str, int] = {}
     prewarm_lock = threading.Lock()
+    prewarm_budget = parse_budget(args.prewarm_budget)
     prewarm_spec = {}
     if args.prewarm_spec:
         prewarm_spec = json.loads(Path(args.prewarm_spec).read_text(encoding="utf-8"))
@@ -537,22 +611,69 @@ def main() -> int:
 
     hooks.insert(0, record_read)
 
-    def read_bytes(entry: dict) -> tuple[str, str] | None:
+    def read_bytes(entry: dict) -> tuple[str, dict, str] | None:
         """Reproduce a recorded read with the harness's own reader, so the injected tokens are the
-        ones a real read would have produced."""
-        if entry.get("tool") != "read_file" or not entry.get("path"):
-            return None
-        text = mod.run_read(entry["path"], entry.get("limit"), entry.get("offset") or 0,
-                            cwd=mod.WORKDIR)
-        if text.startswith("Error:"):
-            return None
-        return entry["path"], text
+        ones a real read would have produced.  Returns (tool, tool_input, text).
+
+        Both read shapes are replayed.  `read_file` goes through `run_read`; a `bash` call is
+        replayed through `run_bash` only when `classify_bash` (the same classifier the measurement
+        side uses) says it is a file reader AND it clears the mutation guard.  Before this, the
+        injector dropped every bash read while `input_redundancy` counted them in the recall
+        denominator, so the two sides were measuring different sets: across the 28 prewarm dumps on
+        disk there are 301 bash entries against 373 read_file entries."""
+        tool = entry.get("tool")
+        if tool == "read_file":
+            if not entry.get("path"):
+                return None
+            text = mod.run_read(entry["path"], entry.get("limit"), entry.get("offset") or 0,
+                                cwd=mod.WORKDIR)
+            if text.startswith("Error:"):
+                return None
+            payload = {"path": entry["path"]}
+            if entry.get("offset"):
+                payload["offset"] = entry["offset"]
+            if entry.get("limit"):
+                payload["limit"] = entry["limit"]
+            return "read_file", payload, text
+        if tool == "bash":
+            command = entry.get("command") or ""
+            is_reader, _ = classify_bash(command)
+            if not is_reader or is_mutating(command):
+                return None
+            try:
+                text = mod.run_bash(command, cwd=mod.WORKDIR)
+            except Exception:                                                  # noqa: BLE001
+                return None
+            if not text or text.startswith("Error:"):
+                return None
+            return "bash", {"command": command}, text
+        return None
 
     def sources_for(task_id: str) -> list[str]:
+        """Direct predecessors only."""
         try:
             return list(mod.load_task(task_id).blockedBy)
         except Exception:
             return []
+
+    def ancestors_for(task_id: str) -> list[str]:
+        """The whole transitive closure of blockedBy, OLDEST FIRST.
+
+        In a chain A -> B -> C the direct arm hands C only B's reads; this hands it A's too.  The two
+        differ only at depth 3 or more, which is the entire reason this arm exists.  Ordering by
+        distance from the successor keeps the injected block in the order the work actually happened,
+        which the earlier study found matters: a handoff that reads like a coherent history is
+        trusted, a stitched-together one is re-read."""
+        depth: dict[str, int] = {}
+        frontier = [(t, 1) for t in sources_for(task_id)]
+        while frontier:
+            node, d = frontier.pop()
+            if node in depth and depth[node] >= d:
+                continue
+            depth[node] = d
+            frontier.extend((p, d + 1) for p in sources_for(node))
+        # deepest (earliest in the DAG) first
+        return [t for t, _ in sorted(depth.items(), key=lambda kv: -kv[1])]
 
     def spec_reads(task_id: str) -> list[dict]:
         """The oracle arm's frozen read set, keyed by the task's creation index."""
@@ -569,23 +690,31 @@ def main() -> int:
         if arm == "oracle":
             seen = set()
             for entry in spec_reads(task_id):
-                key = (entry.get("tool"), entry.get("path"), entry.get("offset"), entry.get("limit"))
+                key = resident_key(entry)
                 if key not in seen:
                     seen.add(key)
                     entries.append(entry)
-        elif arm in {"dag", "pollute"}:
-            # several predecessors usually read the SAME file; dedupe on (path, offset, limit) so a
-            # fan-in does not inject three copies of it
+        elif arm in {"dag", "ancestors", "pollute"}:
+            # several predecessors usually read the SAME span; dedupe on resident_key so a fan-in
+            # does not inject three copies of it
             seen = set()
+            chain = ancestors_for(task_id) if arm == "ancestors" else sources_for(task_id)
             with prewarm_lock:
-                for source in sources_for(task_id):
+                searches = [e.get("command", "") for s in chain
+                            for e in prewarm_reads.get(s, []) if e.get("tool") == "bash"]
+                index: dict[tuple, dict] = {}
+                for chain_idx, source in enumerate(chain):
                     for entry in prewarm_reads.get(source, []):
-                        key = (entry.get("tool"), entry.get("path"), entry.get("offset"),
-                               entry.get("limit"), entry.get("command"))
+                        key = resident_key(entry)
                         if key in seen:
+                            index[key]["_freq"] = index[key].get("_freq", 1) + 1
                             continue
                         seen.add(key)
-                        entries.append(entry)
+                        tagged = dict(entry, _source=source, _chain_idx=chain_idx, _freq=1)
+                        path = entry.get("path") or ""
+                        tagged["_located"] = bool(path) and any(path in c for c in searches)
+                        index[key] = tagged
+                        entries.append(tagged)
         elif arm == "summary":
             with prewarm_lock:
                 texts = [prewarm_results.get(s) for s in sources_for(task_id)]
@@ -596,7 +725,7 @@ def main() -> int:
             return _pair("prior_result", {"from_tasks": sources_for(task_id)}, joined)
         if arm == "pollute":
             # match the size the content arm would have sent, with an irrelevant file
-            want = sum(len((read_bytes(e) or ("", ""))[1]) for e in entries if e.get("tool") == "read_file")
+            want = sum(len(got[2]) for got in (read_bytes(e) for e in entries) if got)
             if not want:
                 return []
             text = mod.run_read(args.prewarm_pollute, None, 0, cwd=mod.WORKDIR)[:want]
@@ -605,30 +734,43 @@ def main() -> int:
         # it read under an earlier task is still resident and re-sending it only costs prefill
         owner = current_owner()
         with prewarm_lock:
-            resident = {(e.get("path"), e.get("offset"), e.get("limit"))
-                        for e in prewarm_agent_reads.get(owner or "", [])
-                        if e.get("tool") == "read_file"}
-        blocks: list[dict] = []
-        budget = args.prewarm_max_bytes
+            resident = {resident_key(e) for e in prewarm_agent_reads.get(owner or "", [])}
+
+        # 1. replay every candidate read, so selection can price real byte sizes rather than guesses
+        direct = set(sources_for(task_id))
+        closure = set(ancestors_for(task_id))
+        replayed: list[tuple[dict, str, dict, str]] = []
         skipped = 0
         for entry in entries:
-            if (entry.get("path"), entry.get("offset"), entry.get("limit")) in resident:
+            if resident_key(entry) in resident:
                 skipped += 1
                 continue
             got = read_bytes(entry)
-            if not got:
-                continue
-            path, text = got
-            if len(text) > budget:
-                break
-            budget -= len(text)
-            payload = {"path": path}
-            if entry.get("offset"):
-                payload["offset"] = entry["offset"]
-            if entry.get("limit"):
-                payload["limit"] = entry["limit"]
-            blocks.extend(_pair("read_file", payload, text))
+            if got:
+                replayed.append((entry, *got))
         prewarm_skips[task_id] = skipped
+
+        # 2. the retention decision, through the SAME module the offline sweep uses.  `last_ms` is
+        #    the position in the chain, which is oldest-predecessor-first, so LRU means "keep what
+        #    the most recent predecessor read".  A whole source task is one `round_idx`, so the
+        #    sliding-window policy keeps whole predecessors rather than slicing one.
+        candidates = []
+        for i, (entry, tool, payload, text) in enumerate(replayed):
+            src = entry.get("_source")
+            candidates.append(ep.Item(
+                key=resident_key(entry), nbytes=len(text), round_idx=entry.get("_chain_idx", 0),
+                first_ms=float(i), last_ms=float(i), freq=entry.get("_freq", 1),
+                tier=0 if src in direct else (1 if src in closure else 2),
+                locate_s=ep.FIXED_ROUND_S if entry.get("_located") else 0.0))
+        keep = ep.retained(candidates, args.prewarm_evict, prewarm_budget) if candidates else set()
+
+        blocks: list[dict] = []
+        outer = args.prewarm_max_bytes                  # the old unconditional cap, kept as a guard
+        for item, (entry, tool, payload, text) in zip(candidates, replayed):
+            if item.key not in keep or len(text) > outer:
+                continue
+            outer -= len(text)
+            blocks.extend(_pair(tool, payload, text))
         return blocks
 
     def _pair(tool: str, payload: dict, text: str) -> list[dict]:
@@ -658,6 +800,7 @@ def main() -> int:
                 record = {"agent_id": agent, "owner": owner, "task_id": task_id,
                           "arm": args.prewarm, "pairs": len(blocks) // 2, "chars": chars,
                           "sources": sources_for(task_id),
+                          "ancestors": ancestors_for(task_id),
                           "skipped_resident": prewarm_skips.get(task_id, 0)}
                 prewarm_log.append(record)
                 trace.emit("context_injection", record)
@@ -978,6 +1121,37 @@ def main() -> int:
                                    "rate_limit_retries": dict(rate_limited),
                                    "wall_seconds": round(time.monotonic() - started, 1)})
         mod.close_tracing(status)
+        if args.answer_out:
+            # the last thing the lead said.  lm-eval scores a single string, so an agentic session
+            # has to end in one: the task's own filters extract from it (a #### answer, a boxed
+            # expression, a code block), which is why the answer contract is appended to the prompt.
+            text = ""
+            for message in reversed(history):
+                if message.get("role") != "assistant":
+                    continue
+                content = message.get("content")
+                if isinstance(content, str):
+                    text = content
+                elif isinstance(content, list):
+                    # history holds the SDK's own block objects (code.py:1745, 3535, 3555), not
+                    # dicts, so both shapes have to be read -- and the `thinking` blocks that GLM
+                    # returns first must be skipped or the answer comes back empty
+                    parts = []
+                    for block in content:
+                        kind = block.get("type") if isinstance(block, dict) else getattr(block, "type", "")
+                        if kind != "text":
+                            continue
+                        piece = block.get("text") if isinstance(block, dict) else getattr(block, "text", "")
+                        if piece:
+                            parts.append(piece)
+                    text = "\n".join(parts)
+                if text.strip():
+                    break
+            Path(args.answer_out).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.answer_out).write_text(json.dumps(
+                {"label": args.label, "status": status, "answer": text,
+                 "wall_seconds": round(time.monotonic() - started, 2)}), encoding="utf-8")
+            print(f"[profile] answer={len(text)} chars -> {args.answer_out}", flush=True)
         if args.prewarm_dump:
             dump = {"label": args.label, "arm": args.prewarm,
                     "tasks": {str(i): {"task_id": tid,

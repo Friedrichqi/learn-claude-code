@@ -369,6 +369,139 @@ class DagRun:
         named = {p for p in named if p}
         return 1 if named & self.task_paths.get(u, set()) else 0
 
+    # ---- budgeted retention -----------------------------------------------------------------
+    # The policies above are defined by GRAPH POSITION.  A real engine is constrained by BYTES, so
+    # these ask the deployable question instead: given a budget B, which selection rule keeps the
+    # bytes that actually remove a round?  The unit of retention is one READ ITEM (a whole tool
+    # result), not a line: an engine holds or drops whole spans, and a fragmented handoff is re-read
+    # anyway (measured at 88% in the 2026-09-16 study).
+
+    def candidate_items(self, v: str) -> list[dict]:
+        """Every read item that could physically have supplied v: it happened before v read."""
+        v_first = self.first_read(v)
+        if v_first is None:
+            return []
+        direct = {t for t in self.deps.get(v, []) if t in self.tasks}
+        anc = (self.ancestors.get(v, set()) & set(self.tasks)) - direct
+        out = []
+        for tid, idxs in self.task_items.items():
+            if tid == v:
+                continue
+            tier = 0 if tid in direct else (1 if tid in anc else 2)
+            for i in idxs:
+                item = self.red.items[i]
+                if item["t"] >= v_first:
+                    continue
+                out.append({"i": i, "bytes": item["bytes"], "t": item["t"],
+                            "task": tid, "tier": tier})
+        return out
+
+    def keys_from_items(self, idxs: list[int]) -> dict[tuple, float]:
+        keys: dict[tuple, float] = {}
+        for i in idxs:
+            t = self.red.items[i]["t"]
+            for key, _ in self.red.item_units[i][self.gran]:
+                if key is None:
+                    continue
+                if key not in keys or t < keys[key]:
+                    keys[key] = t
+        return keys
+
+    def _useful_bytes(self, i: int, v: str) -> int:
+        """Bytes of v's own read set that item i would have covered -- the oracle's ranking key."""
+        want = self.task_units.get(v, {})
+        return sum(nb for key, nb in self.red.item_units[i][self.gran]
+                   if key is not None and key in want)
+
+    def round_costs(self, v: str) -> list[tuple[float, list[int]]]:
+        """For each of v's read-only rounds, the cheapest set of candidate items that would fully
+        cover it, and that set's byte cost.
+
+        Round removal is ALL-OR-NOTHING, so maximising covered bytes is not the same problem as
+        maximising removed rounds -- a density-greedy selection can spend its whole budget covering
+        most of several rounds and remove none of them.
+
+        NOT A DEPLOYABLE POLICY: it groups v's OWN read items by round, which is future knowledge at
+        the moment a retention decision would be made.  It is a *reachable* ceiling -- unlike the
+        `oracle` policy row, which is v's own read set and may contain content no other task ever
+        read, this one is assembled only from what other tasks actually read, so a practical
+        predictor could in principle aim at it.  What it measures is the size of the prize from
+        allocating a budget by whole rounds rather than by bytes.
+        """
+        pool = self.candidate_items(v)
+        item_keys = {c["i"]: {k for k, _ in self.red.item_units[c["i"]][self.gran] if k}
+                     for c in pool}
+        by_round: dict[tuple, list[int]] = defaultdict(list)
+        for index in self.task_items.get(v, []):
+            by_round[self.round_of[index]].append(index)
+        out = []
+        for rkey, indices in by_round.items():
+            calls = self.round_calls.get(rkey, [])
+            if [c for c in calls if c["tool"] not in {"read_file", "bash", "glob"}]:
+                continue                                   # the round does other work; not removable
+            need = set()
+            for index in indices:
+                need |= {k for k, _ in self.red.item_units[index][self.gran] if k}
+            if not need:
+                continue
+            chosen, cost, remaining = [], 0.0, set(need)
+            while remaining:
+                best, gain = None, 0
+                for c in pool:
+                    if c["i"] in chosen:
+                        continue
+                    g = len(item_keys[c["i"]] & remaining)
+                    if g > gain:
+                        best, gain = c, g
+                if best is None:
+                    break                                  # not coverable from this pool
+                chosen.append(best["i"])
+                cost += best["bytes"]
+                remaining -= item_keys[best["i"]]
+            if not remaining:
+                out.append((cost, chosen))
+        out.sort(key=lambda x: x[0])
+        return out
+
+    def budgeted_keys(self, v: str, ordering: str, budget: int) -> tuple[dict[tuple, float], int]:
+        """Select whole read items under a byte budget, then return their unit keys."""
+        pool = self.candidate_items(v)
+        if ordering == "recent":
+            pool.sort(key=lambda c: -c["t"])
+        elif ordering == "graph":
+            # direct predecessors first, then the rest of the closure, then everything else;
+            # most recent within each tier
+            pool.sort(key=lambda c: (c["tier"], -c["t"]))
+        elif ordering == "largest":
+            pool.sort(key=lambda c: -c["bytes"])
+        elif ordering == "smallest":
+            pool.sort(key=lambda c: c["bytes"])
+        elif ordering == "oracle":
+            pool.sort(key=lambda c: -(self._useful_bytes(c["i"], v) / max(c["bytes"], 1)))
+        elif ordering == "cheapest_rounds":
+            # buy whole rounds, cheapest first, until the budget runs out
+            chosen, spent = [], 0
+            for cost, items in self.round_costs(v):
+                extra = [i for i in items if i not in chosen]
+                add = sum(self.red.items[i]["bytes"] for i in extra)
+                if spent + add > budget:
+                    continue
+                chosen.extend(extra)
+                spent += add
+            return self.keys_from_items(chosen), spent
+        else:
+            raise ValueError(ordering)
+        chosen, spent = [], 0
+        for c in pool:
+            if spent + c["bytes"] > budget:
+                continue                       # keep going: a smaller later item may still fit
+            chosen.append(c["i"])
+            spent += c["bytes"]
+        return self.keys_from_items(chosen), spent
+
+    def pool_bytes(self, v: str) -> int:
+        return sum(c["bytes"] for c in self.candidate_items(v))
+
     # ---- policies --------------------------------------------------------------------------
     def policy_rows(self, seed: int = 20260916) -> list[dict]:
         rng = random.Random(seed)
