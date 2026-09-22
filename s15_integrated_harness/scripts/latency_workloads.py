@@ -287,6 +287,11 @@ def main() -> int:
     parser.add_argument("--no-stream", action="store_true", help="do not use streaming requests (no prefill/decode split)")
     parser.add_argument("--score-only", action="store_true", help="only (re)score existing runs with these labels")
     parser.add_argument("--print-prompts", action="store_true")
+    parser.add_argument("--driver-arg", action="append", default=[],
+                        help="extra argument passed verbatim to profile_run.py (repeatable), e.g. "
+                             "--driver-arg=--vllm-metrics=http://127.0.0.1:8011/metrics")
+    parser.add_argument("--skip-existing", action="store_true",
+                        help="skip a label whose <label>.score.json already reports a completed run (resumable matrix)")
     args = parser.parse_args()
 
     ids = args.only.split(",") if args.only else list(CATEGORIES)
@@ -308,6 +313,16 @@ def main() -> int:
                 print(f"\n=== {label}\n{prompt}\n")
                 continue
             log = trace_dir / f"{label}.console.log"
+            if args.skip_existing and not args.score_only:
+                existing = trace_dir / f"{label}.score.json"
+                if existing.exists():
+                    try:
+                        status = json.loads(existing.read_text(encoding="utf-8")).get("status")
+                    except Exception:
+                        status = None
+                    if status in {"completed", "teammates-idle", "no-teammates"}:
+                        print(f"[workloads] skip {label}: already {status}", flush=True)
+                        continue
             if not args.score_only:
                 cmd = [sys.executable, str(driver), "--label", label, "--trace-output", "full", "--trace-dir", str(trace_dir),
                        "--max-seconds", str(args.max_seconds), "--quiet-seconds", str(args.quiet_seconds),
@@ -320,6 +335,7 @@ def main() -> int:
                     cmd += ["--write-root", SANDBOX, "--sandbox-from", BENCH]
                 if mode == "team":
                     cmd += ["--followup-if-no-team", "Confirmed, proceed: create the three tasks and spawn the three teammates now."]
+                cmd += list(args.driver_arg)
                 print(f"[workloads] {time.strftime('%H:%M:%S')} start {label} (log {log})", flush=True)
                 env = dict(**__import__("os").environ, PROFILE_GIT_HEAD=git_head)
                 with log.open("w", encoding="utf-8") as handle:

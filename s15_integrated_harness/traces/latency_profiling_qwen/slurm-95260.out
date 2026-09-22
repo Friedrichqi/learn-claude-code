@@ -1,0 +1,154 @@
+{"time": "2026-09-21T21:34:59-0400", "host": "alphagpu53", "slurm_job_id": "95260", "slurm_cpus": "16", "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition", "gpu_mem_mib": 97887, "nproc": 144, "model": "Qwen/Qwen3.8-27B", "port": 40727, "max_model_len": 262144, "gpu_util": 0.9, "max_num_seqs": 32, "max_num_batched_tokens": 16384, "extra_vllm_args": "", "team_reps": "r1 r2 r3 r4 r5", "solo_reps": "r1 r2 r3", "categories": "FQA CODE MATH", "max_seconds": 3600, "lane": "/mnt/home/yqi10/lanes/latency_qwen", "out": "/mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen", "hf_home": "/projects/co/jlin4/agenticllm/hf_cache", "vllm": "0.29.0", "torch": "2.13.0+cu130", "transformers": "5.17.0", "anthropic": "1.7.0", "git_head": "aded0d0e7fd4af8df3eebeee2854f622d562dce4"}
+[21:36:08] env: repo=/mnt/home/yqi10/learn-claude-code out=/mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen lane=/mnt/home/yqi10/lanes/latency_qwen base_url=http://127.0.0.1:40727 gpu='NVIDIA RTX PRO 6000 Blackwell Server Edition' 97887MiB maxlen=262144
+[21:36:08] download: ensuring Qwen/Qwen3.8-27B is complete in /projects/co/jlin4/agenticllm/hf_cache (idempotent)
+Fetching 32 files:   0%|          | 0/32 [00:00<?, ?it/s]Fetching 32 files: 100%|██████████| 32/32 [00:00<00:00, 760.05it/s]
+/projects/co/jlin4/agenticllm/hf_cache/hub/models--Qwen--Qwen3.8-27B/snapshots/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0
+[21:36:11] serve: starting vLLM Qwen/Qwen3.8-27B on http://127.0.0.1:40727 (max-model-len 262144, util 0.90, seqs 32, batched 16384) -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/vllm_server_20260921T213611.log
+[21:43:55] serve: healthy after 460s (pid 291668)
+server: {"version": "0.29.0"} | metric families: 98
+[21:43:56] lane: waiting for /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/pipeline/READY (touch it when the code edits are final)
+[21:47:56] lane: rsync /mnt/home/yqi10/learn-claude-code/ -> /mnt/home/yqi10/lanes/latency_qwen/
+[21:48:03] lane: .env -> http://127.0.0.1:40727 Qwen/Qwen3.8-27B
+[21:48:03] probe: provider_probe.py --all (prefill sweep, cached resends, decode rate, cache semantics)
+     50000 chars  uncached    224  cached      0  first block  2.11s  tail 11.47s  26.1 tok/s
+      8000 chars  uncached    564  cached      0  first block  0.40s  tail 11.35s  26.4 tok/s
+    100000 chars  uncached    478  cached      0  first block  4.23s  tail 11.62s  25.8 tok/s
+    160000 chars  uncached    509  cached      0  first block  6.33s  tail 11.75s  25.5 tok/s
+      2000 chars  uncached    531  cached      0  first block  0.18s  tail 11.33s  26.5 tok/s
+   long output: 1200 tokens at 26.4 tok/s
+
+== prefill
+   all fresh calls (n=18): first block = 2.86 s + -1.0817 ms/uncached token (r2 0.00) -> slope not positive
+   one clean sweep (n=6):  first block = 2.80 s + -0.9171 ms/uncached token (r2 0.00) -> slope not positive
+   cached resend of 35,280 tokens: 6.31s -> 0.42s  = 11.6330 ms saved per cached token
+   cached resend of 12,544 tokens: 2.11s -> 0.27s  = 8.4651 ms saved per cached token
+
+== decode: median 26 tok/s, range 26-26
+   inter-delta gap: mean 38.3 ms but median 38.5 ms -- events arrive in bursts, so use tokens/s, not the median gap
+
+-- cache semantics: is the prompt cache prefix-based?
+   1 first send, unique prefix          first block  5.21s  cached      0 of    168  (  0.0%)
+   2 identical resend                   first block  0.37s  cached 29,792 of 29,960  ( 99.4%)
+   3 new prefix, same body              first block  5.21s  cached      0 of    168  (  0.0%)
+   4 unique block inserted mid-prompt   first block  5.21s  cached      0 of    208  (  0.0%)
+   5 document never sent before         first block 11.73s  cached      0 of    364  (  0.0%)
+   6 that document again, new prefix    first block 11.72s  cached      0 of    366  (  0.0%)
+
+wrote 27 calls to /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/provider_probe.json
+[21:55:28] smoke: one FQA team run as the gate before the matrix
+[21:55:28] run: FQA-team-smoke -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/smoke
+[workloads] 21:55:28 start FQA-team-smoke (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/smoke/FQA-team-smoke.console.log)
+[workloads] 22:02:32 end FQA-team-smoke exit=0
+[workloads] score FQA-team-smoke: keyword coverage 1.0 status=completed wall=414.0s
+smoke check FQA-team-smoke (run_20260922T015538_642301Z_a916f3b3.jsonl)
+  - status=completed wall=414.0s teammates=3 model_calls=31
+  - cache: reported on 31/31 calls, >0 on 24, cache_creation total 79,968
+  - server metrics on 31 calls, exact attribution 29/31; exact-call means prefill 0.63s decode 24.06s
+  - stop_reason: {'tool_use': 20, 'end_turn': 7}; max_tokens share 0%
+  - thinking share of output chars 56%; first block types {'thinking': 27}
+  - prompt tok mean 5,653 max 12,250; output tok mean 495 max 1,939; client call mean 21.0s
+  - FQA coverage 1.0
+PASS
+[22:02:38] run: FQA-team-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 22:02:38 start FQA-team-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/FQA-team-r1.console.log)
+[workloads] 22:09:45 end FQA-team-r1 exit=0
+[workloads] score FQA-team-r1: keyword coverage 1.0 status=completed wall=417.2s
+[22:09:50] run: CODE-team-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 22:09:50 start CODE-team-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/CODE-team-r1.console.log)
+[workloads] 22:16:32 end CODE-team-r1 exit=0
+[workloads] score CODE-team-r1: 3/3 correct status=completed wall=390.0s
+[22:16:38] run: MATH-team-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 22:16:38 start MATH-team-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/MATH-team-r1.console.log)
+[workloads] 22:22:06 end MATH-team-r1 exit=0
+[workloads] score MATH-team-r1: 3/3 correct status=completed wall=317.6s
+[22:22:11] run: FQA-team-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 22:22:11 start FQA-team-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/FQA-team-r2.console.log)
+[workloads] 22:30:47 end FQA-team-r2 exit=0
+[workloads] score FQA-team-r2: keyword coverage 0.967 status=completed wall=505.5s
+[22:30:52] run: CODE-team-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 22:30:52 start CODE-team-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/CODE-team-r2.console.log)
+[workloads] 22:38:22 end CODE-team-r2 exit=0
+[workloads] score CODE-team-r2: 3/3 correct status=completed wall=439.9s
+[22:38:28] run: MATH-team-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 22:38:29 start MATH-team-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/MATH-team-r2.console.log)
+[workloads] 22:43:13 end MATH-team-r2 exit=0
+[workloads] score MATH-team-r2: 3/3 correct status=completed wall=274.7s
+[22:43:18] run: FQA-team-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 22:43:19 start FQA-team-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/FQA-team-r3.console.log)
+[workloads] 22:50:04 end FQA-team-r3 exit=0
+[workloads] score FQA-team-r3: keyword coverage 0.967 status=completed wall=395.9s
+[22:50:09] run: CODE-team-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 22:50:10 start CODE-team-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/CODE-team-r3.console.log)
+[workloads] 23:02:54 end CODE-team-r3 exit=0
+[workloads] score CODE-team-r3: 3/3 correct status=completed wall=753.9s
+[23:03:01] run: MATH-team-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 23:03:01 start MATH-team-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/MATH-team-r3.console.log)
+[workloads] 23:09:46 end MATH-team-r3 exit=0
+[workloads] score MATH-team-r3: 3/3 correct status=completed wall=395.1s
+[23:09:51] run: FQA-team-r4 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 23:09:51 start FQA-team-r4 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/FQA-team-r4.console.log)
+[workloads] 23:16:39 end FQA-team-r4 exit=0
+[workloads] score FQA-team-r4: keyword coverage 0.967 status=completed wall=398.0s
+[23:16:45] run: CODE-team-r4 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 23:16:46 start CODE-team-r4 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/CODE-team-r4.console.log)
+[workloads] 23:23:17 end CODE-team-r4 exit=0
+[workloads] score CODE-team-r4: 3/3 correct status=completed wall=381.1s
+[23:23:24] run: MATH-team-r4 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 23:23:24 start MATH-team-r4 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/MATH-team-r4.console.log)
+[workloads] 23:27:39 end MATH-team-r4 exit=0
+[workloads] score MATH-team-r4: 3/3 correct status=completed wall=245.2s
+[23:27:44] run: FQA-team-r5 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 23:27:45 start FQA-team-r5 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/FQA-team-r5.console.log)
+[workloads] 23:34:19 end FQA-team-r5 exit=0
+[workloads] score FQA-team-r5: keyword coverage 1.0 status=completed wall=385.4s
+[23:34:25] run: CODE-team-r5 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 23:34:25 start CODE-team-r5 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/CODE-team-r5.console.log)
+[workloads] 23:41:01 end CODE-team-r5 exit=0
+[workloads] score CODE-team-r5: 3/3 correct status=completed wall=386.2s
+[23:41:07] run: MATH-team-r5 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 23:41:08 start MATH-team-r5 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/MATH-team-r5.console.log)
+[workloads] 23:46:14 end MATH-team-r5 exit=0
+[workloads] score MATH-team-r5: 3/3 correct status=completed wall=296.7s
+[23:46:19] run: FQA-solo-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 23:46:19 start FQA-solo-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/FQA-solo-r1.console.log)
+[workloads] 23:53:20 end FQA-solo-r1 exit=0
+[workloads] score FQA-solo-r1: keyword coverage 0.933 status=completed wall=410.8s
+[23:53:25] run: CODE-solo-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 23:53:26 start CODE-solo-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/CODE-solo-r1.console.log)
+[workloads] 23:59:38 end CODE-solo-r1 exit=0
+[workloads] score CODE-solo-r1: 3/3 correct status=completed wall=361.1s
+[23:59:44] run: MATH-solo-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 23:59:44 start MATH-solo-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/MATH-solo-r1.console.log)
+[workloads] 00:02:56 end MATH-solo-r1 exit=0
+[workloads] score MATH-solo-r1: 3/3 correct status=completed wall=181.7s
+[00:03:01] run: FQA-solo-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 00:03:01 start FQA-solo-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/FQA-solo-r2.console.log)
+[workloads] 00:08:29 end FQA-solo-r2 exit=0
+[workloads] score FQA-solo-r2: keyword coverage 1.0 status=completed wall=318.1s
+[00:08:34] run: CODE-solo-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 00:08:35 start CODE-solo-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/CODE-solo-r2.console.log)
+[workloads] 00:14:53 end CODE-solo-r2 exit=0
+[workloads] score CODE-solo-r2: 3/3 correct status=completed wall=367.9s
+[00:15:00] run: MATH-solo-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 00:15:00 start MATH-solo-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/MATH-solo-r2.console.log)
+[workloads] 00:18:46 end MATH-solo-r2 exit=0
+[workloads] score MATH-solo-r2: 3/3 correct status=completed wall=215.7s
+[00:18:51] run: FQA-solo-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 00:18:51 start FQA-solo-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/FQA-solo-r3.console.log)
+[workloads] 00:24:10 end FQA-solo-r3 exit=0
+[workloads] score FQA-solo-r3: keyword coverage 0.967 status=completed wall=308.4s
+[00:24:15] run: CODE-solo-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 00:24:15 start CODE-solo-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/CODE-solo-r3.console.log)
+[workloads] 00:31:36 end CODE-solo-r3 exit=0
+[workloads] score CODE-solo-r3: 3/3 correct status=completed wall=430.2s
+[00:31:42] run: MATH-solo-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[workloads] 00:31:43 start MATH-solo-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/MATH-solo-r3.console.log)
+[workloads] 00:35:44 end MATH-solo-r3 exit=0
+[workloads] score MATH-solo-r3: 3/3 correct status=completed wall=230.4s
+[00:35:49] matrix: done (24 scored runs)
+[00:35:49] tables: latency_breakdown.py /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen
+[00:35:51] tables: 274 lines -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/latency_tables.md
+[00:35:51] compare: latency_compare.py (GLM traces vs /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen)
+wrote /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen/compare_glm_vs_qwen.md (267 lines; A 24 runs, B 24 runs)
+[00:35:54] stop: terminating vLLM (session 291668)
+[00:35:58] pipeline finished (steps: download serve lane probe smoke matrix tables compare stop)

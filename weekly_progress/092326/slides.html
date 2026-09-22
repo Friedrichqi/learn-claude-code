@@ -1,0 +1,1161 @@
+<title>Inheritance and the Round Ceiling</title>
+<meta name="description" content="Weekly progress, 23 September 2026: what handing a successor task the bytes its predecessor already read removes, how far up the dependency graph it is worth reaching, what survives contact with real agents and real corpora, and the latency breakdown rerun on local hardware.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #eef1f5;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --ink: #141922;
+  --ink-2: #47505f;
+  --muted: #7a8391;
+  --hair: #d5dbe3;
+  --hair-2: #e6eaf0;
+  --lead: #2a78d6;
+  --lead-soft: #cde2fb;
+  --lead-ink: #1c5cab;
+  --mate: #eb6834;
+  --mate-soft: #fbd9c9;
+  --mate-ink: #b8451c;
+  --mate-1: #f7c9b3;
+  --mate-2: #f29d76;
+  --mate-3: #eb6834;
+  --mate-4: #b8451c;
+  --shot: #1baf7a;
+  --grey-mark: #aeb6c2;
+  --warn: #d03b3b;
+  --focus: #1c5cab;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1117;
+    --surface: #161c25;
+    --surface-2: #1c232e;
+    --ink: #eef1f5;
+    --ink-2: #b9c1cd;
+    --muted: #8791a0;
+    --hair: #2b3441;
+    --hair-2: #232b36;
+    --lead: #3987e5;
+    --lead-soft: #1c355a;
+    --lead-ink: #8dbcf5;
+    --mate: #d95926;
+    --mate-soft: #4a2416;
+    --mate-ink: #f0a17e;
+    --mate-1: #5a2d1c;
+    --mate-2: #9a4222;
+    --mate-3: #d95926;
+    --mate-4: #f29d76;
+    --shot: #199e70;
+    --grey-mark: #5c6673;
+    --warn: #e66767;
+    --focus: #8dbcf5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1117;
+  --surface: #161c25;
+  --surface-2: #1c232e;
+  --ink: #eef1f5;
+  --ink-2: #b9c1cd;
+  --muted: #8791a0;
+  --hair: #2b3441;
+  --hair-2: #232b36;
+  --lead: #3987e5;
+  --lead-soft: #1c355a;
+  --lead-ink: #8dbcf5;
+  --mate: #d95926;
+  --mate-soft: #4a2416;
+  --mate-ink: #f0a17e;
+  --mate-1: #5a2d1c;
+  --mate-2: #9a4222;
+  --mate-3: #d95926;
+  --mate-4: #f29d76;
+  --shot: #199e70;
+  --grey-mark: #5c6673;
+  --warn: #e66767;
+  --focus: #8dbcf5;
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.4;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+h1, h2, h3 { margin: 0; font-family: var(--display); font-weight: 700; text-wrap: balance; letter-spacing: -0.015em; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+b, strong { font-weight: 600; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- deck chrome ---------- */
+.deck { position: fixed; inset: 0; }
+.stage {
+  position: absolute;
+  width: 1280px; height: 720px;
+  left: calc((100vw - 1280px * var(--s, 1)) / 2);
+  top: calc((100vh - 720px * var(--s, 1)) / 2);
+  transform: scale(var(--s, 1));
+  transform-origin: top left;
+}
+.slide {
+  position: absolute; inset: 0;
+  width: 1280px; height: 720px;
+  padding: 44px 64px 40px;
+  background: var(--surface);
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+  border: 1px solid var(--hair);
+}
+.slide.active { display: flex; }
+.slide-head { display: flex; flex-direction: column; gap: 8px; }
+.eyebrow {
+  display: flex; align-items: baseline; gap: 14px;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.eyebrow .num { font-family: var(--mono); letter-spacing: 0; color: var(--ink-2); }
+.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--hair); transform: translateY(-4px); }
+.slide h2 { font-size: 32px; line-height: 1.12; max-width: 1100px; }
+.slide h2 .dim { color: var(--muted); font-weight: 500; }
+.body { flex: 1; min-height: 0; display: grid; gap: 28px; }
+.foot {
+  display: flex; gap: 22px; align-items: baseline;
+  font-size: 11.5px; color: var(--muted); line-height: 1.35;
+  border-top: 1px solid var(--hair-2); padding-top: 10px;
+}
+.foot .mono { font-size: 11px; color: var(--ink-2); }
+.foot p { max-width: none; }
+
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 3px; background: var(--hair-2);
+}
+.hud .bar { height: 100%; width: 0; background: var(--lead); transition: width 200ms ease; }
+.counter {
+  position: fixed; right: 18px; bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted);
+  display: flex; gap: 14px; align-items: center;
+}
+.counter button {
+  font: inherit; color: var(--ink-2); background: var(--surface); border: 1px solid var(--hair); border-radius: 4px;
+  padding: 2px 8px; cursor: pointer;
+}
+.counter button:hover { border-color: var(--muted); }
+.hint { position: fixed; left: 18px; bottom: 10px; font-size: 12px; color: var(--muted); }
+
+/* overview mode */
+body.overview { overflow: auto; }
+body.overview .deck { position: static; }
+body.overview .stage { position: static; transform: none; width: auto; height: auto; display: grid;
+  grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 24px; }
+body.overview .slide { display: flex; position: relative; zoom: 0.3; cursor: pointer; }
+body.overview .slide:hover { outline: 6px solid var(--lead); }
+body.overview .hud, body.overview .hint { display: none; }
+
+body.export .hud, body.export .counter, body.export .hint { display: none; }
+body.export .slide { border: 0; }
+
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .deck, .stage { position: static; transform: none; width: auto; height: auto; }
+  .slide { display: flex; position: relative; page-break-after: always; break-after: page; border: 0; }
+  .hud, .counter, .hint { display: none; }
+}
+
+/* ---------- content primitives ---------- */
+.two { grid-template-columns: 1fr 1fr; }
+.wide-left { grid-template-columns: 1.25fr 1fr; }
+.wide-right { grid-template-columns: 1fr 1.25fr; }
+.stack { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.label {
+  font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.label.lead { color: var(--lead-ink); }
+.label.mate { color: var(--mate-ink); }
+.claim { font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.25; letter-spacing: -0.01em; }
+.note { font-size: 13.5px; color: var(--ink-2); max-width: 62ch; }
+.list { display: flex; flex-direction: column; gap: 9px; list-style: none; font-size: 14.5px; color: var(--ink); }
+.list li { padding-left: 16px; position: relative; }
+.list li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+.list.tight { gap: 6px; font-size: 13.5px; }
+.list li b { font-weight: 600; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; align-items: baseline; }
+.kv dt { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.kv dd { margin: 0; color: var(--ink); }
+figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 11.5px; padding: 1px 7px; border: 1px solid var(--hair); border-radius: 3px; color: var(--ink-2); background: var(--surface-2); }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.swatch.lead { background: var(--lead); } .swatch.mate { background: var(--mate); } .swatch.shot { background: var(--shot); } .swatch.grey { background: var(--grey-mark); }
+
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.data th, table.data td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--hair-2); vertical-align: top; }
+table.data th { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--hair); }
+table.data td.n, table.data th.n { text-align: right; }
+table.data td.mono { font-size: 12px; }
+table.data tr.hi td { background: var(--surface-2); }
+
+/* diagram text */
+svg text { font-family: var(--body); fill: var(--ink); }
+svg .t-title { font-family: var(--display); font-weight: 700; }
+svg .t-mono { font-family: var(--mono); }
+svg .t-muted { fill: var(--muted); }
+svg .t-ink2 { fill: var(--ink-2); }
+svg .t-lead { fill: var(--lead-ink); }
+svg .t-mate { fill: var(--mate-ink); }
+svg .box { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .box-soft { fill: var(--surface-2); stroke: var(--hair); stroke-width: 1; }
+svg .box-lead { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.2; }
+svg .box-mate { fill: var(--mate-soft); stroke: var(--mate); stroke-width: 1.2; }
+svg .box-dash { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+svg .edge { stroke: var(--ink-2); stroke-width: 1.3; fill: none; }
+svg .edge-lead { stroke: var(--lead); stroke-width: 1.4; fill: none; }
+svg .edge-mate { stroke: var(--mate); stroke-width: 1.4; fill: none; }
+svg .edge-dash { stroke: var(--muted); stroke-width: 1.2; fill: none; stroke-dasharray: 4 3; }
+svg .grid { stroke: var(--hair-2); stroke-width: 1; }
+svg .axis { stroke: var(--hair); stroke-width: 1; }
+svg .f-lead { fill: var(--lead); } svg .f-mate { fill: var(--mate); } svg .f-grey { fill: var(--grey-mark); } svg .f-shot { fill: var(--shot); }
+svg .f-m1 { fill: var(--mate-1); } svg .f-m2 { fill: var(--mate-2); } svg .f-m3 { fill: var(--mate-3); } svg .f-m4 { fill: var(--mate-4); }
+svg .f-surface { fill: var(--surface); }
+svg .node-done { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.3; }
+svg .node-open { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .node-ghost { fill: var(--surface-2); stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+
+/* bar table (slide 5) */
+.bartable { display: grid; grid-template-columns: 250px 1fr 58px 58px; gap: 8px 14px; align-items: center; font-size: 13.5px; }
+.bartable .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.bartable .m { color: var(--ink); line-height: 1.25; }
+.bartable .bars { display: flex; flex-direction: column; gap: 3px; }
+.bartable .bar { height: 11px; border-radius: 0 3px 3px 0; position: relative; }
+.bartable .bar.lead { background: var(--lead); }
+.bartable .bar.mate { background: var(--mate); }
+.bartable .v { font-variant-numeric: tabular-nums; text-align: right; font-family: var(--mono); font-size: 13px; }
+.bartable .v.lead { color: var(--lead-ink); } .bartable .v.mate { color: var(--mate-ink); }
+
+/* dumbbells (slide 6) */
+.dumbbells { display: grid; grid-template-columns: 130px 1fr; gap: 16px 18px; align-items: center; font-size: 13.5px; }
+.dumbbells .m { color: var(--ink); }
+.dumbbells .track { position: relative; height: 26px; }
+.dumbbells .track::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 1px; background: var(--hair); }
+.dumbbells .seg { position: absolute; top: 11.5px; height: 2px; background: var(--ink-2); }
+.dumbbells .dot { position: absolute; top: 6px; width: 14px; height: 14px; border-radius: 50%; transform: translateX(-50%); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--hair); }
+.dumbbells .dot.a { background: var(--grey-mark); } .dumbbells .dot.b { background: var(--lead); }
+.dumbbells .lab { position: absolute; top: -8px; transform: translateX(-50%); font-family: var(--mono); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.dumbbells .lab.b { color: var(--lead-ink); top: 22px; }
+
+/* tiers (last slide) */
+.tiers { display: grid; grid-template-rows: repeat(4, 1fr); gap: 10px; min-height: 0; }
+.tier { display: grid; grid-template-columns: 160px 1fr; gap: 14px; padding: 10px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.tier .name { font-family: var(--display); font-weight: 700; font-size: 15.5px; line-height: 1.2; }
+.tier .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0; }
+.tier .what { font-size: 12.5px; line-height: 1.38; color: var(--ink-2); }
+.tier .what b { color: var(--ink); }
+.tier.hot { border-left-color: var(--lead); }
+.tier.warm { border-left-color: var(--mate); }
+.tier.cold { border-left-color: var(--grey-mark); }
+.tier.drop { border-left-color: var(--warn); }
+
+/* cover */
+.cover { justify-content: space-between; background: var(--surface); }
+.cover .title { font-size: 58px; line-height: 1.02; letter-spacing: -0.03em; max-width: 1000px; font-weight: 800; }
+.cover .sub { font-size: 21px; color: var(--ink-2); max-width: 820px; line-height: 1.35; margin-top: 18px; }
+.cover .meta { display: flex; gap: 40px; font-size: 13px; color: var(--muted); }
+.cover .meta b { display: block; color: var(--ink); font-weight: 500; }
+.cover .rule { height: 6px; width: 120px; background: var(--lead); }
+
+/* questions */
+.qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 44px; align-content: start; padding-top: 8px; }
+.q { display: grid; grid-template-columns: 36px 1fr; gap: 10px; font-size: 17px; line-height: 1.38; }
+.q .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 22px; line-height: 1.1; }
+.q b { font-weight: 600; }
+
+/* ---------- additions for the 2026-09-16 deck ---------- */
+/* tier ladder: rungs are tiers, gaps are the boundaries between them */
+.ladder { display: flex; flex-direction: column; min-height: 0; }
+.rung { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 9px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.rung .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
+.rung .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 10.5px; color: var(--muted); margin-top: 3px; }
+.rung .what { font-size: 12px; line-height: 1.36; color: var(--ink-2); }
+.rung .what b { color: var(--ink); }
+.rung.gpu { border-left-color: var(--lead); } .rung.cache { border-left-color: var(--shot); } .rung.prompt { border-left-color: var(--mate); } .rung.disk { border-left-color: var(--grey-mark); }
+.gapx { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 5px 14px 5px 18px; align-items: center; }
+.gapx .arrow { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.3; }
+.gapx .price { font-size: 12px; color: var(--ink); background: var(--surface); border: 1px dashed var(--hair); border-radius: 4px; padding: 5px 10px; line-height: 1.35; }
+.gapx .price b { color: var(--lead-ink); font-family: var(--mono); font-weight: 500; }
+.gapx .price.ask { font-family: var(--display); font-weight: 700; color: var(--muted); font-size: 15px; padding: 3px 10px; }
+/* paired bars (slides 3 and 5): ghost = baseline, filled = the measured arm */
+.pairs { display: grid; grid-template-columns: 1fr 300px 90px; gap: 7px 14px; align-items: center; font-size: 12.5px; }
+.pairs .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.pairs .m { color: var(--ink); line-height: 1.25; }
+.pairs .m small { display: block; color: var(--muted); font-size: 11px; }
+.pairs .bars { display: flex; flex-direction: column; gap: 3px; }
+.pairs .bar { height: 9px; border-radius: 0 3px 3px 0; }
+.pairs .bar.ghost { background: var(--grey-mark); opacity: 0.55; }
+.pairs .bar.mate { background: var(--mate); }
+.pairs .bar.lead { background: var(--lead); }
+.pairs .v { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); line-height: 1.3; }
+.pairs .v b { color: var(--ink); font-weight: 500; }
+/* dense grids */
+.three { grid-template-columns: 1fr 1fr 1fr; }
+.list.tight.xs { font-size: 12.5px; gap: 5px; }
+.note.xs { font-size: 12px; }
+table.data.xs { font-size: 12px; } table.data.xs th, table.data.xs td { padding: 4px 8px; }
+.tag { display: inline-block; font-family: var(--mono); font-size: 10.5px; padding: 0 6px; border-radius: 3px; border: 1px solid var(--hair); color: var(--ink-2); background: var(--surface-2); margin-right: 4px; vertical-align: 1px; }
+.tag.m { color: var(--lead-ink); border-color: var(--lead-soft); background: var(--lead-soft); }
+.tag.r { color: var(--mate-ink); border-color: var(--mate-soft); background: var(--mate-soft); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 22px; align-content: start; }
+.nw { white-space: nowrap; }
+table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
+.step { display: grid; grid-template-columns: 26px 1fr; gap: 8px; font-size: 12.5px; line-height: 1.35; }
+.step .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 15px; line-height: 1.15; }
+.step b { font-weight: 600; }
+.step .group { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+/* ---------- additions for the 2026-09-23 deck ---------- */
+/* verdicts: what is deployable and what is retired */
+.verdicts { display: grid; gap: 7px; align-content: start; }
+.verdict { display: grid; grid-template-columns: 20px 1fr; gap: 9px; padding: 6px 12px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.verdict .n { font-family: var(--display); font-weight: 700; font-size: 13.5px; line-height: 1.3; }
+.verdict .what { font-size: 12.5px; line-height: 1.34; color: var(--ink-2); }
+.verdict .what b { color: var(--ink); font-weight: 600; }
+.verdict.keep { border-left-color: var(--shot); } .verdict.keep .n { color: var(--shot); }
+.verdict.drop { border-left-color: var(--warn); } .verdict.drop .n { color: var(--warn); }
+/* arm legend colours: grey = untreated baseline, orange = direct predecessors, blue = transitive closure */
+.swatch.warn { background: var(--warn); }
+svg .t-shot { fill: var(--shot); }
+.bartable .bar.grey { background: var(--grey-mark); }
+.bartable .v.grey { color: var(--muted); }
+.pairs .bar.grey { background: var(--grey-mark); }
+/* denser still, for the six-note week */
+.list.tight.xxs { font-size: 11.8px; gap: 4px; }
+.list.tight.xxs li { padding-left: 13px; }
+.list.tight.xxs li::before { width: 5px; height: 5px; top: 0.58em; }
+table.data.xxs { font-size: 11.5px; }
+.kv.xs { font-size: 12px; gap: 4px 12px; } .kv.xs dt { font-size: 11px; }
+.steps.two-up { grid-template-columns: 1fr 1fr; }
+</style>
+
+<div class="deck" id="deck">
+<div class="stage" id="stage">
+
+<!-- ===================== 0 · COVER ===================== -->
+<section class="slide cover" data-title="Cover">
+  <div>
+    <div class="eyebrow"><span>Weekly progress</span><span class="num">2026-09-23</span></div>
+    <div class="rule" style="margin:34px 0 26px"></div>
+    <h1 class="title">Inheritance removes the rounds it can reach</h1>
+    <p class="sub">Hand a successor task the bytes its predecessor already read, and it stops spending rounds fetching them. How much that removes, how far up the dependency graph it is worth reaching, and what survives contact with real agents, real corpora and a real codebase — plus the end-to-end latency breakdown rerun on local hardware.</p>
+  </div>
+  <div class="meta">
+    <div><b>yq335@cornell.edu</b>learn-claude-code · branch <span class="mono">claude</span> · covers 2026-09-16 to 2026-09-22</div>
+    <div><b>Harness</b>s15 integrated harness (lead + teammates) · six notes, synthesis written 2026-09-21 at <span class="mono">aded0d0</span></div>
+    <div><b>Models</b>glm-5.3-flash via z.ai · deepseek-v4-flash · Qwen/Qwen3.8-27B on local vLLM</div>
+    <div><b>Synthesis</b><span class="mono">weekly_progress/092326/conclusion.md</span></div>
+  </div>
+</section>
+
+<!-- ===================== 1 · THE SYSTEM UNDER TEST ===================== -->
+<section class="slide" data-title="System under test">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">1</span><span>The system under test · orientation for anyone new to this deck</span></div>
+    <h2>A <span class="dim">turn</span> is one Lead activation and a <span class="dim">round</span> is one trip through the agent loop — the unit this week is the round, because a round is quantised</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 636px 1fr; gap:34px">
+    <figure>
+      <p class="label">FAB-DEEP · the depth-4 board the arms are separated on</p>
+      <svg viewBox="0 0 620 178" role="img" aria-label="A task board of five items. GLOSSARY feeds ARCHITECTURE, which feeds DESIGN, which feeds the successor task 'reconcile all four'; README feeds the successor directly. The dag arm hands the successor items 3 and 4; the ancestors arm hands it items 1, 2, 3 and 4. The two arms can only differ at depth 3 or more." style="margin-top:6px">
+        <g color="var(--ink-2)">
+          <defs><marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+          <rect x="16" y="24" width="112" height="30" rx="3" class="node-done"></rect>
+          <text x="72" y="43" font-size="11" text-anchor="middle" class="t-mono">#1 GLOSSARY</text>
+          <rect x="158" y="24" width="112" height="30" rx="3" class="node-done"></rect>
+          <text x="214" y="43" font-size="11" text-anchor="middle" class="t-mono">#2 ARCHITECTURE</text>
+          <rect x="300" y="24" width="112" height="30" rx="3" class="node-done"></rect>
+          <text x="356" y="43" font-size="11" text-anchor="middle" class="t-mono">#3 DESIGN</text>
+          <rect x="158" y="88" width="112" height="30" rx="3" class="node-done"></rect>
+          <text x="214" y="107" font-size="11" text-anchor="middle" class="t-mono">#4 README</text>
+          <rect x="462" y="48" width="140" height="46" rx="3" class="box-lead"></rect>
+          <text x="532" y="68" font-size="11.5" text-anchor="middle" class="t-mono t-lead">#5 successor</text>
+          <text x="532" y="83" font-size="11" text-anchor="middle" class="t-lead">reconcile all four</text>
+          <path d="M 128 39 L 152 39" class="edge" marker-end="url(#arA)"></path>
+          <path d="M 270 39 L 294 39" class="edge" marker-end="url(#arA)"></path>
+          <path d="M 412 39 C 440 39, 440 62, 456 62" class="edge" marker-end="url(#arA)"></path>
+          <path d="M 270 103 C 400 103, 410 80, 456 80" class="edge" marker-end="url(#arA)"></path>
+          <text x="16" y="14" font-size="10" class="t-muted">depth 1</text>
+          <text x="158" y="14" font-size="10" class="t-muted">depth 2</text>
+          <text x="300" y="14" font-size="10" class="t-muted">depth 3</text>
+          <text x="462" y="14" font-size="10" class="t-muted">depth 4 · the successor under test</text>
+          <line x1="16" y1="136" x2="602" y2="136" class="grid"></line>
+          <rect x="16" y="148" width="9" height="9" rx="2" class="f-mate"></rect>
+          <text x="32" y="157" font-size="11" class="t-mate"><tspan class="t-mono">dag</tspan> hands it #3 #4 — the direct predecessors</text>
+          <rect x="310" y="148" width="9" height="9" rx="2" class="f-lead"></rect>
+          <text x="326" y="157" font-size="11" class="t-lead"><tspan class="t-mono">ancestors</tspan> hands it #1 #2 #3 #4 — the closure</text>
+          <text x="16" y="174" font-size="10.5" class="t-muted">The two treatment arms can only differ at depth 3 or more; #6 is a standalone item, the within-run control.</text>
+        </g>
+      </svg>
+      <figcaption>A baseline successor must find four documents for itself, <span class="mono">dag</span> two, <span class="mono">ancestors</span> none. Injection is byte-faithful: the exact assistant <span class="mono">tool_use</span> / user <span class="mono">tool_result</span> pair a real <span class="mono">read_file</span> would have produced, rebuilt on every call, oldest ancestor first, skipping content the successor already holds.</figcaption>
+    </figure>
+    <div class="stack" style="gap:13px">
+      <div>
+        <p class="label">The three arms, used in every experiment</p>
+        <table class="data xs" style="margin-top:6px">
+          <thead><tr><th>arm</th><th>what the successor is handed when it claims a blocked task</th></tr></thead>
+          <tbody>
+            <tr><td class="mono"><span class="swatch grey"></span>none</td><td>nothing — the untreated baseline</td></tr>
+            <tr><td class="mono"><span class="swatch mate"></span>dag</td><td>the reads of its <b>direct</b> predecessors</td></tr>
+            <tr class="hi"><td class="mono"><span class="swatch lead"></span>ancestors</td><td>the reads of its whole <b>transitive closure</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p class="label">The three metrics that carry the story</p>
+        <dl class="kv xs" style="margin-top:6px">
+          <dt>byte recall</dt><dd>share of the successor's read bytes already held</dd>
+          <dt>round recall</dt><dd>share of its rounds that <b>disappear</b> as a result</dd>
+          <dt>precision</dt><dd>share of what was sent that was actually used</dd>
+        </dl>
+      </div>
+      <div>
+        <p class="label">Quantisation · the mechanism behind every null result</p>
+        <ul class="list tight xs" style="margin-top:6px">
+          <li>A round disappears only when <b>everything</b> it would have fetched is already held — a round issuing two reads needs both.</li>
+          <li>So <b>bytes accumulate smoothly and rounds do not.</b> Byte recall is continuous; round recall is a step.</li>
+          <li>Rounds are what a round costs: a model call is <b>3.72 s + 0.033 ms per uncached prompt token + 17.44 ms per output token</b> on <span class="mono">glm-5.3-flash</span> — prefill is under 2% of it, so a cache buys round count, not prefill.</li>
+        </ul>
+      </div>
+      <p class="claim" style="font-size:16px">A round disappears only when everything it would have fetched is already held.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Terminology as in the 2026-09-09 deck. Board figure from <span class="mono">weekly_progress/092326/inheritance_depth.md</span> §2; injection faithfulness from the same note; cost constants from <span class="mono">weekly_progress/091626/latency_breakdown.md</span>. Those constants are <em>provider-specific</em> — slide 10 reruns them on local hardware and the 3.72 s fixed term does not survive, so every "seconds saved" figure in this deck is priced at z.ai's cost and should be read as a round count first.</p></div>
+</section>
+
+<!-- ===================== 2 · LAST WEEK, THIS WEEK ===================== -->
+<section class="slide" data-title="Last week, this week">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">2</span><span>Last week, this week</span></div>
+    <h2>Last week ended on a proposal — turn the task board into a retention policy the engine can act on. Five populations later, the proposal is retired and the mechanism is not the graph</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1.15fr; gap:38px">
+    <div class="stack" style="gap:14px">
+      <div>
+        <p class="label">The bet, from next step 13 of the 2026-09-16 deck</p>
+        <p class="note" style="margin-top:7px">If a successor task is about to read what its predecessor already read, hand it the bytes instead of letting it spend a round fetching them. Does that remove agentic rounds and end-to-end latency, and <b>how far up the dependency graph is it worth reaching?</b></p>
+      </div>
+      <div>
+        <p class="label">Six notes, two threads</p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li><span class="mono">dag_census.md</span> — does the Lead build a graph at all? <span class="tag m">slide 3</span></li>
+          <li><span class="mono">dag_kv_reuse.md</span> — is the edge the right key, and what does the handoff buy? <span class="tag m">4</span> <span class="tag m">5</span></li>
+          <li><span class="mono">inheritance_depth.md</span> — how far up, and what does a budget buy? <span class="tag m">6</span> <span class="tag m">7</span></li>
+          <li><span class="mono">realworld_inheritance.md</span> — does any of it survive real corpora? <span class="tag m">8</span> <span class="tag m">9</span></li>
+          <li><span class="mono">conclusion.md</span> — the synthesis of those four. <span class="tag m">11</span> <span class="tag m">12</span></li>
+          <li><span class="mono">latency_qwen_vs_glm.md</span> — the second thread: the latency breakdown rerun on a self-hosted 27B. <span class="tag r">10</span></li>
+        </ul>
+      </div>
+      <p class="claim" style="font-size:16.5px">The scripted stage is the outlier, and it is the one whose coverage was guaranteed by construction. Everywhere coverage had to be <em>earned</em>, rounds barely moved.</p>
+    </div>
+    <div class="stack" style="gap:10px">
+      <p class="label">The evidence ladder · five populations, increasingly real</p>
+      <table class="data xs">
+        <thead><tr><th>population</th><th>what it measured</th><th class="n">rounds removed</th></tr></thead>
+        <tbody>
+          <tr><td>scripted single agent<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">n = 128, 096</small></td><td>100% coverage <b>by construction</b></td><td class="n nw">8.00 → 1.50<br><b>−81%</b></td></tr>
+          <tr><td>s15 team harness, synthetic<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">n = 18</small></td><td>lead-built boards, 24–39% coverage</td><td class="n">every CI<br>straddles 0</td></tr>
+          <tr><td>replay, SWE-bench cross-task<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">n = 726</small></td><td>real agents, no shared context</td><td class="n nw">2.1% <span class="mono">dag</span><br>4.3% <span class="mono">anc</span></td></tr>
+          <tr class="hi"><td>replay, τ-bench + GAIA cross-task<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">n = 407</small></td><td>real agents, shared database</td><td class="n nw">12.7% <span class="mono">dag</span><br>38.2% <span class="mono">anc</span></td></tr>
+          <tr><td>live, MODIFY on <span class="mono">lab-group-56</span><small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">n = 18 successors</small></td><td>lead-built depth-3 boards</td><td class="n nw">13.0 → 12.5 → 9.8<br><b>−25%</b>, CIs straddle 0</td></tr>
+        </tbody>
+      </table>
+      <p class="note xs" style="margin-top:2px">No round or latency interval in any <em>real</em> harness excludes zero at the sample sizes reached. The only effect that does is a <b>token cost</b>.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/conclusion.md</span>, written 2026-09-21, synthesising the four inheritance notes. The 2026-09-16 deck's next step 13 ("turn the task board into a retention policy the engine can act on") is retired on slide 11; next step 12 ("attack the eviction order rather than the prefill") survives and becomes slide 7. <span class="mono">latency_qwen_vs_glm.md</span> is not an input to the synthesis — it is the orthogonal thread that re-prices its constants.</p></div>
+</section>
+
+<!-- ===================== 3 · RESULT: THE CENSUS ===================== -->
+<section class="slide" data-title="Census">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">3</span><span>Result · does the Lead build a graph at all</span></div>
+    <h2>The Lead does maintain a dependency graph, and builds it exactly right — last week's 35 empty boards were one adjective in the prompt</h2>
+  </div>
+  <div class="body wide-left" style="gap:40px">
+    <div class="stack" style="gap:13px">
+      <div>
+        <p class="label">Design · edge emission is the dependent variable</p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li><b>Nothing may ask the Lead for an edge.</b> No prompt names <span class="mono">update_task</span>, <span class="mono">addBlockedBy</span>, "dependency" or "blocked"; the harness is unmodified. <span class="mono">census_workloads.py --check-prompts</span> refuses to run otherwise.</li>
+          <li>Six categories × {<b>DEP</b>, <b>FLAT</b>} × reps on two providers. DEP work genuinely has stages; FLAT genuinely does not — the specificity control.</li>
+          <li><b>44 usable runs</b> (26 DeepSeek, 18 glm). Each DEP workload ships a hand-authored reference graph.</li>
+        </ul>
+      </div>
+      <table class="data xs">
+        <thead><tr><th>finding</th><th class="n">DEP</th><th class="n">FLAT</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td>edge recall against the reference graph</td><td class="n"><b>1.00</b></td><td class="n">—</td></tr>
+          <tr><td>runs reproducing their graph exactly</td><td class="n"><b>21 / 21</b></td><td class="n">—</td></tr>
+          <tr><td>edges emitted / false edges</td><td class="n"><b>45</b> / <b>0</b></td><td class="n">0</td></tr>
+          <tr><td>runs with zero edges</td><td class="n">0 / 21</td><td class="n"><b>23 / 23</b></td></tr>
+          <tr><td>order violations across all DEP runs</td><td class="n">0</td><td class="n">—</td></tr>
+          <tr><td>task creation waves · tasks created after the first completion</td><td class="n">1.0 / 0.0</td><td class="n">1.0 / 0.0</td></tr>
+        </tbody>
+      </table>
+      <p class="note xs">Perfect separation on a 21-vs-23 split, <b>p = 5.0e-13</b> (one-sided Fisher exact). Length confound ruled out: <span class="mono">CODE-FLAT</span> is the longest prompt of all twelve at <b>1,876 chars</b> and emits nothing; the shorter <span class="mono">CODE-DEP</span> at <b>1,254</b> emits two.</p>
+    </div>
+    <div class="stack" style="gap:13px">
+      <div>
+        <p class="label">One word explains the 35 empty boards</p>
+        <p class="note xs" style="margin-top:7px">Every earlier "natural" workload literally began <em>"Create three <b>independent</b> task-board items"</em> (<span class="mono">latency_workloads.py:40</span>, <span class="mono">redundancy_workloads.py:37, 50, 62, 76</span>). Those <b>59 runs — 35 with a board, 133 tasks, 0 edges, 0 <span class="mono">update_task</span> calls</b> — were never evidence about whether a Lead maintains a graph.</p>
+      </div>
+      <div>
+        <p class="label">What this repairs, and what it does not</p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li><b>Repairs the premise.</b> Last week's note reported the Lead "does not emit edges unless the prompt names the mechanism". These prompts are <b>L0</b> by that report's own definition and produce complete graphs.</li>
+          <li><b>The board is available early enough to be useful</b> — the whole graph exists before any work starts, so a retention directive could be computed at spawn time.</li>
+          <li><b>It does not resurrect DAG-directed retention.</b> Slides 4, 7 and 8 kill the graph on its merits, not on its absence.</li>
+          <li><b>Cross-provider.</b> Identical board shape on both; cost differs <b>4×</b> — DeepSeek <b>118 s</b> mean per DEP run against glm's <b>488 s</b>. That is provider and model together, not a model property.</li>
+          <li><b>The work is right, not just the graph.</b> <span class="mono">census_score.py</span>: 10 of 10 attempted sandboxes passed, including <span class="mono">REFACTOR-DEP</span>, whose tests only go green if all 7 call sites moved.</li>
+        </ul>
+      </div>
+      <p class="claim" style="font-size:16.5px">One adjective moved 35 runs. Any future claim about what Leads do with the board must quote the prompt that produced it.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/dag_census.md</span>; full report <span class="mono">s15_integrated_harness/dag_census_profile.md</span>; traces <span class="mono">traces/dag_census*/</span>. Correction to the 2026-09-16 material: <span class="mono">dag_kv_reuse_profile.md</span> §2.2 and <span class="mono">092326/dag_kv_reuse.md</span> are contradicted by finding 1 and should carry a pointer here. Housekeeping: <span class="mono">--model</span> on <span class="mono">dag_workloads.py</span> does not work, because <span class="mono">code.py:76</span> calls <span class="mono">load_dotenv(override=True)</span> and <span class="mono">.env</span> overwrites <span class="mono">MODEL_ID</span> — no published result affected. <span class="mono">traces/tool_latency/</span> must be excluded from any board census: its 133 tasks and 50 edges are written by Python, not by a model. Scale is the open question — everything here is 3–4 items.</p></div>
+</section>
+
+<!-- ===================== 4 · RESULT: THE GRAPH IS THE WRONG KEY ===================== -->
+<section class="slide" data-title="Wrong key">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">4</span><span>Result · is the edge the right key</span></div>
+    <h2>The edge predicts the successor's reads only because it echoes the task text — and broadcasting every earlier read beats it, not narrowly</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:38px">
+    <div class="stack" style="gap:14px">
+      <div>
+        <p class="label">The placebo · W4 is W1's text word for word, edges wired to the wrong branch</p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li>In aligned boards (W1, W2, W5) an edge covers <b>+46 points</b> more of the successor's read bytes than a non-adjacent control with the same successor — 95% CI <b>[+0.27, +0.68]</b>, 5 of 5 runs positive — and <b>+37 points</b> of removable rounds.</li>
+          <li>In the placebo the edges cover <b>0.0%</b> of their successors' bytes while the matched controls cover everything: a delta of exactly <b>−1.0</b> in both reps.</li>
+          <li>So the signal is in the <b>task text</b>, not in the graph. Pooling all five workloads gives a flat <b>+0.105, p = 0.68</b> — an artefact of mixing the placebo in, and it should not be quoted.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="label">Recall, over the 11 successor tasks that read anything</p>
+        <div class="bartable" style="grid-template-columns: 168px 1fr 52px; gap:7px 12px; margin-top:8px">
+          <div class="h">policy</div><div class="h">byte recall <span style="text-transform:none;letter-spacing:0">·</span> round recall</div><div class="h" style="text-align:right">bytes</div>
+          <div class="m">direct predecessors<small style="display:block;color:var(--muted);font-size:11px">the <span class="mono">dag</span> arm</small></div><div class="bars"><div class="bar mate" style="width:36.0%"></div><div class="bar grey" style="width:50.0%"></div></div><div class="v mate">36.0%</div>
+          <div class="m">cross-owner successors only</div><div class="bars"><div class="bar mate" style="width:45.1%"></div><div class="bar grey" style="width:55.0%"></div></div><div class="v mate">45.1%</div>
+          <div class="m"><b>all earlier tasks</b><small style="display:block;color:var(--muted);font-size:11px">broadcast</small></div><div class="bars"><div class="bar lead" style="width:85.6%"></div><div class="bar grey" style="width:77.3%"></div></div><div class="v lead">85.6%</div>
+        </div>
+        <p class="note xs" style="margin-top:8px">Round recall is the grey bar beneath each: <b>50.0%</b>, <b>55.0%</b>, <b>77.3%</b>. This was the pre-registered decision rule, and it fires against the hypothesis.</p>
+      </div>
+    </div>
+    <div class="stack" style="gap:14px">
+      <div>
+        <p class="label">Precision is nearly free to give up</p>
+        <table class="data xs" style="margin-top:6px">
+          <thead><tr><th>what you send the successor</th><th class="n">tokens</th><th class="n">prefill</th><th class="n">rounds removed</th></tr></thead>
+          <tbody>
+            <tr><td>union of every earlier task's reads<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;margin-top:2px">three quarters of it unused</small></td><td class="n">119k</td><td class="n">3.9 s</td><td class="n"><b>63 s</b></td></tr>
+            <tr class="hi"><td>the oracle — exactly what it needs</td><td class="n">34k</td><td class="n">1.1 s</td><td class="n"><b>78 s</b></td></tr>
+          </tbody>
+        </table>
+        <p class="note xs" style="margin-top:8px">Sending 3.5× too much costs <b>3.9 s of prefill</b> and still buys <b>63 s of rounds removed</b>. At 0.033 ms per uncached token, being wrong is cheap; being incomplete is not (slide 6).</p>
+      </div>
+      <div>
+        <p class="label">Two structural facts about the boards</p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li>Boards are <b>small, wide and shallow</b> — median 5 tasks, 3 edges, 2 layers, and only <b>23%</b> of tasks have any predecessor at all (163 tasks over 32 runs).</li>
+          <li>Across 35 successors with 2.5 predecessors each, <b>67% of predecessor links cross agents</b> and <b>33 of 35</b> successors are missing something. A join waits for its slowest predecessor, so the first one's output is <b>153 s</b> stale by the time the join starts.</li>
+          <li>Intra-agent reuse is real but partial: the 6 of 13 successors that landed on an agent that had already done a predecessor read <b>3.7</b> files and got <b>44.7%</b> of bytes from them; the 7 that landed fresh read <em>more</em> (<b>5.7</b>) and got <em>less</em> (<b>29.9%</b>).</li>
+        </ul>
+      </div>
+      <p class="claim" style="font-size:16.5px">Recall is the whole game; precision is nearly free to give up. The dependency graph is the wrong key.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/dag_kv_reuse.md</span> findings 1–4; full report <span class="mono">s15_integrated_harness/dag_kv_reuse_profile.md</span>; traces <span class="mono">traces/dag_redundancy/</span>. Nine team runs over five dependency-shaped workloads on <span class="mono">glm-5.3-flash</span>; matched-pair contrast, significance by run-clustered sign-flip randomisation with a cluster bootstrap. These recall numbers were computed on <b>L2-forced</b> boards, before slide 3 showed the Lead emits edges unprompted; <span class="mono">dag_census.md</span>'s next step 1 asks for the comparison to be re-run on unprompted boards. Slides 7 and 8 kill the graph on two further, independent tests, so the re-run is superseded rather than pending. Operational: <span class="mono">spawn_teammate</span> claims a task before starting the agent and a claim on a blocked task is refused, so a successor assigned at spawn time is silently lost.</p></div>
+</section>
+
+<!-- ===================== 5 · RESULT: THE HANDOFF ===================== -->
+<section class="slide" data-title="The handoff">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">5</span><span>Result · what handing over the bytes actually buys</span></div>
+    <h2>Handing a successor the bytes removes two thirds of its rounds in the micro-benchmark and 42% of them in the real harness — and a summary is not a substitute for the bytes</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:36px">
+    <div class="stack" style="gap:16px">
+      <div>
+        <p class="label">Scripted micro-loop · 128 trials, four arms, order shuffled</p>
+        <div class="pairs" style="grid-template-columns: 1fr 300px 158px; margin-top:8px">
+          <div class="h">arm</div><div class="h">rounds per successor (300 px = 8.0)</div><div class="h" style="text-align:right">Δ vs baseline</div>
+          <div class="m">baseline<small>no handoff</small></div><div class="bars"><div class="bar ghost" style="width:271px"></div></div><div class="v"><b>7.22 rounds</b> · 62.4 s</div>
+          <div class="m"><b>injected</b><small>the predecessor's bytes</small></div><div class="bars"><div class="bar ghost" style="width:271px"></div><div class="bar lead" style="width:94px"></div></div><div class="v"><b>2.50</b> · 18.4 s<br>−4.72 [−5.97, −3.47]</div>
+          <div class="m">control · an unrelated file<small>equal-size window</small></div><div class="bars"><div class="bar ghost" style="width:271px"></div><div class="bar grey" style="width:282px"></div></div><div class="v">+0.31 [−1.03, +1.66]</div>
+          <div class="m">control · a condensed summary<small>of the predecessor's findings</small></div><div class="bars"><div class="bar ghost" style="width:271px"></div><div class="bar grey" style="width:240px"></div></div><div class="v">−0.81 [−2.22, +0.59]</div>
+        </div>
+        <p class="note xs" style="margin-top:8px"><b>−70% wall</b>, and correctness went <em>up</em>, 91% → 100%. Four trials hit the 12-round cap, all in the baseline and summary arms, so these are lower bounds.</p>
+      </div>
+      <div>
+        <p class="label">The real harness · 16 W5 team runs, four arms interleaved, every successor cross-owner</p>
+        <div class="pairs" style="grid-template-columns: 1fr 300px 158px; margin-top:8px">
+          <div class="m">baseline</div><div class="bars"><div class="bar ghost" style="width:194px"></div></div><div class="v"><b>5.17 rounds</b> · 146.9 s</div>
+          <div class="m"><b>deployable</b><small>the closure's bytes</small></div><div class="bars"><div class="bar ghost" style="width:194px"></div><div class="bar lead" style="width:113px"></div></div><div class="v"><b>3.00</b> · 113.0 s<br>−2.17 [−3.50, −0.83]</div>
+          <div class="m">control · an unrelated file</div><div class="bars"><div class="bar ghost" style="width:194px"></div><div class="bar grey" style="width:188px"></div></div><div class="v">−0.17, straddles 0</div>
+          <div class="m">control · a summary</div><div class="bars"><div class="bar ghost" style="width:194px"></div><div class="bar grey" style="width:218px"></div></div><div class="v">+0.63, straddles 0</div>
+        </div>
+      </div>
+    </div>
+    <div class="stack" style="gap:13px">
+      <div>
+        <p class="label">The ceiling is behavioural, and it has a shape</p>
+        <p class="note xs" style="margin-top:7px"><b>25% of injected trials issued a <span class="mono">read_file</span> anyway</b> — but not evenly. Three of four tasks were handed <b>one contiguous window</b> and re-read <b>0%, 0% and 12%</b>. The fourth was handed <b>two non-contiguous slices of the same file</b> and re-read <b>88%</b> — the whole of the pooled 25% — cutting its own round saving from about 6 to 2.9.</p>
+      </div>
+      <div>
+        <p class="label">The token argument flips sign with coverage</p>
+        <table class="data xs" style="margin-top:6px">
+          <thead><tr><th>prompt tokens</th><th class="n">baseline</th><th class="n">injected</th></tr></thead>
+          <tbody>
+            <tr><td>scripted micro-loop<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;margin-top:2px">mostly tool results from 8.19 locate calls</small></td><td class="n">12,998</td><td class="n"><b>2,037</b></td></tr>
+            <tr class="hi"><td>the real harness<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;margin-top:2px">the successor still does most of its own work</small></td><td class="n">14,754</td><td class="n"><b>30,009</b></td></tr>
+          </tbody>
+        </table>
+        <p class="note xs" style="margin-top:8px">Latency still improves — <b>11.1k extra tokens is 0.37 s of prefill against 34 s of active time removed</b> — but the free-lunch framing belongs to the micro-benchmark, not to the policy.</p>
+      </div>
+      <div>
+        <p class="label">One arm is actively harmful</p>
+        <p class="note xs" style="margin-top:7px">The <b>pollution</b> arm — handing over content the successor does not need alongside content it does — finished only <b>3 of its 5</b> successors, <b>60% against 100%</b> everywhere else.</p>
+      </div>
+      <p class="claim" style="font-size:16.5px">A fragmented handoff is distrusted; a contiguous one is not. And a summary does not substitute for the bytes.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/dag_kv_reuse.md</span> findings 5–8; traces <span class="mono">traces/prewarm/</span>, tools <span class="mono">scripts/prewarm_{smoke,loop,harness,analyze}.py</span> and <span class="mono">--prewarm*</span> in <span class="mono">scripts/profile_run.py</span>. KV transfer is emulated, not spliced: the successor is handed the exact <span class="mono">tool_use</span>/<span class="mono">tool_result</span> pair a real read would have produced. Every prompt here is <b>2–14k tokens</b>, where 0.033 ms per token is noise — above roughly 50k tokens per call the precision argument on slide 4 may come back, and that is the main threat to it.</p></div>
+</section>
+
+<!-- ===================== 6 · RESULT: DEPTH VS COVERAGE ===================== -->
+<section class="slide" data-title="Depth vs coverage">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">6</span><span>Result · how far up the graph is it worth reaching</span></div>
+    <h2>Depth is the wrong axis. Reaching one hop further buys +15 points of bytes but only +4.8 of rounds — and supplying three of the four documents a task needs is indistinguishable from supplying none</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1.08fr; gap:34px">
+    <div class="stack" style="gap:12px">
+      <div>
+        <p class="label">Three arms, two stages</p>
+        <table class="data xs" style="margin-top:6px">
+          <thead><tr><th>scripted, 96 trials</th><th class="n">rounds</th><th class="n">wall s</th><th class="n">prompt tok</th><th class="n">accuracy</th></tr></thead>
+          <tbody>
+            <tr><td><span class="swatch grey"></span>none</td><td class="n">8.00</td><td class="n">68.2</td><td class="n">25,183</td><td class="n">88%</td></tr>
+            <tr><td><span class="swatch mate"></span>dag</td><td class="n">6.47</td><td class="n">42.3</td><td class="n">10,522</td><td class="n">93%</td></tr>
+            <tr class="hi"><td><span class="swatch lead"></span>ancestors</td><td class="n"><b>1.50</b></td><td class="n"><b>12.5</b></td><td class="n"><b>828</b></td><td class="n"><b>99%</b></td></tr>
+          </tbody>
+        </table>
+        <p class="note xs" style="margin-top:7px">Δ rounds <b>−1.53</b> [−2.75, −0.34] and <b>−6.50</b> [−7.50, −5.34]; <span class="mono">ancestors</span> − <span class="mono">dag</span> = <b>−4.97</b> [−6.06, −3.72]. <b>The second hop is worth 3.2× the first</b> — and the fuller handoff makes the whole trial <b>30× cheaper</b> in prompt tokens. Handing over 728 tokens avoids sending 24,355.</p>
+      </div>
+      <div>
+        <p class="label">In the real harness, none of it survives</p>
+        <table class="data xs" style="margin-top:6px">
+          <thead><tr><th>18 runs, 15 successors per arm</th><th class="n">Δ rounds</th><th class="n">Δ span s</th><th class="n">Δ prompt tok</th></tr></thead>
+          <tbody>
+            <tr><td><span class="mono">dag</span> − none</td><td class="n">+0.40<br><small style="color:var(--muted)">[−3.00, +3.87]</small></td><td class="n">−47.7<br><small style="color:var(--muted)">[−118, +11.7]</small></td><td class="n"><b>+17,968</b><br><small style="color:var(--warn)">[+3,482, +32,139]</small></td></tr>
+            <tr><td><span class="mono">ancestors</span> − none</td><td class="n">−1.33<br><small style="color:var(--muted)">[−4.80, +2.40]</small></td><td class="n">−23.6<br><small style="color:var(--muted)">[−110, +64.0]</small></td><td class="n">+5,663<br><small style="color:var(--muted)">[−10,563, +24,053]</small></td></tr>
+          </tbody>
+        </table>
+        <p class="note xs" style="margin-top:7px"><b>Every round and latency interval straddles zero.</b> The one interval that excludes it is a cost. Byte recall climbs smoothly — <b>24.2% → 39.2% → 48.2%</b> for direct / closure / every earlier task — while round recall barely moves: <b>23.8% → 28.6% → 44.4%</b>.</p>
+      </div>
+    </div>
+    <div class="stack" style="gap:10px">
+      <figure>
+        <p class="label">F1 · the coverage sweep · 180 trials, four documents with disjoint symbols</p>
+        <svg viewBox="0 0 640 262" role="img" aria-label="Bar chart of rounds against the number of needed documents supplied. Supplying none costs 8.00 rounds, one 8.00, two 8.53, three 7.53, and all four collapses to 1.83. Supplying all four but truncating each to about half costs 2.13 rounds. The step is between three and four documents." style="margin-top:6px">
+          <g color="var(--ink-2)">
+            <defs><marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+            <line x1="70" y1="210" x2="620" y2="210" class="axis"></line>
+            <line x1="70" y1="170" x2="620" y2="170" class="grid"></line>
+            <line x1="70" y1="130" x2="620" y2="130" class="grid"></line>
+            <line x1="70" y1="90" x2="620" y2="90" class="grid"></line>
+            <line x1="70" y1="50" x2="620" y2="50" class="grid"></line>
+            <text x="62" y="214" font-size="10" text-anchor="end" class="t-mono t-muted">0</text>
+            <text x="62" y="174" font-size="10" text-anchor="end" class="t-mono t-muted">2</text>
+            <text x="62" y="134" font-size="10" text-anchor="end" class="t-mono t-muted">4</text>
+            <text x="62" y="94" font-size="10" text-anchor="end" class="t-mono t-muted">6</text>
+            <text x="62" y="54" font-size="10" text-anchor="end" class="t-mono t-muted">8</text>
+            <text x="70" y="26" font-size="10.5" class="t-muted">rounds per trial</text>
+            <rect x="82" y="50" width="56" height="160" class="f-grey"></rect>
+            <rect x="172" y="50" width="56" height="160" class="f-grey"></rect>
+            <rect x="262" y="39" width="56" height="171" class="f-grey"></rect>
+            <rect x="352" y="59" width="56" height="151" class="f-grey"></rect>
+            <rect x="442" y="173" width="56" height="37" class="f-lead"></rect>
+            <rect x="532" y="167" width="56" height="43" class="f-shot"></rect>
+            <text x="110" y="44" font-size="11" text-anchor="middle" class="t-mono t-ink2">8.00</text>
+            <text x="200" y="44" font-size="11" text-anchor="middle" class="t-mono t-ink2">8.00</text>
+            <text x="290" y="33" font-size="11" text-anchor="middle" class="t-mono t-ink2">8.53</text>
+            <text x="380" y="53" font-size="11" text-anchor="middle" class="t-mono t-ink2">7.53</text>
+            <text x="470" y="167" font-size="11" text-anchor="middle" class="t-mono t-lead">1.83</text>
+            <text x="560" y="161" font-size="11" text-anchor="middle" class="t-mono t-shot">2.13</text>
+            <text x="110" y="226" font-size="11" text-anchor="middle" class="t-mono">0</text>
+            <text x="200" y="226" font-size="11" text-anchor="middle" class="t-mono">1</text>
+            <text x="290" y="226" font-size="11" text-anchor="middle" class="t-mono">2</text>
+            <text x="380" y="226" font-size="11" text-anchor="middle" class="t-mono">3</text>
+            <text x="470" y="226" font-size="11" text-anchor="middle" class="t-mono">4</text>
+            <text x="560" y="226" font-size="11" text-anchor="middle" class="t-mono">4</text>
+            <text x="560" y="238" font-size="9.5" text-anchor="middle" class="t-muted">each trimmed ~50%</text>
+            <text x="290" y="240" font-size="10.5" text-anchor="middle" class="t-muted">documents supplied, of the four the task needs</text>
+            <path d="M 408 96 L 442 96" class="edge-dash"></path>
+            <path d="M 425 96 L 425 165" class="edge" marker-end="url(#arB)"></path>
+            <text x="418" y="90" font-size="10.5" text-anchor="end" class="t-mono t-lead">−5.70 rounds</text>
+            <text x="418" y="102" font-size="9.5" text-anchor="end" class="t-muted">95% CI [−7.07, −4.30]</text>
+            <text x="620" y="254" font-size="10" text-anchor="end" class="t-mono t-muted">fit: a = 5.97 (anything missing) · b = 0.09 (per missing doc) · a/b = 69×</text>
+          </g>
+        </svg>
+        <figcaption>The last document is worth <b>5.70 rounds</b>; the average of the earlier three is <b>0.16</b> — a ratio of <b>36.6×</b>. But trimming <em>within</em> a span is nearly free: halving the injected content (2,340 → 1,270 tokens) costs <b>+0.30 rounds</b>. One unwelcome side effect — accuracy on facts whose document was <em>missing</em> falls from <b>99% at k=0 to 83% at k=3</b>. Partial context makes the agent complacent.</figcaption>
+      </figure>
+      <p class="claim" style="font-size:16.5px">Cover a successor completely or not at all. The lever is coverage completeness, not graph depth.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/inheritance_depth.md</span> §3, §3b and follow-up F1; tables in <span class="mono">traces/inherit/{inherit_tables,coverage_tables}.md</span>, tool <span class="mono">scripts/coverage_sweep.py</span>. Threats: the harness stage is underpowered at 15 successors per arm with a ±3 round spread, and its accuracy sits at a ceiling, so it can only show a loss. F1's fit has <b>r² = 0.45</b> — it explains the means far better than individual trials — and the step was measured at N = 4 documents only. Correction: the harness stage was handed <b>~45% less</b> than its recall denominator credited, because <span class="mono">profile_run.py</span> recorded predecessors' <span class="mono">bash</span> reads but injected only <span class="mono">read_file</span> ones, so this null is conservative; its "dag 75% re-fetch" line counted every read rather than re-reads of injected paths. Both fixed.</p></div>
+</section>
+
+<!-- ===================== 7 · RESULT: BUDGETS AND POLICIES ===================== -->
+<section class="slide" data-title="Budgets and policies">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">7</span><span>Result · what a byte budget buys, and how to spend it</span></div>
+    <h2>Rank by reuse frequency, not recency: at an 8 KB budget LFU removes 21.9% of rounds where LRU removes 3.0% — and recency truncation is what production harnesses actually ship</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1.16fr 1fr; gap:34px">
+    <div class="stack" style="gap:11px">
+      <p class="label">Eviction policies · removable rounds under a byte budget</p>
+      <table class="data xs xxs">
+        <thead><tr><th>policy</th><th class="n">τ+GAIA<br>8 KB</th><th class="n">32 KB</th><th class="n">unlim</th><th class="n">SWE<br>8 KB</th><th class="n">32 KB</th><th class="n">unlim</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td><b>LFU</b> — rank by reuse frequency</td><td class="n"><b>21.9%</b></td><td class="n">35.6%</td><td class="n">38.2%</td><td class="n"><b>4.0%</b></td><td class="n">4.3%</td><td class="n">4.3%</td></tr>
+          <tr><td>GDSF</td><td class="n">17.2%</td><td class="n">29.5%</td><td class="n">38.2%</td><td class="n">3.5%</td><td class="n">4.0%</td><td class="n">4.3%</td></tr>
+          <tr><td>S3-FIFO</td><td class="n">15.8%</td><td class="n">25.4%</td><td class="n">38.2%</td><td class="n">3.9%</td><td class="n">4.3%</td><td class="n">4.3%</td></tr>
+          <tr><td>keep costliest-to-recover</td><td class="n">11.1%</td><td class="n">17.1%</td><td class="n">38.2%</td><td class="n">2.3%</td><td class="n">2.4%</td><td class="n">4.3%</td></tr>
+          <tr><td><b>graph-ordered</b> — the task board</td><td class="n" style="color:var(--warn)">7.8%</td><td class="n" style="color:var(--warn)">11.3%</td><td class="n">38.2%</td><td class="n" style="color:var(--warn)">0.7%</td><td class="n" style="color:var(--warn)">1.1%</td><td class="n">4.3%</td></tr>
+          <tr><td><b>LRU</b> / FIFO / recency truncation</td><td class="n" style="color:var(--warn)">3.0%</td><td class="n" style="color:var(--warn)">4.8%</td><td class="n">38.2%</td><td class="n" style="color:var(--warn)">0.0%</td><td class="n" style="color:var(--warn)">0.5%</td><td class="n">4.3%</td></tr>
+          <tr><td>Belady / MIN <span class="tag">ceiling</span></td><td class="n">38.0%</td><td class="n">38.2%</td><td class="n">38.2%</td><td class="n">4.2%</td><td class="n">4.3%</td><td class="n">4.3%</td></tr>
+        </tbody>
+      </table>
+      <p class="note xs">At 8 KB, LFU reaches <b>57%</b> (τ/GAIA) and <b>93%</b> (SWE) of the reachable ceiling; LRU reaches <b>8%</b> and <b>0%</b>. Recency truncation and last-N-round windows — what production harnesses ship — are the worst deployable family tested.</p>
+      <p class="claim" style="font-size:16.5px">With perfect foresight, 8 KB already buys the entire unlimited-budget value. Every gap is a prediction failure, not a capacity failure.</p>
+    </div>
+    <div class="stack" style="gap:12px">
+      <div>
+        <p class="label">F2 · the graph as a retention <em>ordering</em>, at matched cost</p>
+        <table class="data xs xxs" style="margin-top:6px">
+          <thead><tr><th>ordering</th><th class="n">16 KB</th><th class="n">32 KB</th><th class="n">64 KB</th><th class="n">128 KB</th></tr></thead>
+          <tbody>
+            <tr><td>most-recent-first (LRU)</td><td class="n">6%</td><td class="n">19%</td><td class="n">36%</td><td class="n">49%</td></tr>
+            <tr><td><b>graph-ordered</b></td><td class="n">6%</td><td class="n">18%</td><td class="n">35%</td><td class="n">51%</td></tr>
+            <tr><td>largest spans first</td><td class="n">6%</td><td class="n">13%</td><td class="n">40%</td><td class="n">52%</td></tr>
+            <tr><td>smallest spans first</td><td class="n">6%</td><td class="n">19%</td><td class="n">38%</td><td class="n">51%</td></tr>
+            <tr class="hi"><td><b>cheapest whole rounds first</b> <span class="tag">ceiling</span></td><td class="n"><b>9%</b></td><td class="n"><b>39%</b></td><td class="n"><b>51%</b></td><td class="n">52%</td></tr>
+          </tbody>
+        </table>
+        <p class="note xs" style="margin-top:7px">The graph is ahead of LRU at <b>1 of 11</b> budget points, by <b>1 point</b>, and behind at two others. The pre-registered decision rule fires: next step 13 of the 2026-09-16 deck should be <b>retired rather than prototyped</b>. Selecting for <em>whole rounds</em> roughly doubles what a budget buys — 19% → 39% at 32 KB — but it uses future knowledge, so it is a reachable ceiling, not a policy.</p>
+      </div>
+      <div>
+        <p class="label">Widen the pool before tuning the policy</p>
+        <div class="bartable" style="grid-template-columns: 150px 1fr 46px; gap:6px 12px; margin-top:7px">
+          <div class="h">pool of earlier tasks</div><div class="h">removable rounds</div><div class="h" style="text-align:right"></div>
+          <div class="m">8 trajectories</div><div class="bars"><div class="bar lead" style="width:36%"></div></div><div class="v lead">13%</div>
+          <div class="m">16 trajectories</div><div class="bars"><div class="bar lead" style="width:64%"></div></div><div class="v lead">23%</div>
+          <div class="m">32 trajectories</div><div class="bars"><div class="bar lead" style="width:100%"></div></div><div class="v lead">36%</div>
+        </div>
+        <p class="note xs" style="margin-top:7px">Roughly linear in the log. And <b>do not partition the pool per agent</b> — size-matched, inheriting from a different model's runs is as good as inheriting from your own, within <b>~2 points</b> at every pool size.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/realworld_inheritance.md</span> metric 3 (E2-R / E3-R) and <span class="mono">inheritance_depth.md</span> follow-up F2; tool <span class="mono">scripts/budget_sweep.py</span>, table <span class="mono">traces/inherit/budget_sweep.md</span>. Two ceilings that must never be quoted side by side: F2's <b>52%</b> is the candidate pool's ceiling — what other tasks' reads can supply — while the <b>97%</b> figure from the earlier policy table is a successor's own future reads and is not reachable from other tasks at all. Caveat on the machinery: all 16 eviction policies are <b>non-monotone in retained bytes</b> when run as online caches — LRU and FIFO violate it in 17 of 60 random pools, because LRU's stack property holds only for equal-sized objects and tool observations are not.</p></div>
+</section>
+
+<!-- ===================== 8 · RESULT: REAL CORPORA ===================== -->
+<section class="slide" data-title="Real corpora">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">8</span><span>Result · replay over 1,200 published trajectories and 410 HAL tasks</span></div>
+    <h2>Inheritance is a much better bet for tool-calling agents than for coding agents — and the retention <span class="dim">unit</span> is worth far more than the policy's reach</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:36px">
+    <div class="stack" style="gap:12px">
+      <div>
+        <p class="label">Cross-task inheritance, unlimited budget</p>
+        <table class="data xs" style="margin-top:6px">
+          <thead><tr><th>metric</th><th class="n">SWE <span class="mono">dag</span></th><th class="n">SWE <span class="mono">anc</span></th><th class="n">τ+GAIA <span class="mono">dag</span></th><th class="n">τ+GAIA <span class="mono">anc</span></th></tr></thead>
+          <tbody>
+            <tr><td>tokens inherited</td><td class="n">16,742</td><td class="n">40,601</td><td class="n"><b>497</b></td><td class="n">50,858</td></tr>
+            <tr><td>precision</td><td class="n">0.8%</td><td class="n">0.3%</td><td class="n"><b>11.6%</b></td><td class="n">0.5%</td></tr>
+            <tr class="hi"><td><b>rounds reduced</b></td><td class="n">2.1%</td><td class="n">4.3%</td><td class="n"><b>12.7%</b></td><td class="n"><b>38.2%</b></td></tr>
+            <tr><td>latency saved</td><td class="n">~2.6 s</td><td class="n">~5.4 s</td><td class="n">~1.0 s</td><td class="n">~3.1 s</td></tr>
+          </tbody>
+        </table>
+        <p class="note xs" style="margin-top:7px"><b>The direct-predecessor arm is rehabilitated.</b> It buys 12.7% of rounds for <b>497 tokens</b> where the closure buys 38.2% for <b>50,858</b> — the extra 25 points cost <b>102× the tokens</b>, and per round removed the direct predecessor is ~35× more byte-efficient. Whole-observation reuse on real SWE work is <b>0.8–1.2%</b>, not the synthetic study's 24–39%.</p>
+      </div>
+      <div>
+        <p class="label">The retention unit · EXPLAIN successors on a real codebase</p>
+        <table class="data xs" style="margin-top:6px">
+          <thead><tr><th>unit</th><th class="n">byte recall</th><th class="n">round recall</th></tr></thead>
+          <tbody>
+            <tr><td>whole file</td><td class="n">86.0%</td><td class="n">36.4%</td></tr>
+            <tr class="hi"><td><b>byte range</b></td><td class="n"><b>95.3%</b></td><td class="n"><b>90.9%</b></td></tr>
+            <tr><td>line</td><td class="n">96.6%</td><td class="n">90.9%</td></tr>
+          </tbody>
+        </table>
+        <p class="note xs" style="margin-top:7px">File → range buys <b>+9 points of bytes but +54 points of rounds</b>. Line adds nothing beyond range. Key on <b>content and on ranges, never on paths</b>: agents re-issue a byte-identical read only <b>0.4–2.6%</b> of the time, while <b>86%</b> of the bytes sit in files a predecessor already opened.</p>
+      </div>
+    </div>
+    <div class="stack" style="gap:12px">
+      <div>
+        <p class="label">Mutation is a contributor, not the mechanism</p>
+        <table class="data xs" style="margin-top:6px">
+          <thead><tr><th>the EXPLAIN / MODIFY pair<small style="display:block;font-family:var(--body);text-transform:none;letter-spacing:0;font-size:10.5px;margin-top:2px">same codebase, same harness, same model — only writing differs</small></th><th class="n">stale spans</th><th class="n">files no predecessor opened</th><th class="n">round recall</th></tr></thead>
+          <tbody>
+            <tr><td>EXPLAIN (read-only)</td><td class="n"><b>0.0%</b></td><td class="n">45.7%</td><td class="n"><b>90.9%</b></td></tr>
+            <tr><td>MODIFY (writes)</td><td class="n"><b>0.9%</b></td><td class="n"><b>62.6%</b></td><td class="n">11.1%</td></tr>
+          </tbody>
+        </table>
+        <p class="note xs" style="margin-top:7px">A 7.7× gap in bytes and 8.2× in rounds, and <em>mutation explains none of it</em>. What separates the two workloads is <b>coverage</b>. Note also that <span class="mono">dag</span> and <span class="mono">ancestors</span> score <b>identically</b> on both — same recall, same precision, same bytes.</p>
+      </div>
+      <div>
+        <p class="label">What real project work does that benchmarks do not</p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li>Codebase tasks produce boards every time: <b>20 of 20 runs, 11 of 20 at depth ≥ 3</b>. On lm-evaluation-harness, <b>0 of 15 runs created a task at all</b> — not merely no edges, no board — including one with a 1.59 MB document attached.</li>
+          <li>lm-eval has <b>221 task families, all static</b>; its <span class="mono">OutputType</span> admits no tool or environment step, and SWE-bench, GAIA, τ-bench, BFCL, AppWorld and WebArena are all absent. Wrapped as a model endpoint it grades fine — <b>3/3 on gsm8k</b> — which is exactly the point: a benchmark question is one deliverable, and one deliverable cannot be decomposed.</li>
+          <li>The two shapes differ: <b>comprehension work fans in</b>, <b>modification work chains</b>, and only the chaining shape reaches the depth where <span class="mono">dag</span> and <span class="mono">ancestors</span> can differ at all.</li>
+          <li>Waste is model-dependent — within-trajectory round recall on the identical 50 τ-bench tasks runs <b>gemini-2.0-flash 20.8%</b> to <b>deepseek-v3 5.2%</b>, a 4× spread on the same work.</li>
+        </ul>
+      </div>
+      <p class="claim" style="font-size:16.5px">If this line of work needs a target workload, it is τ-bench-shaped, not SWE-bench-shaped.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/realworld_inheritance.md</span>. Corpora: <span class="mono">nvidia/Open-SWE-Traces</span> v1.1 (1,200 trajectories, 234 repos) and <span class="mono">agent-evals/hal_traces</span> (τ-bench airline over 5 models, GAIA; 410 tasks, 5,142 calls). Rounds removed are <b>counterfactual</b> on the replay side: computed, not observed. Correction: HAL reuses task ids across models, so the first τ-bench/GAIA numbers paired a task with itself solved by a different model — <span class="mono">dag</span> read 23.2% byte / 30.5% round recall and is actually <b>11.2% / 12.7%</b>; the SWE side was affected in 11 of 732 pairs. Threats: the cross-task ordering is arbitrary but not inert, so any single-source number must say <em>which</em> single source; HAL has only 3 groups and its five τ-bench runs share one 50-task set, so the SWE side is the better-powered half.</p></div>
+</section>
+
+<!-- ===================== 9 · RESULT: THE CEILING ===================== -->
+<section class="slide" data-title="The ceiling">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">9</span><span>Result · why the arms look weak</span></div>
+    <h2>The arms are not failing — they are working against a low ceiling: only 42% of a successor's rounds are pure reads, and the closure removed 58% of everything structurally available</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 656px 1fr; gap:32px">
+    <figure>
+      <p class="label">Round composition · MODIFY successors on <span class="mono">lab-group-56</span>, live</p>
+      <svg viewBox="0 0 640 206" role="img" aria-label="Stacked bars of round composition for three arms. In the untreated baseline, 42.4 percent of successor rounds are reads only, 12.9 percent mix a read with other work, and 44.7 percent contain no read at all. Under the dag arm the split is 44.4, 8.3 and 47.2 percent; under the ancestors closure it is 31.8, 9.1 and 59.1 percent. A dashed line marks the structural ceiling at 42.4 percent of the baseline." style="margin-top:6px">
+        <g color="var(--ink-2)">
+          <rect x="150" y="40" width="199" height="26" class="f-lead"></rect>
+          <rect x="349" y="40" width="61" height="26" class="f-mate"></rect>
+          <rect x="410" y="40" width="210" height="26" class="f-grey"></rect>
+          <rect x="150" y="85" width="209" height="26" class="f-lead"></rect>
+          <rect x="359" y="85" width="39" height="26" class="f-mate"></rect>
+          <rect x="398" y="85" width="222" height="26" class="f-grey"></rect>
+          <rect x="150" y="130" width="150" height="26" class="f-lead"></rect>
+          <rect x="300" y="130" width="43" height="26" class="f-mate"></rect>
+          <rect x="343" y="130" width="277" height="26" class="f-grey"></rect>
+          <text x="142" y="52" font-size="11.5" text-anchor="end" class="t-mono">none</text>
+          <text x="142" y="64" font-size="10" text-anchor="end" class="t-muted">85 rounds</text>
+          <text x="142" y="97" font-size="11.5" text-anchor="end" class="t-mono t-mate">dag</text>
+          <text x="142" y="109" font-size="10" text-anchor="end" class="t-muted">72 rounds</text>
+          <text x="142" y="142" font-size="11.5" text-anchor="end" class="t-mono t-lead">ancestors</text>
+          <text x="142" y="154" font-size="10" text-anchor="end" class="t-muted">44 rounds</text>
+          <text x="249" y="57" font-size="11" text-anchor="middle" class="t-mono f-surface">42.4%</text>
+          <text x="515" y="57" font-size="11" text-anchor="middle" class="t-mono f-surface">44.7%</text>
+          <text x="254" y="102" font-size="11" text-anchor="middle" class="t-mono f-surface">44.4%</text>
+          <text x="509" y="102" font-size="11" text-anchor="middle" class="t-mono f-surface">47.2%</text>
+          <text x="225" y="147" font-size="11" text-anchor="middle" class="t-mono f-surface">31.8%</text>
+          <text x="481" y="147" font-size="11" text-anchor="middle" class="t-mono f-surface">59.1%</text>
+          <text x="379" y="36" font-size="9.5" text-anchor="middle" class="t-mate">12.9</text>
+          <text x="378" y="81" font-size="9.5" text-anchor="middle" class="t-mate">8.3</text>
+          <text x="321" y="126" font-size="9.5" text-anchor="middle" class="t-mate">9.1</text>
+          <path d="M 349 32 L 349 170" class="edge-dash"></path>
+          <text x="355" y="180" font-size="10.5" class="t-muted">structural ceiling · <tspan class="t-mono">5.5 of 13.0 rounds</tspan> are removable at all; the closure removed <tspan class="t-mono">3.2</tspan></text>
+          <rect x="150" y="192" width="9" height="9" rx="2" class="f-lead"></rect><text x="164" y="200" font-size="10.5" class="t-ink2">reads only — removable</text>
+          <rect x="316" y="192" width="9" height="9" rx="2" class="f-mate"></rect><text x="330" y="200" font-size="10.5" class="t-ink2">a read plus work that has to happen anyway</text>
+          <rect x="576" y="192" width="9" height="9" rx="2" class="f-grey"></rect><text x="590" y="200" font-size="10.5" class="t-ink2">no read</text>
+        </g>
+      </svg>
+      <figcaption>The clearest sign the mechanism is real is not the totals but the multi-read rounds: <b>30.6%</b> of baseline successor rounds issue two or more reads, and that falls to <b>12.5%</b> under <span class="mono">dag</span> and <b>6.8%</b> under the closure. Complete coverage is exactly what kills a multi-read round. Reads per successor fell <b>60%</b> and mean rounds <b>25%</b> — 13.0 → 12.5 → 9.8 — which is <b>58% of the structural ceiling</b>.</figcaption>
+    </figure>
+    <div class="stack" style="gap:12px">
+      <div>
+        <p class="label">E1-L · the three arms live on a real codebase</p>
+        <table class="data xs" style="margin-top:6px">
+          <thead><tr><th>arm</th><th class="n">succ</th><th class="n">rounds</th><th class="n">reads</th><th class="n">span s</th><th class="n">prompt tok</th></tr></thead>
+          <tbody>
+            <tr><td><span class="swatch grey"></span>none</td><td class="n">7</td><td class="n">13</td><td class="n"><b>10</b></td><td class="n">294</td><td class="n">46,822</td></tr>
+            <tr><td><span class="swatch mate"></span>dag</td><td class="n">6</td><td class="n">12</td><td class="n"><b>6</b></td><td class="n">252</td><td class="n" style="color:var(--warn)">90,714</td></tr>
+            <tr class="hi"><td><span class="swatch lead"></span>ancestors</td><td class="n">5</td><td class="n">12</td><td class="n"><b>4</b></td><td class="n">264</td><td class="n">74,258</td></tr>
+          </tbody>
+        </table>
+        <p class="note xs" style="margin-top:7px">Every successor cross-owner. Δ rounds <b>−0.5</b> [−6.9, +5.7] and <b>−3.2</b> [−9.6, +2.5]; Δ span <b>−17.8</b> and <b>−32.3</b> s, both straddling zero. The only interval that excludes zero is <span class="mono">dag</span>'s <b>+42,295 prompt tokens</b> [+4,697, +81,923].</p>
+      </div>
+      <div>
+        <p class="label">The EXPLAIN cell is unreadable, not negative</p>
+        <p class="note xs" style="margin-top:7px">Its three <span class="mono">ancestors</span> successors took <b>1, 36 and 2</b> rounds against a baseline of 9, 6, 11, 6. <b>The median says rounds fell from 7.5 to 2 and the mean says they rose by 5.0 — the two summaries disagree in sign</b>, and the interval is <b>+5.0 [−8.0, +27.5]</b>. What survives is the token cost: <b>+95,364 [+13,316, +163,246]</b>, 195,430 tokens against 81,698.</p>
+        <p class="note xs" style="margin-top:7px">So the coverage hypothesis is <b>not refuted here — it is untested.</b> EXPLAIN is also the only cell with the headroom to move rounds: its successors reach <b>90.9%</b> round recall against MODIFY's 11.1%.</p>
+      </div>
+      <p class="claim" style="font-size:16.5px">Bytes accumulate smoothly; rounds do not. The measurement is not underpowered against a large effect — it is well powered against a small one.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/realworld_inheritance.md</span> §E1-L and <span class="mono">conclusion.md</span>. Target: <span class="mono">lab-group-56</span>, an ECE 4750 lab repository (PyMTL + Verilog), 12 cells on MODIFY with arms interleaved and a fixed seed; census runs supplied the baseline, so nine cells were new. One smaller, underpowered observation: the closure beats the direct predecessors on every metric here — fewer reads, fewer rounds, 22,000 fewer tokens — which <em>inverts</em> the scripted stage's ordering, on n = 5 against n = 6. Resolving a one-round effect here needs roughly 4× these runs.</p></div>
+</section>
+
+<!-- ===================== 10 · RESULT: LATENCY ON LOCAL HARDWARE ===================== -->
+<section class="slide" data-title="Qwen vs GLM">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">10</span><span>Result · the second thread · the latency breakdown rerun on Qwen3.8-27B, local vLLM (2026-09-21)</span></div>
+    <h2>The 3.7 s fixed cost of a model call was z.ai, not the harness. Served locally the round is almost pure decode — prefill is 1–6% of a call, and the harness buckets did not move</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:34px">
+    <div class="stack" style="gap:12px">
+      <figure>
+        <p class="label">Where a CODE agent call goes · pooled regression coefficients applied to each group</p>
+        <svg viewBox="0 0 640 238" role="img" aria-label="Stacked bars of modelled agent-call time. On glm-5.3-flash a CODE lead call is 3.7 seconds fixed plus 0.1 prefill plus 4.0 decode, totalling 7.9 seconds; on Qwen it is 0.4 plus 0.4 plus 11.4, totalling 12.2. A CODE teammate call is 3.7 plus 0.0 plus 5.9 equals 9.6 on GLM and 0.4 plus 0.2 plus 26.7 equals 27.3 on Qwen." style="margin-top:6px">
+          <g color="var(--ink-2)">
+            <line x1="150" y1="188" x2="150" y2="26" class="axis"></line>
+            <line x1="234" y1="188" x2="234" y2="26" class="grid"></line>
+            <line x1="318" y1="188" x2="318" y2="26" class="grid"></line>
+            <line x1="402" y1="188" x2="402" y2="26" class="grid"></line>
+            <line x1="486" y1="188" x2="486" y2="26" class="grid"></line>
+            <line x1="570" y1="188" x2="570" y2="26" class="grid"></line>
+            <text x="150" y="200" font-size="10" text-anchor="middle" class="t-mono t-muted">0</text>
+            <text x="234" y="200" font-size="10" text-anchor="middle" class="t-mono t-muted">5</text>
+            <text x="318" y="200" font-size="10" text-anchor="middle" class="t-mono t-muted">10</text>
+            <text x="402" y="200" font-size="10" text-anchor="middle" class="t-mono t-muted">15</text>
+            <text x="486" y="200" font-size="10" text-anchor="middle" class="t-mono t-muted">20</text>
+            <text x="570" y="200" font-size="10" text-anchor="middle" class="t-mono t-muted">25 s</text>
+            <rect x="150" y="34" width="62" height="24" class="f-grey"></rect><rect x="212" y="34" width="2" height="24" class="f-mate"></rect><rect x="214" y="34" width="67" height="24" class="f-lead"></rect>
+            <rect x="150" y="70" width="7" height="24" class="f-grey"></rect><rect x="157" y="70" width="7" height="24" class="f-mate"></rect><rect x="164" y="70" width="191" height="24" class="f-lead"></rect>
+            <rect x="150" y="118" width="62" height="24" class="f-grey"></rect><rect x="212" y="118" width="1" height="24" class="f-mate"></rect><rect x="213" y="118" width="99" height="24" class="f-lead"></rect>
+            <rect x="150" y="154" width="7" height="24" class="f-grey"></rect><rect x="157" y="154" width="3" height="24" class="f-mate"></rect><rect x="160" y="154" width="448" height="24" class="f-lead"></rect>
+            <text x="142" y="50" font-size="11" text-anchor="end" class="t-mono">GLM · lead</text>
+            <text x="142" y="86" font-size="11" text-anchor="end" class="t-mono t-lead">Qwen · lead</text>
+            <text x="142" y="134" font-size="11" text-anchor="end" class="t-mono">GLM · teammate</text>
+            <text x="142" y="170" font-size="11" text-anchor="end" class="t-mono t-lead">Qwen · teammate</text>
+            <text x="289" y="50" font-size="10.5" class="t-ink2"><tspan class="t-mono">7.9 s</tspan> modelled · 7.2 measured</text>
+            <text x="363" y="86" font-size="10.5" class="t-ink2"><tspan class="t-mono">12.2 s</tspan> · 11.8 measured</text>
+            <text x="320" y="134" font-size="10.5" class="t-ink2"><tspan class="t-mono">9.6 s</tspan> modelled · 10.0 measured</text>
+            <text x="600" y="170" font-size="10.5" text-anchor="end" class="f-surface"><tspan class="t-mono">27.3 s</tspan> · 27.5 measured</text>
+            <text x="150" y="18" font-size="10.5" class="t-muted">modelled agent-call time, CODE team runs</text>
+            <rect x="150" y="216" width="9" height="9" rx="2" class="f-grey"></rect><text x="164" y="224" font-size="10.5" class="t-ink2">fixed — network, queue, start-up</text>
+            <rect x="350" y="216" width="9" height="9" rx="2" class="f-mate"></rect><text x="364" y="224" font-size="10.5" class="t-ink2">prefill</text>
+            <rect x="430" y="216" width="9" height="9" rx="2" class="f-lead"></rect><text x="444" y="224" font-size="10.5" class="t-ink2">decode</text>
+          </g>
+        </svg>
+        <figcaption>Every group sheds the same <b>3.3 s</b> of fixed cost and pays <b>2.3×</b> per decoded token. Output length, not prompt length, is what the round pays for: at 40 ms per token a 500-token response is 20 s.</figcaption>
+      </figure>
+      <p class="claim" style="font-size:16.5px">What a cache buys is round count, not prefill — on local hardware too.</p>
+    </div>
+    <div class="stack" style="gap:11px">
+      <div>
+        <p class="label">Inside the call · <span class="mono">duration = a + b × computed prompt tokens + c × output tokens</span></p>
+        <table class="data xs" style="margin-top:6px">
+          <thead><tr><th></th><th class="n">glm-5.3-flash<br><small style="font-weight:400;text-transform:none;letter-spacing:0">446 calls, via z.ai</small></th><th class="n">Qwen3.8-27B<br><small style="font-weight:400;text-transform:none;letter-spacing:0">501 calls, local vLLM</small></th></tr></thead>
+          <tbody>
+            <tr class="hi"><td><b>a</b> — fixed (s)</td><td class="n">3.72</td><td class="n"><b>0.43</b></td></tr>
+            <tr><td><b>b</b> — per computed prompt token<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;margin-top:2px">implied prefill rate</small></td><td class="n">0.033 ms<br><small style="color:var(--muted)">30,600 tok/s</small></td><td class="n">0.117 ms<br><small style="color:var(--muted)">8,600 tok/s</small></td></tr>
+            <tr><td><b>c</b> — per output token<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;margin-top:2px">decode rate</small></td><td class="n">17.4 ms<br><small style="color:var(--muted)">57 tok/s</small></td><td class="n"><b>39.9 ms</b><br><small style="color:var(--muted)">25 tok/s</small></td></tr>
+            <tr><td>r²</td><td class="n">0.96</td><td class="n">1.00</td></tr>
+            <tr><td>client time to first block</td><td class="n">5.5–6.1 s</td><td class="n"><b>0.4–1.0 s</b></td></tr>
+            <tr><td>server queue · HTTP + SDK gap</td><td class="n">—</td><td class="n">0.000 s · 27–61 ms</td></tr>
+          </tbody>
+        </table>
+        <p class="note xs" style="margin-top:7px"><b>The GLM intercept is real</b> — z.ai delivered the first block after a flat 5.6–6.1 s regardless of prompt size. <b>The Qwen intercept is a fitting artefact</b>: the server reports zero queue, and the regression's 0.117 ms prefill slope sits below the server-measured 0.17 ms. A regression intercept is only a provider cost where the server cannot be observed.</p>
+      </div>
+      <div>
+        <p class="label">What did not change, and what it means for KV sharing</p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li><b>Quality is identical</b> — 24/24 coding, 24/24 math, FQA coverage 0.98 ± 0.02 — at <b>1.8–3.4× the wall time</b>. Prefill is <b>1–6%</b> of a call and decode <b>90–99%</b> on both.</li>
+          <li><b>Rounds per task are model-independent at this scale</b>: 7 / 4 / 3 teammate rounds, 11–14 lead rounds per team run, and the redundancy pattern is unchanged. The wall-time gap is decode speed times output length.</li>
+          <li><b>Two vLLM facts for a KV-sharing design.</b> Cache blocks are <b>784 tokens</b> on this hybrid model, and under <span class="mono">--mamba-cache-mode align</span> a foreign request can only resume from a checkpoint position — a unique block mid-prompt gave <b>0%</b> reuse even behind 15k tokens of shared prefix. Cross-agent sharing needs <span class="mono">--mamba-cache-mode all</span> (154 MB of state per checkpoint) or block-aligned prompts.</li>
+          <li><b>Turn-end memory extraction is still the largest non-agent cost</b> — 12–35 s per lead turn, <b>20–35% of run wall</b>, and worse with a thinking model. Making it asynchronous or once-per-request is the harness change with the largest payoff on both providers.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/latency_qwen_vs_glm.md</span>; all tables <span class="mono">traces/latency_profiling_qwen/latency_tables.md</span>, side by side <span class="mono">compare_glm_vs_qwen.md</span> (via <span class="mono">scripts/latency_compare.py</span>); reproduction in <span class="mono">s15_integrated_harness/latency_profile.md</span> Appendix C. 24 runs at the same harness commit, prompts and matrix as the 2026-09-12 GLM run; <span class="mono">Qwen/Qwen3.8-27B</span> bf16 on one RTX PRO 6000 Blackwell (96 GB) under vLLM 0.29.0, with server-side <span class="mono">/metrics</span> deltas per call. Caveats: one GPU, one model, one evening — decode speed is a property of dense-27B-in-bf16 on a 1.8 TB/s card, and an FP8 checkpoint or an H200 would each cut it; z.ai's serving stack is unknown. Qwen ran at <span class="mono">reasoning_effort=xhigh</span>. Qwen3.8's tokenizer yields <b>12–15% more tokens</b> than GLM's on the same text, so <b>per-token rates are not convertible between providers</b> — and every "seconds saved" figure on slides 1 through 9 is priced with GLM's constants.</p></div>
+</section>
+
+<!-- ===================== 11 · CONCLUSION ===================== -->
+<section class="slide" data-title="Conclusion">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">11</span><span>Conclusion</span></div>
+    <h2>Handing over the bytes removes read-rounds efficiently — and read-rounds are a minority of what an agent does, so total rounds move far less than the byte numbers suggest</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:36px">
+    <div class="stack" style="gap:11px">
+      <p class="label">What is deployable</p>
+      <div class="verdicts">
+        <div class="verdict keep"><span class="n">1</span><div class="what"><b>Rank by reuse frequency, not recency.</b> At 8 KB, LFU removes 21.9% of rounds on τ-bench/GAIA and 4.0% on SWE-bench; LRU removes 3.0% and <b>0.0%</b>. Recency truncation and last-N-round windows are the worst deployable family tested.</div></div>
+        <div class="verdict keep"><span class="n">2</span><div class="what"><b>Spend the budget on prediction, not capacity.</b> With perfect foresight 8 KB already buys the entire unlimited-budget value — 38.0 of 38.2, and 4.2 of 4.3. Every gap is a prediction failure.</div></div>
+        <div class="verdict keep"><span class="n">3</span><div class="what"><b>Key on content and on ranges, never on paths.</b> An exact-observation key finds almost nothing — agents re-issue a byte-identical read 0.4–2.6% of the time — while 86% of the bytes sit in files a predecessor already opened.</div></div>
+        <div class="verdict keep"><span class="n">4</span><div class="what"><b>Widen the pool before tuning the policy.</b> Removable rounds scale 13% → 23% → 36% as the pool grows 8 → 16 → 32 earlier tasks, roughly linear in the log.</div></div>
+        <div class="verdict keep"><span class="n">5</span><div class="what"><b>Do not partition the pool per agent.</b> Size-matched, inheriting from a different model's runs is as good as inheriting from your own, within ~2 points at every pool size.</div></div>
+      </div>
+    </div>
+    <div class="stack" style="gap:11px">
+      <div>
+        <p class="label">What is retired</p>
+        <div class="verdicts" style="margin-top:6px">
+          <div class="verdict drop"><span class="n">×</span><div class="what"><b>DAG-directed retention.</b> The task graph failed a third independent test: as a priority ordering under budget it sits near the bottom of both policy tables — 0.7% on SWE at 8 KB. It does not predict which bytes are wanted, reaching further does not convert to rounds, and it is useless as an ordering. <b>The artefact worth shipping to an engine is a per-item reuse count, not the board.</b></div></div>
+          <div class="verdict drop"><span class="n">×</span><div class="what"><b>"Evict what is simplest to recover."</b> Keeping the costliest-to-recover items reaches 11.1% and 2.3% at 8 KB, below LFU, GDSF and S3-FIFO everywhere — recovery cost correlates with size, and the large items are not the reused ones. It must also be measured <em>per item</em>: with a modelled cost, monotone in bytes, the policy silently becomes "keep the largest".</div></div>
+          <div class="verdict drop"><span class="n">×</span><div class="what"><b>lm-evaluation-harness as a source of agentic tasks.</b> It has none and cannot express one. Wrapped as a model endpoint it grades fine — 3/3 on gsm8k through full agentic sessions — but its tasks produced <b>0 task boards in 15 runs</b>. A benchmark question is one deliverable, and one deliverable cannot be decomposed.</div></div>
+        </div>
+      </div>
+      <div>
+        <p class="label">What is not established</p>
+        <ul class="list tight xxs" style="margin-top:6px">
+          <li><b>The live arms are underpowered and the EXPLAIN cell is unreadable.</b> Coverage as the lever is <em>untested, not refuted</em> — it needs roughly 4× these runs.</li>
+          <li><b>Rounds removed are counterfactual on the replay side</b>, computed rather than observed.</li>
+          <li><b>One provider</b> (z.ai <span class="mono">glm-5.3-flash</span>) for everything live, and one codebase for the live arms. HAL cross-task has only 3 groups, and its τ-bench runs share one 50-task set.</li>
+          <li><b>No accuracy effect was measured</b> on the replay side — though the synthetic study found partial coverage <em>hurts</em> accuracy, 99% → 83%.</li>
+        </ul>
+      </div>
+      <p class="claim" style="font-size:16px">In the live sweep the closure cut reads per successor 60% and mean rounds 25%, which is <b>58% of the structural ceiling</b>. The arms are working; the ceiling is low.</p>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/conclusion.md</span>. Four numbers were corrected in this folder during the week and the corrected values are the ones quoted here: the harness stage of <span class="mono">inheritance_depth.md</span> was handed ~45% less than its recall denominator credited; its "dag 75% re-fetch" line counted every read rather than re-reads of injected paths; the first τ-bench cross-task numbers in <span class="mono">realworld_inheritance.md</span> were inflated by same-task contamination (23.2% / 30.5% → 11.2% / 12.7%); and <span class="mono">board_of</span> read the wrong key and reported every run as edgeless — reports now re-derive boards from traces, so a parser fix repairs old rows.</p></div>
+</section>
+
+<!-- ===================== 12 · NEXT STEPS ===================== -->
+<section class="slide" data-title="Next steps">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">12</span><span>Next steps</span></div>
+    <h2>Next: power the one cell with headroom, build the retention unit that is worth the most and is not built, and test the deployable rule end to end</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr">
+    <div class="steps">
+      <div class="step"><span class="n">14</span><div>
+        <span class="group">coverage · the study's open question</span>
+        <p style="font-size:13.5px;line-height:1.3"><b>Power the EXPLAIN arm properly.</b></p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li>It is the only cell with the headroom to move rounds — <b>90.9%</b> round recall against MODIFY's 11.1% — and its three successors took 1, 36 and 2 rounds, so median and mean disagree in sign.</li>
+          <li>Roughly <b>4×</b> these runs, or about <b>60 successors per arm</b>; otherwise accept the scripted stage as the measurement.</li>
+        </ul>
+      </div></div>
+      <div class="step"><span class="n">15</span><div>
+        <span class="group">retention unit · the largest measured lever</span>
+        <p style="font-size:13.5px;line-height:1.3"><b>Implement range-granular content addressing in the injector.</b></p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li>File → byte range moves removable rounds <b>36.4% → 90.9%</b>, and line granularity adds nothing beyond range.</li>
+          <li>It is the single largest measured lever in the whole study <b>and it is not built</b>.</li>
+        </ul>
+      </div></div>
+      <div class="step"><span class="n">16</span><div>
+        <span class="group">policy · end to end</span>
+        <p style="font-size:13.5px;line-height:1.3"><b>Test the deployable rule end to end: widen the pool, rank by reuse frequency, cap at 8 KB.</b></p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li><span class="mono">none</span> against <span class="mono">ancestors</span> under LFU and LRU, at 8 KB and unlimited — <b>needs no graph at all</b>.</li>
+          <li>Needs a genuinely multi-part live workload: SWE-bench instances through mini-swe-agent, or AppWorld.</li>
+        </ul>
+      </div></div>
+      <div class="step"><span class="n">17</span><div>
+        <span class="group">staleness · long trajectories</span>
+        <p style="font-size:13.5px;line-height:1.3"><b>A staleness-aware policy for long trajectories, where mutation does bite.</b></p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li><b>7.6–14.3%</b> of a SWE successor's bytes are stale, even though stale spans are ~0 in short team runs.</li>
+          <li>Never hand over a span the successor's own base commit has moved past. Ingest AppWorld and Online Mind2Web for a third non-coding regime.</li>
+        </ul>
+      </div></div>
+      <div class="step"><span class="n">18</span><div>
+        <span class="group">harness · the largest payoff on both providers</span>
+        <p style="font-size:13.5px;line-height:1.3"><b>Make turn-end memory extraction asynchronous or once-per-request.</b></p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li><b>12–35 s per lead turn, 20–35% of run wall</b> on both GLM and Qwen, and worse with a thinking model.</li>
+          <li>Also fix the two scheduling faults found this week: <span class="mono">spawn_teammate</span> silently refuses a blocked task and loses the successor, and the Lead can shut a team down with an in-progress successor while the run still reports <span class="mono">completed</span>.</li>
+        </ul>
+      </div></div>
+      <div class="step"><span class="n">—</span><div>
+        <span class="group">retired and carried over</span>
+        <p style="font-size:13.5px;line-height:1.3"><b>Next step 13 of the 2026-09-16 deck is retired, not deferred.</b></p>
+        <ul class="list tight xs" style="margin-top:7px">
+          <li>"Turn the task board into a retention policy the engine can act on" failed three independent tests: it does not predict which bytes (slide 4), reaching further does not convert to rounds (slide 6), and it never beats LRU as an ordering (slide 7).</li>
+          <li>Next step 12, "attack the eviction order rather than the prefill", <b>survives and is answered</b> — the eviction order is LFU, and the thing to ship an engine is a per-item reuse count.</li>
+          <li>Carried: re-run above ~50k tokens per call, where the precision argument may come back; measure board recall past ten items.</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+  <div class="foot"><p>Numbering continues the 2026-09-16 deck, whose next steps were 12 and 13. Sources: <span class="mono">weekly_progress/092326/conclusion.md</span> "Next steps", plus the per-note next steps in <span class="mono">inheritance_depth.md</span>, <span class="mono">realworld_inheritance.md</span>, <span class="mono">dag_census.md</span>, <span class="mono">dag_kv_reuse.md</span> and <span class="mono">latency_qwen_vs_glm.md</span>. Two follow-ups closed this week: "test the step function directly" (F1) and "stop testing depth, test budgets" (F2). Infrastructure debt worth clearing first: <span class="mono">.env</span> points at <span class="mono">MODEL_ID=glm-5.3-flashx</span>, which is not entitled and returns 429 / code 1311, and <span class="mono">load_dotenv(override=True)</span> at <span class="mono">code.py:77</span> defeats <span class="mono">--model</span> on every script that has not been patched; the DeepSeek lane is dead on <span class="mono">Insufficient Balance</span>.</p></div>
+</section>
+</div>
+</div>
+<div class="hud"><div class="bar" id="bar"></div></div>
+<div class="hint">← → navigate · O overview · P print</div>
+<div class="counter"><span id="ctr">1 / 13</span><button id="ovbtn" type="button" aria-label="Toggle overview">overview</button></div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var body = document.body;
+  var bar = document.getElementById('bar');
+  var ctr = document.getElementById('ctr');
+  var idx = 0;
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    document.documentElement.style.setProperty('--s', String(s));
+  }
+  function show(i, push) {
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === idx); });
+    bar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    ctr.textContent = (idx + 1) + ' / ' + slides.length;
+    document.title = (slides[idx].dataset.title ? slides[idx].dataset.title + ' · ' : '') + 'Inheritance and the Round Ceiling';
+    if (push !== false) { try { history.replaceState(null, '', '#' + (idx + 1)); } catch (e) {} }
+  }
+  function fromHash() {
+    var n = parseInt((location.hash || '#1').slice(1), 10);
+    show(isNaN(n) ? 0 : n - 1, false);
+  }
+  function toggleOverview(force) {
+    var on = typeof force === 'boolean' ? force : !body.classList.contains('overview');
+    body.classList.toggle('overview', on);
+    if (!on) { show(idx); window.scrollTo(0, 0); }
+  }
+
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', fromHash);
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'l': case 'j':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx + 1); } break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'h': case 'k':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx - 1); } break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End': e.preventDefault(); show(slides.length - 1); break;
+      case 'o': case 'O': toggleOverview(); break;
+      case 'Escape': toggleOverview(false); break;
+      case 'p': case 'P': window.print(); break;
+    }
+  });
+  slides.forEach(function (el, k) {
+    el.addEventListener('click', function (e) {
+      if (body.classList.contains('overview')) { show(k); toggleOverview(false); return; }
+      var r = stage.getBoundingClientRect();
+      if (e.clientX - r.left > r.width * 0.5) show(idx + 1); else show(idx - 1);
+    });
+  });
+  document.getElementById('ovbtn').addEventListener('click', function () { toggleOverview(); });
+  window.addEventListener('beforeprint', function () { body.classList.remove('overview'); });
+
+  if (location.search.indexOf('export') !== -1) body.classList.add('export');
+  fit();
+  fromHash();
+})();
+</script>
