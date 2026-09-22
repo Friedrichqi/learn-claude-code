@@ -41,6 +41,10 @@ Behaviour
   * Drives one or more user turns, then waits until teammates are idle (or --max-seconds), sends
     them a graceful shutdown while holding the lead lock, and closes the trace.
   * Fresh .memory/.tasks/.mailboxes/.transcripts/.task_outputs state at the repo root per run.
+  * --vllm-metrics URL scrapes a local vLLM server's Prometheus /metrics after every model call and
+    stores the deltas (server-side prefill / decode / queue seconds, prefix-cache hits, tokens) in the
+    inputs sidecar as record['vllm']; --client-max-retries 0 disables the SDK's silent retries;
+    --server-info records the endpoint's /version and /v1/models in profile_meta.
 """
 
 from __future__ import annotations
@@ -268,6 +272,23 @@ def parse_args():
                              "environment and exporting MODEL_ID has no effect -- this patches the "
                              "loaded module's globals instead, which is why the earlier studies "
                              "concluded a cross-model run needed a whole separate lane.")
+    parser.add_argument("--vllm-metrics", default=None,
+                        help="URL of a vLLM Prometheus endpoint (http://host:port/metrics).  After every "
+                             "model call the driver scrapes it under a lock and stores the deltas since the "
+                             "previous scrape in the inputs sidecar as record['vllm']: server-side prefill / "
+                             "decode / queue / inference seconds, prefix-cache hits, prompt and generation "
+                             "tokens, finished requests.  When exactly one request finished in between, the "
+                             "deltas are this call's own (record['vllm']['exact']); with concurrent teammates "
+                             "they may pool several requests and only the run totals (profile_end.vllm_totals) "
+                             "stay exact.  The scrape itself (~5-10 ms) is recorded as scrape_ms so the "
+                             "analyzer can keep it out of the harness buckets.")
+    parser.add_argument("--client-max-retries", type=int, default=None,
+                        help="set the Anthropic client's max_retries before tracing wraps it (0 disables the "
+                             "SDK's silent retries, which otherwise double a slow request's load and hide "
+                             "provider errors; the harness keeps its own lead-call retries)")
+    parser.add_argument("--server-info", action="store_true",
+                        help="record GET /version and /v1/models of the configured base URL in profile_meta "
+                             "(vLLM exposes both; other providers may 404)")
     parser.add_argument("--answer-out", default=None,
                         help="write the lead's final assistant text here.  This is how the lm-eval "
                              "endpoint gets an answer back out of an agentic session: lm-eval hands "
@@ -365,6 +386,165 @@ class StreamingMessages:
         return response
 
 
+class VllmMetrics:
+    """Scrape a vLLM Prometheus endpoint and attribute server-side request timing to model calls.
+
+    vLLM records a finished request's prefill / decode / queue / inference seconds, its prompt and generation
+    tokens and the prefix-cache hits into Prometheus histograms and counters in the same engine-loop
+    iteration that releases the final output, i.e. before the final stream chunk reaches the client.
+    `after_call()` therefore scrapes right after a response is complete and takes the deltas since the
+    previous scrape (all scrapes are serialized by one lock, so consecutive deltas never overlap).  If
+    exactly one request finished in between, the deltas are this call's own (`exact`); when concurrent
+    teammates finish together the deltas pool several requests and only the run totals stay exact.
+    """
+
+    HISTOGRAMS = ("request_prefill_time_seconds", "request_decode_time_seconds", "request_queue_time_seconds",
+                  "request_inference_time_seconds", "e2e_request_latency_seconds", "time_to_first_token_seconds",
+                  "request_prefill_kv_computed_tokens", "request_generation_tokens", "request_prompt_tokens")
+    COUNTERS = ("request_success", "prompt_tokens", "prompt_tokens_cached", "generation_tokens",
+                "prefix_cache_queries", "prefix_cache_hits", "num_preemptions")
+    GAUGES = ("num_requests_running", "num_requests_waiting", "kv_cache_usage_perc")
+    LINE = re.compile(r"^vllm:(?P<name>[A-Za-z0-9_]+)(?:\{(?P<labels>[^}]*)\})?\s+(?P<value>\S+)")
+    LABEL = re.compile(r'(\w+)="((?:[^"\\]|\\.)*)"')
+
+    def __init__(self, url: str, lock: threading.Lock, retry_s: float = 1.0, step_s: float = 0.05):
+        self.url = url
+        self.lock = lock
+        self.retry_s = retry_s
+        self.step_s = step_s
+        self.baseline: dict | None = None
+        self.last: dict | None = None
+        self.errors = 0
+
+    def scrape(self) -> dict | None:
+        import urllib.request
+        try:
+            with urllib.request.urlopen(self.url, timeout=2.0) as resp:
+                text = resp.read().decode("utf-8", "replace")
+        except Exception:
+            self.errors += 1
+            return None
+        snap: dict = {"ts": time.time()}
+        for line in text.splitlines():
+            if not line.startswith("vllm:"):
+                continue
+            m = self.LINE.match(line)
+            if not m:
+                continue
+            name, labels, value = m.group("name"), m.group("labels") or "", m.group("value")
+            try:
+                v = float(value)
+            except ValueError:
+                continue
+            if name.endswith(("_created", "_bucket")):
+                continue
+            if name.endswith("_total"):
+                name = name[:-6]
+            base = name
+            for suffix in ("_sum", "_count"):
+                if name.endswith(suffix):
+                    base = name[: -len(suffix)]
+            if base in self.HISTOGRAMS or name in self.COUNTERS or name in self.GAUGES:
+                snap[name] = snap.get(name, 0.0) + v
+                if name == "request_success":
+                    reason = dict(self.LABEL.findall(labels)).get("finished_reason", "?")
+                    key = f"request_success[{reason}]"
+                    snap[key] = snap.get(key, 0.0) + v
+        return snap
+
+    @staticmethod
+    def _delta(now: dict, prev: dict, key: str):
+        if key not in now:
+            return None
+        return now[key] - prev.get(key, 0.0)
+
+    def start(self) -> dict | None:
+        with self.lock:
+            self.baseline = self.last = self.scrape()
+        return self.baseline
+
+    def after_call(self) -> dict:
+        with self.lock:
+            prev = self.last
+            started = time.perf_counter()
+            retries = 0
+            now = self.scrape()
+            while (now is not None and prev is not None
+                   and (now.get("request_success", 0.0) - prev.get("request_success", 0.0)) < 1
+                   and time.perf_counter() - started < self.retry_s):
+                time.sleep(self.step_s)
+                retries += 1
+                now = self.scrape()
+            if now is None:
+                return {"error": "scrape failed", "errors": self.errors}
+            self.last = now
+            if prev is None:
+                return {"error": "no previous snapshot"}
+            out = self._summarize(now, prev)
+            out["scrape_ms"] = round((time.perf_counter() - started) * 1000, 1)
+            out["retries"] = retries
+            return out
+
+    def _summarize(self, now: dict, prev: dict) -> dict:
+        d = lambda key: self._delta(now, prev, key)  # noqa: E731
+        finished = {k[len("request_success["):-1]: now[k] - prev.get(k, 0.0) for k in now if k.startswith("request_success[")}
+        success = d("request_success") or 0.0
+        return {
+            "exact": success == 1,
+            "finished_requests": success,
+            "finished": {k: v for k, v in finished.items() if v},
+            "prefill_s": d("request_prefill_time_seconds_sum"),
+            "decode_s": d("request_decode_time_seconds_sum"),
+            "queue_s": d("request_queue_time_seconds_sum"),
+            "inference_s": d("request_inference_time_seconds_sum"),
+            "e2e_s": d("e2e_request_latency_seconds_sum"),
+            "ttft_s": d("time_to_first_token_seconds_sum"),
+            "kv_computed_tokens": d("request_prefill_kv_computed_tokens_sum"),
+            "request_prompt_tokens": d("request_prompt_tokens_sum"),
+            "request_generation_tokens": d("request_generation_tokens_sum"),
+            "prompt_tokens": d("prompt_tokens"),
+            "prompt_tokens_cached": d("prompt_tokens_cached"),
+            "generation_tokens": d("generation_tokens"),
+            "prefix_cache_queries": d("prefix_cache_queries"),
+            "prefix_cache_hits": d("prefix_cache_hits"),
+            "preemptions": d("num_preemptions"),
+            "running": now.get("num_requests_running"),
+            "waiting": now.get("num_requests_waiting"),
+            "kv_usage": now.get("kv_cache_usage_perc"),
+            "span_s": round(now["ts"] - prev["ts"], 3),
+        }
+
+    def totals(self) -> dict | None:
+        """Deltas from the run's baseline snapshot to a fresh scrape (exact run totals)."""
+        with self.lock:
+            now = self.scrape()
+            if now is None or self.baseline is None:
+                return None
+            self.last = now
+            out = self._summarize(now, self.baseline)
+            out["scrape_errors"] = self.errors
+            return out
+
+
+def fetch_server_info(base_url: str | None) -> dict | None:
+    """GET /version and /v1/models of an OpenAI/Anthropic-compatible server (vLLM exposes both)."""
+    if not base_url:
+        return None
+    import urllib.request
+    info: dict = {"base_url": base_url}
+    for key, path in (("version", "/version"), ("models", "/v1/models")):
+        try:
+            with urllib.request.urlopen(base_url.rstrip("/") + path, timeout=5.0) as resp:
+                raw = resp.read().decode("utf-8", "replace")
+            try:
+                info[key] = json.loads(raw)
+            except json.JSONDecodeError:
+                info[key] = raw[:500]
+        except Exception as exc:
+            info[key] = f"error: {type(exc).__name__}: {exc}"
+    return info
+
+
 def relaxed_read_only(mod):
     """Classifier that also accepts python invocations for asynchronous (teammate) turns."""
     original = mod._is_read_only_command
@@ -435,6 +615,12 @@ def main() -> int:
         # memory-extraction calls would keep using the old id unless it is moved too
         mod.MEMORY_RUNTIME.MODEL = args.model
         print(f"[profile] MODEL_ID overridden -> {args.model}", flush=True)
+    if args.client_max_retries is not None:
+        # the SDK reads self.max_retries per request; set it on the raw client BEFORE initialize_tracing()
+        # wraps it in TracedClient (an attribute write would otherwise land on the wrapper)
+        mod.client.max_retries = args.client_max_retries
+        print(f"[profile] client max_retries -> {args.client_max_retries}", flush=True)
+    server_info = fetch_server_info(os.environ.get("ANTHROPIC_BASE_URL")) if args.server_info else None
     mod.CLI_ACTIVE = False
     trace = mod.initialize_tracing("s15")
     if args.context_limit:
@@ -469,7 +655,10 @@ def main() -> int:
                                 "tool_cost_framing": args.tool_cost_framing,
                                 "tool_cost_placement": args.tool_cost_placement,
                                 "tool_cost_policy": args.tool_cost_policy,
-                                "repo": str(REPO)})
+                                "repo": str(REPO),
+                                "model": mod.MODEL, "base_url": os.environ.get("ANTHROPIC_BASE_URL"),
+                                "vllm_metrics": args.vllm_metrics, "client_max_retries": args.client_max_retries,
+                                "server_info": server_info})
     inputs_path = Path(str(trace.path).removesuffix(".jsonl") + ".inputs.jsonl")
     reads_path = Path(str(trace.path).removesuffix(".jsonl") + ".reads.jsonl")
     inputs_lock = threading.Lock()
@@ -855,6 +1044,11 @@ def main() -> int:
         return isinstance(text, str) and (text.startswith("[Earlier tool result saved at")
                                           or text.startswith("<persisted-output>"))
 
+    vllm_metrics = VllmMetrics(args.vllm_metrics, threading.Lock()) if args.vllm_metrics else None
+    if vllm_metrics is not None:
+        baseline = vllm_metrics.start()
+        print(f"[profile] vllm metrics {'reachable' if baseline else 'UNREACHABLE'} at {args.vllm_metrics}", flush=True)
+
     def profiled_create(**kwargs):
         # -- advertised-tool-cost intervention ---------------------------------------------
         # Rewriting the request here (rather than the harness's tool tables) annotates the lead,
@@ -1012,6 +1206,8 @@ def main() -> int:
         if timing:
             record["stream"] = timing
             stream_local.timing = None
+        if vllm_metrics is not None:
+            record["vllm"] = vllm_metrics.after_call()
         with inputs_lock, inputs_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record) + "\n")
         return response
@@ -1119,7 +1315,8 @@ def main() -> int:
     finally:
         trace.emit("profile_end", {"label": args.label, "status": status, "denials": dict(denials),
                                    "rate_limit_retries": dict(rate_limited),
-                                   "wall_seconds": round(time.monotonic() - started, 1)})
+                                   "wall_seconds": round(time.monotonic() - started, 1),
+                                   "vllm_totals": vllm_metrics.totals() if vllm_metrics is not None else None})
         mod.close_tracing(status)
         if args.answer_out:
             # the last thing the lead said.  lm-eval scores a single string, so an agentic session

@@ -24,6 +24,10 @@ script checks that coefficient directly, by two routes that do not depend on the
   --headers   what the HTTP response exposes (this provider returns `x-process-time`, the server's
               own processing seconds, which tracks prefill; there is no timing in `usage`).
 
+Against vLLM the `--headers` probe shows no timing header either, but the server exposes Prometheus
+/metrics (scraped per call by profile_run.py --vllm-metrics) and its usage reports the computed tokens as
+input_tokens + cache_creation_input_tokens (see stream_call).
+
 Results as of 2026-09-13 on z.ai `glm-5.3-flash` are in `weekly_progress/091626/latency_breakdown.md`
 section 4: prefill 0.034-0.042 ms per uncached token (~26,000 tok/s), fixed part 3.1-3.8 s with
 +-2 s of jitter, decode 39-104 tok/s, cache strictly prefix-based.
@@ -82,7 +86,12 @@ def stream_call(client, model, prompt: str, label: str, chars: int, max_tokens: 
         "label": label, "chars": chars,
         "ttft_s": round(first_block if first_block is not None else end, 4),
         "message_start_s": round(message_start or 0.0, 4), "end_s": round(end, 4),
-        "uncached_tok": usage.input_tokens or 0, "cached_tok": usage.cache_read_input_tokens or 0,
+        # vLLM reports the computed tokens it wrote into its prefix cache as cache_creation_input_tokens and
+        # leaves only the partial tail block in input_tokens; z.ai never fills cache_creation.  "uncached" =
+        # tokens the server computed = both parts.
+        "uncached_tok": (usage.input_tokens or 0) + (getattr(usage, "cache_creation_input_tokens", None) or 0),
+        "input_tok": usage.input_tokens or 0, "created_tok": getattr(usage, "cache_creation_input_tokens", None) or 0,
+        "cached_tok": usage.cache_read_input_tokens or 0,
         "output_tok": usage.output_tokens or 0, "deltas": len(deltas),
         "gap_median_ms": round(1000 * statistics.median(gaps), 2) if gaps else None,
         "gap_mean_ms": round(1000 * statistics.fmean(gaps), 2) if gaps else None,

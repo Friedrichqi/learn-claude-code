@@ -29,6 +29,11 @@ provider reports it, output), TTFT/decode statistics and a linear TTFT fit come 
 (b) the provider cache-read share, and (c) the cross-teammate byte redundancy and prompt-token share
 from scripts/input_redundancy.py (exact (file, line) provenance).
 
+Runs driven with profile_run.py --vllm-metrics additionally get a server-side table (vLLM's own prefill /
+decode / queue seconds and prefix-cache counters per call and per run); every run set gets a stability table
+(mean +- sd across repetitions).  `uncached` means the tokens the provider computed: input_tokens plus, where
+the provider reports it (vLLM), cache_creation_input_tokens.
+
 Labels of the form <CATEGORY>-<mode>-<rep> (e.g. FQA-team-r1) are grouped by (CATEGORY, mode);
 other labels are grouped after stripping a trailing -rN.
 """
@@ -158,7 +163,33 @@ class Call:
 
     @property
     def uncached_tokens(self):
-        return (self.usage or {}).get("input_tokens") or 0
+        # tokens the provider actually computed for this call.  z.ai reports them as input_tokens (cache
+        # reads excluded, cache_creation always null); vLLM's Anthropic endpoint additionally moves the
+        # computed tokens it wrote into its prefix cache to cache_creation_input_tokens
+        # (input_tokens = prompt - cache_read - cache_creation), so both parts have to be added back.
+        u = self.usage or {}
+        return (u.get("input_tokens") or 0) + (u.get("cache_creation_input_tokens") or 0)
+
+    @property
+    def created_tokens(self):
+        return (self.usage or {}).get("cache_creation_input_tokens") or 0
+
+    @property
+    def vllm(self) -> dict | None:
+        """Server-side deltas scraped by profile_run.py --vllm-metrics right after this call."""
+        v = (self.sidecar or {}).get("vllm")
+        return v if isinstance(v, dict) and not v.get("error") else None
+
+    def server(self, key: str):
+        """A server-side value attributable to this call alone (None unless exactly one request finished)."""
+        v = self.vllm
+        if not v or not v.get("exact"):
+            return None
+        return v.get(key)
+
+    @property
+    def scrape_ms(self) -> float:
+        return ((self.sidecar or {}).get("vllm") or {}).get("scrape_ms") or 0.0
 
     @property
     def cached_tokens(self):
@@ -203,6 +234,7 @@ class Round:
     other: float = 0.0
     post: float = 0.0            # lead: turn-end work after a final response
     idle_before: float = 0.0     # teammate: idle wait excluded from the round
+    instrument: float = 0.0      # profiler overhead after the response (vLLM /metrics scrape), taken out of other
     prep_parts: Counter = field(default_factory=Counter)
     post_parts: Counter = field(default_factory=Counter)
     tool_calls: list = field(default_factory=list)   # (tool, duration_ms, status)
@@ -234,6 +266,11 @@ class Run:
         self.status = self.end_meta.get("status") or next((r["data"].get("status") for r in self.records if r.get("event") == "run_end"), "?")
         self.wall_ms = (self.end_meta.get("wall_seconds") or 0) * 1000 or (self.records[-1]["elapsed_ms"] if self.records else 0)
         self.denials = self.end_meta.get("denials") or {}
+        self.server_totals = self.end_meta.get("vllm_totals") or None
+        run_start = next((r["data"] for r in self.records if r.get("event") == "run_start"), {})
+        self.provider = {"model": run_start.get("model") or self.meta.get("model"),
+                         "base_url": run_start.get("base_url") or self.meta.get("base_url"),
+                         "server_info": self.meta.get("server_info")}
         self.kinds: dict[str, str] = {"agent-root": "lead"}
         self.names: dict[str, str] = {"agent-root": "lead"}
         for r in self.records:
@@ -391,6 +428,9 @@ class Run:
                 if spans:
                     rnd.end = spans[-1][1]
                     rnd.other = (rnd.end - call.t_resp) - rnd.tools
+                    if call.scrape_ms and rnd.other > 0:
+                        rnd.instrument = min(call.scrape_ms, rnd.other)
+                        rnd.other -= rnd.instrument
                 else:
                     rnd.end = call.t_resp
                     rnd.final = True
@@ -454,6 +494,9 @@ class Run:
                 if spans:
                     rnd.end = spans[-1][1]
                     rnd.other = (rnd.end - call.t_resp) - rnd.tools
+                    if call.scrape_ms and rnd.other > 0:
+                        rnd.instrument = min(call.scrape_ms, rnd.other)
+                        rnd.other -= rnd.instrument
                     prev_final = False
                 else:
                     rnd.end = call.t_resp
@@ -632,7 +675,7 @@ def prep_detail_table(rounds: list[Round]) -> list[str]:
 
 
 def token_table(runs: list[Run]) -> list[str]:
-    out = ["**Tokens and model-call timing per call** (agent calls only: purpose lead / teammate; prompt = input + cache_read (+cache_creation); uncached = input_tokens as reported; first block = client time to the first delivered content block (NOT prefill alone: thinking/tool_use blocks arrive in bursts, see the delivery-pattern table); tail = first block to stream end; fit: first-block time = a + b x uncached tokens)",
+    out = ["**Tokens and model-call timing per call** (agent calls only: purpose lead / teammate; prompt = input + cache_read (+cache_creation); uncached = tokens the provider computed: input_tokens plus cache_creation_input_tokens where reported (vLLM); first block = client time to the first delivered content block (NOT prefill alone: thinking/tool_use blocks arrive in bursts, see the delivery-pattern table); tail = first block to stream end; fit: first-block time = a + b x uncached tokens)",
            "| group | kind | calls | prompt tok mean | prompt tok median | uncached mean | cache-read share | output tok mean | output tok median | thinking share of output chars | model call mean | first block mean | first block median | tail mean | tail tok/s (pooled) | first-block fit a (s) + b (ms/tok), r2 | first block is thinking |",
            "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|"]
     groups: dict[tuple, list[Call]] = defaultdict(list)
@@ -895,23 +938,141 @@ def per_run_rounds(runs: list[Run]) -> list[str]:
     return out
 
 
+def server_table(runs: list[Run]) -> list[str]:
+    """vLLM-only: server-side per-request timing scraped from /metrics (profile_run.py --vllm-metrics)."""
+    calls = [(run, c) for run in runs for c in run.calls if c.purpose in ("lead", "teammate", "one_shot") and c.vllm]
+    if not calls:
+        return []
+    out = ["**Server-side timing from vLLM /metrics** (agent calls; deltas of the server's per-request histograms scraped right after each call; exact = exactly one request finished since the previous scrape, so the deltas belong to this call, otherwise they pool concurrent requests and are used only in the run totals; client gap = client model-call duration minus server e2e latency, i.e. HTTP/API-layer + SDK overhead; prefill tok/s = KV-computed tokens / prefill s; decode tok/s = (generation tokens - 1) / decode s; scrape = profiler overhead per call, kept out of the round buckets as `instrument`)",
+           "| group | kind | calls | exact | server prefill mean / median (s) | server decode mean / median (s) | server queue mean (s) | server e2e mean (s) | client call mean (s) | client gap mean / median (s) | client first block vs server TTFT mean (s) | prefill tok/s | decode tok/s | running at finish | KV usage at finish | finished=length | preemptions | scrape mean (ms) |",
+           "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    groups: dict[tuple, list[Call]] = defaultdict(list)
+    for run, c in calls:
+        groups[(run.group, c.kind)].append(c)
+
+    def rate(num, den):
+        return "-" if not den else f"{num / den:,.0f}"
+
+    for (group, kind), cs in sorted(groups.items(), key=lambda kv: (kv[0][0][1], kv[0][0][0], kv[0][1])):
+        ex = [c for c in cs if c.vllm.get("exact")]
+        pre = [c.server("prefill_s") for c in ex if c.server("prefill_s") is not None]
+        dec = [c.server("decode_s") for c in ex if c.server("decode_s") is not None]
+        que = [c.server("queue_s") for c in ex if c.server("queue_s") is not None]
+        e2e = [c.server("e2e_s") for c in ex if c.server("e2e_s") is not None]
+        gap = [c.duration / 1000 - c.server("e2e_s") for c in ex if c.server("e2e_s") is not None]
+        ttft_c = [c.ttft / 1000 for c in ex if c.ttft is not None and c.server("ttft_s") is not None]
+        ttft_s = [c.server("ttft_s") for c in ex if c.ttft is not None and c.server("ttft_s") is not None]
+        kv = sum(c.server("kv_computed_tokens") or 0 for c in ex if c.server("prefill_s") is not None)
+        gen = sum(max((c.server("request_generation_tokens") or c.output_tokens) - 1, 0) for c in ex if c.server("decode_s") is not None)
+        length = sum(1 for c in ex if (c.vllm.get("finished") or {}).get("length"))
+        preempt = sum(c.vllm.get("preemptions") or 0 for c in cs)
+        out.append(f"| {group[0]}-{group[1]} | {kind} | {len(cs)} | {pct(len(ex), len(cs))} | {fmt_n(mean(pre), 2)} / {fmt_n(median(pre), 2)} | "
+                   f"{fmt_n(mean(dec), 1)} / {fmt_n(median(dec), 1)} | {fmt_n(mean(que), 3)} | {fmt_n(mean(e2e), 1)} | {fmt_s(mean([c.duration for c in cs]))} | "
+                   f"{fmt_n(mean(gap), 2)} / {fmt_n(median(gap), 2)} | {fmt_n(mean(ttft_c), 2)} vs {fmt_n(mean(ttft_s), 2)} | {rate(kv, sum(pre))} | {rate(gen, sum(dec))} | "
+                   f"{fmt_n(mean([c.vllm.get('running') for c in cs]), 1)} | {fmt_n(100 * (mean([c.vllm.get('kv_usage') for c in cs]) or 0), 1)}% | {pct(length, len(ex))} | {preempt:.0f} | "
+                   f"{fmt_n(mean([c.scrape_ms for c in cs]), 1)} |")
+    out.append("")
+    out.append("| fit over exact calls | calls | server prefill (s) = a + b x computed tok, r2 -> tok/s | server decode (s) = a + c x generation tok, r2 -> ms/tok | client gap (s): mean / median / p90 |")
+    out.append("|---|---:|---|---|---|")
+    pooled = [c for cs in groups.values() for c in cs if c.vllm.get("exact")]
+    for kind in ("lead", "teammate", "all"):
+        cs = [c for c in pooled if kind == "all" or c.kind == kind]
+        pre = [(c.server("kv_computed_tokens"), c.server("prefill_s")) for c in cs if c.server("prefill_s") is not None and c.server("kv_computed_tokens") is not None]
+        dec = [((c.server("request_generation_tokens") or c.output_tokens), c.server("decode_s")) for c in cs if c.server("decode_s") is not None]
+        gap = [c.duration / 1000 - c.server("e2e_s") for c in cs if c.server("e2e_s") is not None]
+        if len(cs) < 3:
+            continue
+        fp = linfit([x for x, _ in pre], [y for _, y in pre])
+        fd = linfit([x for x, _ in dec], [y for _, y in dec])
+        fp_text = "-" if not fp else f"{fp['intercept']:.3f} + {1000 * fp['slope']:.4f} ms/tok (r2 {fp['r2']:.2f}) -> {1 / fp['slope']:,.0f} tok/s" if fp['slope'] > 0 else "slope <= 0"
+        fd_text = "-" if not fd else f"{fd['intercept']:.2f} + {1000 * fd['slope']:.1f} ms/tok (r2 {fd['r2']:.2f})"
+        out.append(f"| {kind} | {len(cs)} | {fp_text} | {fd_text} | {fmt_n(mean(gap), 2)} / {fmt_n(median(gap), 2)} / {fmt_n(quantile(gap, 0.9), 2)} |")
+    out.append("")
+    out.append("| run | server prompt tok (all requests) | server cached tok | server cached share | usage cache-read share (agent calls) | prefix-cache hit rate (blocks) | generation tok | server prefill (s) | server decode (s) | server queue (s) | server e2e (s) | client model time, all calls (s) | finished by reason | preemptions |")
+    out.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|")
+    for run in runs:
+        t = run.server_totals
+        if not t:
+            continue
+        agent = [c for c in run.calls if c.purpose in ("lead", "teammate", "one_shot")]
+        usage_cached = sum(c.cached_tokens for c in agent)
+        usage_prompt = sum(c.prompt_tokens for c in agent)
+        finished = ", ".join(f"{k} {v:.0f}" for k, v in sorted((t.get("finished") or {}).items()))
+        out.append(f"| {run.label} | {fmt_n(t.get('prompt_tokens'))} | {fmt_n(t.get('prompt_tokens_cached'))} | {pct(t.get('prompt_tokens_cached') or 0, t.get('prompt_tokens') or 0)} | "
+                   f"{pct(usage_cached, usage_prompt)} | {pct(t.get('prefix_cache_hits') or 0, t.get('prefix_cache_queries') or 0)} | {fmt_n(t.get('generation_tokens'))} | "
+                   f"{fmt_n(t.get('prefill_s'), 1)} | {fmt_n(t.get('decode_s'), 1)} | {fmt_n(t.get('queue_s'), 2)} | {fmt_n(t.get('e2e_s'), 1)} | "
+                   f"{sum(c.duration for c in run.calls) / 1000:,.1f} | {finished} | {fmt_n(t.get('preemptions'))} |")
+    return out
+
+
+def dispersion_table(runs: list[Run]) -> list[str]:
+    """Stability across repetitions: mean +- sd (CV) over the runs of each group, from per-run means."""
+    out = ["**Stability across repetitions** (per group: mean +- sd over the runs of the group, CV = sd / mean in parentheses; each run contributes its own mean; a teammate task = rounds from assignment to the final reply)",
+           "| group | runs | wall (s) | lead rounds / run | model calls / run | teammate rounds / task | lead gross / round (s) | teammate gross / round (s) | lead model call (s) | teammate model call (s) | prompt tok / agent call | output tok / agent call | score |",
+           "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+
+    def msd(xs, digits=1):
+        xs = [x for x in xs if x is not None and not (isinstance(x, float) and math.isnan(x))]
+        if not xs:
+            return "-"
+        m = statistics.fmean(xs)
+        if len(xs) < 2:
+            return f"{m:,.{digits}f}"
+        sd = statistics.stdev(xs)
+        cv = f" ({100 * sd / m:.0f}%)" if m else ""
+        return f"{m:,.{digits}f} +- {sd:,.{digits}f}{cv}"
+
+    groups: dict[tuple, list[Run]] = defaultdict(list)
+    for run in runs:
+        groups[run.group].append(run)
+    for group, rs in sorted(groups.items(), key=lambda kv: (kv[0][1], kv[0][0])):
+        rows = []
+        for run in rs:
+            lead = [r for r in run.rounds if r.kind == "lead"]
+            tm = [r for r in run.rounds if r.kind != "lead"]
+            segs = run.teammate_segments()
+            agent = [c for c in run.calls if c.purpose in ("lead", "teammate", "one_shot")]
+            lead_calls = [c for c in agent if c.kind == "lead"]
+            tm_calls = [c for c in agent if c.kind != "lead"]
+            score = run.score or {}
+            rows.append({
+                "wall": run.wall_ms / 1000, "lead_rounds": len(lead), "calls": len(run.calls),
+                "tm_rounds_task": mean([s["rounds"] for s in segs]),
+                "lead_gross": mean([r.gross for r in lead]) / 1000 if lead else None,
+                "tm_gross": mean([r.gross for r in tm]) / 1000 if tm else None,
+                "lead_model": mean([c.duration for c in lead_calls]) / 1000 if lead_calls else None,
+                "tm_model": mean([c.duration for c in tm_calls]) / 1000 if tm_calls else None,
+                "prompt": mean([c.prompt_tokens for c in agent]), "output": mean([c.output_tokens for c in agent]),
+                "score": score.get("coverage") if score.get("category") == "FQA" else score.get("correct"),
+            })
+        col = lambda key: [r[key] for r in rows]  # noqa: E731
+        out.append(f"| {group[0]}-{group[1]} | {len(rs)} | {msd(col('wall'), 0)} | {msd(col('lead_rounds'))} | {msd(col('calls'))} | {msd(col('tm_rounds_task'))} | "
+                   f"{msd(col('lead_gross'))} | {msd(col('tm_gross'))} | {msd(col('lead_model'))} | {msd(col('tm_model'))} | {msd(col('prompt'), 0)} | {msd(col('output'), 0)} | {msd(col('score'), 2)} |")
+    return out
+
+
 def to_json(runs: list[Run]) -> dict:
     def rnd(r: Round):
         return {"run": r.run, "group": list(r.group), "agent": r.agent, "kind": r.kind, "turn": r.turn, "index": r.index,
                 "start_ms": r.start, "gross_ms": r.gross, "prep_ms": r.prep, "model_ms": r.model, "tools_ms": r.tools,
-                "other_ms": r.other, "post_ms": r.post, "idle_before_ms": r.idle_before, "final": r.final,
+                "other_ms": r.other, "instrument_ms": r.instrument, "post_ms": r.post, "idle_before_ms": r.idle_before, "final": r.final,
                 "decision": r.decision, "prep_parts": dict(r.prep_parts), "post_parts": dict(r.post_parts),
                 "tools": [{"tool": t[0], "ms": t[1], "status": t[2]} for t in r.tool_calls],
                 "call": None if not r.call else {"purpose": r.call.purpose, "duration_ms": r.call.duration, "attempts": r.call.attempts,
                                                   "prompt_tokens": r.call.prompt_tokens, "uncached_tokens": r.call.uncached_tokens,
                                                   "cached_tokens": r.call.cached_tokens, "output_tokens": r.call.output_tokens,
                                                   "ttft_ms": r.call.ttft, "decode_ms": r.call.decode, "stop_reason": r.call.stop_reason,
-                                                  "first_block": (r.call.stream or {}).get("first_block_type")}}
+                                                  "first_block": (r.call.stream or {}).get("first_block_type"),
+                                                  "created_tokens": r.call.created_tokens,
+                                                  "thinking_chars": (r.call.sidecar or {}).get("output_thinking_chars"),
+                                                  "text_chars": (r.call.sidecar or {}).get("output_text_chars"),
+                                                  "tool_input_chars": (r.call.sidecar or {}).get("output_tool_input_chars"),
+                                                  "vllm": r.call.vllm}}
     return {"runs": [{"label": run.label, "group": list(run.group), "status": run.status, "wall_ms": run.wall_ms,
                       "trace": str(run.path), "turns": [{k: (dict(v) if isinstance(v, Counter) else v) for k, v in t.items()} for t in run.turns],
                       "rounds": [rnd(r) for r in run.rounds], "segments": run.teammate_segments(), "score": run.score,
                       "redundancy": run.redundancy, "model_errors": dict(run.model_errors), "sidecar_mismatch": run.sidecar_mismatch,
-                      "denials": run.denials} for run in runs]}
+                      "denials": run.denials, "server_totals": run.server_totals, "provider": run.provider} for run in runs]}
 
 
 def collect(targets: list[str]) -> list[Path]:
@@ -960,6 +1121,10 @@ def main(argv=None) -> int:
         sections += tool_table(all_rounds) + [""]
     if args.per_run:
         sections += per_run_rounds(runs) + [""]
+    server = server_table(runs)
+    if server:
+        sections += server + [""]
+    sections += dispersion_table(runs) + [""]
     warnings = [f"{run.label}: sidecar/trace call-count mismatch {run.sidecar_mismatch}" for run in runs if run.sidecar_mismatch]
     if warnings:
         sections += ["Warnings:"] + [f"- {w}" for w in warnings]

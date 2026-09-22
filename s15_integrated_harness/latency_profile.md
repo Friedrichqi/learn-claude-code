@@ -553,3 +553,61 @@ Reference solutions for the three coding problems are in
 `traces/latency_profiling/reference_solutions/`; each run's sandbox is archived as
 `traces/latency_profiling/<label>.sandbox/`, its score as `<label>.score.json`, its console output as
 `<label>.console.log`.
+
+## Appendix C. Rerun on Qwen3.8-27B through a local vLLM server (2026-09-21)
+
+The same experiment -- same workloads and prompts (`scripts/latency_workloads.py`), same repetitions (five team
+and three solo runs per category), same `CONTEXT_LIMIT` (512,000 chars), streaming requests, fresh state per run,
+lane copy -- was repeated with `Qwen/Qwen3.8-27B` (bf16) served by vLLM 0.29.0 on one RTX PRO 6000 Blackwell
+(96 GB) through vLLM's Anthropic-compatible `/v1/messages` endpoint on the loopback interface, so the harness code
+(`code.py`) is unchanged and only the lane's `.env` differs (`ANTHROPIC_BASE_URL=http://127.0.0.1:<port>`,
+`MODEL_ID=Qwen/Qwen3.8-27B`, `ANTHROPIC_API_KEY=EMPTY`). Everything runs from one Slurm job:
+
+```bash
+# submit (priority QoS counts wall time double, so 12 h is the largest limit it accepts)
+sbatch --export=NONE s15_integrated_harness/scripts/qwen_vllm.sbatch
+# ... or run the steps by hand inside any allocation that owns a GPU:
+bash s15_integrated_harness/scripts/qwen_vllm_pipeline.sh          # download serve lane probe smoke matrix tables compare stop
+touch s15_integrated_harness/traces/latency_profiling_qwen/pipeline/READY   # releases the lane copy once the code is final
+```
+
+The server (`scripts/qwen_vllm_pipeline.sh`, `start_vllm`):
+
+```bash
+vllm serve Qwen/Qwen3.8-27B --host 127.0.0.1 --port $PORT --served-model-name Qwen/Qwen3.8-27B \
+  --language-model-only --reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser qwen3_coder \
+  --enable-prompt-tokens-details --enable-prefix-caching \
+  --max-model-len 262144 --gpu-memory-utilization 0.90 --max-num-seqs 32 --max-num-batched-tokens 16384 \
+  --uvicorn-log-level warning
+```
+
+`--enable-prompt-tokens-details` is what makes vLLM fill `usage.cache_read_input_tokens` and
+`usage.cache_creation_input_tokens`; without it every call looks uncached. vLLM's usage follows Anthropic's
+convention (`input_tokens = prompt - cache_read - cache_creation`), but unlike z.ai it also reports the computed
+tokens it wrote into its prefix cache as `cache_creation_input_tokens`, so `scripts/latency_breakdown.py` now
+defines *uncached* (computed) tokens as `input_tokens + cache_creation_input_tokens` (a no-op on the GLM traces,
+where the field is always null). Qwen3.8-27B is a hybrid model (48 Gated-DeltaNet layers, 16 full-attention
+layers): vLLM aligns its prefix-cache blocks to the recurrent state pages, so a cache block is 784 tokens rather
+than 16, which lowers the usage-level cache-read share for short prefixes; the server-side hit counters are
+reported next to it. Sampling is the model's `generation_config` (temperature 1.0, top_p 0.95, top_k 20; the
+harness sets none) and the chat template's defaults (thinking on, `reasoning_effort=xhigh`,
+`preserve_thinking=true`), so no chat-template override was applied in the baseline arm.
+
+Driver additions (`scripts/profile_run.py`): `--vllm-metrics URL` scrapes the server's Prometheus `/metrics`
+after every model call under a lock and records the deltas since the previous scrape in the inputs sidecar
+(`record["vllm"]`: `request_prefill_time_seconds`, `request_decode_time_seconds`, `request_queue_time_seconds`,
+`e2e_request_latency_seconds`, `time_to_first_token_seconds`, KV-computed / prompt / cached / generation tokens,
+prefix-cache queries and hits, finished requests by reason, preemptions, running / waiting / KV-usage gauges);
+when exactly one request finished in between the deltas are that call's own (`exact`), otherwise only the run
+totals (`profile_end.vllm_totals`) are used. The scrape costs 5-10 ms per call and is taken out of the `other`
+bucket as `instrument`. `--client-max-retries 0` switches off the SDK's silent retries (the profiler's own 429
+loop and the harness's lead-call retries stay); `--server-info` records `/version` and `/v1/models`.
+`scripts/latency_workloads.py` gained `--driver-arg` (pass-through) and `--skip-existing` (resumable matrix);
+`scripts/smoke_check.py` gates the matrix on one FQA team run (tool_use blocks, thinking blocks, cache fields,
+streaming timing, server metrics, coverage); `scripts/latency_breakdown.py` gained a server-side table and a
+stability table (mean +- sd over repetitions); `scripts/latency_compare.py` renders the two run sets side by side.
+
+Outputs: `traces/latency_profiling_qwen/` (traces, `.inputs.jsonl` / `.reads.jsonl` sidecars, sandboxes, scores,
+console logs), `traces/latency_profiling_qwen/latency_tables.md|json`, `provider_probe.json` (vLLM probes),
+`compare_glm_vs_qwen.md|json` (the side-by-side tables), `pipeline/` (job metadata, server info, startup lines,
+restarts) and `vllm_server_*.log`. The comparison is discussed in `weekly_progress/092326/latency_qwen_vs_glm.md`.
