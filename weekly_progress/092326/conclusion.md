@@ -2,7 +2,9 @@
 # and reading is under half of agentic work
 
 Synthesises the four notes in this folder: `dag_census.md`, `dag_kv_reuse.md`,
-`inheritance_depth.md`, `realworld_inheritance.md`. Written 2026-09-21.
+`inheritance_depth.md`, `realworld_inheritance.md`. Written 2026-09-21. [cleanup note 2026-09-23: the
+four notes now live in `research/07_task_dag/README.md` (Part A dag_kv_reuse, Part B dag_census) and
+`research/08_context_inheritance/README.md` (Part A inheritance_depth, Part B realworld_inheritance).]
 
 ## The question
 
@@ -63,7 +65,9 @@ Four beliefs from the synthetic study did not survive.
 ## What is deployable
 
 1. **Rank by reuse frequency, not recency.** At an 8 KB budget LFU removes 21.9% of rounds on
-   τ-bench/GAIA and 4.0% on SWE-bench; LRU removes 3.0% and **0.0%**. Recency truncation and
+   τ-bench/GAIA and 4.0% on SWE-bench; LRU removes 3.0% and **0.0%**. [corrected 2026-09-23: the
+   corrected replay gives LFU 19.2% against LRU 15.8% on τ-bench/GAIA and 2.6% against 0.3% on
+   SWE-bench; see research/08_context_inheritance/README.md Part B, metric 3.] Recency truncation and
    last-N-round windows — what production harnesses actually ship — are the worst deployable family
    tested.
 2. **Spend the budget on prediction, not capacity.** With perfect foresight 8 KB already buys the
@@ -79,11 +83,15 @@ Four beliefs from the synthetic study did not survive.
 ## What is retired
 
 - **DAG-directed retention.** The task graph failed a third independent test: as a priority ordering
-  under budget it sits near the bottom of both policy tables (0.7% on SWE at 8 KB). It does not
+  under budget it sits near the bottom of both policy tables (0.7% on SWE at 8 KB). [corrected
+  2026-09-23: the first replay ran `graph-ordered` as plain recency; in the corrected replay
+  graph-ordered (previous task first) removes 21.9% on τ-bench/GAIA and 1.4% on SWE-bench at 8 KB —
+  research/08_context_inheritance/README.md Part B, metric 3.] It does not
   predict which bytes are wanted, reaching further does not convert to rounds, and it is useless as
   an ordering. The artefact worth shipping to an engine is a per-item reuse count, not the board.
 - **"Evict what is simplest to recover."** Keeping the costliest-to-recover items reaches 11.1% and
-  2.3% at 8 KB, below LFU, GDSF and S3-FIFO everywhere. Recovery cost correlates with size and the
+  2.3% at 8 KB, below LFU, GDSF and S3-FIFO everywhere. [corrected 2026-09-23: 10.0% and 1.3% in the
+  corrected replay, research/08_context_inheritance/README.md Part B, metric 3.] Recovery cost correlates with size and the
   large items are not the reused ones. It must also be **measured per item**: with a modelled cost,
   which is monotone in bytes, the policy silently becomes "keep the largest".
 - **lm-evaluation-harness as a source of agentic tasks.** It has none and cannot express one. Wrapped

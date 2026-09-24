@@ -9,16 +9,16 @@ design (files on disk, harness context, provider prefix cache, GPU KV) change? T
 
 | document | question it answers | status |
 |---|---|---|
-| `weekly_progress/091626/teammate_input_redundancy.md` | how many of the bytes teammates load are copies another teammate already holds, by workload; rerun at the 512k lead budget | committed (`d67ab7f`) |
-| `s15_integrated_harness/context_intervention_profile.md` | three lead-side fixes for eviction-driven round inflation: batch reads, outline demotion, stable prefix; plus the compaction ladder section | committed (`64d1b11`, `bdc4788`) |
-| `s15_integrated_harness/kv_splice_profile.md` | can the lead keep the KV cache across a micro-compaction edit by splicing and re-rotating RoPE, and does the stale suffix remember the evicted file | committed (`bdc4788`, with the 7B confirmation) |
-| `weekly_progress/091626/compaction_kv_reread_related_work.md` | has anyone named, measured or solved the two post-compaction costs, re-prefill and re-read | committed (`bdc4788`) |
-| `weekly_progress/091626/teammate_memory_management.md` | how a Claude Code teammate carries context across task-board tasks; the menu of compaction choices; where s15 sits | committed (`bdc4788`) |
-| `weekly_progress/091626/serving_memory_balancing.md` | how engines, clusters and providers ration HBM between concurrent requests, and what the harnesses can do about it | committed (`bdc4788`) |
-| `weekly_progress/091626/latency_breakdown.md`, `s15_integrated_harness/latency_profile.md` | what one agentic round costs end to end on three task classes (file Q&A, coding bench, math), team against solo: context preparation, prefill, decode, tool time, tokens, redundancy, rounds per task | committed (`bdc4788`); sections 4-5 added since |
-| `weekly_progress/091626/tool_cost_exposure.md`, `s15_integrated_harness/tool_cost_profile.md` | if the harness publishes its measured costs in the tool descriptions or the system prompt, does the model route around the expensive tools | untracked (2026-09-14) |
+| `research/02_input_redundancy/README.md` Part B (was `weekly_progress/091626/teammate_input_redundancy.md`) | how many of the bytes teammates load are copies another teammate already holds, by workload; rerun at the 512k lead budget | committed (`d67ab7f`) |
+| `research/03_context_interventions/README.md` (was `s15_integrated_harness/context_intervention_profile.md`) | three lead-side fixes for eviction-driven round inflation: batch reads, outline demotion, stable prefix; plus the compaction ladder section | committed (`64d1b11`, `bdc4788`) |
+| `research/04_kv_splice/README.md` (was `s15_integrated_harness/kv_splice_profile.md`) | can the lead keep the KV cache across a micro-compaction edit by splicing and re-rotating RoPE, and does the stale suffix remember the evicted file | committed (`bdc4788`, with the 7B confirmation) |
+| `research/related_work/compaction_kv_reread_related_work.md` | has anyone named, measured or solved the two post-compaction costs, re-prefill and re-read | committed (`bdc4788`) |
+| `research/related_work/teammate_memory_management.md` | how a Claude Code teammate carries context across task-board tasks; the menu of compaction choices; where s15 sits | committed (`bdc4788`) |
+| `research/related_work/serving_memory_balancing.md` | how engines, clusters and providers ration HBM between concurrent requests, and what the harnesses can do about it | committed (`bdc4788`) |
+| `research/05_latency_breakdown/README.md` Part A (was `weekly_progress/091626/latency_breakdown.md` and `s15_integrated_harness/latency_profile.md`) | what one agentic round costs end to end on three task classes (file Q&A, coding bench, math), team against solo: context preparation, prefill, decode, tool time, tokens, redundancy, rounds per task | committed (`bdc4788`); sections 4-5 added since |
+| `research/06_tool_cost/README.md` Part B (was `weekly_progress/091626/tool_cost_exposure.md` and `s15_integrated_harness/tool_cost_profile.md`) | if the harness publishes its measured costs in the tool descriptions or the system prompt, does the model route around the expensive tools | untracked (2026-09-14) |
 
-Slides for this week are not built; last week's `weekly_progress/090926/slides.html` is the template.
+Slides for this week are not built; last week's `weekly_progress/090926/slides.html` is the template. [cleanup note 2026-09-23: the deck was built afterwards, `weekly_progress/091626/slides.html`.]
 The latency results also exist as a page: https://claude.ai/code/artifact/3ce0a0d4-dc93-410d-bd45-13192db44281
 The tool-cost results likewise: https://claude.ai/code/artifact/6de7f01b-27ae-4151-911f-42293a286e98
 
@@ -201,7 +201,7 @@ of 12-15 percentage points.
 ## 4. Next steps
 
 1. **Take the memory extraction off the lead's critical path.** The breakdown is done
-   (`latency_breakdown.md`): `remember_after_turn` runs after every lead turn, including the short
+   (`research/05_latency_breakdown/README.md` Part A): `remember_after_turn` runs after every lead turn, including the short
    turns that team events wake, at 13-21 s each and 35% of all wall time, and 35-74% of those calls
    hit the 1,000-token thinking cap. Run it once per user request, or asynchronously outside the
    agent lock, or with a smaller budget, and re-measure the three workloads in team mode.
@@ -243,3 +243,6 @@ of 12-15 percentage points.
    `teammate_input_redundancy.md` (the compaction ladder, discarded by
    the 2026-09-11 reset) should be restored from `teammate_memory_management.md`; rerun the
    shell-denied intervention matrix after the provider's 5-hour cap resets; build this week's deck.
+   [cleanup note 2026-09-23: the tool-cost set was committed later (`e0e522b`) and now lives in
+   `research/06_tool_cost/`; the compaction ladder is kept once, in
+   `research/03_context_interventions/README.md`.]

@@ -164,7 +164,7 @@ python3 trace_stats.py <dir> [--validate | --stats] [--top N] [--json]
   (models, tool frequency, stop reasons, errors/retries, token totals).
 - `--stats`: stats only; malformed lines are skipped, not gated on.
 - `--validate`: the documented validation mode; in the current implementation it
-  renders the same sections as the default mode (see `trace_stats_review.md`,
+  renders the same sections as the default mode (see `../research/01_tracing/stress_run_outputs/trace_stats_review.md`,
   finding M1) — the exit-code contract is the same either way.
 - `--top N` (default `15`) truncates frequency tables; `--json` emits the
   machine-readable report.
@@ -214,15 +214,17 @@ See `examples/README.md` for what each demo shows.
 | `trace_stats.py` | Stdlib validator + cross-run aggregator for a directory of traces: `--validate`/`--stats`, `--top`, `--json`. |
 | `scripts/benchmark.py` | Best-of-N wall-time benchmark of `trace_stats.py` + `trace_view.py` over a traces directory (`[traces_dir]`, `--runs`). |
 | `scripts/trace_workflow_viz.py` | Renders one trace as a self-contained HTML workflow visualization (`trace`, `-o/--output`). |
+| `scripts/trace_task_dag.py` | Renders a trace's task-board dependency graph as HTML; also imported by the DAG analyzers under `../research/`. |
 | `examples/` | Three self-contained stdlib demos of the trace tools (`demo1` supports `--trace`, `--with-tree`); see `examples/README.md`. |
 | `tests/test_cli_smoke.py` | End-to-end CLI smoke tests for `trace_view.py`/`trace_stats.py`; runs under pytest or standalone. |
 | `run_tests.sh`, `Makefile` | Test entry points: `sh run_tests.sh` / `make test` (pytest), `make lint` (byte-compile), `make clean`. |
-| `traces/*.jsonl` | Sample recorded runs (one per CLI process). **Append-only data** — see Conventions. |
+| `traces/*.jsonl` | Sample recorded runs (one per CLI process): the four Qwen3.8-27B sessions of 2026-09-01/02. **Append-only data** — see Conventions. Profiling traces live under `../research/<topic>/data/`. |
 | `images/*.svg` | Localized system-architecture diagrams (`.en.svg`, `.ja.svg`, Chinese `system-architecture.svg`), each referenced by its own README. |
-| `README.md` / `README.zh.md` / `README.ja.md` | Trilingual lesson docs (synced at v15 per their footer markers). |
-| `ARCHITECTURE.md`, `DESIGN.md` | Deep-dive architecture overview; compaction design doc. |
-| `CHANGELOG.md` | Change history for this lesson directory. |
-| `hygiene_report.md`, `image_audit_report.md`, `link_report.md`, `link_audit_report.md`, `trace_stats_review.md`, `trace_view_changes.md` | Read-only audit/review notes and change notes produced during tooling work. |
+| `README.md` / `README.zh.md` / `README.ja.md` | Trilingual lesson docs. The English README is at v15; the Chinese and Japanese ones are upstream v14 and lack the tracing and Qwen/vLLM sections (see the footer markers). |
+| `ARCHITECTURE.md`, `DESIGN.md`, `GLOSSARY.md` | Deep-dive architecture overview; compaction design doc; glossary. |
+| `CHANGELOG.md` | Change history for this lesson directory (as of 2026-09-02). |
+| ↳ frozen fixtures | `ARCHITECTURE.md`, `DESIGN.md`, `GLOSSARY.md` and `CHANGELOG.md` are also the reading material of the profiling workloads in `../research/`, which quote them by path and read fixed line ranges. Keep them byte-identical. |
+| `../research/01_tracing/stress_run_outputs/` | The audit/review notes produced during the 2026-09-02 tooling session (`hygiene_report.md`, `image_audit_report.md`, `link_report.md`, `trace_stats_review.md`, `trace_view_changes.md`, `demo_verification.md`), moved out of this folder in the 2026-09-23 cleanup; `link_audit_report.md`, a duplicate of `link_report.md`, was deleted. |
 
 ## Conventions
 

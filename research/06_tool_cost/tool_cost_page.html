@@ -1,0 +1,682 @@
+<title>Telling the Agent What It Costs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --ground:   #F5F7F9;
+    --surface:  #FFFFFF;
+    --sunk:     #EDF0F4;
+    --ink:      #13181F;
+    --ink-soft: #566070;
+    --ink-faint:#818B99;
+    --rule:     #DDE3EA;
+    --rule-soft:#E9EDF2;
+    --accent:   #1B4D8F;
+    --effect:   #0E7C66;
+    --flat:     #6E7684;
+    --lever:    #8F5414;
+    --band:     #E2E7ED;
+    --shadow:   0 1px 2px rgba(19, 24, 31, .05);
+
+    --display: "Spectral", "Iowan Old Style", Georgia, serif;
+    --body: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:   #0F1319;
+      --surface:  #161C24;
+      --sunk:     #1B222B;
+      --ink:      #E7ECF3;
+      --ink-soft: #A3ADBA;
+      --ink-faint:#7C8694;
+      --rule:     #28303B;
+      --rule-soft:#222933;
+      --accent:   #7FADEB;
+      --effect:   #45BFA3;
+      --flat:     #98A1AE;
+      --lever:    #DDA054;
+      --band:     #232B35;
+      --shadow:   0 1px 2px rgba(0, 0, 0, .35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:   #0F1319;
+    --surface:  #161C24;
+    --sunk:     #1B222B;
+    --ink:      #E7ECF3;
+    --ink-soft: #A3ADBA;
+    --ink-faint:#7C8694;
+    --rule:     #28303B;
+    --rule-soft:#222933;
+    --accent:   #7FADEB;
+    --effect:   #45BFA3;
+    --flat:     #98A1AE;
+    --lever:    #DDA054;
+    --band:     #232B35;
+    --shadow:   0 1px 2px rgba(0, 0, 0, .35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding-inline: 24px;
+    padding-block: 0 88px;
+  }
+  .col { max-width: 68ch; }
+
+  /* ---------- masthead ---------- */
+  header.mast {
+    border-bottom: 1px solid var(--rule);
+    padding-block: 56px 32px;
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 18px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 5.2vw, 3.3rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0 0 20px;
+    text-wrap: balance;
+    max-width: 18ch;
+  }
+  .standfirst {
+    font-family: var(--display);
+    font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 58ch;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    margin-top: 28px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+  .meta b { color: var(--ink-soft); font-weight: 500; }
+
+  /* ---------- structure ---------- */
+  section { margin-block: 56px; }
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.62rem;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: .005em;
+    margin: 34px 0 10px;
+  }
+  p { margin: 0 0 16px; }
+  a { color: var(--accent); }
+  strong { font-weight: 600; }
+  code, .num {
+    font-family: var(--mono);
+    font-size: .9em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stage-label {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+  .stage-label span:first-child {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ---------- verdict strips ---------- */
+  .verdicts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-block: 32px;
+  }
+  .verdict {
+    background: var(--surface);
+    padding: 20px 22px 22px;
+    border-left: 3px solid var(--edge, var(--flat));
+  }
+  .verdict.yes  { --edge: var(--effect); }
+  .verdict.no   { --edge: var(--flat); }
+  .verdict.lever{ --edge: var(--lever); }
+  .verdict .k {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 10px;
+  }
+  .verdict .v {
+    font-family: var(--display);
+    font-size: 1.72rem;
+    font-weight: 600;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    margin: 0 0 8px;
+    color: var(--edge);
+  }
+  .verdict p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
+
+  /* ---------- figures ---------- */
+  figure {
+    margin: 32px 0;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+  }
+  .figbody { padding: 24px 20px 8px; overflow-x: auto; }
+  figure svg { display: block; width: 100%; height: auto; min-width: 560px; }
+  figcaption {
+    padding: 12px 22px 18px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--rule-soft);
+  }
+  .s-axis  { stroke: var(--rule); stroke-width: 1; }
+  .s-grid  { stroke: var(--rule-soft); stroke-width: 1; }
+  .s-chance{ stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 4 4; }
+  .t-tick  { fill: var(--ink-faint); font-family: var(--mono); font-size: 11.5px; }
+  .t-row   { fill: var(--ink-soft);  font-family: var(--body); font-size: 13px; }
+  .t-group { fill: var(--ink); font-family: var(--body); font-size: 13px; font-weight: 600; }
+  .t-val   { fill: var(--surface); font-family: var(--mono); font-size: 12.5px; font-weight: 500; }
+  .t-note  { fill: var(--ink-faint); font-family: var(--mono); font-size: 11px; }
+  .b-flat   { fill: var(--flat); }
+  .b-effect { fill: var(--effect); }
+  .b-lever  { fill: var(--lever); }
+  .b-band   { fill: var(--band); }
+
+  /* ---------- tables ---------- */
+  .tablewrap { overflow-x: auto; margin: 26px 0; border: 1px solid var(--rule); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 540px; font-size: 14px; }
+  caption {
+    caption-side: top;
+    text-align: left;
+    padding: 16px 20px 0;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  th, td { padding: 9px 20px; text-align: left; }
+  thead th {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: .05em;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule);
+    padding-top: 14px;
+  }
+  tbody tr + tr td { border-top: 1px solid var(--rule-soft); }
+  td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+  tbody tr:hover td { background: var(--sunk); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+    padding: 1px 7px;
+    border: 1px solid currentColor;
+    color: var(--flat);
+  }
+  .tag.yes { color: var(--effect); }
+  .tag.no  { color: var(--flat); }
+
+  /* ---------- findings ---------- */
+  ol.findings { list-style: none; counter-reset: f; padding: 0; margin: 0; }
+  ol.findings > li {
+    counter-increment: f;
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 16px;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule-soft);
+  }
+  ol.findings > li::before {
+    content: counter(f, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    padding-top: 4px;
+  }
+  ol.findings h3 { margin: 0 0 6px; }
+  ol.findings p { margin: 0; color: var(--ink-soft); font-size: 15px; }
+
+  .pull {
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 20px;
+    margin: 30px 0;
+    font-family: var(--display);
+    font-size: 1.18rem;
+    line-height: 1.5;
+    color: var(--ink);
+    max-width: 60ch;
+  }
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 22px;
+    margin-top: 64px;
+    font-size: 13.5px;
+    color: var(--ink-faint);
+  }
+  footer code { color: var(--ink-soft); }
+  @media (max-width: 620px) {
+    .verdict .v { font-size: 1.5rem; }
+    th, td { padding-inline: 14px; }
+  }
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">s15 integrated harness &middot; profiling note &middot; 14 September 2026</p>
+  <h1>Telling the Agent What It Costs</h1>
+  <p class="standfirst">A tool description says what a tool does and never what it costs. If the
+  harness published its own measured latencies &mdash; or the hardware behind them &mdash; would the
+  model route around the expensive tools?</p>
+  <div class="meta">
+    <span><b>model</b> glm-5.3-flash (z.ai)</span>
+    <span><b>stage 1</b> 893 single-shot trials</span>
+    <span><b>stage 2</b> 80 multi-round runs</span>
+    <span><b>stage 3</b> 24 full s15 sessions</span>
+  </div>
+</header>
+
+<section>
+  <div class="col">
+    <h2>The answer depends entirely on whether the tools are substitutes</h2>
+    <p>Asked in its original form &mdash; if <code>read_file</code> is advertised at 5&nbsp;s, does the
+    model still generate <code>read_file</code> tool_use? &mdash; the answer is <strong>yes, at exactly
+    the same rate</strong>. But the same model, given two tools it is told are interchangeable, follows
+    the advertised cost almost perfectly. Both facts come from the same prompts and the same
+    afternoon.</p>
+  </div>
+
+  <div class="verdicts">
+    <div class="verdict yes">
+      <p class="k">Interchangeable tools</p>
+      <p class="v">53% &rarr; 100%</p>
+      <p>Advertising a cost decides the choice, overriding a 91% preference for one of the two names.
+      <span class="num">p&nbsp;=&nbsp;7e-06</span></p>
+    </div>
+    <div class="verdict no">
+      <p class="k">A pool of different tools</p>
+      <p class="v">44% &rarr; 45%</p>
+      <p>Annotating <code>read_file</code> from 0.05&nbsp;s to 60&nbsp;s changes nothing over 160
+      trials. <span class="num">p&nbsp;=&nbsp;1.000</span></p>
+    </div>
+    <div class="verdict lever">
+      <p class="k">One sentence of policy</p>
+      <p class="v">31% &rarr; 9%</p>
+      <p>The same cost table plus &ldquo;prefer the cheapest tool that still works&rdquo;.
+      <span class="num">p&nbsp;=&nbsp;0.0098</span></p>
+    </div>
+  </div>
+
+  <figure>
+    <div class="figbody">
+      <svg viewBox="0 0 900 312" role="img" aria-label="Share of trials that called the cheaper tool, in two regimes">
+        <rect class="b-band" x="452" y="176" width="144" height="86"></rect>
+        <text class="t-note" x="524" y="170" text-anchor="middle">&plusmn;12 pts noise</text>
+
+        <line class="s-grid" x1="260" y1="30" x2="260" y2="268"></line>
+        <line class="s-grid" x1="410" y1="30" x2="410" y2="268"></line>
+        <line class="s-grid" x1="560" y1="30" x2="560" y2="268"></line>
+        <line class="s-grid" x1="710" y1="30" x2="710" y2="268"></line>
+        <line class="s-grid" x1="860" y1="30" x2="860" y2="268"></line>
+
+        <text class="t-group" x="0" y="26">Two tools described as interchangeable</text>
+        <rect class="b-flat"   x="260" y="42"  width="318" height="34"></rect>
+        <text class="t-row"    x="248" y="64" text-anchor="end">no cost shown</text>
+        <text class="t-val"    x="566" y="64" text-anchor="end">53%</text>
+        <rect class="b-effect" x="260" y="84" width="600" height="34"></rect>
+        <text class="t-row"    x="248" y="106" text-anchor="end">cost advertised</text>
+        <text class="t-val"    x="848" y="106" text-anchor="end">100%</text>
+
+        <text class="t-group" x="0" y="162">A pool of tools that do different things</text>
+        <rect class="b-flat" x="260" y="178" width="264" height="34"></rect>
+        <text class="t-row"  x="248" y="200" text-anchor="end">no cost shown</text>
+        <text class="t-val"  x="512" y="200" text-anchor="end">44%</text>
+        <rect class="b-flat" x="260" y="220" width="270" height="34"></rect>
+        <text class="t-row"  x="248" y="242" text-anchor="end">cost advertised</text>
+        <text class="t-val"  x="518" y="242" text-anchor="end">45%</text>
+
+        <line class="s-axis" x1="260" y1="268" x2="860" y2="268"></line>
+        <text class="t-tick" x="260" y="288" text-anchor="middle">0</text>
+        <text class="t-tick" x="410" y="288" text-anchor="middle">25</text>
+        <text class="t-tick" x="560" y="288" text-anchor="middle">50</text>
+        <text class="t-tick" x="710" y="288" text-anchor="middle">75</text>
+        <text class="t-tick" x="860" y="288" text-anchor="middle">100</text>
+        <text class="t-tick" x="560" y="306" text-anchor="middle">share of first moves that took the cheaper tool (%)</text>
+      </svg>
+    </div>
+    <figcaption>Each bar is 30&ndash;32 trials with the expensive label and the list order
+    counterbalanced. The shaded band is the noise floor: two samples of the <em>identical</em> prompt,
+    run at different times, differed by 12 percentage points. The annotated bar in the lower pair sits
+    inside it.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="col">
+    <p class="stage-label"><span>Stage 1</span><span>single-shot probes, 893 trials</span></p>
+    <h2>Between substitutes, the cost decides &mdash; in any wording, from anywhere in the prompt</h2>
+    <p>Two tools, <code>read_via_alpha</code> and <code>read_via_beta</code>, described as returning
+    the same bytes for the same path. Unannotated, the model picks <code>alpha</code> 91% of the time;
+    it is simply biased toward that name. Annotated, it picks <code>alpha</code> exactly 50% of the
+    time &mdash; the rate counterbalancing produces when the choice is made purely on cost. The prior
+    is not nudged, it is replaced.</p>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Probe A &middot; chose the cheaper channel</caption>
+      <thead>
+        <tr><th>How the cost is worded</th><th>Where it is shown</th><th class="n">chose cheap</th><th class="n">chose <code>alpha</code></th><th class="n">mentioned cost</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>nothing shown <span class="tag no">baseline</span></td><td>&mdash;</td><td class="n">53%</td><td class="n">91%</td><td class="n">0%</td></tr>
+        <tr><td>stated seconds &mdash; 0.04&nbsp;s vs 5.00&nbsp;s</td><td>tool description</td><td class="n">100%</td><td class="n">50%</td><td class="n">100%</td></tr>
+        <tr><td>stated seconds</td><td>system-prompt table</td><td class="n">100%</td><td class="n">50%</td><td class="n">100%</td></tr>
+        <tr><td>hardware only &mdash; 128&nbsp;GiB in HBM3 at 3.35&nbsp;TB/s vs staged over PCIe&nbsp;4.0&nbsp;x16 at 25&nbsp;GB/s</td><td>tool description</td><td class="n">97%</td><td class="n">53%</td><td class="n">75%</td></tr>
+        <tr><td>hardware only</td><td>system-prompt table</td><td class="n">100%</td><td class="n">50%</td><td class="n">100%</td></tr>
+        <tr><td>the words &ldquo;fast&rdquo; and &ldquo;slow&rdquo;</td><td>tool description</td><td class="n">100%</td><td class="n">50%</td><td class="n">100%</td></tr>
+        <tr><td>the words &ldquo;fast&rdquo; and &ldquo;slow&rdquo;</td><td>system-prompt table</td><td class="n">100%</td><td class="n">50%</td><td class="n">100%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <p>The hardware wording never states a latency. It gives a working-set size and two bandwidths, and
+    the model does the division: <em>&ldquo;Alpha is faster (HBM3 resident, 3.35&nbsp;TB/s) vs beta
+    (PCIe staging).&rdquo;</em> Where the information sits &mdash; tool description, system prompt, or
+    both &mdash; makes no measurable difference, because information is not what is scarce.</p>
+  </div>
+
+  <figure>
+    <div class="figbody">
+      <svg viewBox="0 0 900 268" role="img" aria-label="Share choosing the cheap tool against the advertised cost ratio">
+        <line class="s-grid" x1="80" y1="40"  x2="860" y2="40"></line>
+        <line class="s-grid" x1="80" y1="120" x2="860" y2="120"></line>
+        <line class="s-axis" x1="80" y1="200" x2="860" y2="200"></line>
+        <line class="s-chance" x1="80" y1="120" x2="860" y2="120"></line>
+        <text class="t-tick" x="68" y="44"  text-anchor="end">100%</text>
+        <text class="t-tick" x="68" y="124" text-anchor="end">50%</text>
+        <text class="t-tick" x="68" y="204" text-anchor="end">0%</text>
+        <text class="t-note" x="860" y="112" text-anchor="end">chance</text>
+
+        <polyline points="80,124.8 216,40 353,40 489,40 641,40 836,40"
+                  fill="none" stroke="var(--effect)" stroke-width="2.5"></polyline>
+        <circle class="b-flat"   cx="80"  cy="124.8" r="6"></circle>
+        <circle class="b-effect" cx="216" cy="40" r="6"></circle>
+        <circle class="b-effect" cx="353" cy="40" r="6"></circle>
+        <circle class="b-effect" cx="489" cy="40" r="6"></circle>
+        <circle class="b-effect" cx="641" cy="40" r="6"></circle>
+        <circle class="b-effect" cx="836" cy="40" r="6"></circle>
+
+        <text class="t-tick" x="80"  y="222" text-anchor="middle">tie</text>
+        <text class="t-tick" x="216" y="222" text-anchor="middle">5&times;</text>
+        <text class="t-tick" x="353" y="222" text-anchor="middle">25&times;</text>
+        <text class="t-tick" x="489" y="222" text-anchor="middle">125&times;</text>
+        <text class="t-tick" x="641" y="222" text-anchor="middle">750&times;</text>
+        <text class="t-tick" x="836" y="222" text-anchor="middle">7500&times;</text>
+        <text class="t-tick" x="80"  y="240" text-anchor="middle">0.04 s</text>
+        <text class="t-tick" x="216" y="240" text-anchor="middle">0.2 s</text>
+        <text class="t-tick" x="353" y="240" text-anchor="middle">1 s</text>
+        <text class="t-tick" x="489" y="240" text-anchor="middle">5 s</text>
+        <text class="t-tick" x="641" y="240" text-anchor="middle">30 s</text>
+        <text class="t-tick" x="836" y="240" text-anchor="middle">300 s</text>
+        <text class="t-tick" x="470" y="262" text-anchor="middle">advertised cost of the expensive channel, against 0.04 s</text>
+      </svg>
+    </div>
+    <figcaption>There is no dose&ndash;response. A genuine tie returns the model to chance, which
+    confirms the outcome measures cost and nothing else; every non-tie is saturated, and a 5&times;
+    gap of 0.16&nbsp;s is indistinguishable from a 7500&times; gap of 300&nbsp;s. This is a tie-break
+    rule, not a cost&ndash;benefit calculation: published numbers need to be ordered, not accurate.
+    </figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="col">
+    <h2>Put the same numbers in a realistic pool and the model stops reading them</h2>
+    <p>Probe C keeps the cost table and swaps the two twin channels for tools that answer different
+    questions: <code>read_file</code>, <code>grep</code>, <code>glob</code>, <code>bash</code> and a
+    <code>recall_summary</code> that returns a deliberately vague cached blurb. The question is a real
+    one about a real file.</p>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Probe C &middot; first move is <code>read_file</code></caption>
+      <thead>
+        <tr><th>Annotation</th><th class="n">read_file first</th><th class="n">p vs baseline</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>none <span class="tag no">baseline</span></td><td class="n">44%</td><td class="n">&mdash;</td></tr>
+        <tr><td><code>read_file</code> at 0.05&nbsp;s</td><td class="n">53%</td><td class="n">0.617</td></tr>
+        <tr><td><code>read_file</code> at 5&nbsp;s</td><td class="n">44%</td><td class="n">1.000</td></tr>
+        <tr><td><code>read_file</code> at 60&nbsp;s</td><td class="n">34%</td><td class="n">0.609</td></tr>
+        <tr><td><code>read_file</code> at 5&nbsp;s, hardware wording</td><td class="n">59%</td><td class="n">0.317</td></tr>
+        <tr><td><code>read_file</code> at 5&nbsp;s, the word &ldquo;slow&rdquo;</td><td class="n">34%</td><td class="n">0.609</td></tr>
+        <tr><td>placebo: 5&nbsp;s on <code>grep</code> instead</td><td class="n">62%</td><td class="n">0.210</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <p>Pooled over all five <code>read_file</code> annotations: 45% of 160 trials against 44% of 32
+    unannotated trials. A sixty-second advertised latency on the tool the task obviously needs moves
+    its selection rate by less than the spread between two samples of the same prompt.</p>
+    <p>The reasoning traces say why, and the contrast is total. In probe&nbsp;A the model mentioned the
+    cost in <strong>75&ndash;100%</strong> of trials. In probe&nbsp;C it mentions it in
+    <strong>0&ndash;3%</strong>. It does not weigh the cost and decide to pay it. It never raises the
+    subject.</p>
+    <p class="pull">A trace from the 60-second cell, in full: &ldquo;The user wants to know what the
+    glossary says about &lsquo;compaction&rsquo;. Let me read that file.&rdquo;</p>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <h2>What closes the gap is an objective, not information</h2>
+    <p>Probe D holds the pool, the question and the cost table fixed and adds one sentence of policy,
+    and in the last cell a hard budget.</p>
+  </div>
+
+  <figure>
+    <div class="figbody">
+      <svg viewBox="0 0 900 300" role="img" aria-label="Share of first moves that were read_file, by what the prompt says about cost">
+        <line class="s-grid" x1="330" y1="16" x2="330" y2="246"></line>
+        <line class="s-grid" x1="463" y1="16" x2="463" y2="246"></line>
+        <line class="s-grid" x1="596" y1="16" x2="596" y2="246"></line>
+        <line class="s-grid" x1="729" y1="16" x2="729" y2="246"></line>
+        <line class="s-grid" x1="862" y1="16" x2="862" y2="246"></line>
+
+        <rect class="b-flat"  x="330" y="24"  width="412" height="32"></rect>
+        <text class="t-row"   x="318" y="45" text-anchor="end">nothing said about cost</text>
+        <text class="t-val"   x="730" y="45" text-anchor="end">31%</text>
+
+        <rect class="b-flat"  x="330" y="70"  width="426" height="32"></rect>
+        <text class="t-row"   x="318" y="91" text-anchor="end">cost table only</text>
+        <text class="t-val"   x="744" y="91" text-anchor="end">32%</text>
+
+        <rect class="b-lever" x="330" y="116" width="226" height="32"></rect>
+        <text class="t-row"   x="318" y="137" text-anchor="end">policy sentence only</text>
+        <text class="t-val"   x="544" y="137" text-anchor="end">17%</text>
+
+        <rect class="b-lever" x="330" y="162" width="120" height="32"></rect>
+        <text class="t-row"   x="318" y="183" text-anchor="end">cost table + policy</text>
+        <text class="t-val"   x="438" y="183" text-anchor="end">9%</text>
+
+        <rect class="b-lever" x="330" y="208" width="120" height="32"></rect>
+        <text class="t-row"   x="318" y="229" text-anchor="end">+ a hard latency budget</text>
+        <text class="t-val"   x="438" y="229" text-anchor="end">9%</text>
+
+        <line class="s-axis" x1="330" y1="246" x2="862" y2="246"></line>
+        <text class="t-tick" x="330" y="266" text-anchor="middle">0</text>
+        <text class="t-tick" x="463" y="266" text-anchor="middle">10</text>
+        <text class="t-tick" x="596" y="266" text-anchor="middle">20</text>
+        <text class="t-tick" x="729" y="266" text-anchor="middle">30</text>
+        <text class="t-tick" x="862" y="266" text-anchor="middle">40</text>
+        <text class="t-tick" x="596" y="288" text-anchor="middle">first move is read_file (%)</text>
+      </svg>
+    </div>
+    <figcaption>The policy sentence is &ldquo;Tool calls are not free. Prefer the cheapest tool that
+    can still answer the question correctly.&rdquo; The budget line changes the choice no further, but
+    it changes the reasoning: mentions of cost go from 16% to 69%. The budget makes the model reason
+    about the number; the policy makes it act.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="col">
+    <p class="stage-label"><span>Stages 2 and 3</span><span>real tool execution, then the real harness</span></p>
+    <h2>Neither stage found room for the intervention to work</h2>
+    <p>Stage 2 runs a real loop over repository files in a 2&times;2 design that separates an
+    <em>advertised</em> 5-second cost from a <em>really injected</em> 5-second sleep. The enforce arm is
+    the negative control: a model cannot perceive wall-clock time inside a request, so whatever
+    separates it from the plain arm is noise.</p>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Stage 2 &middot; 80 multi-round runs, four gradeable questions</caption>
+      <thead>
+        <tr><th>Arm</th><th>advertised</th><th>really slow</th><th class="n">used read_file</th><th class="n">rounds</th><th class="n">median KB read</th><th class="n">correct</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>plain</td><td><span class="tag no">no</span></td><td><span class="tag no">no</span></td><td class="n">90%</td><td class="n">2.8</td><td class="n">1.5</td><td class="n">95%</td></tr>
+        <tr><td>advertise</td><td><span class="tag yes">yes</span></td><td><span class="tag no">no</span></td><td class="n">85%</td><td class="n">2.7</td><td class="n">1.2</td><td class="n">100%</td></tr>
+        <tr><td>enforce <span class="tag no">control</span></td><td><span class="tag no">no</span></td><td><span class="tag yes">yes</span></td><td class="n">75%</td><td class="n">2.6</td><td class="n">1.4</td><td class="n">95%</td></tr>
+        <tr><td>both</td><td><span class="tag yes">yes</span></td><td><span class="tag yes">yes</span></td><td class="n">75%</td><td class="n">2.8</td><td class="n">1.4</td><td class="n">100%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <p>Told it costs 5&nbsp;s, the agent used <code>read_file</code> in 32 of 40 runs; not told, 33 of
+    40 (<span class="num">p&nbsp;=&nbsp;1.000</span>). The negative control is 15 points away from
+    plain, which is larger than any annotation effect in the table &mdash; that is the scale at which
+    this outcome can be read at all.</p>
+    <p>Stage 3 puts the annotation inside the real s15 harness, where the lead keeps its full pool and
+    can run <code>grep</code> through <code>bash</code> if it wants to. Two workloads failed in
+    opposite directions.</p>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Stage 3 &middot; 24 full s15 sessions, four per cell</caption>
+      <thead>
+        <tr><th>Workload</th><th>Arm</th><th class="n">read_file calls</th><th class="n">bash calls</th><th class="n">KB read</th><th class="n">rounds</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>asks for specific values</td><td>plain</td><td class="n">0.00</td><td class="n">2.00</td><td class="n">0.0</td><td class="n">3.5</td></tr>
+        <tr><td>asks for specific values</td><td>advertise</td><td class="n">0.00</td><td class="n">1.50</td><td class="n">0.0</td><td class="n">3.0</td></tr>
+        <tr><td>asks for specific values</td><td>advertise + policy</td><td class="n">0.00</td><td class="n">2.00</td><td class="n">0.0</td><td class="n">3.2</td></tr>
+        <tr><td>asks what three entries say</td><td>plain</td><td class="n">1.00</td><td class="n">0.25</td><td class="n">12.5</td><td class="n">3.2</td></tr>
+        <tr><td>asks what three entries say</td><td>advertise</td><td class="n">1.00</td><td class="n">0.25</td><td class="n">12.5</td><td class="n">3.2</td></tr>
+        <tr><td>asks what three entries say</td><td>advertise + policy</td><td class="n">1.00</td><td class="n">0.25</td><td class="n">12.5</td><td class="n">3.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <p>On the value-lookup workload the lead answered with <code>bash</code> and a grep-shaped command
+    in 12 runs out of 12, in every arm, and never called <code>read_file</code> once: the unannotated
+    harness was already on the cheap route, so there was nothing to remove. On the comprehension
+    workload it called <code>read_file</code> and pulled all 12.5&nbsp;KB in 12 runs out of 12, in
+    every arm &mdash; including the one told the call costs 5&nbsp;s and instructed to prefer the
+    cheapest tool that still works. That is correct: no set of grep matches answers &ldquo;explain what
+    this entry says&rdquo;.</p>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <h2>What follows</h2>
+  </div>
+  <ol class="findings">
+    <li>
+      <h3>Publishing a cost table is not a scheduling mechanism</h3>
+      <p>Real tool pools are pools of tools that do different things. <code>read_file</code>,
+      <code>grep</code> and <code>bash</code> are not substitutes from the model's point of view: they
+      answer different questions, and it picks on fit and stops.</p>
+    </li>
+    <li>
+      <h3>The information is cheap; the objective is what is scarce</h3>
+      <p>Annotating the real s15 pool costs 910 characters of tool definitions &mdash; about 230 tokens,
+      8.7&nbsp;ms of prefill at the measured 0.038&nbsp;ms per uncached token, and it sits in the stable
+      prefix, so it is cached after the first call. The policy sentence costs 95 characters and is the
+      part that moves behaviour.</p>
+    </li>
+    <li>
+      <h3>The intervention costs most when it is used, and on the output side</h3>
+      <p>When the model actually uses the annotation it narrates the comparison: replies grow from 53
+      to 71 output tokens for stated seconds, and to 84 when it has to divide the hardware numbers
+      itself &mdash; 0.30 to 0.53&nbsp;s of extra decode at the measured 17.4&nbsp;ms per output token.
+      When it ignores the annotation, reply length barely moves.</p>
+    </li>
+    <li>
+      <h3>Cost-aware routing stays in the harness &mdash; with one exception</h3>
+      <p>The tier-boundary costs this project has priced cannot be delegated to the model by writing
+      them into the prompt. But model-side exposure does work between substitutable tiers, and a hot
+      and a cold route to the same bytes is exactly that shape. If a tiered-memory prototype exposes
+      both routes, it should publish ordered costs and state the objective alongside them.</p>
+    </li>
+  </ol>
+</section>
+
+<footer>
+  <p>Report <code>s15_integrated_harness/tool_cost_profile.md</code> &middot; weekly note
+  <code>weekly_progress/091626/tool_cost_exposure.md</code> &middot; tables
+  <code>traces/tool_cost/tool_cost_tables.md</code>. Percentages carry 95% Wilson intervals;
+  <code>p</code> is a two-sided Fisher exact test. Stage 1 lost 3.8% of trials to provider rate
+  limiting and re-ran the missing cell/rep pairs, so every cell holds 30&ndash;32 trials. One model,
+  one provider: the probe C null is the claim most worth re-running elsewhere.</p>
+</footer>
+
+</div>
