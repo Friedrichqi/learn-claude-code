@@ -221,6 +221,9 @@ def main() -> int:
     p.add_argument("--print-prompts", action="store_true")
     p.add_argument("--score-only", action="store_true")
     p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--driver-arg", action="append", default=[],
+                   help="extra argument passed verbatim to profile_run.py (repeatable), e.g. "
+                        "--driver-arg=--prewarm-evict=lfu")
     args = p.parse_args()
 
     wids = args.only.split(",")
@@ -268,6 +271,7 @@ def main() -> int:
                "Confirmed, proceed: create the task nodes and spawn the teammates now.",
                "--prewarm", arm,
                "--prewarm-dump", str(trace_dir / f"{label}.prewarm.json")]
+        cmd += list(args.driver_arg)
         if args.dry_run:
             print(" ".join(cmd[:14]), "...")
             continue

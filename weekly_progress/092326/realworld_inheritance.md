@@ -19,13 +19,15 @@ three of its conclusions change:
    rising to 38.2% with every earlier task. The difference is mutation: a source file is *edited*
    between reads, a database record is not. **7.6–14.3%** of a SWE successor's bytes are *stale* —
    the same span, different content — against **0.2–1.8%** on τ-bench.
-3. **The retention policy matters far more than the budget, and everyone is using the wrong one.**
-   At an **8 KB** budget, LFU reaches **99% (SWE)** and **57% (τ-bench/GAIA)** of what an unlimited
-   budget buys. LRU — the basis of what every production harness ships — reaches **0%** and **8%**.
-   On SWE-bench LRU at 8 KB removes *no* rounds at all where LFU removes 93% of the reachable ones.
+3. **Frequency-aware eviction beats recency, but only modestly** *(corrected 2026-09-23, see metric
+   3)*. At an **8 KB** budget GDSF and LFU leave **20.8% and 19.2%** of τ-bench/GAIA rounds reducible
+   against LRU's **15.8%**, and **2.9% and 2.6%** of SWE-bench rounds against **0.3%**; with foresight
+   8 KB would reach 38.0% and 4.2%. The first cut reported LFU at 99% / 57% of the unlimited value and
+   LRU at 0% / 8% — both artefacts of a replay that let LFU count future reads and never refreshed LRU.
 
-The one conclusion that survives intact is the negative one: **the task graph is worthless as a
-retention ordering.** `graph-ordered` lands near the bottom of both policy tables.
+The negative graph result does not rest on this table: the replay has no task graph, and its
+`graph-ordered` row (the previous task first, in an arbitrary order) actually leads τ-bench at 8 KB.
+The graph is retired on the harness evidence — `dag_kv_reuse.md` and `inheritance_depth.md` F2.
 
 ## 1. The questions
 
@@ -201,30 +203,51 @@ Removable rounds, cross-task, by policy and budget. Ceilings are marked and are 
 
 | policy | τ+GAIA @8 KB | @32 KB | unlimited | SWE @8 KB | @32 KB | unlimited |
 |---|---|---|---|---|---|---|
-| **LFU** | **21.9%** | 35.6% | 38.2% | **4.0%** | 4.3% | 4.3% |
-| **GDSF** | 17.2% | 29.5% | 38.2% | 3.5% | 4.0% | 4.3% |
-| **S3-FIFO** | 15.8% | 25.4% | 38.2% | 3.9% | 4.3% | 4.3% |
-| keep costliest-to-recover | 11.1% | 17.1% | 38.2% | 2.3% | 2.4% | 4.3% |
-| graph-ordered | 7.8% | 11.3% | 38.2% | 0.7% | 1.1% | 4.3% |
-| **LRU** | **3.0%** | 4.8% | 38.2% | **0.0%** | 0.5% | 4.3% |
-| FIFO / recency truncation | 3.0% | 4.8% | 38.2% | 0.0% | 0.5% | 4.3% |
+| graph-ordered (previous task first) | **21.9%** | 25.8% | 38.2% | 1.4% | 2.3% | 4.3% |
+| **GDSF** | 20.8% | **26.3%** | 38.2% | 2.9% | 3.8% | 4.3% |
+| **LFU** | 19.2% | 23.1% | 38.2% | 2.6% | 3.1% | 4.3% |
+| SIEVE | 18.1% | 25.5% | 38.2% | 2.0% | 3.0% | 4.3% |
+| **LRU** | 15.8% | 22.8% | 38.2% | 0.3% | 1.4% | 4.3% |
+| sliding window (last N rounds) | 15.6% | 22.8% | 38.2% | 0.3% | 1.4% | 4.3% |
+| FIFO / recency truncation | 14.7% | 22.2% | 38.2% | 0.3% | 1.1% | 4.3% |
+| random eviction (control) | 13.6% | 19.2% | 38.2% | 0.3% | 1.3% | 4.3% |
+| smallest spans first | 13.1% | 21.2% | 38.2% | **3.5%** | **3.9%** | 4.3% |
+| S3-FIFO | 10.7% | 22.7% | 38.2% | 2.0% | 2.2% | 4.3% |
+| keep costliest-to-recover | 10.0% | 14.7% | 38.2% | 1.3% | 1.5% | 4.3% |
+| largest spans first | 6.0% | 3.1% | 38.2% | 0.2% | 0.2% | 4.3% |
 | Belady / MIN *[ceiling]* | 38.0% | 38.2% | 38.2% | 4.2% | 4.3% | 4.3% |
 | byte-density oracle *[ceiling]* | 38.0% | 38.2% | 38.2% | 4.2% | 4.3% | 4.3% |
+
+**Correction (2026-09-23).** The first version of this table was wrong for every online policy, in
+LFU's favour. `replay_sweep.stage_cross` counted each item's reuse frequency over the *whole group*,
+the successor and every later task included, so LFU and GDSF were in effect told what the successor
+would read; and `evict_policies` offered each item to the online caches once, in first-read order, so
+a re-read never refreshed LRU — it ran as FIFO and matched the random control. It also set no tier on
+the replay, so `graph-ordered` ran as plain recency rather than previous-task-first. The table above
+replays every earlier read, in order, through each cache, with counts of reads seen so far only
+(`retained(..., accesses=...)`); offline rankings and ceilings are unchanged. The old headline —
+LFU 21.9% against LRU 3.0% at 8 KB on τ-bench/GAIA, 4.0% against 0.0% on SWE-bench — is 19.2% against
+15.8%, and 2.6% against 0.3%. Full grids: `traces/realworld/crossgrid_{hal,open_swe}.md`.
 
 **The budget is not the binding constraint.** With perfect foresight, **8 KB already buys the entire
 unlimited-budget value** in both corpora (38.0 of 38.2; 4.2 of 4.3). Every gap in the table is a
 prediction failure, not a capacity failure.
 
-**Frequency beats recency, by a lot.** At 8 KB LFU reaches 57% (τ/GAIA) and 93% (SWE) of the
-reachable ceiling; LRU reaches 8% and **0%**. On SWE-bench LRU at 8 KB removes *no rounds at all*.
+**Frequency beats recency, modestly.** At 8 KB GDSF and LFU reach 55% and 51% of the reachable
+ceiling on τ/GAIA, LRU 42%, and random eviction already 36%; at 32 KB LFU and LRU tie (23.1% and
+22.8%). On SWE-bench the gap is larger in ratio — 2.6–2.9% against 0.3% — but the whole ceiling is 4.2%,
+and plain *smallest spans first* does best there (3.5%).
 This matters because recency truncation and last-N-rounds windows are what production harnesses
 actually ship.
 
-**The graph is still worthless as an ordering.** `graph-ordered` sits near the bottom of both tables
-(0.7% on SWE at 8 KB). Third independent test failed, agreeing with the F2 budget sweep.
+**The replay says nothing about the graph.** There is none: `graph-ordered` here means the previous
+task first in a fixed arbitrary order, and on τ-bench it leads at 8 KB (21.9%) for the same reason
+`dag` does below — a caveat, not a graph result. The first version read "`graph-ordered` sits near the
+bottom of both tables (0.7% on SWE at 8 KB). Third independent test failed, agreeing with the F2
+budget sweep"; only the F2 half of that stands.
 
 **"Evict what is simplest to recover" does not work.** Keeping the costliest-to-recover items reaches
-11.1% / 2.3% at 8 KB, below LFU, GDSF and S3-FIFO everywhere. Recovery cost correlates with size, and
+10.0% / 1.3% at 8 KB (corrected; first reported 11.1% / 2.3%), below LFU, GDSF and S3-FIFO everywhere. Recovery cost correlates with size, and
 the large items are not the reused ones. A methodological note that cost us a wrong table first:
 **recovery cost must be measured per item or the policy silently becomes "keep the largest"** — with
 only the modelled cost, which is monotone in bytes, the two columns came out byte-identical.
@@ -456,15 +479,17 @@ itself.
 The deployable rule from the synthetic study was *cover a successor completely or not at all; buy
 whole rounds, not bytes; trim what you keep*. Real data keeps the spirit and changes the mechanism:
 
-1. **Rank by reuse frequency, not recency.** One line in a context manager, and at a tight budget it
-   is the difference between removing 4.0% of rounds and removing none.
+1. **Prefer frequency-aware eviction to plain recency, but expect a modest gain.** At 8 KB it is
+   19–21% against 16% of rounds on τ-bench/GAIA and 2.6–2.9% against 0.3% on SWE-bench *(corrected
+   2026-09-23; the first cut said 4.0% against none)*.
 2. **Spend the budget on prediction, not capacity.** 8 KB is already enough; the ceiling is reached
    at the smallest budget tested.
 3. **Breadth is the ceiling, and it scales.** With the retention policy held fixed, removable rounds
    go 13% → 23% → 36% as the pool grows 8 → 16 → 32 earlier tasks, roughly linearly in the log. Since
    8 KB is enough to hold the *useful* part of any pool, the design tension is not budget against
-   coverage — it is how many earlier tasks the engine can see at all. Widening the pool and then
-   ranking it by reuse frequency beats every other knob measured here.
+   coverage — it is how many earlier tasks the engine can see at all. (The pool-size runs were
+   computed with the first replay's policy code; the pool effect itself is an unlimited-budget
+   measurement and does not depend on it.)
 4. **Agent identity is not a lever, at least on this workload.** Size-matched, inheriting from a
    different model's runs is as good as inheriting from your own (within ~2 points at every pool
    size). A shared pool does not need to be partitioned per agent.
@@ -518,6 +543,13 @@ whole rounds, not bytes; trim what you keep*. Real data keeps the spirit and cha
   than the recall denominator credited them with. And `inherit_loop.py`'s
   `refetch_after_injection` counted *every* `read_file`, not re-reads of injected paths, which is
   why the "dag 75% re-fetch" line overstated distrust of the handoff.
+- **The online eviction policies were replayed with future knowledge and without cache hits**
+  (found and fixed 2026-09-23). Frequencies were counted over the whole group, including the successor
+  and later tasks, and every item was offered to the caches once, so LRU never refreshed. Metric 3 is
+  recomputed; `evict_policies.retained` now takes the read stream (`accesses`) and replays it as a real
+  cache, and `test_evict_policies.py` pins both behaviours. The live path in `profile_run.py` passes no
+  stream yet, so a live run with `--prewarm-evict lru` still gets FIFO; every live run reported here
+  used an unlimited budget, where the policy does not matter.
 - **All 16 eviction policies are non-monotone in retained bytes if they are online caches** — LRU and
   FIFO violate it in 17 of 60 random pools. This is not a bug: LRU's stack property only holds for
   equal-sized objects, and tool observations are not. The earlier study's invariant "removable rounds
@@ -529,8 +561,8 @@ whole rounds, not bytes; trim what you keep*. Real data keeps the spirit and cha
    task (§3, G1). The honest options are a benchmark whose unit of work is a project rather than a
    question — SWE-bench instances driven through mini-swe-agent, or AppWorld — or accepting that the
    live check measures the *policy* rather than the arms: `none` vs `ancestors` under LFU and LRU at
-   8 KB and unlimited needs no graph at all, and it is the LFU-vs-LRU gap that the replay says
-   matters most.
+   8 KB and unlimited needs no graph at all. The corrected replay puts that gap at 3–5 points on
+   τ-bench, so the live run has to be sized to resolve it.
 2. Fold line-level content addressing into the injector — it is the largest single lever on coding
    work and it is not implemented.
 3. A staleness-aware policy: never hand over a span the successor's own base commit has moved past.

@@ -89,17 +89,29 @@ class Trajectory:
                 out.append(item)
         return out
 
-    def items_for(self, pool: list[dict], t: int) -> list[ep.Item]:
+    def source_reads(self, t: int, arm: str) -> list[dict]:
+        """Every read the pool was built from, in order, repeats included."""
+        earlier = [r for r in self.read_rounds if r < t]
+        source = [earlier[-1]] if arm == "dag" and earlier else earlier
+        return [item for r in source for item in self.by_round[r]]
+
+    def items_for(self, pool: list[dict], t: int, reads: list[dict]) -> list[ep.Item]:
         """Pool entries -> priced retention candidates.
 
         `useful_bytes` and `next_use` are what make the two CEILING policies mean anything: the
         byte-density oracle ranks by how much of an item round t will actually use, and Belady by
         how far in the future it is next needed.  Left unpopulated they collapse to constants and
         the 'ceiling' silently becomes an arbitrary ordering that loses to LRU -- which is what the
-        first run of this grid did."""
+        first run of this grid did.
+
+        `freq` and `last_ms` come from `reads`, the rounds before t.  They used to be counted over
+        the de-duplicated pool, which made every count 1 and every item's recency its first read,
+        so LFU and LRU both ran as FIFO (fixed 2026-09-23)."""
         freq: dict[tuple, int] = defaultdict(int)
-        for item in pool:
-            freq[key_of(item)] += 1
+        last: dict[tuple, int] = {}
+        for item in reads:
+            freq[(key_of(item), item["sha"])] += 1
+            last[(key_of(item), item["sha"])] = item["round"]
         want_shas = {i["sha"] for i in self.by_round.get(t, [])}
         future: dict[str, int] = {}
         for r in self.read_rounds:
@@ -116,8 +128,9 @@ class Trajectory:
                 key=(k, item["sha"]),                   # content identity: an edited span is a
                 nbytes=item["bytes"],                   # different item, not the same one
                 round_idx=item["round"],
-                first_ms=float(item["round"]), last_ms=float(item["round"]),
-                freq=freq[k],
+                first_ms=float(item["round"]),
+                last_ms=float(last.get((k, item["sha"]), item["round"])),
+                freq=freq.get((k, item["sha"]), 1),
                 # there is no task graph in a single-agent trajectory, so the only graph-like
                 # distinction available is "came from the immediately preceding round" vs earlier
                 tier=0 if item["round"] == direct else 1,
@@ -136,15 +149,28 @@ class Trajectory:
         if not want:
             return None
         pool = self.pool(t, arm)
-        return want, pool, self.items_for(pool, t)
+        reads = self.source_reads(t, arm)
+        cands = self.items_for(pool, t, reads)
+        # one Item per read over the pool's keys (the pool keeps a re-read span's first version),
+        # so the online caches see every hit
+        by_key = {c.key: c for c in cands}
+        accesses = []
+        for item in reads:
+            c = by_key.get((key_of(item), item["sha"]))
+            if c is not None:
+                accesses.append(ep.Item(key=c.key, nbytes=c.nbytes, round_idx=item["round"],
+                                        first_ms=float(item["round"]),
+                                        last_ms=float(item["round"]),
+                                        out_tokens=c.out_tokens, locate_s=c.locate_s))
+        return want, pool, cands, accesses
 
     def evaluate(self, t: int, arm: str, policy: str, budget: int | None,
                  ctx=None) -> dict | None:
         ctx = ctx or self.context(t, arm)
         if ctx is None:
             return None
-        want, pool, cands = ctx
-        kept_keys = ep.retained(cands, policy, budget) if cands else set()
+        want, pool, cands, accesses = ctx
+        kept_keys = ep.retained(cands, policy, budget, accesses=accesses) if cands else set()
         kept = [c for c in cands if c.key in kept_keys]
         sent = sum(c.nbytes for c in kept)
 
@@ -339,17 +365,6 @@ def stage_cross(trajs: list[Trajectory], policy: str = "lru",
     for repo, members in groups.items():
         # everything each trajectory read, content-keyed, plus the same at line granularity
         shas = [{i["sha"]: i["bytes"] for i in t.rec["items"]} for t in members]
-        # the per-item signals a retention policy can actually rank on.  Without `located_by` and
-        # the round's own decode, `recovery_seconds` falls back to a formula that is monotone in
-        # size, and "keep what is costliest to recover" silently becomes "keep the largest" -- the
-        # two columns come out byte-identical, which is how this was noticed.
-        meta: dict[str, dict] = {}
-        for t in members:
-            for i in t.rec["items"]:
-                m = meta.setdefault(i["sha"], {"freq": 0, "located": False, "out": 0})
-                m["freq"] += 1
-                m["located"] |= i.get("located_by") is not None
-                m["out"] = max(m["out"], int(i.get("out_chars", 0)))
         paths = [{tuple(i["key"]) if not isinstance(i["key"], list) else tuple(
             tuple(x) if isinstance(x, list) else x for x in i["key"]) for i in t.rec["items"]}
             for t in members]
@@ -378,13 +393,40 @@ def stage_cross(trajs: list[Trajectory], policy: str = "lru",
                 held_line = set().union(*(lines[i] for i in src))
                 order = {k: i for i, k in enumerate(held_sha)}
                 want_now = {i["sha"] for i in members[j].rec["items"]}
+                # The per-item signals a retention policy can rank on, taken ONLY from the reads the
+                # engine has seen at the cut point: the source tasks, in order.  The first version
+                # counted them over the whole group -- the successor and every later task included
+                # -- which told LFU and GDSF what the successor would read, and it offered the online
+                # caches each item once, so LRU never refreshed and ran as FIFO (fixed 2026-09-23).
+                # Without `located_by` and the round's own decode, `recovery_seconds` falls back to
+                # a formula monotone in size and "keep what is costliest to recover" silently
+                # becomes "keep the largest".
+                stream = [(x, i) for x in src for i in members[x].rec["items"]]
+                meta: dict[str, dict] = {}
+                rid: dict[tuple, int] = {}
+                accesses = []
+                for n, (x, i) in enumerate(stream):
+                    m = meta.setdefault(i["sha"], {"freq": 0, "located": False, "out": 0,
+                                                   "first": n, "last": n})
+                    m["freq"] += 1
+                    m["last"] = n
+                    m["located"] |= i.get("located_by") is not None
+                    m["out"] = max(m["out"], int(i.get("out_chars", 0)))
+                    accesses.append(ep.Item(
+                        key=i["sha"], nbytes=i["bytes"],
+                        round_idx=rid.setdefault((x, i["round"]), len(rid)),
+                        first_ms=float(n), last_ms=float(n),
+                        out_tokens=int(int(i.get("out_chars", 0)) / ep.CHARS_PER_TOKEN),
+                        locate_s=ep.FIXED_ROUND_S if i.get("located_by") is not None else 0.0))
+                prev = shas[src[-1]]
                 cands = [ep.Item(key=k, nbytes=v, round_idx=order[k] // 8,
-                                 first_ms=float(order[k]), last_ms=float(order[k]),
-                                 freq=meta.get(k, {}).get("freq", 1),
-                                 out_tokens=int(meta.get(k, {}).get("out", 0)
-                                                / ep.CHARS_PER_TOKEN),
-                                 locate_s=(ep.FIXED_ROUND_S
-                                           if meta.get(k, {}).get("located") else 0.0),
+                                 first_ms=float(meta[k]["first"]), last_ms=float(meta[k]["last"]),
+                                 freq=meta[k]["freq"],
+                                 # "graph-ordered" on replay means the previous task first: there is
+                                 # no real graph, and with no tier set the ordering was plain recency
+                                 tier=0 if k in prev else 1,
+                                 out_tokens=int(meta[k]["out"] / ep.CHARS_PER_TOKEN),
+                                 locate_s=ep.FIXED_ROUND_S if meta[k]["located"] else 0.0,
                                  next_use=0 if k in want_now else None,
                                  useful_bytes=v if k in want_now else 0)
                          for k, v in held_sha.items()]
@@ -392,7 +434,7 @@ def stage_cross(trajs: list[Trajectory], policy: str = "lru",
                   for budget in budgets:
                     keep, sent = held_sha, sum(held_sha.values())
                     if budget is not None:
-                        kept = ep.retained(cands, pol, budget)
+                        kept = ep.retained(cands, pol, budget, accesses=accesses)
                         keep = {k: v for k, v in held_sha.items() if k in kept}
                         sent = sum(keep.values())
                     want = succ.rec["items"]

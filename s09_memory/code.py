@@ -316,7 +316,22 @@ def select_relevant_memories(messages: list, max_items: int = 5) -> list[str]:
     except Exception:
         return keyword_memory_selection(records, query, max_items)
 
+_recall_cache: dict[str, str] = {}
+_RECALL_CACHE_LIMIT = 8
+
+def _strip_reminders(text: str) -> str:
+    # Harness-injected reminders are noise for memory selection; dropping them keeps the
+    # selection stable across tool rounds inside one user turn, so the selection call
+    # runs once per turn instead of once per round.
+    return re.sub(r"<reminder>.*?</reminder>", "", text, flags=re.DOTALL).strip()
+
 def load_memories(messages: list) -> str:
+    records = list_memory_files()
+    fingerprint = f"{len(records)}:{sum(len(r['description']) for r in records)}"
+    key = f"{fingerprint}:{_strip_reminders(recent_user_text(messages))}"
+    cached = _recall_cache.get(key)
+    if cached is not None:
+        return cached
     loaded = []
     remaining = RECALL_CHAR_LIMIT
     for filename in select_relevant_memories(messages):
@@ -326,7 +341,11 @@ def load_memories(messages: list) -> str:
         recalled = content[:remaining]
         loaded.append({"source": filename, "content": recalled})
         remaining -= len(recalled)
-    return json.dumps(loaded, ensure_ascii=False, indent=2) if loaded else ""
+    result = json.dumps(loaded, ensure_ascii=False, indent=2) if loaded else ""
+    if len(_recall_cache) >= _RECALL_CACHE_LIMIT:
+        _recall_cache.clear()
+    _recall_cache[key] = result
+    return result
 
 def build_system(relevant_memories: str = "") -> str:
     index = read_memory_index()
@@ -413,7 +432,7 @@ def extract_memories(messages: list) -> int:
         response = client.messages.create(
             model=MODEL,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=1000,
+            max_tokens=1500,
         )
         candidates = [
             validated

@@ -139,6 +139,39 @@ def parse_tool_costs(spec: str | None) -> dict[str, float]:
     return costs
 
 
+# -- reasoning-effort policy (Step 2 of the efficiency methodology) ---------------------------
+MECHANICAL_PURPOSES = {"memory_recall", "memory_extract", "memory_consolidate",
+                       "compaction_summary"}
+MAIN_PURPOSES = {"lead", "teammate", "one_shot"}
+
+
+def effort_for_purpose(purpose: str | None, policy: str) -> str | None:
+    """Map a call's trace purpose to a vLLM effort level, or None to leave the request alone.
+
+    'memory'      -> only the mechanical calls (memory ops, compaction) run at low effort;
+                     main rounds keep the server default.
+    'main-low'    -> mechanical calls AND lead/teammate/one-shot rounds at low effort.
+    'main-medium' -> mechanical at low, main rounds at medium."""
+    if purpose in MECHANICAL_PURPOSES:
+        return "low"
+    if policy == "main-low" and purpose in MAIN_PURPOSES:
+        return "low"
+    if policy == "main-medium" and purpose in MAIN_PURPOSES:
+        return "medium"
+    return None
+
+
+def apply_effort(kwargs: dict, effort: str, mode: str) -> dict:
+    extra = dict(kwargs.get("extra_body") or {})
+    if mode == "nothink":
+        template_kwargs = dict(extra.get("chat_template_kwargs") or {})
+        template_kwargs["enable_thinking"] = False
+        extra["chat_template_kwargs"] = template_kwargs
+    else:
+        extra["output_config"] = {"effort": effort}
+    return dict(kwargs, extra_body=extra)
+
+
 def cost_note(seconds: float, framing: str) -> str:
     """One sentence of advertised cost, in the requested wording."""
     if framing == "seconds":
@@ -228,6 +261,19 @@ def parse_args():
     parser.add_argument("--tool-cost-policy", action="store_true",
                         help="also append a one-line cost-aware policy to the system prompt "
                              "(exposing the cost is not the same as asking the agent to act on it)")
+    parser.add_argument("--effort-policy", choices=["off", "memory", "main-low", "main-medium"],
+                        default="off",
+                        help="reasoning-effort policy (Step 2): 'memory' runs only the mechanical "
+                             "calls (memory ops, compaction) at low effort; 'main-low' / "
+                             "'main-medium' also set lead/teammate/one-shot rounds.  Requires a "
+                             "provider that accepts output_config or chat_template_kwargs.")
+    parser.add_argument("--effort-mode", choices=["output_config", "nothink"], default="output_config",
+                        help="how the effort level reaches the server: vLLM's output_config.effort, "
+                             "or chat_template_kwargs.enable_thinking=false (binary, ignores level)")
+    parser.add_argument("--max-teammate-concurrent", type=int, default=0,
+                        help="cap in-flight teammate model requests (0 = uncapped).  Lead and "
+                             "harness calls never wait behind more than this many teammate "
+                             "decodes -- client-side priority scheduling.")
     parser.add_argument("--no-retry-429", action="store_true",
                         help="disable the driver-level retry of provider 429s (the harness itself retries only lead calls, 3x)")
     parser.add_argument("--trace-output", choices=["summary", "full"], default="summary",
@@ -1049,6 +1095,12 @@ def main() -> int:
         baseline = vllm_metrics.start()
         print(f"[profile] vllm metrics {'reachable' if baseline else 'UNREACHABLE'} at {args.vllm_metrics}", flush=True)
 
+    # Client-side priority (Step 6): cap how many teammate decode requests are in flight at
+    # once, so lead-critical calls schedule immediately instead of queueing behind the whole
+    # team (Autellix-style ordering, applied where we control it -- the client).
+    teammate_slots = (threading.Semaphore(args.max_teammate_concurrent)
+                      if args.max_teammate_concurrent > 0 else None)
+
     def profiled_create(**kwargs):
         # -- advertised-tool-cost intervention ---------------------------------------------
         # Rewriting the request here (rather than the harness's tool tables) annotates the lead,
@@ -1060,10 +1112,19 @@ def main() -> int:
                                               args.tool_cost_placement)
             kwargs = dict(kwargs, tools=annotated)
             extra = "\n\n".join(part for part in
-                                 (table, COST_POLICY if args.tool_cost_policy else "") if part)
+                                (table, COST_POLICY if args.tool_cost_policy else "") if part)
             if extra:
                 kwargs["system"] = ((kwargs.get("system") or "") + "\n\n" + extra).strip()
         ctx = trace.capture_context()
+        # -- reasoning-effort policy (Step 2): decode is 94-98% of server time and thinking is
+        # 33-68% of Qwen's output, so mechanical calls run at low effort and main rounds follow
+        # the arm's policy.  vLLM takes output_config.effort; --effort-mode nothink instead
+        # passes chat_template_kwargs.enable_thinking=false for providers whose template
+        # ignores effort levels. --------------------------------------------------------------
+        if args.effort_policy != "off":
+            effort = effort_for_purpose(ctx.get("model_purpose"), args.effort_policy)
+            if effort:
+                kwargs = apply_effort(kwargs, effort, args.effort_mode)
         # -- context-handoff injection (must precede the accounting below so the injected bytes are
         # counted by the same instruments as everything else) -------------------------------------
         if (args.prewarm != "none" and ctx.get("agent_kind") == "teammate"
@@ -1153,27 +1214,36 @@ def main() -> int:
         started = time.perf_counter()
         attempt = 0
         stream_local.timing = None
-        while True:
-            try:
-                response = raw_create(**kwargs)
-                break
-            except Exception as exc:
-                name = type(exc).__name__.lower()
-                text = str(exc).lower()
-                if (not args.no_retry_429 and ("ratelimit" in name or "429" in text)
-                        and attempt < RATE_LIMIT_ATTEMPTS):
-                    attempt += 1
-                    delay = min(3.0 * 2 ** (attempt - 1), 40.0) + random.uniform(0, 2)
-                    rate_limited[agent] += 1
-                    print(f"[profile] 429 for {agent} ({ctx.get('model_purpose')}): retry {attempt}/{RATE_LIMIT_ATTEMPTS} "
-                          f"in {delay:.1f}s", flush=True)
-                    time.sleep(delay)
-                    continue
-                record.update({"status": "error", "error": type(exc).__name__, "rate_limit_retries": attempt,
-                               "duration_ms": (time.perf_counter() - started) * 1000})
-                with inputs_lock, inputs_path.open("a", encoding="utf-8") as handle:
-                    handle.write(json.dumps(record) + "\n")
-                raise
+        gate = (teammate_slots
+                if teammate_slots is not None and ctx.get("agent_kind") == "teammate"
+                and ctx.get("model_purpose") in ("teammate", None) else None)
+        if gate is not None:
+            gate.acquire()
+        try:
+            while True:
+                try:
+                    response = raw_create(**kwargs)
+                    break
+                except Exception as exc:
+                    name = type(exc).__name__.lower()
+                    text = str(exc).lower()
+                    if (not args.no_retry_429 and ("ratelimit" in name or "429" in text)
+                            and attempt < RATE_LIMIT_ATTEMPTS):
+                        attempt += 1
+                        delay = min(3.0 * 2 ** (attempt - 1), 40.0) + random.uniform(0, 2)
+                        rate_limited[agent] += 1
+                        print(f"[profile] 429 for {agent} ({ctx.get('model_purpose')}): retry {attempt}/{RATE_LIMIT_ATTEMPTS} "
+                              f"in {delay:.1f}s", flush=True)
+                        time.sleep(delay)
+                        continue
+                    record.update({"status": "error", "error": type(exc).__name__, "rate_limit_retries": attempt,
+                                   "duration_ms": (time.perf_counter() - started) * 1000})
+                    with inputs_lock, inputs_path.open("a", encoding="utf-8") as handle:
+                        handle.write(json.dumps(record) + "\n")
+                    raise
+        finally:
+            if gate is not None:
+                gate.release()
         record["rate_limit_retries"] = attempt
         usage = getattr(response, "usage", None)
         out_text = out_think = out_tool_input = 0
@@ -1317,6 +1387,9 @@ def main() -> int:
                                    "rate_limit_retries": dict(rate_limited),
                                    "wall_seconds": round(time.monotonic() - started, 1),
                                    "vllm_totals": vllm_metrics.totals() if vllm_metrics is not None else None})
+        flush = getattr(mod, "flush_memory", None)
+        if flush is not None:
+            flush(180)  # let a background extraction finish so its spans land in the trace
         mod.close_tracing(status)
         if args.answer_out:
             # the last thing the lead said.  lm-eval scores a single string, so an agentic session

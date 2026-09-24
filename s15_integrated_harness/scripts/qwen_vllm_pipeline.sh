@@ -28,7 +28,25 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 MODEL="${MODEL:-Qwen/Qwen3.8-27B}"
-OUT="${OUT:-$REPO/s15_integrated_harness/traces/latency_profiling_qwen}"
+# OPT=1 selects the optimized arm of the efficiency methodology: LMCache on the serving
+# side, per-round reasoning-effort policy, complete-coverage inheritance, stable prefix,
+# teammate concurrency cap.  Each switch can still be overridden individually.
+OPT="${OPT:-0}"
+if [ "$OPT" = 1 ]; then
+  OUT="${OUT:-$REPO/s15_integrated_harness/traces/latency_profiling_qwen_opt}"
+  LMCACHE="${LMCACHE:-1}"          # try --kv-transfer-config LMCacheConnectorV1 (fallback: native prefix caching)
+  EFFORT="${EFFORT:-1}"            # probe + apply the reasoning-effort policy (FQA/CODE main-low, MATH memory-only)
+  INHERIT="${INHERIT:-1}"          # --prewarm ancestors --prewarm-evict lfu --prewarm-budget 32k
+  PREFIX_STABLE="${PREFIX_STABLE:-1}"  # --no-timestamp (stable system prefix)
+  TEAMMATE_CAP="${TEAMMATE_CAP:-2}"    # --max-teammate-concurrent
+else
+  OUT="${OUT:-$REPO/s15_integrated_harness/traces/latency_profiling_qwen}"
+  LMCACHE="${LMCACHE:-0}"
+  EFFORT="${EFFORT:-0}"
+  INHERIT="${INHERIT:-0}"
+  PREFIX_STABLE="${PREFIX_STABLE:-0}"
+  TEAMMATE_CAP="${TEAMMATE_CAP:-0}"
+fi
 LANE="${LANE:-$HOME/lanes/latency_qwen}"
 PORT="${PORT:-}"
 TEAM_REPS="${TEAM_REPS:-r1 r2 r3 r4 r5}"
@@ -140,11 +158,15 @@ step_download() {
 # ------------------------------------------------------------------------------------------ serve
 server_alive() { curl -sf "$BASE_URL/health" >/dev/null 2>&1; }
 
-start_vllm() {
+LMCACHE_ARGS="--kv-transfer-config {\"kv_connector\":\"LMCacheConnectorV1\",\"kv_role\":\"kv_both\"}"
+
+start_vllm() {   # $1 = extra vllm args, $2 = log tag; returns 1 instead of dying so the
+                 # caller can fall back (e.g. LMCache rejected by the hybrid model)
+  local extra="${1:-}" tag="${2:-base}"
   if server_alive; then log "serve: a server already answers on $BASE_URL, reusing it"; return 0; fi
   local ts; ts=$(date +%Y%m%dT%H%M%S)
-  VLLM_LOG="$OUT/vllm_server_$ts.log"
-  log "serve: starting vLLM $MODEL on $BASE_URL (max-model-len $MAXLEN, util $GPU_UTIL, seqs $MAX_NUM_SEQS, batched $MAX_BATCHED) -> $VLLM_LOG"
+  VLLM_LOG="$OUT/vllm_server_${tag}_$ts.log"
+  log "serve: starting vLLM $MODEL on $BASE_URL (max-model-len $MAXLEN, util $GPU_UTIL, seqs $MAX_NUM_SEQS, batched $MAX_BATCHED, tag $tag) -> $VLLM_LOG"
   # A new session so the whole tree (API server + EngineCore) can be stopped by process group.
   # shellcheck disable=SC2086
   setsid bash -c 'echo $$ > "$1"; shift; exec "$@"' _ "$PIPE/vllm.pid" \
@@ -154,20 +176,20 @@ start_vllm() {
       --enable-prompt-tokens-details --enable-prefix-caching \
       --max-model-len "$MAXLEN" --gpu-memory-utilization "$GPU_UTIL" \
       --max-num-seqs "$MAX_NUM_SEQS" --max-num-batched-tokens "$MAX_BATCHED" \
-      --uvicorn-log-level warning $EXTRA_VLLM_ARGS > "$VLLM_LOG" 2>&1 &
+      --uvicorn-log-level warning $extra $EXTRA_VLLM_ARGS > "$VLLM_LOG" 2>&1 &
   sleep 3
   local pid; pid=$(cat "$PIPE/vllm.pid" 2>/dev/null || echo "")
   ln -sfn "$VLLM_LOG" "$OUT/vllm_server.log"
   local waited=0
   until server_alive; do
-    if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then tail -60 "$VLLM_LOG"; die "vLLM exited during startup (see $VLLM_LOG)"; fi
-    if [ "$waited" -ge "$HEALTH_WAIT" ]; then tail -60 "$VLLM_LOG"; die "vLLM not healthy after ${HEALTH_WAIT}s"; fi
+    if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then tail -40 "$VLLM_LOG"; log "serve: vLLM ($tag) exited during startup"; return 1; fi
+    if [ "$waited" -ge "$HEALTH_WAIT" ]; then tail -40 "$VLLM_LOG"; log "serve: vLLM ($tag) not healthy after ${HEALTH_WAIT}s"; return 1; fi
     sleep 10; waited=$((waited + 10))
   done
-  log "serve: healthy after ${waited}s (pid $pid)"
+  log "serve: healthy after ${waited}s (pid $pid, tag $tag)"
   {
-    echo "# $(date -Is) pid=$pid log=$VLLM_LOG"
-    grep -E "KV cache size|Maximum concurrency|block size|[Pp]refix cach|Loading weights took|Model loading took|Graph capturing finished|torch.compile|Available KV cache memory|backend|Chunked prefill|max_num_batched_tokens|mamba" "$VLLM_LOG" | head -60
+    echo "# $(date -Is) pid=$pid tag=$tag log=$VLLM_LOG"
+    grep -E "KV cache size|Maximum concurrency|block size|[Pp]refix cach|[Ll][Mm][Cc]ache|KV transfer|Loading weights took|Model loading took|Graph capturing finished|torch.compile|Available KV cache memory|backend|Chunked prefill|max_num_batched_tokens|mamba" "$VLLM_LOG" | head -60
   } >> "$PIPE/server_startup.txt"
   python3 - "$BASE_URL" "$PIPE/server_info.json" "$MODEL" <<'EOF'
 import json, sys, urllib.request
@@ -190,7 +212,27 @@ info["metrics_families"] = sorted({l.split("{")[0].split(" ")[0] for l in metric
 json.dump(info, open(out, "w"), indent=1)
 print("server:", json.dumps(info.get("version")), "| metric families:", len(info["metrics_families"]))
 EOF
-  echo "$(date -Is) started pid=$pid log=$VLLM_LOG" >> "$PIPE/restarts.log"
+  echo "$(date -Is) started pid=$pid tag=$tag log=$VLLM_LOG" >> "$PIPE/restarts.log"
+}
+
+ensure_vllm() {
+  if server_alive; then return 0; fi
+  log "server not healthy on $BASE_URL: (re)starting"
+  echo "$(date -Is) restart: server not healthy" >> "$PIPE/restarts.log"
+  stop_vllm || true
+  if [ "$LMCACHE" = 1 ] && [ "${LMCACHE_FAILED:-0}" != 1 ]; then
+    export LMCACHE_LOCAL_CPU=True LMCACHE_MAX_LOCAL_CPU_SIZE=10
+    if start_vllm "$LMCACHE_ARGS" lmcache; then
+      echo '{"lmcache": "enabled"}' > "$PIPE/lmcache_status.json"
+      return 0
+    fi
+    log "serve: LMCache start FAILED -> falling back to native prefix caching (finding recorded)"
+    echo "{\"lmcache\": \"rejected: see vllm_server_lmcache_*.log\", \"fallback\": \"native prefix caching\"}" > "$PIPE/lmcache_status.json"
+    echo "$(date -Is) lmcache rejected by server; falling back" >> "$PIPE/restarts.log"
+    LMCACHE_FAILED=1
+    stop_vllm || true
+  fi
+  start_vllm "" base
 }
 
 stop_vllm() {
@@ -204,14 +246,6 @@ stop_vllm() {
     kill -KILL -- "-$pid" 2>/dev/null || true
   fi
   rm -f "$PIPE/vllm.pid"
-}
-
-ensure_vllm() {
-  if server_alive; then return 0; fi
-  log "server not healthy on $BASE_URL: (re)starting"
-  echo "$(date -Is) restart: server not healthy" >> "$PIPE/restarts.log"
-  stop_vllm || true
-  start_vllm
 }
 
 # ------------------------------------------------------------------------------------------- lane
@@ -249,15 +283,45 @@ step_probe() {
   fi
 }
 
+# --------------------------------------------------------------------------------------- effprobe
+step_effprobe() {
+  # Which effort lever does this vLLM+template actually honor?  Verdict drives the matrix's
+  # --effort-mode; 'default' means the matrix runs with --effort-policy memory only.
+  if [ "$EFFORT" != 1 ]; then log "effprobe: disabled (EFFORT=0)"; return 0; fi
+  if [ -s "$PIPE/effort_mode.json" ]; then log "effprobe: already done ($PIPE/effort_mode.json)"; return 0; fi
+  ensure_vllm
+  log "effprobe: probing output_config.effort vs enable_thinking=false"
+  python3 "$REPO/s15_integrated_harness/scripts/effort_probe.py" \
+      --base-url "$BASE_URL" --model "$MODEL" --out "$PIPE/effort_mode.json" \
+      || die "effprobe failed; refusing to guess the effort knob"
+  log "effprobe verdict: $(python3 -c "import json;print(json.load(open('$PIPE/effort_mode.json'))['mode'])")"
+}
+
 # ------------------------------------------------------------------------------------- workloads
+effort_policy_for() {  # $1 = category -> the --effort-policy the matrix arm uses
+  if [ "$EFFORT" != 1 ] || [ ! -s "$PIPE/effort_mode.json" ]; then return 0; fi
+  local mode; mode=$(python3 -c "import json;print(json.load(open('$PIPE/effort_mode.json'))['mode'])")
+  [ "$mode" = "default" ] && { echo "--driver-arg=--effort-policy=memory --driver-arg=--effort-mode=nothink"; return 0; }
+  local policy="memory"
+  [ "$1" != "MATH" ] && policy="main-low"
+  echo "--driver-arg=--effort-policy=$policy --driver-arg=--effort-mode=$mode"
+}
+
 run_workload() {   # rep mode category trace_dir
   local rep=$1 mode=$2 cat=$3 tdir=$4 rc=0
   ensure_vllm
-  log "run: $cat-$mode-$rep -> $tdir"
+  local driver_args=("--driver-arg=--vllm-metrics=$BASE_URL/metrics" "--driver-arg=--client-max-retries=0" "--driver-arg=--server-info")
+  local policy; policy=$(effort_policy_for "$cat")
+  [ -n "$policy" ] && driver_args+=($policy)
+  if [ "$INHERIT" = 1 ]; then
+    driver_args+=("--driver-arg=--prewarm=ancestors" "--driver-arg=--prewarm-evict=lfu" "--driver-arg=--prewarm-budget=32k")
+  fi
+  [ "$PREFIX_STABLE" = 1 ] && driver_args+=("--driver-arg=--no-timestamp")
+  [ "$TEAMMATE_CAP" -gt 0 ] 2>/dev/null && driver_args+=("--driver-arg=--max-teammate-concurrent=$TEAMMATE_CAP")
+  log "run: $cat-$mode-$rep -> $tdir (driver: ${driver_args[*]})"
   python3 "$REPO/s15_integrated_harness/scripts/latency_workloads.py" --rep "$rep" --mode "$mode" --only "$cat" \
       --repo "$LANE" --trace-dir "$tdir" --max-seconds "$MAX_SECONDS" --quiet-seconds "$QUIET_SECONDS" \
-      --pause "$PAUSE" --skip-existing \
-      --driver-arg="--vllm-metrics=$BASE_URL/metrics" --driver-arg=--client-max-retries=0 --driver-arg=--server-info &
+      --pause "$PAUSE" --skip-existing "${driver_args[@]}" &
   CHILD_PID=$!
   wait "$CHILD_PID" || rc=$?
   CHILD_PID=""
@@ -268,9 +332,22 @@ step_smoke() {
   [ "$SMOKE" = 1 ] || { log "smoke: disabled"; return 0; }
   if [ -f "$PIPE/smoke.ok" ]; then log "smoke: already passed ($PIPE/smoke.ok)"; return 0; fi
   log "smoke: one FQA team run as the gate before the matrix"
-  run_workload smoke team FQA "$OUT/smoke" || log "smoke: workload runner exited nonzero"
-  python3 "$REPO/s15_integrated_harness/scripts/smoke_check.py" "$OUT/smoke" FQA-team-smoke --min-coverage "$SMOKE_MIN_COVERAGE" \
-      || die "smoke gate failed; not starting the matrix (inspect $OUT/smoke)"
+  if ! run_workload smoke team FQA "$OUT/smoke"; then log "smoke: workload runner exited nonzero"; fi
+  if ! python3 "$REPO/s15_integrated_harness/scripts/smoke_check.py" "$OUT/smoke" FQA-team-smoke --min-coverage "$SMOKE_MIN_COVERAGE"; then
+    if [ "$EFFORT" = 1 ] && [ -s "$PIPE/effort_mode.json" ] \
+       && ! python3 -c "import json,sys; sys.exit(0 if json.load(open('$PIPE/effort_mode.json')).get('mode')=='default' else 1)"; then
+      # the aggressive main-round effort policy is the suspect: fall back to memory-only
+      # and give the gate one second chance before giving up
+      log "smoke: FAILED under the effort policy -> downgrading to memory-only and retrying once"
+      echo '{"mode": "default", "detail": {"downgraded_by": "smoke gate"}}' > "$PIPE/effort_mode.json"
+      rm -f "$OUT/smoke"/FQA-team-smoke*
+      if ! run_workload smoke team FQA "$OUT/smoke"; then log "smoke: workload runner exited nonzero"; fi
+      python3 "$REPO/s15_integrated_harness/scripts/smoke_check.py" "$OUT/smoke" FQA-team-smoke --min-coverage "$SMOKE_MIN_COVERAGE" \
+          || die "smoke gate failed twice (memory-only policy); not starting the matrix (inspect $OUT/smoke)"
+    else
+      die "smoke gate failed; not starting the matrix (inspect $OUT/smoke)"
+    fi
+  fi
   touch "$PIPE/smoke.ok"
 }
 
@@ -309,14 +386,15 @@ step_compare() {
 
 # ------------------------------------------------------------------------------------------- main
 STEPS=("$@")
-if [ ${#STEPS[@]} -eq 0 ]; then STEPS=(download serve lane probe smoke matrix tables compare stop); fi
+if [ ${#STEPS[@]} -eq 0 ]; then STEPS=(download serve effprobe lane probe smoke matrix tables compare stop); fi
 trap 'if [ "$KEEP_SERVER" != 1 ]; then stop_vllm; fi' EXIT
 step_env
 for s in "${STEPS[@]}"; do
   case "$s" in
     env) ;;
     download) step_download ;;
-    serve) start_vllm ;;
+    serve) ensure_vllm ;;
+    effprobe) step_effprobe ;;
     lane) step_lane ;;
     probe) step_probe ;;
     smoke) step_smoke ;;
@@ -324,7 +402,7 @@ for s in "${STEPS[@]}"; do
     tables) step_tables ;;
     compare) step_compare ;;
     stop) stop_vllm ;;
-    *) die "unknown step '$s' (env download serve lane probe smoke matrix tables compare stop)" ;;
+    *) die "unknown step '$s' (env download serve effprobe lane probe smoke matrix tables compare stop)" ;;
   esac
 done
 log "pipeline finished (steps: ${STEPS[*]})"
