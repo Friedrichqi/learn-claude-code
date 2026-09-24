@@ -341,4 +341,4 @@ Watch for:
 
 [s16 Workflow Runtime](../s16_workflow_runtime/) adds a `Workflow` tool to this host. A workflow keeps a fixed orchestration path in code and records progress so the same run can resume.
 
-<!-- translation-sync: zh@v15, en@v15, ja@v15 -->
+<!-- translation-sync: zh@v14, en@v15, ja@v14 -->

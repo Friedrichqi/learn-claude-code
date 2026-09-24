@@ -4,6 +4,9 @@
 
 # Learn Claude Code -- Harness Engineering for Real Agents
 
+> **This fork** adds structured execution tracing to the s15/s16 harness and the profiling research built on
+> it: see [`research/README.md`](research/README.md) (one folder per topic) and `weekly_progress/` (weekly decks).
+
 ## Agency Comes from the Model. An Agent Product = Model + Harness.
 
 Before we write any code, one thing needs to be clear.

@@ -460,7 +460,7 @@ table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
       </div>
     </div>
   </div>
-  <div class="foot"><p>Source: Li, He, Mang, Q. Zhang, Mao, Chen, Zhou, H. Zhang, Cheung, Gonzalez, Stoica. <em>Continuum</em> (Berkeley · Stanford · Tsinghua), arXiv:2511.02230v7 [cs.OS], 8 Sep 2026; submitted to PVLDB 20(1). Code <span class="mono">github.com/Hanchenli/vllm-continuum</span>; full read in <span class="mono">weekly_progress/091626/continuum_paper_reading.md</span>. Replay on Llama-3.1 8B/70B and Gemma-3 12B over A100, H100 and B200. Parrot, Alto and Ayo are excluded by construction: they optimise a static DAG, and a ReAct graph only exists at runtime. Keep straight that the abstract's "over 8×" is the distributed run — part of that margin is SWE-Bench's 15-minute Docker limit turning slowness into scored failures — while the controlled range is 1.12–3.66×, and GLM-4.5 appears only in the RL rollout table.</p></div>
+  <div class="foot"><p>Source: Li, He, Mang, Q. Zhang, Mao, Chen, Zhou, H. Zhang, Cheung, Gonzalez, Stoica. <em>Continuum</em> (Berkeley · Stanford · Tsinghua), arXiv:2511.02230v7 [cs.OS], 8 Sep 2026; submitted to PVLDB 20(1). Code <span class="mono">github.com/Hanchenli/vllm-continuum</span>; full read in <span class="mono">research/related_work/continuum_paper_reading.md</span>. Replay on Llama-3.1 8B/70B and Gemma-3 12B over A100, H100 and B200. Parrot, Alto and Ayo are excluded by construction: they optimise a static DAG, and a ReAct graph only exists at runtime. Keep straight that the abstract's "over 8×" is the distributed run — part of that margin is SWE-Bench's 15-minute Docker limit turning slowness into scored failures — while the controlled range is 1.12–3.66×, and GLM-4.5 appears only in the RL rollout table.</p></div>
 </section>
 
 <!-- ===================== 2 · THE SYSTEM UNDER TEST ===================== -->
@@ -592,7 +592,7 @@ table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
       <p class="note xs" style="max-width:none"><b>One model behind every box:</b> <span class="mono">glm-5.3-flash</span> via z.ai's Anthropic-compatible API. Budget is 128k tokens × 4 chars = <b>512,000 chars</b>, raised from 50,000 on 2026-09-12.</p>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">s15_integrated_harness/code.py</span> — <span class="mono">agent_loop</span> :3466, <span class="mono">prepare_context</span> :3407, <span class="mono">remember_after_turn</span> :3393, <span class="mono">async_event_loop</span> :3693 (the poller), <span class="mono">claim_next_task</span> :1376, <span class="mono">spawn_teammate_thread</span> :1499, <span class="mono">BUILTIN_TOOLS</span> :3193. <span class="mono">max_tokens</span> 8,000, rising to 16,000 once on truncation; <span class="mono">FALLBACK_MODEL_ID</span> takes over after two consecutive 529s. Scales from <span class="mono">latency_breakdown.md</span> §3 and §5 over 24 runs (three task classes × five team + three solo), totalling wall 3,946 s, model calls 4,704 s, turn-end memory 1,364 s, context preparation 32 s, tool execution 9.4 s; slide 4 breaks one round down. Both a lead turn and the poller take the single <span class="mono">agent_lock</span>, so turns never overlap, while teammates run as threads outside it. The Qwen2.5 models on the cover appear only in the KV-splice replay, never in the live harness.</p></div>
+  <div class="foot"><p>Source: <span class="mono">s15_integrated_harness/code.py</span> — <span class="mono">agent_loop</span> :3466, <span class="mono">prepare_context</span> :3407, <span class="mono">remember_after_turn</span> :3393, <span class="mono">async_event_loop</span> :3693 (the poller), <span class="mono">claim_next_task</span> :1376, <span class="mono">spawn_teammate_thread</span> :1499, <span class="mono">BUILTIN_TOOLS</span> :3193. <span class="mono">max_tokens</span> 8,000, rising to 16,000 once on truncation; <span class="mono">FALLBACK_MODEL_ID</span> takes over after two consecutive 529s. Scales from <span class="mono">research/05_latency_breakdown/README.md</span> Part A §2 and §A.W (was <span class="mono">latency_breakdown.md</span> §3 and §5) over 24 runs (three task classes × five team + three solo), totalling wall 3,946 s, model calls 4,704 s, turn-end memory 1,364 s, context preparation 32 s, tool execution 9.4 s; slide 4 breaks one round down. Both a lead turn and the poller take the single <span class="mono">agent_lock</span>, so turns never overlap, while teammates run as threads outside it. The Qwen2.5 models on the cover appear only in the KV-splice replay, never in the live harness.</p></div>
 </section>
 
 <!-- ===================== 3 · MAP ===================== -->
@@ -701,7 +701,7 @@ table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
       </ul>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">latency_breakdown.md</span> §3 A-B and §4; <span class="mono">s15_integrated_harness/latency_profile.md</span> §2.5. The shares inside the call apply one pooled regression to each group's own token counts and sum to 96-109% of that group's call time (CODE-team lead residual −9.4%); the bars are scaled to the attributed sum. Correction to the 2026-09-09 deck: its 0.42 ms/token fit was confounded by long-output calls and overstated prefill about 8x; the 2026-09-10 probe's 0.052 ms/token is within 1.4x of this week's value.</p></div>
+  <div class="foot"><p>Source: <span class="mono">research/05_latency_breakdown/README.md</span> Part A §2.2–2.5.1 and §A.W (was <span class="mono">latency_breakdown.md</span> §3 A-B and §4, <span class="mono">latency_profile.md</span> §2.5). The shares inside the call apply one pooled regression to each group's own token counts and sum to 96-109% of that group's call time (CODE-team lead residual −9.4%); the bars are scaled to the attributed sum. Correction to the 2026-09-09 deck: its 0.42 ms/token fit was confounded by long-output calls and overstated prefill about 8x; the 2026-09-10 probe's 0.052 ms/token is within 1.4x of this week's value.</p></div>
 </section>
 
 <!-- ===================== 5 · MEMORY TAX ===================== -->
@@ -744,7 +744,7 @@ table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
       <p class="claim" style="font-size:17px">Running the extraction once per user request, or asynchronously outside the lock, would cut team-run wall time by 28-48%. Preparation only costs when the harness calls the model to do it.</p>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">latency_breakdown.md</span> §3 A and E, §5, §6; <span class="mono">latency_profile.md</span> §2.6. Totals over 24 runs: agent calls 4,704 s, turn-end memory work 1,364 s, context preparation 32 s, tool execution 9.4 s, wall 3,946 s; calls exceed wall because teammates run in parallel with the lead. Every run solved every task (coding 24/24 tests pass, math 24/24 correct, file Q&amp;A 97-100% keyword coverage).</p></div>
+  <div class="foot"><p>Source: <span class="mono">research/05_latency_breakdown/README.md</span> Part A §2.2–2.3, §2.6, §2.8 and §A.W (was <span class="mono">latency_breakdown.md</span> §3 A and E, §5, §6). Totals over 24 runs: agent calls 4,704 s, turn-end memory work 1,364 s, context preparation 32 s, tool execution 9.4 s, wall 3,946 s; calls exceed wall because teammates run in parallel with the lead. Every run solved every task (coding 24/24 tests pass, math 24/24 correct, file Q&amp;A 97-100% keyword coverage).</p></div>
 </section>
 
 <!-- ===================== 6 · TOOL PRICES ===================== -->
@@ -785,7 +785,7 @@ table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
       <p class="claim" style="font-size:16px">A per-tool cost table is now measured rather than guessed: a lookup for the 22 flat tools, argument-aware pricing for <span class="mono">bash</span>, <span class="mono">read_file</span>, <span class="mono">glob</span> and <span class="mono">create_worktree</span>.</p>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">tool_execution_cost.md</span> §2-4; <span class="mono">s15_integrated_harness/tool_latency_profile.md</span>; tables in <span class="mono">traces/tool_latency/</span>. Tool-side optimisation stays closed; the levers remain round count, decode and turn-end memory work. The list is also what a hot/cold tool pool would advertise (slide 7): publication alone is pointless, but the prices are now exact.</p></div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> Part A and §A.W (was <span class="mono">tool_execution_cost.md</span> §2-4 and <span class="mono">tool_latency_profile.md</span>); tables in <span class="mono">research/06_tool_cost/data/tool_latency/</span>. Tool-side optimisation stays closed; the levers remain round count, decode and turn-end memory work. The list is also what a hot/cold tool pool would advertise (slide 7): publication alone is pointless, but the prices are now exact.</p></div>
 </section>
 
 <!-- ===================== 7 · COST EXPOSURE ===================== -->
@@ -819,7 +819,7 @@ table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
       <p class="claim" style="font-size:16.5px">Cost-aware routing stays in the harness. The exception is the tiered-memory case itself: a hot and a cold route to the same bytes are exactly the substitutable pair the effect needs. Nine tokens of description moved the model from 53% to 100%, with no loss of accuracy.</p>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">tool_cost_exposure.md</span> §2-4; <span class="mono">s15_integrated_harness/tool_cost_profile.md</span>; page <span class="mono">claude.ai/code/artifact/6de7f01b-27ae-4151-911f-42293a286e98</span>. Noise floor: a stage-2 arm whose reader really slept 5 s without telling the model differed by about 15 points, so nothing under 12-15 points in stages 2-3 is signal. Probes C and D are separate batches with their own baselines (44% and 31%). One model on one provider; the mixed-pool null is the claim to re-check on a second model (15 minutes with the scripts as they stand).</p></div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> Part B and §B.W (was <span class="mono">tool_cost_exposure.md</span> §2-4 and <span class="mono">tool_cost_profile.md</span>); page <span class="mono">claude.ai/code/artifact/6de7f01b-27ae-4151-911f-42293a286e98</span>. Noise floor: a stage-2 arm whose reader really slept 5 s without telling the model differed by about 15 points, so nothing under 12-15 points in stages 2-3 is signal. Probes C and D are separate batches with their own baselines (44% and 31%). One model on one provider; the mixed-pool null is the claim to re-check on a second model (15 minutes with the scripts as they stand).</p></div>
 </section>
 
 <!-- ===================== 8 · REDUNDANCY CEILING ===================== -->
@@ -893,7 +893,7 @@ table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
       </div>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">teammate_input_redundancy.md</span> §3 A-E, §5-6; <span class="mono">latency_breakdown.md</span> §5 (FQA and CODE rows; MATH read no files). PF-S run 1 at 50k spawned a fourth teammate 16 min in, hence N=4; DC-S run 2 at 50k spawned two extra after provider 429s. The provider's cache is strictly prefix-based (identical resend 99.9% cached, same body behind a new prefix 0%, a unique block mid-prompt 0%), so a shared block is reusable only at the same position in the same prefix: the constraint on next step 5.</p></div>
+  <div class="foot"><p>Source: <span class="mono">research/02_input_redundancy/README.md</span> Part B §2, §6 and §B.W (was <span class="mono">teammate_input_redundancy.md</span> §3 A-E, §5-6); <span class="mono">research/05_latency_breakdown/README.md</span> §A.W (was <span class="mono">latency_breakdown.md</span> §5; FQA and CODE rows; MATH read no files). PF-S run 1 at 50k spawned a fourth teammate 16 min in, hence N=4; DC-S run 2 at 50k spawned two extra after provider 429s. The provider's cache is strictly prefix-based (identical resend 99.9% cached, same body behind a new prefix 0%, a unique block mid-prompt 0%), so a shared block is reusable only at the same position in the same prefix: the constraint on next step 5.</p></div>
 </section>
 
 <!-- ===================== 9 · ROUNDS AND RESIDENCY ===================== -->
@@ -947,7 +947,7 @@ table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
       </ul>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">agent_e2e_bottleneck.md</span> Q1, Q2, Q4; <span class="mono">s15_integrated_harness/context_intervention_profile.md</span>. Shell-denied matrix, fixed driver: baseline @50k 14 and 319 rounds (one timeout), batch 20 and 20, outline 242 and 87 (both timeouts), stable prefix 11 rounds at 39% cache hit and 66k uncached tokens. At the 50k limit one task took 33-65 rounds and 363-807 s with 18-45 shrink events and 26-35 placeholders resident; at 512k three tasks took 2-20 rounds and 82-249 s with none.</p></div>
+  <div class="foot"><p>Source: <span class="mono">research/03_context_interventions/README.md</span> and its §A.W Q2, Q4 (was <span class="mono">agent_e2e_bottleneck.md</span>); Q1 is <span class="mono">research/02_input_redundancy/README.md</span> Part A §3.8. Shell-denied matrix, fixed driver: baseline @50k 14 and 319 rounds (one timeout), batch 20 and 20, outline 242 and 87 (both timeouts), stable prefix 11 rounds at 39% cache hit and 66k uncached tokens. At the 50k limit one task took 33-65 rounds and 363-807 s with 18-45 shrink events and 26-35 placeholders resident; at 512k three tasks took 2-20 rounds and 82-249 s with none.</p></div>
 </section>
 
 <!-- ===================== 10 · NEXT STEPS ===================== -->
@@ -996,7 +996,7 @@ table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
       <p class="note xs" style="margin-top:2px">The two new directions are not additions to the backlog so much as a reading of it. <b>12</b> gives items 5 and 6 their success metric, which is round count rather than prefill tokens. <b>13</b> turns item 7 from a measurement into a control.</p>
     </div>
   </div>
-  <div class="foot"><p>Sources: <span class="mono">tiered_memory_conclusion.md</span> §4 for items 1-11, numbering as in the note; <span class="mono">agent_e2e_bottleneck.md</span> Q1 and Q4 behind direction 12, where the eviction figures come from the X3 budget sweep; <span class="mono">serving_memory_balancing.md</span> §6.3 behind direction 13, which cites the idle-KV figures to TokenCake and vLLM RFC #37003.</p></div>
+  <div class="foot"><p>Sources: <span class="mono">tiered_memory_conclusion.md</span> §4 for items 1-11, numbering as in the note; <span class="mono">research/02_input_redundancy/README.md</span> Part A §3.8 and <span class="mono">research/03_context_interventions/README.md</span> §A.W Q4 (was <span class="mono">agent_e2e_bottleneck.md</span> Q1 and Q4) behind direction 12, where the eviction figures come from the X3 budget sweep; <span class="mono">research/related_work/serving_memory_balancing.md</span> §6.3 behind direction 13, which cites the idle-KV figures to TokenCake and vLLM RFC #37003.</p></div>
 </section>
 
 </div>
