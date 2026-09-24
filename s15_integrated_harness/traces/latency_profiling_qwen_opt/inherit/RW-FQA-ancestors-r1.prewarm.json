@@ -1,0 +1,120 @@
+{
+  "label": "RW-FQA-ancestors-r1",
+  "arm": "ancestors",
+  "tasks": {
+    "0": {
+      "task_id": "task_af265343",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n '^### ' s15_integrated_harness/GLOSSARY.md | grep -E 'Compaction|Hook|Skill catalog'"
+        },
+        {
+          "tool": "bash",
+          "command": "sed -n '43,46p;88,91p;174,177p' s15_integrated_harness/GLOSSARY.md | cat -A | head -20"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 43,
+          "limit": 4
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 88,
+          "limit": 4
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 174,
+          "limit": 4
+        }
+      ],
+      "result_chars": 1114
+    },
+    "1": {
+      "task_id": "task_4867cff4",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": ".tasks/task_4867cff4.json",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 600,
+          "limit": 120
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 165,
+          "limit": 55
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 235,
+          "limit": 45
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 400,
+          "limit": 55
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 227,
+          "limit": 8
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 428,
+          "limit": 16
+        }
+      ],
+      "result_chars": 0
+    },
+    "2": {
+      "task_id": "task_8cba835c",
+      "reads": [],
+      "result_chars": 0
+    }
+  },
+  "injections": [
+    {
+      "agent_id": "agent-team_000003",
+      "owner": "runner-3",
+      "task_id": "task_4867cff4",
+      "arm": "ancestors",
+      "pairs": 6,
+      "chars": 14095,
+      "sources": [
+        "task_af265343"
+      ],
+      "ancestors": [
+        "task_af265343"
+      ],
+      "skipped_resident": 0
+    }
+  ]
+}

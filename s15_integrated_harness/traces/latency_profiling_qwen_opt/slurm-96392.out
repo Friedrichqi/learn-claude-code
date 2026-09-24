@@ -1,0 +1,232 @@
+{"time": "2026-09-22T16:22:00-0400", "host": "alphagpu51", "slurm_job_id": "96392", "slurm_cpus": "16", "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition", "gpu_mem_mib": 97887, "nproc": 144, "model": "Qwen/Qwen3.8-27B", "port": 50081, "max_model_len": 262144, "gpu_util": 0.9, "max_num_seqs": 32, "max_num_batched_tokens": 16384, "extra_vllm_args": "", "team_reps": "r1 r2 r3 r4 r5", "solo_reps": "r1 r2 r3", "categories": "FQA CODE MATH", "max_seconds": 3600, "lane": "/mnt/home/yqi10/lanes/latency_qwen", "out": "/mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt", "hf_home": "/projects/co/jlin4/agenticllm/hf_cache", "vllm": "0.29.0", "torch": "2.13.0+cu130", "transformers": "5.17.0", "anthropic": "1.7.0", "git_head": "0cbddf885d05ee7ed31c08a897f97b57284aca8a"}
+[16:23:20] env: repo=/mnt/home/yqi10/learn-claude-code out=/mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt lane=/mnt/home/yqi10/lanes/latency_qwen base_url=http://127.0.0.1:50081 gpu='NVIDIA RTX PRO 6000 Blackwell Server Edition' 97887MiB maxlen=262144
+[16:23:20] download: ensuring Qwen/Qwen3.8-27B is complete in /projects/co/jlin4/agenticllm/hf_cache (idempotent)
+Fetching 32 files:   0%|          | 0/32 [00:00<?, ?it/s]Fetching 32 files: 100%|██████████| 32/32 [00:00<00:00, 1084.89it/s]
+/projects/co/jlin4/agenticllm/hf_cache/hub/models--Qwen--Qwen3.8-27B/snapshots/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0
+[16:23:22] server not healthy on http://127.0.0.1:50081: (re)starting
+[16:23:22] serve: starting vLLM Qwen/Qwen3.8-27B on http://127.0.0.1:50081 (max-model-len 262144, util 0.90, seqs 32, batched 16384, tag lmcache) -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/vllm_server_lmcache_20260922T162322.log
+(APIServer pid=3151493)                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=3151493)     return await anext(self.gen)
+(APIServer pid=3151493)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 58, in build_async_engine_client
+(APIServer pid=3151493)     async with build_async_engine_client_from_engine_args(
+(APIServer pid=3151493)                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=3151493)     return await anext(self.gen)
+(APIServer pid=3151493)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 94, in build_async_engine_client_from_engine_args
+(APIServer pid=3151493)     async_llm = AsyncLLM.from_vllm_config(
+(APIServer pid=3151493)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 227, in from_vllm_config
+(APIServer pid=3151493)     return cls(
+(APIServer pid=3151493)            ^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 156, in __init__
+(APIServer pid=3151493)     self.engine_core = EngineCoreClient.make_async_mp_client(
+(APIServer pid=3151493)                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(APIServer pid=3151493)     return func(*args, **kwargs)
+(APIServer pid=3151493)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 139, in make_async_mp_client
+(APIServer pid=3151493)     return AsyncMPClient(*client_args)
+(APIServer pid=3151493)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(APIServer pid=3151493)     return func(*args, **kwargs)
+(APIServer pid=3151493)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 991, in __init__
+(APIServer pid=3151493)     super().__init__(
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 609, in __init__
+(APIServer pid=3151493)     with launch_core_engines(
+(APIServer pid=3151493)          ^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/contextlib.py", line 144, in __exit__
+(APIServer pid=3151493)     next(self.gen)
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1240, in launch_core_engines
+(APIServer pid=3151493)     wait_for_engine_startup(
+(APIServer pid=3151493)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1320, in wait_for_engine_startup
+(APIServer pid=3151493)     raise RuntimeError(
+(APIServer pid=3151493) RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+[16:29:05] serve: vLLM (lmcache) exited during startup
+[16:29:05] serve: LMCache start FAILED -> falling back to native prefix caching (finding recorded)
+[16:29:05] serve: starting vLLM Qwen/Qwen3.8-27B on http://127.0.0.1:50081 (max-model-len 262144, util 0.90, seqs 32, batched 16384, tag base) -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/vllm_server_base_20260922T162905.log
+[16:35:19] serve: healthy after 370s (pid 3153823, tag base)
+server: {"version": "0.29.0"} | metric families: 98
+[16:35:20] effprobe: probing output_config.effort vs enable_thinking=false
+{"label": "default", "output_tokens": 372, "input_tokens": 111, "thinking_chars": 1111, "text_chars": 31, "duration_s": 14.6}
+{"label": "effort_low", "output_tokens": 554, "input_tokens": 99, "thinking_chars": 735, "text_chars": 582, "duration_s": 21.2}
+{"label": "effort_medium", "output_tokens": 520, "input_tokens": 69, "thinking_chars": 707, "text_chars": 564, "duration_s": 19.8}
+{"label": "nothink", "output_tokens": 498, "input_tokens": 71, "thinking_chars": 0, "text_chars": 1281, "duration_s": 19.0}
+{"label": "default_repeat", "output_tokens": 439, "input_tokens": 111, "thinking_chars": 1179, "text_chars": 221, "duration_s": 16.8}
+VERDICT: {"mode": "nothink"}
+[16:37:00] effprobe verdict: nothink
+[16:37:00] lane: rsync /mnt/home/yqi10/learn-claude-code/ -> /mnt/home/yqi10/lanes/latency_qwen/
+[16:37:01] lane: .env -> http://127.0.0.1:50081 Qwen/Qwen3.8-27B
+[16:37:01] probe: provider_probe.py --all (prefill sweep, cached resends, decode rate, cache semantics)
+     50000 chars  uncached 12,744  cached      0  first block  2.10s  tail 11.47s  26.2 tok/s
+      8000 chars  uncached  2,130  cached      0  first block  0.39s  tail 11.35s  26.4 tok/s
+    100000 chars  uncached 24,800  cached      0  first block  4.20s  tail 11.61s  25.8 tok/s
+    160000 chars  uncached 36,646  cached      0  first block  6.39s  tail 11.76s  25.5 tok/s
+      2000 chars  uncached    530  cached      0  first block  0.17s  tail 11.33s  26.5 tok/s
+   long output: 1200 tokens at 26.4 tok/s
+
+== prefill
+   all fresh calls (n=18): first block = -0.01 s + 0.1729 ms/uncached token (r2 1.00) -> 5,784 tok/s
+   one clean sweep (n=6):  first block = -0.02 s + 0.1745 ms/uncached token (r2 1.00) -> 5,732 tok/s
+   cached resend of 36,064 tokens: 6.42s -> 0.38s  = 0.1649 ms saved per cached token
+   cached resend of 12,544 tokens: 2.07s -> 0.22s  = 0.1452 ms saved per cached token
+
+== decode: median 26 tok/s, range 26-26
+   inter-delta gap: mean 38.3 ms but median 38.5 ms -- events arrive in bursts, so use tokens/s, not the median gap
+
+-- cache semantics: is the prompt cache prefix-based?
+   1 first send, unique prefix          first block  5.14s  cached      0 of 29,868  (  0.0%)
+   2 identical resend                   first block  0.28s  cached 29,792 of 29,868  ( 99.7%)
+   3 new prefix, same body              first block  5.09s  cached      0 of 29,867  (  0.0%)
+   4 unique block inserted mid-prompt   first block  5.11s  cached      0 of 29,905  (  0.0%)
+   5 document never sent before         first block 11.59s  cached      0 of 61,519  (  0.0%)
+   6 that document again, new prefix    first block 11.58s  cached      0 of 61,520  (  0.0%)
+
+wrote 27 calls to /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/provider_probe.json
+[16:44:24] smoke: one FQA team run as the gate before the matrix
+[16:44:24] run: FQA-team-smoke -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/smoke (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 16:44:24 start FQA-team-smoke (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/smoke/FQA-team-smoke.console.log)
+[workloads] 16:47:01 end FQA-team-smoke exit=0
+[workloads] score FQA-team-smoke: keyword coverage 0.967 status=completed wall=118.8s
+smoke check FQA-team-smoke (run_20260922T204433_511089Z_51310c08.jsonl)
+  - status=completed wall=118.8s teammates=3 model_calls=29
+  - cache: reported on 29/29 calls, >0 on 22, cache_creation total 28,224
+  - server metrics on 29 calls, exact attribution 29/29; exact-call means prefill 0.31s decode 6.27s
+  - stop_reason: {'tool_use': 16, 'end_turn': 8}; max_tokens share 0%
+  - thinking share of output chars 0%; first block types {'tool_use': 15, 'text': 9}
+  - prompt tok mean 4,734 max 9,301; output tok mean 159 max 644; client call mean 7.8s
+  - FQA coverage 0.967
+PASS
+[16:47:06] run: FQA-team-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 16:47:06 start FQA-team-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/FQA-team-r1.console.log)
+[workloads] 16:49:27 end FQA-team-r1 exit=0
+[workloads] score FQA-team-r1: keyword coverage 0.967 status=completed wall=131.7s
+[16:49:33] run: CODE-team-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 16:49:33 start CODE-team-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/CODE-team-r1.console.log)
+[workloads] 16:52:11 end CODE-team-r1 exit=0
+[workloads] score CODE-team-r1: 3/3 correct status=completed wall=148.9s
+[16:52:18] run: MATH-team-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=memory --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 16:52:18 start MATH-team-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/MATH-team-r1.console.log)
+[workloads] 16:56:45 end MATH-team-r1 exit=0
+[workloads] score MATH-team-r1: 3/3 correct status=completed wall=257.8s
+[16:56:50] run: FQA-team-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 16:56:50 start FQA-team-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/FQA-team-r2.console.log)
+[workloads] 16:59:09 end FQA-team-r2 exit=0
+[workloads] score FQA-team-r2: keyword coverage 0.967 status=completed wall=130.5s
+[16:59:15] run: CODE-team-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 16:59:15 start CODE-team-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/CODE-team-r2.console.log)
+[workloads] 17:02:48 end CODE-team-r2 exit=0
+[workloads] score CODE-team-r2: 3/3 correct status=completed wall=201.9s
+[17:02:54] run: MATH-team-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=memory --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:02:54 start MATH-team-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/MATH-team-r2.console.log)
+[workloads] 17:07:47 end MATH-team-r2 exit=0
+[workloads] score MATH-team-r2: 3/3 correct status=completed wall=283.3s
+[17:07:52] run: FQA-team-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:07:53 start FQA-team-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/FQA-team-r3.console.log)
+[workloads] 17:10:51 end FQA-team-r3 exit=0
+[workloads] score FQA-team-r3: keyword coverage 0.967 status=completed wall=154.5s
+[17:10:57] run: CODE-team-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:10:57 start CODE-team-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/CODE-team-r3.console.log)
+[workloads] 17:14:02 end CODE-team-r3 exit=0
+[workloads] score CODE-team-r3: 3/3 correct status=completed wall=175.8s
+[17:14:08] run: MATH-team-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=memory --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:14:08 start MATH-team-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/MATH-team-r3.console.log)
+[workloads] 17:17:55 end MATH-team-r3 exit=0
+[workloads] score MATH-team-r3: 3/3 correct status=completed wall=217.5s
+[17:18:00] run: FQA-team-r4 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:18:01 start FQA-team-r4 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/FQA-team-r4.console.log)
+[workloads] 17:20:18 end FQA-team-r4 exit=0
+[workloads] score FQA-team-r4: keyword coverage 1.0 status=completed wall=128.0s
+[17:20:23] run: CODE-team-r4 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:20:23 start CODE-team-r4 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/CODE-team-r4.console.log)
+[workloads] 17:22:52 end CODE-team-r4 exit=0
+[workloads] score CODE-team-r4: 3/3 correct status=completed wall=139.7s
+[17:22:59] run: MATH-team-r4 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=memory --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:22:59 start MATH-team-r4 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/MATH-team-r4.console.log)
+[workloads] 17:27:42 end MATH-team-r4 exit=0
+[workloads] score MATH-team-r4: 3/3 correct status=completed wall=274.0s
+[17:27:47] run: FQA-team-r5 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:27:48 start FQA-team-r5 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/FQA-team-r5.console.log)
+[workloads] 17:30:17 end FQA-team-r5 exit=0
+[workloads] score FQA-team-r5: keyword coverage 1.0 status=completed wall=139.5s
+[17:30:22] run: CODE-team-r5 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:30:22 start CODE-team-r5 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/CODE-team-r5.console.log)
+[workloads] 17:34:33 end CODE-team-r5 exit=0
+[workloads] score CODE-team-r5: 3/3 correct status=completed wall=242.1s
+[17:34:40] run: MATH-team-r5 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=memory --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:34:40 start MATH-team-r5 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/MATH-team-r5.console.log)
+[workloads] 17:39:59 end MATH-team-r5 exit=0
+[workloads] score MATH-team-r5: 3/3 correct status=completed wall=308.9s
+[17:40:04] run: FQA-solo-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:40:04 start FQA-solo-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/FQA-solo-r1.console.log)
+[workloads] 17:41:05 end FQA-solo-r1 exit=0
+[workloads] score FQA-solo-r1: keyword coverage 0.933 status=completed wall=51.7s
+[17:41:10] run: CODE-solo-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:41:11 start CODE-solo-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/CODE-solo-r1.console.log)
+[workloads] 17:44:36 end CODE-solo-r1 exit=0
+[workloads] score CODE-solo-r1: 3/3 correct status=completed wall=196.0s
+[17:44:42] run: MATH-solo-r1 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=memory --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:44:43 start MATH-solo-r1 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/MATH-solo-r1.console.log)
+[workloads] 17:46:50 end MATH-solo-r1 exit=0
+[workloads] score MATH-solo-r1: 3/3 correct status=completed wall=118.1s
+[17:46:55] run: FQA-solo-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:46:56 start FQA-solo-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/FQA-solo-r2.console.log)
+[workloads] 17:48:11 end FQA-solo-r2 exit=0
+[workloads] score FQA-solo-r2: keyword coverage 0.967 status=completed wall=65.8s
+[17:48:16] run: CODE-solo-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:48:17 start CODE-solo-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/CODE-solo-r2.console.log)
+[workloads] 17:51:39 end CODE-solo-r2 exit=0
+[workloads] score CODE-solo-r2: 3/3 correct status=completed wall=192.6s
+[17:51:45] run: MATH-solo-r2 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=memory --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:51:45 start MATH-solo-r2 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/MATH-solo-r2.console.log)
+[workloads] 17:54:26 end MATH-solo-r2 exit=0
+[workloads] score MATH-solo-r2: 3/3 correct status=completed wall=151.7s
+[17:54:31] run: FQA-solo-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:54:31 start FQA-solo-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/FQA-solo-r3.console.log)
+[workloads] 17:55:38 end FQA-solo-r3 exit=0
+[workloads] score FQA-solo-r3: keyword coverage 0.967 status=completed wall=57.2s
+[17:55:43] run: CODE-solo-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=main-low --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:55:43 start CODE-solo-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/CODE-solo-r3.console.log)
+[workloads] 17:58:17 end CODE-solo-r3 exit=0
+[workloads] score CODE-solo-r3: 3/3 correct status=completed wall=145.2s
+[17:58:24] run: MATH-solo-r3 -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt (driver: --driver-arg=--vllm-metrics=http://127.0.0.1:50081/metrics --driver-arg=--client-max-retries=0 --driver-arg=--server-info --driver-arg=--effort-policy=memory --driver-arg=--effort-mode=nothink --driver-arg=--prewarm=ancestors --driver-arg=--prewarm-evict=lfu --driver-arg=--prewarm-budget=32k --driver-arg=--no-timestamp --driver-arg=--max-teammate-concurrent=2)
+[workloads] 17:58:24 start MATH-solo-r3 (log /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/MATH-solo-r3.console.log)
+[workloads] 18:01:25 end MATH-solo-r3 exit=0
+[workloads] score MATH-solo-r3: 3/3 correct status=completed wall=171.3s
+[18:01:30] matrix: done (24 scored runs)
+[18:01:30] tables: latency_breakdown.py /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt
+[18:01:32] tables: 271 lines -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/latency_tables.md
+[18:01:32] compare: latency_compare.py (GLM traces vs /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt)
+wrote /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/compare_glm_vs_qwen.md (276 lines; A 24 runs, B 24 runs)
+[18:01:36] pipeline finished (steps: download serve effprobe lane probe smoke matrix tables compare)
+[inherit] 18:01:36 start RW-FQA-ancestors-r1
+[inherit] 18:01:36 end RW-FQA-ancestors-r1 exit=1
+[inherit] RW-FQA-ancestors-r1: no trace
+[inherit] 18:01:36 start FAB-DEEP-ancestors-r1
+[inherit] 18:01:36 end FAB-DEEP-ancestors-r1 exit=1
+[inherit] FAB-DEEP-ancestors-r1: no trace
+[inherit] 18:01:36 start RW-FQA-none-r1
+[inherit] 18:01:37 end RW-FQA-none-r1 exit=1
+[inherit] RW-FQA-none-r1: no trace
+[inherit] 18:01:37 start FAB-DEEP-none-r1
+[inherit] 18:01:37 end FAB-DEEP-none-r1 exit=1
+[inherit] FAB-DEEP-none-r1: no trace
+[inherit] 18:01:37 start RW-FQA-none-r2
+[inherit] 18:01:37 end RW-FQA-none-r2 exit=1
+[inherit] RW-FQA-none-r2: no trace
+[inherit] 18:01:37 start FAB-DEEP-none-r2
+[inherit] 18:01:37 end FAB-DEEP-none-r2 exit=1
+[inherit] FAB-DEEP-none-r2: no trace
+[inherit] 18:01:37 start RW-FQA-ancestors-r2
+[inherit] 18:01:37 end RW-FQA-ancestors-r2 exit=1
+[inherit] RW-FQA-ancestors-r2: no trace
+[inherit] 18:01:37 start FAB-DEEP-ancestors-r2
+[inherit] 18:01:37 end FAB-DEEP-ancestors-r2 exit=1
+[inherit] FAB-DEEP-ancestors-r2: no trace
+{"time": "2026-09-22T18:01:38-0400", "host": "alphagpu51", "slurm_job_id": "96392", "slurm_cpus": "16", "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition", "gpu_mem_mib": 97887, "nproc": 144, "model": "Qwen/Qwen3.8-27B", "port": 50081, "max_model_len": 262144, "gpu_util": 0.9, "max_num_seqs": 32, "max_num_batched_tokens": 16384, "extra_vllm_args": "", "team_reps": "r1 r2 r3 r4 r5", "solo_reps": "r1 r2 r3", "categories": "FQA CODE MATH", "max_seconds": 3600, "lane": "/mnt/home/yqi10/lanes/latency_qwen", "out": "/mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt", "hf_home": "/projects/co/jlin4/agenticllm/hf_cache", "vllm": "0.29.0", "torch": "2.13.0+cu130", "transformers": "5.17.0", "anthropic": "1.7.0", "git_head": "0cbddf885d05ee7ed31c08a897f97b57284aca8a"}
+[18:02:34] env: repo=/mnt/home/yqi10/learn-claude-code out=/mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt lane=/mnt/home/yqi10/lanes/latency_qwen base_url=http://127.0.0.1:50081 gpu='NVIDIA RTX PRO 6000 Blackwell Server Edition' 97887MiB maxlen=262144
+[18:02:34] stop: terminating vLLM (session 3153823)
+[18:02:36] pipeline finished (steps: stop)

@@ -1,0 +1,102 @@
+{
+  "label": "RW-FQA-none-r2",
+  "arm": "none",
+  "tasks": {
+    "0": {
+      "task_id": "task_18ded1c3",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"^### \" s15_integrated_harness/GLOSSARY.md | head -40"
+        }
+      ],
+      "result_chars": 501
+    },
+    "1": {
+      "task_id": "task_e44f884b",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "find /mnt/home/yqi10/lanes/latency_qwen -maxdepth 3 -type f -name \"*.md\" | head -50; echo ---; ls -la /mnt/home/yqi10/lanes/latency_qwen"
+        },
+        {
+          "tool": "bash",
+          "command": "ls -la /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n -i -E \"compaction|hook|skill catalog\" /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/GLOSSARY.md | head -40"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n -i -E \"compaction|hook|skill catalog|skills\" s15_integrated_harness/ARCHITECTURE.md | head -60"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 0,
+          "limit": 200
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"Hook\" s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "bash",
+          "command": "awk 'tolower($0) ~ /hook/ {print NR\": \"$0}' s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"ompaction\" s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"ompact\" s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"kill\" s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"catalog\" s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"^#\" s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 205,
+          "limit": 76
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 430,
+          "limit": 32
+        }
+      ],
+      "result_chars": 0
+    },
+    "2": {
+      "task_id": "task_754356a2",
+      "reads": [],
+      "result_chars": 0
+    }
+  },
+  "injections": []
+}

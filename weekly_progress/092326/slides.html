@@ -349,12 +349,34 @@ svg .t-shot { fill: var(--shot); }
 table.data.xxs { font-size: 11.5px; }
 .kv.xs { font-size: 12px; gap: 4px 12px; } .kv.xs dt { font-size: 11px; }
 .steps.two-up { grid-template-columns: 1fr 1fr; }
+/* reading keys: every table carries its own terms, metrics and what the values say */
+.key { display: grid; gap: 6px 20px; align-content: start; }
+.key.k2 { grid-template-columns: 1fr 1fr; }
+.key.k3 { grid-template-columns: 1fr 1fr 1fr; }
+.key .kh { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 3px; margin-bottom: 5px; border-bottom: 1px solid var(--hair-2); }
+.gloss { display: grid; grid-template-columns: max-content 1fr; gap: 3px 9px; margin: 0; font-size: 11.5px; line-height: 1.32; align-items: baseline; }
+.gloss dt { font-family: var(--mono); font-size: 10.5px; color: var(--ink); white-space: nowrap; }
+.gloss dd { margin: 0; color: var(--ink-2); }
+.gloss b { color: var(--ink); font-weight: 600; }
+/* table furniture: group rows, sub-labels, cells not run, interval verdicts */
+table.data tr.grp td { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-top: 7px; padding-bottom: 3px; border-bottom: 1px solid var(--hair); background: none; }
+table.data th.grp { text-align: center; border-bottom: 1px solid var(--hair-2); }
+table.data .sub { display: block; font-family: var(--body); font-size: 10.5px; line-height: 1.3; color: var(--muted); margin-top: 1px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+table.data td.na { color: var(--muted); }
+table.data td.warn { color: var(--warn); }
+.verd { font-family: var(--mono); font-size: 10.5px; white-space: nowrap; }
+.verd.yes { color: var(--shot); } .verd.no { color: var(--muted); } .verd.cost { color: var(--warn); }
+svg .t-warn { fill: var(--warn); }
+svg .box-shot { fill: none; stroke: var(--shot); stroke-width: 1.2; stroke-dasharray: 4 3; }
+svg .band-shot { fill: var(--shot); opacity: 0.07; }
+svg .whisk { stroke-width: 2.2; stroke-linecap: round; fill: none; }
+.lc { text-transform: none; letter-spacing: 0; }
 </style>
 
 <div class="deck" id="deck">
 <div class="stage" id="stage">
 
-<!-- ===================== 0 · COVER ===================== -->
+<!-- ===================== 1 · COVER ===================== -->
 <section class="slide cover" data-title="Cover">
   <div>
     <div class="eyebrow"><span>Weekly progress</span><span class="num">2026-09-23</span></div>
@@ -364,565 +386,712 @@ table.data.xxs { font-size: 11.5px; }
   </div>
   <div class="meta">
     <div><b>yq335@cornell.edu</b>learn-claude-code · branch <span class="mono">claude</span> · covers 2026-09-16 to 2026-09-22</div>
-    <div><b>Harness</b>s15 integrated harness (lead + teammates) · six notes, synthesis written 2026-09-21 at <span class="mono">aded0d0</span></div>
-    <div><b>Models</b>glm-5.3-flash via z.ai · deepseek-v4-flash · Qwen/Qwen3.8-27B on local vLLM</div>
+    <div><b>Harness</b>s15 integrated harness (lead + teammates) · five notes, synthesis written 2026-09-21 at <span class="mono">aded0d0</span></div>
+    <div><b>Models</b>glm-5.3-flash via z.ai · Qwen/Qwen3.8-27B on local vLLM</div>
     <div><b>Synthesis</b><span class="mono">weekly_progress/092326/conclusion.md</span></div>
   </div>
 </section>
 
-<!-- ===================== 1 · THE SYSTEM UNDER TEST ===================== -->
-<section class="slide" data-title="System under test">
+<!-- ===================== 2 · THE HARNESS ===================== -->
+<section class="slide" data-title="The harness">
   <div class="slide-head">
-    <div class="eyebrow"><span class="num">1</span><span>The system under test · orientation for anyone new to this deck</span></div>
-    <h2>A <span class="dim">turn</span> is one Lead activation and a <span class="dim">round</span> is one trip through the agent loop — the unit this week is the round, because a round is quantised</h2>
+    <div class="eyebrow"><span class="num">2</span><span>The harness · orientation for anyone new to this deck</span></div>
+    <h2>Every agent runs the same round — prepare, call the model, run tools — and agents coordinate only through a task board and a message bus</h2>
   </div>
-  <div class="body" style="grid-template-columns: 636px 1fr; gap:34px">
+  <div class="body" style="grid-template-columns: 680px 1fr; gap:28px">
     <figure>
-      <p class="label">FAB-DEEP · the depth-4 board the arms are separated on</p>
-      <svg viewBox="0 0 620 178" role="img" aria-label="A task board of five items. GLOSSARY feeds ARCHITECTURE, which feeds DESIGN, which feeds the successor task 'reconcile all four'; README feeds the successor directly. The dag arm hands the successor items 3 and 4; the ancestors arm hands it items 1, 2, 3 and 4. The two arms can only differ at depth 3 or more." style="margin-top:6px">
+      <svg viewBox="0 0 680 396" role="img" aria-label="Architecture of the s15 harness. The Lead agent runs a loop of rounds: inject events, prepare context, call the model, and if the reply has tool calls run them and loop; otherwise the turn ends with memory extraction. The Lead writes tasks and dependency edges to a file-backed task board. Teammates, each on its own thread, claim ready tasks from the board and send results through a message bus, and a message in the Lead's inbox starts its next turn. Every agent's model calls go through one shared traced client to either glm-5.3-flash on z.ai or Qwen3.8-27B on a local vLLM server. This week's injection prepends a successor's predecessors' reads to its model calls.">
         <g color="var(--ink-2)">
-          <defs><marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
-          <rect x="16" y="24" width="112" height="30" rx="3" class="node-done"></rect>
-          <text x="72" y="43" font-size="11" text-anchor="middle" class="t-mono">#1 GLOSSARY</text>
-          <rect x="158" y="24" width="112" height="30" rx="3" class="node-done"></rect>
-          <text x="214" y="43" font-size="11" text-anchor="middle" class="t-mono">#2 ARCHITECTURE</text>
-          <rect x="300" y="24" width="112" height="30" rx="3" class="node-done"></rect>
-          <text x="356" y="43" font-size="11" text-anchor="middle" class="t-mono">#3 DESIGN</text>
-          <rect x="158" y="88" width="112" height="30" rx="3" class="node-done"></rect>
-          <text x="214" y="107" font-size="11" text-anchor="middle" class="t-mono">#4 README</text>
-          <rect x="462" y="48" width="140" height="46" rx="3" class="box-lead"></rect>
-          <text x="532" y="68" font-size="11.5" text-anchor="middle" class="t-mono t-lead">#5 successor</text>
-          <text x="532" y="83" font-size="11" text-anchor="middle" class="t-lead">reconcile all four</text>
-          <path d="M 128 39 L 152 39" class="edge" marker-end="url(#arA)"></path>
-          <path d="M 270 39 L 294 39" class="edge" marker-end="url(#arA)"></path>
-          <path d="M 412 39 C 440 39, 440 62, 456 62" class="edge" marker-end="url(#arA)"></path>
-          <path d="M 270 103 C 400 103, 410 80, 456 80" class="edge" marker-end="url(#arA)"></path>
-          <text x="16" y="14" font-size="10" class="t-muted">depth 1</text>
-          <text x="158" y="14" font-size="10" class="t-muted">depth 2</text>
-          <text x="300" y="14" font-size="10" class="t-muted">depth 3</text>
-          <text x="462" y="14" font-size="10" class="t-muted">depth 4 · the successor under test</text>
-          <line x1="16" y1="136" x2="602" y2="136" class="grid"></line>
-          <rect x="16" y="148" width="9" height="9" rx="2" class="f-mate"></rect>
-          <text x="32" y="157" font-size="11" class="t-mate"><tspan class="t-mono">dag</tspan> hands it #3 #4 — the direct predecessors</text>
-          <rect x="310" y="148" width="9" height="9" rx="2" class="f-lead"></rect>
-          <text x="326" y="157" font-size="11" class="t-lead"><tspan class="t-mono">ancestors</tspan> hands it #1 #2 #3 #4 — the closure</text>
-          <text x="16" y="174" font-size="10.5" class="t-muted">The two treatment arms can only differ at depth 3 or more; #6 is a standalone item, the within-run control.</text>
+          <defs>
+            <marker id="arH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker>
+            <marker id="arHl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-lead"></path></marker>
+            <marker id="arHm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-mate"></path></marker>
+          </defs>
+          <!-- lead -->
+          <rect x="0" y="0" width="284" height="300" rx="5" class="box-lead"></rect>
+          <text x="12" y="19" font-size="13" class="t-title t-lead">Lead agent</text>
+          <text x="96" y="19" font-size="10" class="t-ink2">main thread · 26 tools</text>
+          <text x="12" y="35" font-size="9.5" class="t-ink2">plans the work, writes the board, spawns teammates</text>
+          <text x="12" y="49" font-size="9.5" class="t-muted">a turn starts on a user prompt, or when a 1 s poll</text>
+          <text x="12" y="61" font-size="9.5" class="t-muted">finds a cron fire, an inbox message or finished work</text>
+          <text x="12" y="80" font-size="9.5" class="t-mono t-muted">ONE ROUND · every agent runs this loop</text>
+          <rect x="24" y="86" width="248" height="22" rx="3" class="box"></rect>
+          <text x="33" y="101" font-size="11"><tspan class="t-title">inject events</tspan><tspan class="t-ink2" font-size="9.5"> · cron, inbox, background</tspan></text>
+          <rect x="24" y="116" width="248" height="22" rx="3" class="box"></rect>
+          <text x="33" y="131" font-size="10.5"><tspan class="t-mono">prepare_context()</tspan><tspan class="t-ink2" font-size="9.5"> · the compaction cascade</tspan></text>
+          <rect x="24" y="146" width="248" height="22" rx="3" class="box"></rect>
+          <text x="33" y="161" font-size="10.5"><tspan class="t-mono">call_llm()</tspan><tspan class="t-ink2" font-size="9.5"> · 93–99.9% of the round's time</tspan></text>
+          <rect x="24" y="176" width="160" height="22" rx="3" class="box-dash"></rect>
+          <text x="33" y="191" font-size="10.5">tool calls in the reply?</text>
+          <rect x="24" y="206" width="248" height="22" rx="3" class="box"></rect>
+          <text x="33" y="221" font-size="11"><tspan class="t-title">run tools</tspan><tspan class="t-ink2" font-size="9.5"> · permission → handler → post-hook</tspan></text>
+          <rect x="24" y="250" width="248" height="40" rx="3" class="box-soft"></rect>
+          <text x="33" y="266" font-size="10.5" class="t-title">turn ends — the reply has no tool call</text>
+          <text x="33" y="281" font-size="9.5" class="t-ink2">Lead: Stop hook → memory extraction, 12–35 s</text>
+          <path d="M 148 108 V 114" class="edge" marker-end="url(#arH)"></path>
+          <path d="M 148 138 V 144" class="edge" marker-end="url(#arH)"></path>
+          <path d="M 104 168 V 174" class="edge" marker-end="url(#arH)"></path>
+          <path d="M 104 198 V 204" class="edge" marker-end="url(#arH)"></path>
+          <text x="110" y="204" font-size="9" class="t-mono t-muted">yes</text>
+          <path d="M 24 217 H 15 V 97 H 22" class="edge" marker-end="url(#arH)"></path>
+          <path d="M 184 187 H 278 V 270 H 274" class="edge" marker-end="url(#arH)"></path>
+          <text x="192" y="183" font-size="9" class="t-mono t-muted">no</text>
+          <!-- task board -->
+          <rect x="318" y="0" width="152" height="160" rx="5" class="box"></rect>
+          <text x="330" y="19" font-size="12.5" class="t-title">Task board</text>
+          <text x="330" y="32" font-size="9" class="t-mono t-muted">.tasks/*.json</text>
+          <rect x="330" y="44" width="40" height="18" rx="2" class="node-done"></rect>
+          <text x="350" y="57" font-size="9.5" text-anchor="middle" class="t-mono">#1</text>
+          <rect x="330" y="70" width="40" height="18" rx="2" class="node-done"></rect>
+          <text x="350" y="83" font-size="9.5" text-anchor="middle" class="t-mono">#2</text>
+          <rect x="408" y="57" width="50" height="18" rx="2" class="node-open"></rect>
+          <text x="433" y="70" font-size="9.5" text-anchor="middle" class="t-mono">#3</text>
+          <path d="M 370 53 C 390 53, 392 64, 404 65" class="edge" marker-end="url(#arH)"></path>
+          <path d="M 370 79 C 390 79, 392 69, 404 68" class="edge" marker-end="url(#arH)"></path>
+          <text x="330" y="101" font-size="9" class="t-muted">predecessors, done</text>
+          <text x="408" y="88" font-size="9" class="t-muted">successor</text>
+          <text x="330" y="120" font-size="9.5" class="t-ink2">edges set by the Lead;</text>
+          <text x="330" y="133" font-size="9.5" class="t-ink2">a task can be claimed</text>
+          <text x="330" y="146" font-size="9.5" class="t-ink2">once every blocker is done</text>
+          <!-- message bus -->
+          <rect x="318" y="178" width="152" height="122" rx="5" class="box-soft"></rect>
+          <text x="330" y="197" font-size="12" class="t-title">Message bus</text>
+          <text x="330" y="210" font-size="9" class="t-mono t-muted">.mailboxes/*.jsonl</text>
+          <text x="330" y="229" font-size="9.5" class="t-ink2">typed messages: result,</text>
+          <text x="330" y="242" font-size="9.5" class="t-ink2">message, idle, plan,</text>
+          <text x="330" y="255" font-size="9.5" class="t-ink2">shutdown</text>
+          <text x="330" y="274" font-size="9.5" class="t-ink2">a message in the Lead's</text>
+          <text x="330" y="287" font-size="9.5" class="t-ink2">inbox starts its next turn</text>
+          <!-- teammates -->
+          <rect x="516" y="12" width="164" height="288" rx="5" class="box-mate" opacity="0.45"></rect>
+          <rect x="510" y="6" width="164" height="288" rx="5" class="box-mate" opacity="0.7"></rect>
+          <rect x="504" y="0" width="164" height="288" rx="5" class="box-mate"></rect>
+          <text x="516" y="19" font-size="13" class="t-title t-mate">Teammate ×N</text>
+          <text x="516" y="35" font-size="10" class="t-ink2">one thread each · 10 tools</text>
+          <text x="516" y="55" font-size="9.5" class="t-ink2">the same round, on its own</text>
+          <text x="516" y="68" font-size="9.5" class="t-ink2">message list — never</text>
+          <text x="516" y="81" font-size="9.5" class="t-ink2">compacted</text>
+          <text x="516" y="100" font-size="9.5" class="t-ink2">idle: claims a ready task</text>
+          <text x="516" y="113" font-size="9.5" class="t-ink2">from the board every 2 s</text>
+          <text x="516" y="132" font-size="9.5" class="t-ink2">done: its final text goes</text>
+          <text x="516" y="145" font-size="9.5" class="t-ink2">to the Lead as a result</text>
+          <rect x="512" y="166" width="148" height="114" rx="4" class="box-shot"></rect>
+          <text x="522" y="184" font-size="10.5" class="t-title t-shot">this week's injection</text>
+          <text x="522" y="198" font-size="9" class="t-mono t-shot">profile_run.py --prewarm</text>
+          <text x="522" y="216" font-size="9.5" class="t-ink2">on a successor's model</text>
+          <text x="522" y="229" font-size="9.5" class="t-ink2">calls, prepend what its</text>
+          <text x="522" y="242" font-size="9.5" class="t-ink2">predecessors read, as</text>
+          <text x="522" y="255" font-size="9.5" class="t-ink2">tool_use/tool_result pairs</text>
+          <text x="522" y="272" font-size="9" class="t-muted">code.py is not modified</text>
+          <!-- wiring -->
+          <path d="M 284 56 H 314" class="edge-lead" marker-end="url(#arHl)"></path>
+          <text x="299" y="50" font-size="8.5" text-anchor="middle" class="t-mono t-lead">writes</text>
+          <path d="M 504 52 H 474" class="edge-mate" marker-end="url(#arHm)"></path>
+          <text x="489" y="46" font-size="8.5" text-anchor="middle" class="t-mono t-mate">claim</text>
+          <path d="M 504 86 H 474" class="edge-mate" marker-end="url(#arHm)"></path>
+          <text x="489" y="80" font-size="8.5" text-anchor="middle" class="t-mono t-mate">done</text>
+          <path d="M 504 238 H 474" class="edge-mate" marker-end="url(#arHm)"></path>
+          <text x="489" y="232" font-size="8.5" text-anchor="middle" class="t-mono t-mate">result</text>
+          <path d="M 318 238 H 288" class="edge" marker-end="url(#arH)"></path>
+          <text x="303" y="232" font-size="8.5" text-anchor="middle" class="t-mono t-muted">wakes</text>
+          <!-- shared model client -->
+          <path d="M 142 300 V 322" class="edge-lead" marker-end="url(#arHl)"></path>
+          <path d="M 586 300 V 322" class="edge-mate" marker-end="url(#arHm)"></path>
+          <rect x="0" y="326" width="680" height="70" rx="5" class="box-soft"></rect>
+          <text x="12" y="345" font-size="12" class="t-title">One shared model client</text>
+          <text x="172" y="345" font-size="10" class="t-ink2"><tspan class="t-mono">TracedClient</tspan> · every agent's calls go through it</text>
+          <text x="12" y="362" font-size="9.5" class="t-ink2">lead rounds, teammate rounds, memory extraction and compaction summaries — each logged to <tspan class="t-mono">traces/run_*.jsonl</tspan></text>
+          <text x="12" y="381" font-size="10" class="t-ink2">→ <tspan class="t-mono">glm-5.3-flash</tspan> via z.ai, remote   ·   <tspan class="t-mono">Qwen3.8-27B</tspan> on vLLM, one local GPU — both over the Anthropic Messages API</text>
         </g>
       </svg>
-      <figcaption>A baseline successor must find four documents for itself, <span class="mono">dag</span> two, <span class="mono">ancestors</span> none. Injection is byte-faithful: the exact assistant <span class="mono">tool_use</span> / user <span class="mono">tool_result</span> pair a real <span class="mono">read_file</span> would have produced, rebuilt on every call, oldest ancestor first, skipping content the successor already holds.</figcaption>
+      <figcaption>A <b>turn</b> is one Lead activation: it runs rounds until a reply carries no tool call. A <b>round</b> is one trip through the loop — one model call plus the tools it asked for, the unit every result in this deck counts. Agents never share a message list; work moves only through the board and the bus.</figcaption>
     </figure>
-    <div class="stack" style="gap:13px">
+    <div class="stack" style="gap:12px">
       <div>
-        <p class="label">The three arms, used in every experiment</p>
-        <table class="data xs" style="margin-top:6px">
-          <thead><tr><th>arm</th><th>what the successor is handed when it claims a blocked task</th></tr></thead>
+        <p class="label">What each part does, and its measured scale</p>
+        <table class="data xs xxs" style="margin-top:5px">
+          <thead><tr><th>part</th><th>role</th><th class="n">scale</th></tr></thead>
           <tbody>
-            <tr><td class="mono"><span class="swatch grey"></span>none</td><td>nothing — the untreated baseline</td></tr>
-            <tr><td class="mono"><span class="swatch mate"></span>dag</td><td>the reads of its <b>direct</b> predecessors</td></tr>
-            <tr class="hi"><td class="mono"><span class="swatch lead"></span>ancestors</td><td>the reads of its whole <b>transitive closure</b></td></tr>
+            <tr><td class="nw"><b>Lead</b></td><td>plans, writes the board, spawns teammates, answers the user; the only agent that compacts</td><td class="n nw">10–14 rounds<span class="sub">per team run</span></td></tr>
+            <tr><td class="nw"><b>Teammate</b></td><td>runs one claimed task at a time and reports back by message</td><td class="n nw">2.9–7.5 rounds<span class="sub">per task</span></td></tr>
+            <tr><td class="nw"><b>Task board</b></td><td>tasks plus <span class="mono">blockedBy</span> edges; a claim needs every blocker done</td><td class="n nw">5 tasks, 3 edges<span class="sub">median board</span></td></tr>
+            <tr><td class="nw"><b>Memory</b></td><td>recalled into the prompt; extracted and consolidated after every Lead turn</td><td class="n nw">12–35 s<span class="sub">per Lead turn</span></td></tr>
+            <tr><td class="nw"><b>Context</b></td><td>trim and snip every round; micro → fit → summary only past 512k characters</td><td class="n nw">7–9 ms<span class="sub">per round</span></td></tr>
+            <tr><td class="nw"><b>Tools</b></td><td>files, shell, search; a permission hook before and a hook after each</td><td class="n nw">8–120 ms<span class="sub">per round</span></td></tr>
           </tbody>
         </table>
       </div>
       <div>
-        <p class="label">The three metrics that carry the story</p>
-        <dl class="kv xs" style="margin-top:6px">
-          <dt>byte recall</dt><dd>share of the successor's read bytes already held</dd>
-          <dt>round recall</dt><dd>share of its rounds that <b>disappear</b> as a result</dd>
-          <dt>precision</dt><dd>share of what was sent that was actually used</dd>
+        <p class="label">The three arms · what successor C in A → B → C is handed</p>
+        <table class="data xs xxs" style="margin-top:5px">
+          <tbody>
+            <tr><td class="mono nw"><span class="swatch grey"></span>none</td><td>nothing — the untreated baseline</td></tr>
+            <tr><td class="mono nw"><span class="swatch mate"></span>dag</td><td>what <b>B</b> read — its direct predecessors</td></tr>
+            <tr><td class="mono nw"><span class="swatch lead"></span>ancestors</td><td>what <b>A and B</b> read — its whole upstream closure, <span class="mono">anc</span> for short</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">s15_integrated_harness/ARCHITECTURE.md</span>; <span class="mono">code.py</span> at <span class="mono">aded0d0</span> — <span class="mono">agent_loop</span> :3466, <span class="mono">prepare_context</span> :3407, <span class="mono">call_llm</span> :3452, <span class="mono">remember_after_turn</span> :3393, <span class="mono">async_event_loop</span> :3693 (the 1 s poll), <span class="mono">claim_next_task</span> :1376 (the 2 s auto-claim), <span class="mono">spawn_teammate_thread</span> :1499, <span class="mono">BUILTIN_TOOLS</span> :3193. Present but idle in these experiments: one-shot subagents, background shell, cron, git worktrees, MCP tools, skills and the plan gate. Handed-over reads are the exact <span class="mono">tool_use</span> / <span class="mono">tool_result</span> pairs a real <span class="mono">read_file</span> would produce, oldest first, byte-identical on every call. Scales from <span class="mono">091626/latency_breakdown.md</span> and <span class="mono">092326/latency_qwen_vs_glm.md</span>; board shape from <span class="mono">dag_kv_reuse.md</span>.</p></div>
+</section>
+
+<!-- ===================== 3 · LAST WEEK, THIS WEEK ===================== -->
+<section class="slide" data-title="Last week, this week">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">3</span><span>Last week, this week · the bet: hand a successor the bytes its predecessors already read</span></div>
+    <h2>Where the successor was handed the files its task needed, rounds fell 42%; wherever coverage was partial, rounds moved within noise</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap:12px">
+    <table class="data xs xxs">
+      <thead><tr><th>population · what the successor was handed</th><th class="n">coverage</th><th class="n">rounds per successor</th><th>change against none · 95% CI</th><th>on one axis<span class="sub">ticks −5 · 0 · +5 rounds</span></th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Measured live on the s15 harness · rounds counted in real runs</td></tr>
+        <tr class="hi">
+          <td><b>W5 fan-in</b> · <span class="mono">dag</span> = all three predecessors' reads<span class="sub">16 team runs, 6 successors per arm · a synthesis that asks about 3 files</span></td>
+          <td class="n na">not measured</td>
+          <td class="n nw">5.17 → <b>3.00</b><span class="sub">−42%</span></td>
+          <td class="nw"><span class="mono">dag −2.17 [−3.50, −0.83]</span><span class="sub"><span class="verd yes">excludes 0 — a real effect</span></span></td>
+          <td><svg viewBox="0 0 150 30" width="150" height="30" role="img" aria-label="dag interval from minus 3.50 to minus 0.83 rounds, entirely below zero"><line x1="10" y1="15" x2="140" y2="15" class="grid"></line><line x1="50.6" y1="4" x2="50.6" y2="26" class="grid"></line><line x1="131.9" y1="4" x2="131.9" y2="26" class="grid"></line><line x1="91.2" y1="1" x2="91.2" y2="29" class="edge-dash"></line><line x1="62.8" y1="15" x2="84.5" y2="15" class="edge-mate whisk"></line><circle cx="73.6" cy="15" r="3.2" class="f-mate"></circle></svg></td>
+        </tr>
+        <tr>
+          <td><b>FAB-DEEP + RW-FQA</b> · <span class="mono">dag</span> · <span class="mono">anc</span><span class="sub">18 team runs, 15 successors per arm · depth-4 and depth-3 document boards</span></td>
+          <td class="n">24% · 39%</td>
+          <td class="n nw">7.87 → 8.27 · 6.53</td>
+          <td class="nw"><span class="mono">dag +0.40 [−3.00, +3.87]</span><br><span class="mono">anc −1.33 [−4.80, +2.40]</span> <span class="verd no">both straddle 0</span></td>
+          <td><svg viewBox="0 0 150 30" width="150" height="30" role="img" aria-label="dag interval from minus 3.00 to plus 3.87 and anc interval from minus 4.80 to plus 2.40, both crossing zero"><line x1="10" y1="15" x2="140" y2="15" class="grid"></line><line x1="50.6" y1="4" x2="50.6" y2="26" class="grid"></line><line x1="131.9" y1="4" x2="131.9" y2="26" class="grid"></line><line x1="91.2" y1="1" x2="91.2" y2="29" class="edge-dash"></line><line x1="66.9" y1="9" x2="122.7" y2="9" class="edge-mate whisk"></line><circle cx="94.5" cy="9" r="3.2" class="f-mate"></circle><line x1="52.2" y1="21" x2="110.8" y2="21" class="edge-lead whisk"></line><circle cx="80.4" cy="21" r="3.2" class="f-lead"></circle></svg></td>
+        </tr>
+        <tr>
+          <td><b>MODIFY</b> on <span class="mono">lab-group-56</span> · <span class="mono">dag</span> · <span class="mono">anc</span><span class="sub">12 team runs, 7 / 6 / 5 successors · edits across a real lab repository</span></td>
+          <td class="n">12% · 12%</td>
+          <td class="n nw">13.0 → 12.5 · 9.8<span class="sub">anc −25%</span></td>
+          <td class="nw"><span class="mono">dag −0.5 [−6.9, +5.7]</span><br><span class="mono">anc −3.2 [−9.6, +2.5]</span> <span class="verd no">both straddle 0</span></td>
+          <td><svg viewBox="0 0 150 30" width="150" height="30" role="img" aria-label="dag interval from minus 6.9 to plus 5.7 and anc interval from minus 9.6 to plus 2.5, both crossing zero"><line x1="10" y1="15" x2="140" y2="15" class="grid"></line><line x1="50.6" y1="4" x2="50.6" y2="26" class="grid"></line><line x1="131.9" y1="4" x2="131.9" y2="26" class="grid"></line><line x1="91.2" y1="1" x2="91.2" y2="29" class="edge-dash"></line><line x1="35.2" y1="9" x2="137.6" y2="9" class="edge-mate whisk"></line><circle cx="87.2" cy="9" r="3.2" class="f-mate"></circle><line x1="13.3" y1="21" x2="111.6" y2="21" class="edge-lead whisk"></line><circle cx="65.2" cy="21" r="3.2" class="f-lead"></circle></svg></td>
+        </tr>
+        <tr class="grp"><td colspan="5">Replayed from published agent trajectories · rounds computed, not observed</td></tr>
+        <tr>
+          <td><b>SWE-bench</b>, cross-task · <span class="mono">dag</span> = the task run just before · <span class="mono">anc</span><span class="sub">726 successors on 234 repositories · three coding agents</span></td>
+          <td class="n">0.8% · 1.2%</td>
+          <td class="n nw">reducible 2.1% · 4.3%<span class="sub">of 33.6 reading rounds</span></td>
+          <td class="na" colspan="2">computed from traces — no interval to draw</td>
+        </tr>
+        <tr>
+          <td><b>τ-bench + GAIA</b>, cross-task · <span class="mono">dag</span> · <span class="mono">anc</span><span class="sub">407 successors · τ-bench shares one airline database across five models</span></td>
+          <td class="n">11.2% · 27.6%</td>
+          <td class="n nw">reducible 12.7% · <b>38.2%</b><span class="sub">of 3.8 reading rounds</span></td>
+          <td class="na" colspan="2">computed — not yet measured live</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="key k3">
+      <div>
+        <p class="kh">Terms</p>
+        <dl class="gloss">
+          <dt>none</dt><dd>hand over nothing: the baseline</dd>
+          <dt>dag</dt><dd>the reads of its <b>direct</b> predecessors, the tasks it waited for</dd>
+          <dt>anc</dt><dd>ancestors: the reads of <b>every task upstream</b> of it</dd>
+          <dt>successor</dt><dd>a task that can start only after its predecessors finish</dd>
+          <dt>cross-task</dt><dd>different tasks on one repository or database</dd>
         </dl>
       </div>
       <div>
-        <p class="label">Quantisation · the mechanism behind every null result</p>
-        <ul class="list tight xs" style="margin-top:6px">
-          <li>A round disappears only when <b>everything</b> it would have fetched is already held — a round issuing two reads needs both.</li>
-          <li>So <b>bytes accumulate smoothly and rounds do not.</b> Byte recall is continuous; round recall is a step.</li>
-          <li>Rounds are what a round costs: a model call is <b>3.72 s + 0.033 ms per uncached prompt token + 17.44 ms per output token</b> on <span class="mono">glm-5.3-flash</span> — prefill is under 2% of it, so a cache buys round count, not prefill.</li>
+        <p class="kh">Metrics</p>
+        <dl class="gloss">
+          <dt>coverage</dt><dd>share of the successor's read bytes it was handed (byte recall)</dd>
+          <dt>rounds</dt><dd>mean model calls per successor, none → dag · anc</dd>
+          <dt>95% CI</dt><dd>bootstrap range of the change. <b>Excludes 0</b>: a real effect. <b>Straddles 0</b>: zero is inside the range, so the change cannot be told apart from no change</dd>
+          <dt>reducible</dt><dd>share of reading rounds whose every read was already held</dd>
+        </dl>
+      </div>
+      <div>
+        <p class="kh">What the values say</p>
+        <ul class="list tight xxs">
+          <li>One live interval clears zero — W5, where the successor was handed the three files it asks about.</li>
+          <li>At partial coverage (12–39%) rounds moved within noise; SWE-bench, at ~1%, has nothing to remove. τ-bench's shared database is the counter-case — computed, not yet live.</li>
+          <li>The other live intervals that clear zero are costs: +18k to +95k prompt tokens (slides 6, 10).</li>
         </ul>
       </div>
-      <p class="claim" style="font-size:16px">A round disappears only when everything it would have fetched is already held.</p>
     </div>
   </div>
-  <div class="foot"><p>Terminology as in the 2026-09-09 deck. Board figure from <span class="mono">weekly_progress/092326/inheritance_depth.md</span> §2; injection faithfulness from the same note; cost constants from <span class="mono">weekly_progress/091626/latency_breakdown.md</span>. Those constants are <em>provider-specific</em> — slide 10 reruns them on local hardware and the 3.72 s fixed term does not survive, so every "seconds saved" figure in this deck is priced at z.ai's cost and should be read as a round count first.</p></div>
-</section>
-
-<!-- ===================== 2 · LAST WEEK, THIS WEEK ===================== -->
-<section class="slide" data-title="Last week, this week">
-  <div class="slide-head">
-    <div class="eyebrow"><span class="num">2</span><span>Last week, this week</span></div>
-    <h2>Last week ended on a proposal — turn the task board into a retention policy the engine can act on. Five populations later, the proposal is retired and the mechanism is not the graph</h2>
-  </div>
-  <div class="body" style="grid-template-columns: 1fr 1.15fr; gap:38px">
-    <div class="stack" style="gap:14px">
-      <div>
-        <p class="label">The bet, from next step 13 of the 2026-09-16 deck</p>
-        <p class="note" style="margin-top:7px">If a successor task is about to read what its predecessor already read, hand it the bytes instead of letting it spend a round fetching them. Does that remove agentic rounds and end-to-end latency, and <b>how far up the dependency graph is it worth reaching?</b></p>
-      </div>
-      <div>
-        <p class="label">Six notes, two threads</p>
-        <ul class="list tight xs" style="margin-top:7px">
-          <li><span class="mono">dag_census.md</span> — does the Lead build a graph at all? <span class="tag m">slide 3</span></li>
-          <li><span class="mono">dag_kv_reuse.md</span> — is the edge the right key, and what does the handoff buy? <span class="tag m">4</span> <span class="tag m">5</span></li>
-          <li><span class="mono">inheritance_depth.md</span> — how far up, and what does a budget buy? <span class="tag m">6</span> <span class="tag m">7</span></li>
-          <li><span class="mono">realworld_inheritance.md</span> — does any of it survive real corpora? <span class="tag m">8</span> <span class="tag m">9</span></li>
-          <li><span class="mono">conclusion.md</span> — the synthesis of those four. <span class="tag m">11</span> <span class="tag m">12</span></li>
-          <li><span class="mono">latency_qwen_vs_glm.md</span> — the second thread: the latency breakdown rerun on a self-hosted 27B. <span class="tag r">10</span></li>
-        </ul>
-      </div>
-      <p class="claim" style="font-size:16.5px">The scripted stage is the outlier, and it is the one whose coverage was guaranteed by construction. Everywhere coverage had to be <em>earned</em>, rounds barely moved.</p>
-    </div>
-    <div class="stack" style="gap:10px">
-      <p class="label">The evidence ladder · five populations, increasingly real</p>
-      <table class="data xs">
-        <thead><tr><th>population</th><th>what it measured</th><th class="n">rounds removed</th></tr></thead>
-        <tbody>
-          <tr><td>scripted single agent<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">n = 128, 096</small></td><td>100% coverage <b>by construction</b></td><td class="n nw">8.00 → 1.50<br><b>−81%</b></td></tr>
-          <tr><td>s15 team harness, synthetic<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">n = 18</small></td><td>lead-built boards, 24–39% coverage</td><td class="n">every CI<br>straddles 0</td></tr>
-          <tr><td>replay, SWE-bench cross-task<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">n = 726</small></td><td>real agents, no shared context</td><td class="n nw">2.1% <span class="mono">dag</span><br>4.3% <span class="mono">anc</span></td></tr>
-          <tr class="hi"><td>replay, τ-bench + GAIA cross-task<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">n = 407</small></td><td>real agents, shared database</td><td class="n nw">12.7% <span class="mono">dag</span><br>38.2% <span class="mono">anc</span></td></tr>
-          <tr><td>live, MODIFY on <span class="mono">lab-group-56</span><small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px">n = 18 successors</small></td><td>lead-built depth-3 boards</td><td class="n nw">13.0 → 12.5 → 9.8<br><b>−25%</b>, CIs straddle 0</td></tr>
-        </tbody>
-      </table>
-      <p class="note xs" style="margin-top:2px">No round or latency interval in any <em>real</em> harness excludes zero at the sample sizes reached. The only effect that does is a <b>token cost</b>.</p>
-    </div>
-  </div>
-  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/conclusion.md</span>, written 2026-09-21, synthesising the four inheritance notes. The 2026-09-16 deck's next step 13 ("turn the task board into a retention policy the engine can act on") is retired on slide 11; next step 12 ("attack the eviction order rather than the prefill") survives and becomes slide 7. <span class="mono">latency_qwen_vs_glm.md</span> is not an input to the synthesis — it is the orthogonal thread that re-prices its constants.</p></div>
-</section>
-
-<!-- ===================== 3 · RESULT: THE CENSUS ===================== -->
-<section class="slide" data-title="Census">
-  <div class="slide-head">
-    <div class="eyebrow"><span class="num">3</span><span>Result · does the Lead build a graph at all</span></div>
-    <h2>The Lead does maintain a dependency graph, and builds it exactly right — last week's 35 empty boards were one adjective in the prompt</h2>
-  </div>
-  <div class="body wide-left" style="gap:40px">
-    <div class="stack" style="gap:13px">
-      <div>
-        <p class="label">Design · edge emission is the dependent variable</p>
-        <ul class="list tight xs" style="margin-top:7px">
-          <li><b>Nothing may ask the Lead for an edge.</b> No prompt names <span class="mono">update_task</span>, <span class="mono">addBlockedBy</span>, "dependency" or "blocked"; the harness is unmodified. <span class="mono">census_workloads.py --check-prompts</span> refuses to run otherwise.</li>
-          <li>Six categories × {<b>DEP</b>, <b>FLAT</b>} × reps on two providers. DEP work genuinely has stages; FLAT genuinely does not — the specificity control.</li>
-          <li><b>44 usable runs</b> (26 DeepSeek, 18 glm). Each DEP workload ships a hand-authored reference graph.</li>
-        </ul>
-      </div>
-      <table class="data xs">
-        <thead><tr><th>finding</th><th class="n">DEP</th><th class="n">FLAT</th></tr></thead>
-        <tbody>
-          <tr class="hi"><td>edge recall against the reference graph</td><td class="n"><b>1.00</b></td><td class="n">—</td></tr>
-          <tr><td>runs reproducing their graph exactly</td><td class="n"><b>21 / 21</b></td><td class="n">—</td></tr>
-          <tr><td>edges emitted / false edges</td><td class="n"><b>45</b> / <b>0</b></td><td class="n">0</td></tr>
-          <tr><td>runs with zero edges</td><td class="n">0 / 21</td><td class="n"><b>23 / 23</b></td></tr>
-          <tr><td>order violations across all DEP runs</td><td class="n">0</td><td class="n">—</td></tr>
-          <tr><td>task creation waves · tasks created after the first completion</td><td class="n">1.0 / 0.0</td><td class="n">1.0 / 0.0</td></tr>
-        </tbody>
-      </table>
-      <p class="note xs">Perfect separation on a 21-vs-23 split, <b>p = 5.0e-13</b> (one-sided Fisher exact). Length confound ruled out: <span class="mono">CODE-FLAT</span> is the longest prompt of all twelve at <b>1,876 chars</b> and emits nothing; the shorter <span class="mono">CODE-DEP</span> at <b>1,254</b> emits two.</p>
-    </div>
-    <div class="stack" style="gap:13px">
-      <div>
-        <p class="label">One word explains the 35 empty boards</p>
-        <p class="note xs" style="margin-top:7px">Every earlier "natural" workload literally began <em>"Create three <b>independent</b> task-board items"</em> (<span class="mono">latency_workloads.py:40</span>, <span class="mono">redundancy_workloads.py:37, 50, 62, 76</span>). Those <b>59 runs — 35 with a board, 133 tasks, 0 edges, 0 <span class="mono">update_task</span> calls</b> — were never evidence about whether a Lead maintains a graph.</p>
-      </div>
-      <div>
-        <p class="label">What this repairs, and what it does not</p>
-        <ul class="list tight xs" style="margin-top:7px">
-          <li><b>Repairs the premise.</b> Last week's note reported the Lead "does not emit edges unless the prompt names the mechanism". These prompts are <b>L0</b> by that report's own definition and produce complete graphs.</li>
-          <li><b>The board is available early enough to be useful</b> — the whole graph exists before any work starts, so a retention directive could be computed at spawn time.</li>
-          <li><b>It does not resurrect DAG-directed retention.</b> Slides 4, 7 and 8 kill the graph on its merits, not on its absence.</li>
-          <li><b>Cross-provider.</b> Identical board shape on both; cost differs <b>4×</b> — DeepSeek <b>118 s</b> mean per DEP run against glm's <b>488 s</b>. That is provider and model together, not a model property.</li>
-          <li><b>The work is right, not just the graph.</b> <span class="mono">census_score.py</span>: 10 of 10 attempted sandboxes passed, including <span class="mono">REFACTOR-DEP</span>, whose tests only go green if all 7 call sites moved.</li>
-        </ul>
-      </div>
-      <p class="claim" style="font-size:16.5px">One adjective moved 35 runs. Any future claim about what Leads do with the board must quote the prompt that produced it.</p>
-    </div>
-  </div>
-  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/dag_census.md</span>; full report <span class="mono">s15_integrated_harness/dag_census_profile.md</span>; traces <span class="mono">traces/dag_census*/</span>. Correction to the 2026-09-16 material: <span class="mono">dag_kv_reuse_profile.md</span> §2.2 and <span class="mono">092326/dag_kv_reuse.md</span> are contradicted by finding 1 and should carry a pointer here. Housekeeping: <span class="mono">--model</span> on <span class="mono">dag_workloads.py</span> does not work, because <span class="mono">code.py:76</span> calls <span class="mono">load_dotenv(override=True)</span> and <span class="mono">.env</span> overwrites <span class="mono">MODEL_ID</span> — no published result affected. <span class="mono">traces/tool_latency/</span> must be excluded from any board census: its 133 tasks and 50 edges are written by Python, not by a model. Scale is the open question — everything here is 3–4 items.</p></div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/conclusion.md</span> (2026-09-21) and, for the W5 row, <span class="mono">dag_kv_reuse.md</span> finding 8. Correction to the synthesis: its evidence table left out the W5 handoff and said no round interval in any real harness excludes zero — W5's does, so it is added here; its scripted single-agent row is dropped, since this deck reports only runs on real harnesses. "Reducible rounds" is what the notes call round recall or removable rounds. The bet was next step 13 of the 2026-09-16 deck; it is retired on slide 13, and next step 12 becomes slide 7.</p></div>
 </section>
 
 <!-- ===================== 4 · RESULT: THE GRAPH IS THE WRONG KEY ===================== -->
 <section class="slide" data-title="Wrong key">
   <div class="slide-head">
-    <div class="eyebrow"><span class="num">4</span><span>Result · is the edge the right key</span></div>
+    <div class="eyebrow"><span class="num">4</span><span>Result · is the dependency edge the right key</span></div>
     <h2>The edge predicts the successor's reads only because it echoes the task text — and broadcasting every earlier read beats it, not narrowly</h2>
   </div>
-  <div class="body" style="grid-template-columns: 1fr 1fr; gap:38px">
-    <div class="stack" style="gap:14px">
-      <div>
-        <p class="label">The placebo · W4 is W1's text word for word, edges wired to the wrong branch</p>
-        <ul class="list tight xs" style="margin-top:7px">
-          <li>In aligned boards (W1, W2, W5) an edge covers <b>+46 points</b> more of the successor's read bytes than a non-adjacent control with the same successor — 95% CI <b>[+0.27, +0.68]</b>, 5 of 5 runs positive — and <b>+37 points</b> of removable rounds.</li>
-          <li>In the placebo the edges cover <b>0.0%</b> of their successors' bytes while the matched controls cover everything: a delta of exactly <b>−1.0</b> in both reps.</li>
-          <li>So the signal is in the <b>task text</b>, not in the graph. Pooling all five workloads gives a flat <b>+0.105, p = 0.68</b> — an artefact of mixing the placebo in, and it should not be quoted.</li>
+  <div class="body" style="grid-template-columns: 1fr 1.06fr; gap:32px">
+    <div class="stack" style="gap:9px">
+      <p class="label">Does an edge predict its successor's reads? · 9 team runs</p>
+      <table class="data xs xxs">
+        <thead><tr><th>boards</th><th class="n">edges</th><th class="n">Δ bytes</th><th class="n">Δ rounds</th><th class="n">runs +</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td><b>aligned</b> — board agrees with text<span class="sub">W1 chain · W2, W5 fan-ins</span></td><td class="n">13</td><td class="n nw"><b>+46 pts</b><span class="sub">[+27, +68]</span></td><td class="n nw"><b>+37 pts</b><span class="sub">[+12, +68]</span></td><td class="n">5 / 5</td></tr>
+          <tr><td><b>placebo</b> — W1's text, edges crossed<span class="sub">W4 · board contradicts text</span></td><td class="n">4</td><td class="n nw warn">−100 pts<span class="sub">[−100, −100]</span></td><td class="n nw warn">−100 pts<span class="sub">[−100, −100]</span></td><td class="n">0 / 2</td></tr>
+          <tr><td>control — edges join unrelated files<span class="sub">W3 pipeline</span></td><td class="n">2</td><td class="n">0 pts</td><td class="n na">—</td><td class="n">0 / 1</td></tr>
+          <tr><td>all five pooled — do not quote<span class="sub">averages the controls in</span></td><td class="n">19</td><td class="n nw">+10.5 pts<span class="sub">[−37, +47]</span></td><td class="n na">—</td><td class="n">5 / 8</td></tr>
+        </tbody>
+      </table>
+      <div class="key">
+        <dl class="gloss">
+          <dt>W1–W5</dt><dd>five Lead prompts that build differently shaped boards</dd>
+          <dt>control</dt><dd>for each edge, an earlier task <b>not</b> linked to the same successor, so the successor's own reading cancels out</dd>
+          <dt>Δ bytes · rounds</dt><dd>edge minus control, in points of byte recall · of reducible rounds; 95% CI from a run-clustered bootstrap</dd>
+          <dt>runs +</dt><dd>runs in which the edge covered more bytes than its control</dd>
+        </dl>
+        <ul class="list tight xxs" style="margin-top:7px">
+          <li>Where board and text agree, the edge's predecessor covers 46 points more of what the successor reads.</li>
+          <li>Where they disagree (W4) the edge covers <b>nothing</b> and the unlinked task covers everything: agents read what their <b>description</b> names, not what their predecessor read. The signal is the task text; the graph only echoes it.</li>
         </ul>
-      </div>
-      <div>
-        <p class="label">Recall, over the 11 successor tasks that read anything</p>
-        <div class="bartable" style="grid-template-columns: 168px 1fr 52px; gap:7px 12px; margin-top:8px">
-          <div class="h">policy</div><div class="h">byte recall <span style="text-transform:none;letter-spacing:0">·</span> round recall</div><div class="h" style="text-align:right">bytes</div>
-          <div class="m">direct predecessors<small style="display:block;color:var(--muted);font-size:11px">the <span class="mono">dag</span> arm</small></div><div class="bars"><div class="bar mate" style="width:36.0%"></div><div class="bar grey" style="width:50.0%"></div></div><div class="v mate">36.0%</div>
-          <div class="m">cross-owner successors only</div><div class="bars"><div class="bar mate" style="width:45.1%"></div><div class="bar grey" style="width:55.0%"></div></div><div class="v mate">45.1%</div>
-          <div class="m"><b>all earlier tasks</b><small style="display:block;color:var(--muted);font-size:11px">broadcast</small></div><div class="bars"><div class="bar lead" style="width:85.6%"></div><div class="bar grey" style="width:77.3%"></div></div><div class="v lead">85.6%</div>
-        </div>
-        <p class="note xs" style="margin-top:8px">Round recall is the grey bar beneath each: <b>50.0%</b>, <b>55.0%</b>, <b>77.3%</b>. This was the pre-registered decision rule, and it fires against the hypothesis.</p>
       </div>
     </div>
-    <div class="stack" style="gap:14px">
-      <div>
-        <p class="label">Precision is nearly free to give up</p>
-        <table class="data xs" style="margin-top:6px">
-          <thead><tr><th>what you send the successor</th><th class="n">tokens</th><th class="n">prefill</th><th class="n">rounds removed</th></tr></thead>
-          <tbody>
-            <tr><td>union of every earlier task's reads<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;margin-top:2px">three quarters of it unused</small></td><td class="n">119k</td><td class="n">3.9 s</td><td class="n"><b>63 s</b></td></tr>
-            <tr class="hi"><td>the oracle — exactly what it needs</td><td class="n">34k</td><td class="n">1.1 s</td><td class="n"><b>78 s</b></td></tr>
-          </tbody>
-        </table>
-        <p class="note xs" style="margin-top:8px">Sending 3.5× too much costs <b>3.9 s of prefill</b> and still buys <b>63 s of rounds removed</b>. At 0.033 ms per uncached token, being wrong is cheap; being incomplete is not (slide 6).</p>
-      </div>
-      <div>
-        <p class="label">Two structural facts about the boards</p>
-        <ul class="list tight xs" style="margin-top:7px">
-          <li>Boards are <b>small, wide and shallow</b> — median 5 tasks, 3 edges, 2 layers, and only <b>23%</b> of tasks have any predecessor at all (163 tasks over 32 runs).</li>
-          <li>Across 35 successors with 2.5 predecessors each, <b>67% of predecessor links cross agents</b> and <b>33 of 35</b> successors are missing something. A join waits for its slowest predecessor, so the first one's output is <b>153 s</b> stale by the time the join starts.</li>
-          <li>Intra-agent reuse is real but partial: the 6 of 13 successors that landed on an agent that had already done a predecessor read <b>3.7</b> files and got <b>44.7%</b> of bytes from them; the 7 that landed fresh read <em>more</em> (<b>5.7</b>) and got <em>less</em> (<b>29.9%</b>).</li>
+    <div class="stack" style="gap:9px">
+      <p class="label">What each retention policy would have held · 11 successors</p>
+      <table class="data xs xxs">
+        <thead><tr><th>keep the reads of</th><th class="n">byte recall</th><th class="n">reducible rounds</th><th class="n">precision</th><th class="n">sent</th></tr></thead>
+        <tbody>
+          <tr><td><span class="swatch mate"></span>its direct predecessors · <span class="mono">dag</span></td><td class="n">36.0%</td><td class="n">50.0%</td><td class="n">16.3%</td><td class="n">26.2 KB</td></tr>
+          <tr><td>the most text-similar earlier task</td><td class="n">46.1%</td><td class="n">40.9%</td><td class="n">34.5%</td><td class="n">12.6 KB</td></tr>
+          <tr><td>one random earlier task</td><td class="n">26.8%</td><td class="n">13.6%</td><td class="n">21.4%</td><td class="n">12.6 KB</td></tr>
+          <tr class="hi"><td><span class="swatch lead"></span><b>every earlier task</b> — broadcast</td><td class="n"><b>85.6%</b></td><td class="n"><b>77.3%</b></td><td class="n">24.7%</td><td class="n">49.3 KB</td></tr>
+          <tr><td>exactly its own reads <span class="tag">ceiling</span></td><td class="n">100%</td><td class="n">95.5%</td><td class="n">100%</td><td class="n">8.1 KB</td></tr>
+        </tbody>
+      </table>
+      <div class="key">
+        <dl class="gloss">
+          <dt>byte recall</dt><dd>share of the successor's read bytes the policy would already hold</dd>
+          <dt>reducible</dt><dd>share of its 22 reading rounds whose every read would be held</dd>
+          <dt>precision</dt><dd>share of what the policy sends that the successor actually reads</dd>
+          <dt>sent</dt><dd>median bytes handed to one successor</dd>
+        </dl>
+        <ul class="list tight xxs" style="margin-top:7px">
+          <li>Broadcast beats the graph by 50 points of bytes and 27 of rounds, and the gap holds for cross-owner successors alone (45.1% / 55.0% against 85.6% / 77.3%).</li>
+          <li>Precision is cheap to give up: broadcast sends 119k tokens across the 11, three quarters unused — 3.9 s of prefill — and would save 63 s of rounds; the ceiling sends 34k and saves 78 s.</li>
         </ul>
       </div>
-      <p class="claim" style="font-size:16.5px">Recall is the whole game; precision is nearly free to give up. The dependency graph is the wrong key.</p>
+      <p class="claim" style="font-size:16px">Recall is the whole game; precision is nearly free to give up. The dependency graph is the wrong key.</p>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/dag_kv_reuse.md</span> findings 1–4; full report <span class="mono">s15_integrated_harness/dag_kv_reuse_profile.md</span>; traces <span class="mono">traces/dag_redundancy/</span>. Nine team runs over five dependency-shaped workloads on <span class="mono">glm-5.3-flash</span>; matched-pair contrast, significance by run-clustered sign-flip randomisation with a cluster bootstrap. These recall numbers were computed on <b>L2-forced</b> boards, before slide 3 showed the Lead emits edges unprompted; <span class="mono">dag_census.md</span>'s next step 1 asks for the comparison to be re-run on unprompted boards. Slides 7 and 8 kill the graph on two further, independent tests, so the re-run is superseded rather than pending. Operational: <span class="mono">spawn_teammate</span> claims a task before starting the agent and a claim on a blocked task is refused, so a successor assigned at spawn time is silently lost.</p></div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/dag_kv_reuse.md</span> findings 1–4; full report <span class="mono">s15_integrated_harness/dag_kv_reuse_profile.md</span> §5.3–5.5; traces <span class="mono">traces/dag_redundancy/</span>. Nine team runs over five workloads on <span class="mono">glm-5.3-flash</span>, with prompts that named the edge mechanism (<span class="mono">update_task addBlockedBy</span>). Boards were small, wide and shallow: median 5 tasks, 3 edges, 2 layers, and 67% of predecessor links crossed agents. Seconds are priced at glm-5.3-flash's 3.72 s per call and 0.033 ms per uncached token; every call here is 2–14k tokens. Operational: <span class="mono">spawn_teammate</span> claims a task before starting the agent and a claim on a blocked task is refused, so a successor assigned at spawn time is silently lost.</p></div>
 </section>
 
 <!-- ===================== 5 · RESULT: THE HANDOFF ===================== -->
 <section class="slide" data-title="The handoff">
   <div class="slide-head">
-    <div class="eyebrow"><span class="num">5</span><span>Result · what handing over the bytes actually buys</span></div>
-    <h2>Handing a successor the bytes removes two thirds of its rounds in the micro-benchmark and 42% of them in the real harness — and a summary is not a substitute for the bytes</h2>
+    <div class="eyebrow"><span class="num">5</span><span>Result · what handing over the bytes buys in the real harness</span></div>
+    <h2>Handing a successor its predecessors' bytes cut its rounds by 42% — an equal-size unrelated file and a summary of the same work removed none</h2>
   </div>
-  <div class="body" style="grid-template-columns: 1fr 1fr; gap:36px">
-    <div class="stack" style="gap:16px">
-      <div>
-        <p class="label">Scripted micro-loop · 128 trials, four arms, order shuffled</p>
-        <div class="pairs" style="grid-template-columns: 1fr 300px 158px; margin-top:8px">
-          <div class="h">arm</div><div class="h">rounds per successor (300 px = 8.0)</div><div class="h" style="text-align:right">Δ vs baseline</div>
-          <div class="m">baseline<small>no handoff</small></div><div class="bars"><div class="bar ghost" style="width:271px"></div></div><div class="v"><b>7.22 rounds</b> · 62.4 s</div>
-          <div class="m"><b>injected</b><small>the predecessor's bytes</small></div><div class="bars"><div class="bar ghost" style="width:271px"></div><div class="bar lead" style="width:94px"></div></div><div class="v"><b>2.50</b> · 18.4 s<br>−4.72 [−5.97, −3.47]</div>
-          <div class="m">control · an unrelated file<small>equal-size window</small></div><div class="bars"><div class="bar ghost" style="width:271px"></div><div class="bar grey" style="width:282px"></div></div><div class="v">+0.31 [−1.03, +1.66]</div>
-          <div class="m">control · a condensed summary<small>of the predecessor's findings</small></div><div class="bars"><div class="bar ghost" style="width:271px"></div><div class="bar grey" style="width:240px"></div></div><div class="v">−0.81 [−2.22, +0.59]</div>
-        </div>
-        <p class="note xs" style="margin-top:8px"><b>−70% wall</b>, and correctness went <em>up</em>, 91% → 100%. Four trials hit the 12-round cap, all in the baseline and summary arms, so these are lower bounds.</p>
-      </div>
-      <div>
-        <p class="label">The real harness · 16 W5 team runs, four arms interleaved, every successor cross-owner</p>
-        <div class="pairs" style="grid-template-columns: 1fr 300px 158px; margin-top:8px">
-          <div class="m">baseline</div><div class="bars"><div class="bar ghost" style="width:194px"></div></div><div class="v"><b>5.17 rounds</b> · 146.9 s</div>
-          <div class="m"><b>deployable</b><small>the closure's bytes</small></div><div class="bars"><div class="bar ghost" style="width:194px"></div><div class="bar lead" style="width:113px"></div></div><div class="v"><b>3.00</b> · 113.0 s<br>−2.17 [−3.50, −0.83]</div>
-          <div class="m">control · an unrelated file</div><div class="bars"><div class="bar ghost" style="width:194px"></div><div class="bar grey" style="width:188px"></div></div><div class="v">−0.17, straddles 0</div>
-          <div class="m">control · a summary</div><div class="bars"><div class="bar ghost" style="width:194px"></div><div class="bar grey" style="width:218px"></div></div><div class="v">+0.63, straddles 0</div>
-        </div>
-      </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr; gap:14px 32px">
+    <div style="grid-column: 1 / -1">
+      <p class="label">W5 fan-in · 16 team runs · four arms interleaved in every repetition · every successor cross-owner</p>
+      <table class="data xs xxs" style="margin-top:6px">
+        <thead><tr><th>arm · what the successor is handed</th><th class="n">succ.</th><th class="n">rounds</th><th class="n">reads</th><th class="n">active s</th><th class="n">prompt tok</th><th class="n">injected tok</th><th class="n">files cited</th><th class="n">completed</th><th class="n">Δ rounds against none · 95% CI</th></tr></thead>
+        <tbody>
+          <tr><td><span class="swatch grey"></span><span class="mono">none</span> — nothing</td><td class="n">6</td><td class="n">5.17</td><td class="n">4.50</td><td class="n">146.9</td><td class="n">14,754</td><td class="n">0</td><td class="n">5.5</td><td class="n">100%</td><td class="n na">—</td></tr>
+          <tr class="hi"><td><span class="swatch mate"></span><span class="mono">dag</span> — its three predecessors' reads, captured live</td><td class="n">6</td><td class="n"><b>3.00</b></td><td class="n">3.33</td><td class="n"><b>113.0</b></td><td class="n">30,009</td><td class="n">11,114</td><td class="n">3.7</td><td class="n">100%</td><td class="n nw"><b>−2.17</b> [−3.50, −0.83] <span class="verd yes">excludes 0</span></td></tr>
+          <tr><td><span class="swatch grey"></span><span class="mono">pollute</span> — an equal-size window of an unrelated file</td><td class="n">5</td><td class="n">5.00</td><td class="n">4.60</td><td class="n">142.3</td><td class="n">37,696</td><td class="n">11,075</td><td class="n">2.4</td><td class="n warn">60%</td><td class="n nw">−0.17 [−1.60, +1.27] <span class="verd no">straddles 0</span></td></tr>
+          <tr><td><span class="swatch grey"></span><span class="mono">summary</span> — the predecessors' result text, not the bytes</td><td class="n">5</td><td class="n">5.80</td><td class="n">5.20</td><td class="n">161.5</td><td class="n">35,669</td><td class="n">480</td><td class="n">3.6</td><td class="n">100%</td><td class="n nw">+0.63 [−1.07, +2.57] <span class="verd no">straddles 0</span></td></tr>
+        </tbody>
+      </table>
     </div>
-    <div class="stack" style="gap:13px">
-      <div>
-        <p class="label">The ceiling is behavioural, and it has a shape</p>
-        <p class="note xs" style="margin-top:7px"><b>25% of injected trials issued a <span class="mono">read_file</span> anyway</b> — but not evenly. Three of four tasks were handed <b>one contiguous window</b> and re-read <b>0%, 0% and 12%</b>. The fourth was handed <b>two non-contiguous slices of the same file</b> and re-read <b>88%</b> — the whole of the pooled 25% — cutting its own round saving from about 6 to 2.9.</p>
-      </div>
-      <div>
-        <p class="label">The token argument flips sign with coverage</p>
-        <table class="data xs" style="margin-top:6px">
-          <thead><tr><th>prompt tokens</th><th class="n">baseline</th><th class="n">injected</th></tr></thead>
-          <tbody>
-            <tr><td>scripted micro-loop<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;margin-top:2px">mostly tool results from 8.19 locate calls</small></td><td class="n">12,998</td><td class="n"><b>2,037</b></td></tr>
-            <tr class="hi"><td>the real harness<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;margin-top:2px">the successor still does most of its own work</small></td><td class="n">14,754</td><td class="n"><b>30,009</b></td></tr>
-          </tbody>
-        </table>
-        <p class="note xs" style="margin-top:8px">Latency still improves — <b>11.1k extra tokens is 0.37 s of prefill against 34 s of active time removed</b> — but the free-lunch framing belongs to the micro-benchmark, not to the policy.</p>
-      </div>
-      <div>
-        <p class="label">One arm is actively harmful</p>
-        <p class="note xs" style="margin-top:7px">The <b>pollution</b> arm — handing over content the successor does not need alongside content it does — finished only <b>3 of its 5</b> successors, <b>60% against 100%</b> everywhere else.</p>
-      </div>
-      <p class="claim" style="font-size:16.5px">A fragmented handoff is distrusted; a contiguous one is not. And a summary does not substitute for the bytes.</p>
+    <figure>
+      <p class="label">The same three contrasts as intervals · change in rounds per successor</p>
+      <svg viewBox="0 0 540 176" role="img" aria-label="Interval plot of the change in rounds per successor against the untreated arm. dag is minus 2.17 with a 95 percent interval from minus 3.50 to minus 0.83, entirely below zero. pollute is minus 0.17, from minus 1.60 to plus 1.27, crossing zero. summary is plus 0.63, from minus 1.07 to plus 2.57, crossing zero." style="margin-top:4px">
+        <g color="var(--ink-2)">
+          <rect x="150" y="20" width="200" height="126" class="band-shot"></rect>
+          <text x="250" y="14" font-size="9.5" text-anchor="middle" class="t-shot">fewer rounds than none</text>
+          <text x="425" y="14" font-size="9.5" text-anchor="middle" class="t-muted">more rounds</text>
+          <line x1="150" y1="20" x2="150" y2="146" class="grid"></line>
+          <line x1="200" y1="20" x2="200" y2="146" class="grid"></line>
+          <line x1="250" y1="20" x2="250" y2="146" class="grid"></line>
+          <line x1="300" y1="20" x2="300" y2="146" class="grid"></line>
+          <line x1="400" y1="20" x2="400" y2="146" class="grid"></line>
+          <line x1="450" y1="20" x2="450" y2="146" class="grid"></line>
+          <line x1="500" y1="20" x2="500" y2="146" class="grid"></line>
+          <line x1="350" y1="20" x2="350" y2="146" class="edge-dash"></line>
+          <line x1="150" y1="146" x2="500" y2="146" class="axis"></line>
+          <text x="150" y="160" font-size="9.5" text-anchor="middle" class="t-mono t-muted">−4</text>
+          <text x="200" y="160" font-size="9.5" text-anchor="middle" class="t-mono t-muted">−3</text>
+          <text x="250" y="160" font-size="9.5" text-anchor="middle" class="t-mono t-muted">−2</text>
+          <text x="300" y="160" font-size="9.5" text-anchor="middle" class="t-mono t-muted">−1</text>
+          <text x="350" y="160" font-size="9.5" text-anchor="middle" class="t-mono t-ink2">0</text>
+          <text x="400" y="160" font-size="9.5" text-anchor="middle" class="t-mono t-muted">+1</text>
+          <text x="450" y="160" font-size="9.5" text-anchor="middle" class="t-mono t-muted">+2</text>
+          <text x="500" y="160" font-size="9.5" text-anchor="middle" class="t-mono t-muted">+3</text>
+          <text x="350" y="174" font-size="9.5" text-anchor="middle" class="t-muted">rounds per successor, arm minus none · baseline 5.17</text>
+          <text x="140" y="46" font-size="11" text-anchor="end" class="t-mono t-mate">dag</text>
+          <text x="140" y="58" font-size="9.5" text-anchor="end" class="t-muted">the bytes</text>
+          <line x1="175" y1="47" x2="308.5" y2="47" class="edge-mate whisk"></line>
+          <circle cx="241.5" cy="47" r="4.5" class="f-mate"></circle>
+          <text x="241.5" y="64" font-size="9.5" text-anchor="middle" class="t-mono t-ink2">−2.17 [−3.50, −0.83]</text>
+          <text x="140" y="86" font-size="11" text-anchor="end" class="t-mono">pollute</text>
+          <text x="140" y="98" font-size="9.5" text-anchor="end" class="t-muted">unrelated file</text>
+          <line x1="270" y1="87" x2="413.5" y2="87" class="edge whisk"></line>
+          <circle cx="341.5" cy="87" r="4.5" class="f-grey"></circle>
+          <text x="341.5" y="104" font-size="9.5" text-anchor="middle" class="t-mono t-ink2">−0.17 [−1.60, +1.27]</text>
+          <text x="140" y="126" font-size="11" text-anchor="end" class="t-mono">summary</text>
+          <text x="140" y="138" font-size="9.5" text-anchor="end" class="t-muted">result text</text>
+          <line x1="296.5" y1="127" x2="478.5" y2="127" class="edge whisk"></line>
+          <circle cx="381.5" cy="127" r="4.5" class="f-grey"></circle>
+          <text x="381.5" y="142" font-size="9.5" text-anchor="middle" class="t-mono t-ink2">+0.63 [−1.07, +2.57]</text>
+        </g>
+      </svg>
+      <figcaption>A bar is a 95% bootstrap interval, the dot its point estimate. Only <span class="mono">dag</span>'s bar lies wholly left of the dashed no-change line; the two controls cross it.</figcaption>
+    </figure>
+    <div class="key">
+      <dl class="gloss">
+        <dt>W5</dt><dd>three teammates each inventory a different file; a synthesis task — the successor — waits for all three. A cross-owner successor holds at most one of the three</dd>
+        <dt>rounds · reads</dt><dd>mean model calls and file reads per successor</dd>
+        <dt>active s</dt><dd>model time spent on the successor, seconds</dd>
+        <dt>prompt · injected</dt><dd>prompt tokens over all its calls · the part that was handed over</dd>
+        <dt>files cited</dt><dd>distinct files its report cites; the task asks about exactly 3</dd>
+        <dt>completed</dt><dd>share of successors that finished their task</dd>
+      </dl>
+      <ul class="list tight xxs" style="margin-top:7px">
+        <li><b>The content is what works:</b> the same volume of irrelevant text moves nothing, and costs 2 of 5 successors their task.</li>
+        <li><b>A summary is no substitute</b> for the bytes, though it is what a harness can already do without any cache.</li>
+        <li><b>The handoff doubles prompt tokens</b> (14.8k → 30.0k) and still wins: 11.1k extra tokens is 0.37 s of prefill against 34 s of model time removed.</li>
+      </ul>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/dag_kv_reuse.md</span> findings 5–8; traces <span class="mono">traces/prewarm/</span>, tools <span class="mono">scripts/prewarm_{smoke,loop,harness,analyze}.py</span> and <span class="mono">--prewarm*</span> in <span class="mono">scripts/profile_run.py</span>. KV transfer is emulated, not spliced: the successor is handed the exact <span class="mono">tool_use</span>/<span class="mono">tool_result</span> pair a real read would have produced. Every prompt here is <b>2–14k tokens</b>, where 0.033 ms per token is noise — above roughly 50k tokens per call the precision argument on slide 4 may come back, and that is the main threat to it.</p></div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/dag_kv_reuse.md</span> finding 8; full report <span class="mono">s15_integrated_harness/dag_kv_reuse_profile.md</span> §5.7; traces <span class="mono">traces/prewarm/</span>; tools <span class="mono">scripts/prewarm_harness.py</span>, <span class="mono">scripts/prewarm_analyze.py</span> and the <span class="mono">--prewarm</span> flags of <span class="mono">scripts/profile_run.py</span>. <span class="mono">glm-5.3-flash</span> via z.ai; four repetitions, arm order shuffled on a fixed seed. KV transfer is emulated, not spliced: the successor is handed the exact <span class="mono">tool_use</span> / <span class="mono">tool_result</span> pairs a real read would have produced, minus what its own agent already held. Every call here is 2–14k tokens, where 0.033 ms per token is noise; above ~50k tokens per call the token cost could start to matter, and that is the main threat to this result.</p></div>
 </section>
 
 <!-- ===================== 6 · RESULT: DEPTH VS COVERAGE ===================== -->
 <section class="slide" data-title="Depth vs coverage">
   <div class="slide-head">
     <div class="eyebrow"><span class="num">6</span><span>Result · how far up the graph is it worth reaching</span></div>
-    <h2>Depth is the wrong axis. Reaching one hop further buys +15 points of bytes but only +4.8 of rounds — and supplying three of the four documents a task needs is indistinguishable from supplying none</h2>
+    <h2>Reaching one hop further adds 15 points of byte recall but only 4.8 of reducible rounds, and no round or latency change clears zero</h2>
   </div>
-  <div class="body" style="grid-template-columns: 1fr 1.08fr; gap:34px">
-    <div class="stack" style="gap:12px">
-      <div>
-        <p class="label">Three arms, two stages</p>
-        <table class="data xs" style="margin-top:6px">
-          <thead><tr><th>scripted, 96 trials</th><th class="n">rounds</th><th class="n">wall s</th><th class="n">prompt tok</th><th class="n">accuracy</th></tr></thead>
-          <tbody>
-            <tr><td><span class="swatch grey"></span>none</td><td class="n">8.00</td><td class="n">68.2</td><td class="n">25,183</td><td class="n">88%</td></tr>
-            <tr><td><span class="swatch mate"></span>dag</td><td class="n">6.47</td><td class="n">42.3</td><td class="n">10,522</td><td class="n">93%</td></tr>
-            <tr class="hi"><td><span class="swatch lead"></span>ancestors</td><td class="n"><b>1.50</b></td><td class="n"><b>12.5</b></td><td class="n"><b>828</b></td><td class="n"><b>99%</b></td></tr>
-          </tbody>
-        </table>
-        <p class="note xs" style="margin-top:7px">Δ rounds <b>−1.53</b> [−2.75, −0.34] and <b>−6.50</b> [−7.50, −5.34]; <span class="mono">ancestors</span> − <span class="mono">dag</span> = <b>−4.97</b> [−6.06, −3.72]. <b>The second hop is worth 3.2× the first</b> — and the fuller handoff makes the whole trial <b>30× cheaper</b> in prompt tokens. Handing over 728 tokens avoids sending 24,355.</p>
+  <div class="body" style="grid-template-columns: 1fr 1.08fr; gap:32px">
+    <div class="stack" style="gap:9px">
+      <p class="label">What each reach would have held · 15 untreated successors</p>
+      <div class="pairs" style="grid-template-columns: 1fr 200px 100px; margin-top:2px">
+        <div class="h">keep the reads of</div><div class="h">bytes ghost · rounds solid</div><div class="h" style="text-align:right">bytes · rounds</div>
+        <div class="m">its direct predecessors<small><span class="mono">dag</span> · precision 29.9% · 23.8 KB sent</small></div><div class="bars"><div class="bar ghost" style="width:48.4px"></div><div class="bar mate" style="width:47.6px"></div></div><div class="v">24.2% · <b>23.8%</b></div>
+        <div class="m">its whole upstream closure<small><span class="mono">anc</span> · precision 30.8% · 53.6 KB</small></div><div class="bars"><div class="bar ghost" style="width:78.4px"></div><div class="bar lead" style="width:57.2px"></div></div><div class="v">39.2% · <b>28.6%</b></div>
+        <div class="m">every earlier task<small>broadcast · precision 27.1% · 60.1 KB</small></div><div class="bars"><div class="bar ghost" style="width:96.4px"></div><div class="bar grey" style="width:88.8px"></div></div><div class="v">48.2% · <b>44.4%</b></div>
+        <div class="m">exactly its own reads<small>a ceiling · 35.6 KB</small></div><div class="bars"><div class="bar ghost" style="width:200px"></div><div class="bar grey" style="width:193.6px"></div></div><div class="v">100% · <b>96.8%</b></div>
       </div>
-      <div>
-        <p class="label">In the real harness, none of it survives</p>
-        <table class="data xs" style="margin-top:6px">
-          <thead><tr><th>18 runs, 15 successors per arm</th><th class="n">Δ rounds</th><th class="n">Δ span s</th><th class="n">Δ prompt tok</th></tr></thead>
-          <tbody>
-            <tr><td><span class="mono">dag</span> − none</td><td class="n">+0.40<br><small style="color:var(--muted)">[−3.00, +3.87]</small></td><td class="n">−47.7<br><small style="color:var(--muted)">[−118, +11.7]</small></td><td class="n"><b>+17,968</b><br><small style="color:var(--warn)">[+3,482, +32,139]</small></td></tr>
-            <tr><td><span class="mono">ancestors</span> − none</td><td class="n">−1.33<br><small style="color:var(--muted)">[−4.80, +2.40]</small></td><td class="n">−23.6<br><small style="color:var(--muted)">[−110, +64.0]</small></td><td class="n">+5,663<br><small style="color:var(--muted)">[−10,563, +24,053]</small></td></tr>
-          </tbody>
-        </table>
-        <p class="note xs" style="margin-top:7px"><b>Every round and latency interval straddles zero.</b> The one interval that excludes it is a cost. Byte recall climbs smoothly — <b>24.2% → 39.2% → 48.2%</b> for direct / closure / every earlier task — while round recall barely moves: <b>23.8% → 28.6% → 44.4%</b>.</p>
+      <div class="key">
+        <dl class="gloss">
+          <dt>byte recall</dt><dd>share of the successor's read bytes the kept reads already hold — the ghost bar</dd>
+          <dt>reducible</dt><dd>share of its 63 reading rounds whose every read is held — the solid bar</dd>
+          <dt>precision</dt><dd>share of what is handed over that the successor goes on to read</dd>
+        </dl>
+        <ul class="list tight xxs" style="margin-top:7px">
+          <li>From direct predecessors to the closure: bytes <b>+15 points</b> (24.2 → 39.2), rounds only <b>+4.8</b> (23.8 → 28.6).</li>
+          <li>A round disappears only if <b>every</b> read in it is already held, so bytes accumulate smoothly and rounds do not: at 39% coverage the successor still has to go and look.</li>
+          <li>Measured on the untreated arm, because a treated successor stops reading.</li>
+        </ul>
+      </div>
+      <p class="claim" style="font-size:16px">The lever is coverage completeness, not graph depth.</p>
+    </div>
+    <div class="stack" style="gap:9px">
+      <p class="label">What the arms did, live · 18 team runs, 15 successors per arm</p>
+      <table class="data xs xxs">
+        <thead><tr><th>arm</th><th class="n">rounds</th><th class="n">reads</th><th class="n">span s</th><th class="n">prompt tok</th><th class="n">handed-over share</th></tr></thead>
+        <tbody>
+          <tr><td><span class="swatch grey"></span><span class="mono">none</span></td><td class="n">7.87</td><td class="n">9.47</td><td class="n">149.0</td><td class="n">27,251</td><td class="n">0%</td></tr>
+          <tr><td><span class="swatch mate"></span><span class="mono">dag</span></td><td class="n">8.27</td><td class="n">10.00</td><td class="n">101.3</td><td class="n">45,218</td><td class="n">26.1%</td></tr>
+          <tr class="hi"><td><span class="swatch lead"></span><span class="mono">anc</span></td><td class="n">6.53</td><td class="n">6.53</td><td class="n">125.5</td><td class="n">32,914</td><td class="n">32.5%</td></tr>
+          <tr class="grp"><td colspan="6">change against none · 95% CI</td></tr>
+          <tr><td class="mono nw">dag − none</td><td class="n nw">+0.40<span class="sub">[−3.00, +3.87]</span></td><td class="n na">—</td><td class="n nw">−47.7<span class="sub">[−118, +11.7]</span></td><td class="n nw warn">+17,968<span class="sub">[+3,482, +32,139]</span></td><td class="n na">—</td></tr>
+          <tr><td class="mono nw">anc − none</td><td class="n nw">−1.33<span class="sub">[−4.80, +2.40]</span></td><td class="n na">—</td><td class="n nw">−23.6<span class="sub">[−110, +64.0]</span></td><td class="n nw">+5,663<span class="sub">[−10,563, +24,053]</span></td><td class="n na">—</td></tr>
+        </tbody>
+      </table>
+      <div class="key">
+        <dl class="gloss">
+          <dt>FAB-DEEP</dt><dd>depth 4: reconcile four documents that disagree; edges stated in the prompt</dd>
+          <dt>RW-FQA</dt><dd>depth 3: glossary → architecture → reconcile; edges emitted unprompted</dd>
+          <dt>span s</dt><dd>wall time from the successor's claim to its completion</dd>
+          <dt>handed-over share</dt><dd>inherited tokens as a share of all its prompt tokens</dd>
+        </dl>
+        <ul class="list tight xxs" style="margin-top:7px">
+          <li><b>Every round and span interval straddles zero:</b> with ±3 rounds of spread between successors, 15 per arm cannot resolve a one-round effect; that needs ~4× the runs.</li>
+          <li>The direction holds in both workloads — <span class="mono">anc</span> reads least and runs fewest rounds — while <span class="mono">dag</span> lands within a round of the baseline.</li>
+          <li><b>The one interval that clears zero is a cost</b>: <span class="mono">dag</span> adds 17,968 prompt tokens — the block is re-sent every round and the successor still searches.</li>
+        </ul>
       </div>
     </div>
-    <div class="stack" style="gap:10px">
-      <figure>
-        <p class="label">F1 · the coverage sweep · 180 trials, four documents with disjoint symbols</p>
-        <svg viewBox="0 0 640 262" role="img" aria-label="Bar chart of rounds against the number of needed documents supplied. Supplying none costs 8.00 rounds, one 8.00, two 8.53, three 7.53, and all four collapses to 1.83. Supplying all four but truncating each to about half costs 2.13 rounds. The step is between three and four documents." style="margin-top:6px">
-          <g color="var(--ink-2)">
-            <defs><marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
-            <line x1="70" y1="210" x2="620" y2="210" class="axis"></line>
-            <line x1="70" y1="170" x2="620" y2="170" class="grid"></line>
-            <line x1="70" y1="130" x2="620" y2="130" class="grid"></line>
-            <line x1="70" y1="90" x2="620" y2="90" class="grid"></line>
-            <line x1="70" y1="50" x2="620" y2="50" class="grid"></line>
-            <text x="62" y="214" font-size="10" text-anchor="end" class="t-mono t-muted">0</text>
-            <text x="62" y="174" font-size="10" text-anchor="end" class="t-mono t-muted">2</text>
-            <text x="62" y="134" font-size="10" text-anchor="end" class="t-mono t-muted">4</text>
-            <text x="62" y="94" font-size="10" text-anchor="end" class="t-mono t-muted">6</text>
-            <text x="62" y="54" font-size="10" text-anchor="end" class="t-mono t-muted">8</text>
-            <text x="70" y="26" font-size="10.5" class="t-muted">rounds per trial</text>
-            <rect x="82" y="50" width="56" height="160" class="f-grey"></rect>
-            <rect x="172" y="50" width="56" height="160" class="f-grey"></rect>
-            <rect x="262" y="39" width="56" height="171" class="f-grey"></rect>
-            <rect x="352" y="59" width="56" height="151" class="f-grey"></rect>
-            <rect x="442" y="173" width="56" height="37" class="f-lead"></rect>
-            <rect x="532" y="167" width="56" height="43" class="f-shot"></rect>
-            <text x="110" y="44" font-size="11" text-anchor="middle" class="t-mono t-ink2">8.00</text>
-            <text x="200" y="44" font-size="11" text-anchor="middle" class="t-mono t-ink2">8.00</text>
-            <text x="290" y="33" font-size="11" text-anchor="middle" class="t-mono t-ink2">8.53</text>
-            <text x="380" y="53" font-size="11" text-anchor="middle" class="t-mono t-ink2">7.53</text>
-            <text x="470" y="167" font-size="11" text-anchor="middle" class="t-mono t-lead">1.83</text>
-            <text x="560" y="161" font-size="11" text-anchor="middle" class="t-mono t-shot">2.13</text>
-            <text x="110" y="226" font-size="11" text-anchor="middle" class="t-mono">0</text>
-            <text x="200" y="226" font-size="11" text-anchor="middle" class="t-mono">1</text>
-            <text x="290" y="226" font-size="11" text-anchor="middle" class="t-mono">2</text>
-            <text x="380" y="226" font-size="11" text-anchor="middle" class="t-mono">3</text>
-            <text x="470" y="226" font-size="11" text-anchor="middle" class="t-mono">4</text>
-            <text x="560" y="226" font-size="11" text-anchor="middle" class="t-mono">4</text>
-            <text x="560" y="238" font-size="9.5" text-anchor="middle" class="t-muted">each trimmed ~50%</text>
-            <text x="290" y="240" font-size="10.5" text-anchor="middle" class="t-muted">documents supplied, of the four the task needs</text>
-            <path d="M 408 96 L 442 96" class="edge-dash"></path>
-            <path d="M 425 96 L 425 165" class="edge" marker-end="url(#arB)"></path>
-            <text x="418" y="90" font-size="10.5" text-anchor="end" class="t-mono t-lead">−5.70 rounds</text>
-            <text x="418" y="102" font-size="9.5" text-anchor="end" class="t-muted">95% CI [−7.07, −4.30]</text>
-            <text x="620" y="254" font-size="10" text-anchor="end" class="t-mono t-muted">fit: a = 5.97 (anything missing) · b = 0.09 (per missing doc) · a/b = 69×</text>
-          </g>
-        </svg>
-        <figcaption>The last document is worth <b>5.70 rounds</b>; the average of the earlier three is <b>0.16</b> — a ratio of <b>36.6×</b>. But trimming <em>within</em> a span is nearly free: halving the injected content (2,340 → 1,270 tokens) costs <b>+0.30 rounds</b>. One unwelcome side effect — accuracy on facts whose document was <em>missing</em> falls from <b>99% at k=0 to 83% at k=3</b>. Partial context makes the agent complacent.</figcaption>
-      </figure>
-      <p class="claim" style="font-size:16.5px">Cover a successor completely or not at all. The lever is coverage completeness, not graph depth.</p>
-    </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/inheritance_depth.md</span> §3, §3b and follow-up F1; tables in <span class="mono">traces/inherit/{inherit_tables,coverage_tables}.md</span>, tool <span class="mono">scripts/coverage_sweep.py</span>. Threats: the harness stage is underpowered at 15 successors per arm with a ±3 round spread, and its accuracy sits at a ceiling, so it can only show a loss. F1's fit has <b>r² = 0.45</b> — it explains the means far better than individual trials — and the step was measured at N = 4 documents only. Correction: the harness stage was handed <b>~45% less</b> than its recall denominator credited, because <span class="mono">profile_run.py</span> recorded predecessors' <span class="mono">bash</span> reads but injected only <span class="mono">read_file</span> ones, so this null is conservative; its "dag 75% re-fetch" line counted every read rather than re-reads of injected paths. Both fixed.</p></div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/inheritance_depth.md</span> §3b, the harness stage; tables <span class="mono">traces/inherit/inherit_tables.md</span>; tools <span class="mono">scripts/inherit_workloads.py</span>, <span class="mono">scripts/inherit_analyze.py</span> and <span class="mono">--prewarm ancestors</span> in <span class="mono">scripts/profile_run.py</span>; <span class="mono">glm-5.3-flash</span>. Accuracy was 100% in every arm, so this stage could only have shown a loss; one <span class="mono">anc</span> run is excluded because the Lead shut the team down while its successor was still working. The note's scripted single-agent stage and coverage sweep are left out — they ran outside the harness. Correction: this stage was handed ~45% less than its recall denominator credited (predecessors' shell reads were recorded but only <span class="mono">read_file</span> ones injected), so the null is conservative; fixed since.</p></div>
 </section>
 
 <!-- ===================== 7 · RESULT: BUDGETS AND POLICIES ===================== -->
 <section class="slide" data-title="Budgets and policies">
   <div class="slide-head">
     <div class="eyebrow"><span class="num">7</span><span>Result · what a byte budget buys, and how to spend it</span></div>
-    <h2>Rank by reuse frequency, not recency: at an 8 KB budget LFU removes 21.9% of rounds where LRU removes 3.0% — and recency truncation is what production harnesses actually ship</h2>
+    <h2>Frequency beats recency only modestly — 19–21% against 16% of rounds reducible at 8 KB on τ-bench — and foresight would reach 38%</h2>
   </div>
-  <div class="body" style="grid-template-columns: 1.16fr 1fr; gap:34px">
-    <div class="stack" style="gap:11px">
-      <p class="label">Eviction policies · removable rounds under a byte budget</p>
+  <div class="body" style="grid-template-columns: 1.3fr 1fr; gap:30px">
+    <div class="stack" style="gap:7px">
+      <p class="label">Reducible rounds (%) under a byte budget · bold = best deployable in the column</p>
       <table class="data xs xxs">
-        <thead><tr><th>policy</th><th class="n">τ+GAIA<br>8 KB</th><th class="n">32 KB</th><th class="n">unlim</th><th class="n">SWE<br>8 KB</th><th class="n">32 KB</th><th class="n">unlim</th></tr></thead>
+        <thead>
+          <tr><th rowspan="2" style="vertical-align:bottom">policy · what it keeps</th><th class="grp" colspan="2"><span class="lc">τ</span>-bench + GAIA<span class="sub">replay · 407 successors</span></th><th class="grp" colspan="2">SWE-bench<span class="sub">replay · 726</span></th><th class="grp" colspan="2">s15 harness<span class="sub">F2 · 26</span></th></tr>
+          <tr><th class="n">8 KB</th><th class="n">32 KB</th><th class="n">8 KB</th><th class="n">32 KB</th><th class="n">8 KB</th><th class="n">32 KB</th></tr>
+        </thead>
         <tbody>
-          <tr class="hi"><td><b>LFU</b> — rank by reuse frequency</td><td class="n"><b>21.9%</b></td><td class="n">35.6%</td><td class="n">38.2%</td><td class="n"><b>4.0%</b></td><td class="n">4.3%</td><td class="n">4.3%</td></tr>
-          <tr><td>GDSF</td><td class="n">17.2%</td><td class="n">29.5%</td><td class="n">38.2%</td><td class="n">3.5%</td><td class="n">4.0%</td><td class="n">4.3%</td></tr>
-          <tr><td>S3-FIFO</td><td class="n">15.8%</td><td class="n">25.4%</td><td class="n">38.2%</td><td class="n">3.9%</td><td class="n">4.3%</td><td class="n">4.3%</td></tr>
-          <tr><td>keep costliest-to-recover</td><td class="n">11.1%</td><td class="n">17.1%</td><td class="n">38.2%</td><td class="n">2.3%</td><td class="n">2.4%</td><td class="n">4.3%</td></tr>
-          <tr><td><b>graph-ordered</b> — the task board</td><td class="n" style="color:var(--warn)">7.8%</td><td class="n" style="color:var(--warn)">11.3%</td><td class="n">38.2%</td><td class="n" style="color:var(--warn)">0.7%</td><td class="n" style="color:var(--warn)">1.1%</td><td class="n">4.3%</td></tr>
-          <tr><td><b>LRU</b> / FIFO / recency truncation</td><td class="n" style="color:var(--warn)">3.0%</td><td class="n" style="color:var(--warn)">4.8%</td><td class="n">38.2%</td><td class="n" style="color:var(--warn)">0.0%</td><td class="n" style="color:var(--warn)">0.5%</td><td class="n">4.3%</td></tr>
-          <tr><td>Belady / MIN <span class="tag">ceiling</span></td><td class="n">38.0%</td><td class="n">38.2%</td><td class="n">38.2%</td><td class="n">4.2%</td><td class="n">4.3%</td><td class="n">4.3%</td></tr>
+          <tr class="grp"><td colspan="7">Deployable policies · ordered by <span class="lc">τ</span>-bench at 8 KB</td></tr>
+          <tr><td><b>previous task first</b> · graph order in s15</td><td class="n"><b>21.9</b></td><td class="n">25.8</td><td class="n">1.4</td><td class="n">2.3</td><td class="n"><b>2</b></td><td class="n">18</td></tr>
+          <tr class="hi"><td><b>GDSF</b> — frequency weighed against size</td><td class="n">20.8</td><td class="n"><b>26.3</b></td><td class="n">2.9</td><td class="n">3.8</td><td class="n na">—</td><td class="n na">—</td></tr>
+          <tr class="hi"><td><b>LFU</b> — the most-read items</td><td class="n">19.2</td><td class="n">23.1</td><td class="n">2.6</td><td class="n">3.1</td><td class="n na">—</td><td class="n na">—</td></tr>
+          <tr><td>SIEVE — FIFO that spares re-read items</td><td class="n">18.1</td><td class="n">25.5</td><td class="n">2.0</td><td class="n">3.0</td><td class="n na">—</td><td class="n na">—</td></tr>
+          <tr><td><b>LRU</b> — the most recently read</td><td class="n">15.8</td><td class="n">22.8</td><td class="n">0.3</td><td class="n">1.4</td><td class="n"><b>2</b></td><td class="n"><b>19</b></td></tr>
+          <tr><td>random eviction — the control</td><td class="n">13.6</td><td class="n">19.2</td><td class="n">0.3</td><td class="n">1.3</td><td class="n na">—</td><td class="n na">—</td></tr>
+          <tr><td>the smallest spans first</td><td class="n">13.1</td><td class="n">21.2</td><td class="n"><b>3.5</b></td><td class="n"><b>3.9</b></td><td class="n">0</td><td class="n"><b>19</b></td></tr>
+          <tr><td>S3-FIFO — FIFO with a probation queue</td><td class="n">10.7</td><td class="n">22.7</td><td class="n">2.0</td><td class="n">2.2</td><td class="n na">—</td><td class="n na">—</td></tr>
+          <tr><td>the costliest to recover</td><td class="n">10.0</td><td class="n">14.7</td><td class="n">1.3</td><td class="n">1.5</td><td class="n na">—</td><td class="n na">—</td></tr>
+          <tr class="grp"><td colspan="7">Ceilings · they rank with the successor's future reads</td></tr>
+          <tr><td>Belady / MIN · byte-density oracle</td><td class="n">38.0</td><td class="n">38.2</td><td class="n">4.2</td><td class="n">4.3</td><td class="n">1</td><td class="n">39</td></tr>
+          <tr><td>the cheapest whole rounds first</td><td class="n na">—</td><td class="n na">—</td><td class="n na">—</td><td class="n na">—</td><td class="n">2</td><td class="n">39</td></tr>
+          <tr class="hi"><td>unlimited budget — every policy converges</td><td class="n" colspan="2" style="text-align:center">38.2</td><td class="n" colspan="2" style="text-align:center">4.3</td><td class="n" colspan="2" style="text-align:center">52</td></tr>
         </tbody>
       </table>
-      <p class="note xs">At 8 KB, LFU reaches <b>57%</b> (τ/GAIA) and <b>93%</b> (SWE) of the reachable ceiling; LRU reaches <b>8%</b> and <b>0%</b>. Recency truncation and last-N-round windows — what production harnesses ship — are the worst deployable family tested.</p>
-      <p class="claim" style="font-size:16.5px">With perfect foresight, 8 KB already buys the entire unlimited-budget value. Every gap is a prediction failure, not a capacity failure.</p>
     </div>
-    <div class="stack" style="gap:12px">
-      <div>
-        <p class="label">F2 · the graph as a retention <em>ordering</em>, at matched cost</p>
-        <table class="data xs xxs" style="margin-top:6px">
-          <thead><tr><th>ordering</th><th class="n">16 KB</th><th class="n">32 KB</th><th class="n">64 KB</th><th class="n">128 KB</th></tr></thead>
-          <tbody>
-            <tr><td>most-recent-first (LRU)</td><td class="n">6%</td><td class="n">19%</td><td class="n">36%</td><td class="n">49%</td></tr>
-            <tr><td><b>graph-ordered</b></td><td class="n">6%</td><td class="n">18%</td><td class="n">35%</td><td class="n">51%</td></tr>
-            <tr><td>largest spans first</td><td class="n">6%</td><td class="n">13%</td><td class="n">40%</td><td class="n">52%</td></tr>
-            <tr><td>smallest spans first</td><td class="n">6%</td><td class="n">19%</td><td class="n">38%</td><td class="n">51%</td></tr>
-            <tr class="hi"><td><b>cheapest whole rounds first</b> <span class="tag">ceiling</span></td><td class="n"><b>9%</b></td><td class="n"><b>39%</b></td><td class="n"><b>51%</b></td><td class="n">52%</td></tr>
-          </tbody>
-        </table>
-        <p class="note xs" style="margin-top:7px">The graph is ahead of LRU at <b>1 of 11</b> budget points, by <b>1 point</b>, and behind at two others. The pre-registered decision rule fires: next step 13 of the 2026-09-16 deck should be <b>retired rather than prototyped</b>. Selecting for <em>whole rounds</em> roughly doubles what a budget buys — 19% → 39% at 32 KB — but it uses future knowledge, so it is a reachable ceiling, not a policy.</p>
+    <div class="stack" style="gap:8px">
+      <div class="key">
+        <p class="kh">How to read it</p>
+        <dl class="gloss">
+          <dt>budget</dt><dd>bytes of other tasks' reads kept for one successor, in whole tool results</dd>
+          <dt>cell</dt><dd><b>reducible rounds</b>: share of reading rounds whose every read is kept</dd>
+          <dt>LFU · LRU</dt><dd>keep the most often · most recently read, counting only reads seen so far; GDSF weighs frequency against size</dd>
+          <dt>graph order</dt><dd>our harness: predecessors, closure, rest. The replay has no graph: previous task first, in arbitrary task order</dd>
+          <dt>ceilings</dt><dd>rank with the successor's future reads — targets, not policies</dd>
+          <dt>—</dt><dd>not run on our harness; not meaningful on replay for whole rounds. Largest spans first (not shown) is last everywhere</dd>
+        </dl>
       </div>
-      <div>
-        <p class="label">Widen the pool before tuning the policy</p>
-        <div class="bartable" style="grid-template-columns: 150px 1fr 46px; gap:6px 12px; margin-top:7px">
-          <div class="h">pool of earlier tasks</div><div class="h">removable rounds</div><div class="h" style="text-align:right"></div>
-          <div class="m">8 trajectories</div><div class="bars"><div class="bar lead" style="width:36%"></div></div><div class="v lead">13%</div>
-          <div class="m">16 trajectories</div><div class="bars"><div class="bar lead" style="width:64%"></div></div><div class="v lead">23%</div>
-          <div class="m">32 trajectories</div><div class="bars"><div class="bar lead" style="width:100%"></div></div><div class="v lead">36%</div>
-        </div>
-        <p class="note xs" style="margin-top:7px">Roughly linear in the log. And <b>do not partition the pool per agent</b> — size-matched, inheriting from a different model's runs is as good as inheriting from your own, within <b>~2 points</b> at every pool size.</p>
-      </div>
-    </div>
-  </div>
-  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/realworld_inheritance.md</span> metric 3 (E2-R / E3-R) and <span class="mono">inheritance_depth.md</span> follow-up F2; tool <span class="mono">scripts/budget_sweep.py</span>, table <span class="mono">traces/inherit/budget_sweep.md</span>. Two ceilings that must never be quoted side by side: F2's <b>52%</b> is the candidate pool's ceiling — what other tasks' reads can supply — while the <b>97%</b> figure from the earlier policy table is a successor's own future reads and is not reachable from other tasks at all. Caveat on the machinery: all 16 eviction policies are <b>non-monotone in retained bytes</b> when run as online caches — LRU and FIFO violate it in 17 of 60 random pools, because LRU's stack property holds only for equal-sized objects and tool observations are not.</p></div>
-</section>
-
-<!-- ===================== 8 · RESULT: REAL CORPORA ===================== -->
-<section class="slide" data-title="Real corpora">
-  <div class="slide-head">
-    <div class="eyebrow"><span class="num">8</span><span>Result · replay over 1,200 published trajectories and 410 HAL tasks</span></div>
-    <h2>Inheritance is a much better bet for tool-calling agents than for coding agents — and the retention <span class="dim">unit</span> is worth far more than the policy's reach</h2>
-  </div>
-  <div class="body" style="grid-template-columns: 1fr 1fr; gap:36px">
-    <div class="stack" style="gap:12px">
-      <div>
-        <p class="label">Cross-task inheritance, unlimited budget</p>
-        <table class="data xs" style="margin-top:6px">
-          <thead><tr><th>metric</th><th class="n">SWE <span class="mono">dag</span></th><th class="n">SWE <span class="mono">anc</span></th><th class="n">τ+GAIA <span class="mono">dag</span></th><th class="n">τ+GAIA <span class="mono">anc</span></th></tr></thead>
-          <tbody>
-            <tr><td>tokens inherited</td><td class="n">16,742</td><td class="n">40,601</td><td class="n"><b>497</b></td><td class="n">50,858</td></tr>
-            <tr><td>precision</td><td class="n">0.8%</td><td class="n">0.3%</td><td class="n"><b>11.6%</b></td><td class="n">0.5%</td></tr>
-            <tr class="hi"><td><b>rounds reduced</b></td><td class="n">2.1%</td><td class="n">4.3%</td><td class="n"><b>12.7%</b></td><td class="n"><b>38.2%</b></td></tr>
-            <tr><td>latency saved</td><td class="n">~2.6 s</td><td class="n">~5.4 s</td><td class="n">~1.0 s</td><td class="n">~3.1 s</td></tr>
-          </tbody>
-        </table>
-        <p class="note xs" style="margin-top:7px"><b>The direct-predecessor arm is rehabilitated.</b> It buys 12.7% of rounds for <b>497 tokens</b> where the closure buys 38.2% for <b>50,858</b> — the extra 25 points cost <b>102× the tokens</b>, and per round removed the direct predecessor is ~35× more byte-efficient. Whole-observation reuse on real SWE work is <b>0.8–1.2%</b>, not the synthetic study's 24–39%.</p>
-      </div>
-      <div>
-        <p class="label">The retention unit · EXPLAIN successors on a real codebase</p>
-        <table class="data xs" style="margin-top:6px">
-          <thead><tr><th>unit</th><th class="n">byte recall</th><th class="n">round recall</th></tr></thead>
-          <tbody>
-            <tr><td>whole file</td><td class="n">86.0%</td><td class="n">36.4%</td></tr>
-            <tr class="hi"><td><b>byte range</b></td><td class="n"><b>95.3%</b></td><td class="n"><b>90.9%</b></td></tr>
-            <tr><td>line</td><td class="n">96.6%</td><td class="n">90.9%</td></tr>
-          </tbody>
-        </table>
-        <p class="note xs" style="margin-top:7px">File → range buys <b>+9 points of bytes but +54 points of rounds</b>. Line adds nothing beyond range. Key on <b>content and on ranges, never on paths</b>: agents re-issue a byte-identical read only <b>0.4–2.6%</b> of the time, while <b>86%</b> of the bytes sit in files a predecessor already opened.</p>
-      </div>
-    </div>
-    <div class="stack" style="gap:12px">
-      <div>
-        <p class="label">Mutation is a contributor, not the mechanism</p>
-        <table class="data xs" style="margin-top:6px">
-          <thead><tr><th>the EXPLAIN / MODIFY pair<small style="display:block;font-family:var(--body);text-transform:none;letter-spacing:0;font-size:10.5px;margin-top:2px">same codebase, same harness, same model — only writing differs</small></th><th class="n">stale spans</th><th class="n">files no predecessor opened</th><th class="n">round recall</th></tr></thead>
-          <tbody>
-            <tr><td>EXPLAIN (read-only)</td><td class="n"><b>0.0%</b></td><td class="n">45.7%</td><td class="n"><b>90.9%</b></td></tr>
-            <tr><td>MODIFY (writes)</td><td class="n"><b>0.9%</b></td><td class="n"><b>62.6%</b></td><td class="n">11.1%</td></tr>
-          </tbody>
-        </table>
-        <p class="note xs" style="margin-top:7px">A 7.7× gap in bytes and 8.2× in rounds, and <em>mutation explains none of it</em>. What separates the two workloads is <b>coverage</b>. Note also that <span class="mono">dag</span> and <span class="mono">ancestors</span> score <b>identically</b> on both — same recall, same precision, same bytes.</p>
-      </div>
-      <div>
-        <p class="label">What real project work does that benchmarks do not</p>
-        <ul class="list tight xs" style="margin-top:7px">
-          <li>Codebase tasks produce boards every time: <b>20 of 20 runs, 11 of 20 at depth ≥ 3</b>. On lm-evaluation-harness, <b>0 of 15 runs created a task at all</b> — not merely no edges, no board — including one with a 1.59 MB document attached.</li>
-          <li>lm-eval has <b>221 task families, all static</b>; its <span class="mono">OutputType</span> admits no tool or environment step, and SWE-bench, GAIA, τ-bench, BFCL, AppWorld and WebArena are all absent. Wrapped as a model endpoint it grades fine — <b>3/3 on gsm8k</b> — which is exactly the point: a benchmark question is one deliverable, and one deliverable cannot be decomposed.</li>
-          <li>The two shapes differ: <b>comprehension work fans in</b>, <b>modification work chains</b>, and only the chaining shape reaches the depth where <span class="mono">dag</span> and <span class="mono">ancestors</span> can differ at all.</li>
-          <li>Waste is model-dependent — within-trajectory round recall on the identical 50 τ-bench tasks runs <b>gemini-2.0-flash 20.8%</b> to <b>deepseek-v3 5.2%</b>, a 4× spread on the same work.</li>
+      <div class="key">
+        <p class="kh">What the values say</p>
+        <ul class="list tight xxs">
+          <li><b>Frequency-aware beats recency, modestly</b>: at 8 KB, GDSF 20.8% and LFU 19.2% against LRU's 15.8% on τ-bench/GAIA — random eviction gets 13.6% — and 2.6–2.9% against 0.3% on SWE-bench.</li>
+          <li><b>Prediction, not capacity, is the gap</b>: foresight at 8 KB buys the whole unlimited value on replay (38.0 of 38.2), yet the best deployable policy gets 58% of it on τ-bench.</li>
+          <li><b>The previous task first leads τ-bench</b> (dag's 12.7% again), but replay task order is arbitrary, so it says nothing about a graph; in our harness graph order stays within a point of LRU.</li>
+          <li>Our harness keeps whole files (median pool 75 KB), so 8 KB holds almost nothing; at 32 KB whole-round picking doubles LRU.</li>
         </ul>
       </div>
-      <p class="claim" style="font-size:16.5px">If this line of work needs a target workload, it is τ-bench-shaped, not SWE-bench-shaped.</p>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/realworld_inheritance.md</span>. Corpora: <span class="mono">nvidia/Open-SWE-Traces</span> v1.1 (1,200 trajectories, 234 repos) and <span class="mono">agent-evals/hal_traces</span> (τ-bench airline over 5 models, GAIA; 410 tasks, 5,142 calls). Rounds removed are <b>counterfactual</b> on the replay side: computed, not observed. Correction: HAL reuses task ids across models, so the first τ-bench/GAIA numbers paired a task with itself solved by a different model — <span class="mono">dag</span> read 23.2% byte / 30.5% round recall and is actually <b>11.2% / 12.7%</b>; the SWE side was affected in 11 of 732 pairs. Threats: the cross-task ordering is arbitrary but not inert, so any single-source number must say <em>which</em> single source; HAL has only 3 groups and its five τ-bench runs share one 50-task set, so the SWE side is the better-powered half.</p></div>
+  <div class="foot"><p>Sources: <span class="mono">weekly_progress/092326/realworld_inheritance.md</span> metric 3, corrected 2026-09-23 (<span class="mono">traces/realworld/crossgrid_{hal,open_swe}.md</span>), and <span class="mono">inheritance_depth.md</span> follow-up F2 (26 untreated s15 successors). <b>Correction:</b> the first replay counted LFU and GDSF frequencies over the whole group, the successor and later tasks included, and never refreshed LRU, which then matched the random control; its LFU 21.9% / LRU 3.0% at 8 KB on τ-bench/GAIA are 19.2% / 15.8%. Fixed in <span class="mono">scripts/evict_policies.py</span> and <span class="mono">scripts/replay_sweep.py</span>. The unlimited row is what other tasks' reads can cover, not a successor's own future reads.</p></div>
 </section>
 
-<!-- ===================== 9 · RESULT: THE CEILING ===================== -->
-<section class="slide" data-title="The ceiling">
+<!-- ===================== 8 · RESULT: REAL TRAJECTORIES ===================== -->
+<section class="slide" data-title="Real trajectories">
   <div class="slide-head">
-    <div class="eyebrow"><span class="num">9</span><span>Result · why the arms look weak</span></div>
-    <h2>The arms are not failing — they are working against a low ceiling: only 42% of a successor's rounds are pure reads, and the closure removed 58% of everything structurally available</h2>
+    <div class="eyebrow"><span class="num">8</span><span>Result · replay over 1,200 published coding trajectories and 410 HAL tasks</span></div>
+    <h2>Inheritance suits tool-calling agents far better than coding agents: 38.2% of reading rounds are reducible on τ-bench and GAIA, 4.3% on SWE-bench</h2>
   </div>
-  <div class="body" style="grid-template-columns: 656px 1fr; gap:32px">
-    <figure>
-      <p class="label">Round composition · MODIFY successors on <span class="mono">lab-group-56</span>, live</p>
-      <svg viewBox="0 0 640 206" role="img" aria-label="Stacked bars of round composition for three arms. In the untreated baseline, 42.4 percent of successor rounds are reads only, 12.9 percent mix a read with other work, and 44.7 percent contain no read at all. Under the dag arm the split is 44.4, 8.3 and 47.2 percent; under the ancestors closure it is 31.8, 9.1 and 59.1 percent. A dashed line marks the structural ceiling at 42.4 percent of the baseline." style="margin-top:6px">
-        <g color="var(--ink-2)">
-          <rect x="150" y="40" width="199" height="26" class="f-lead"></rect>
-          <rect x="349" y="40" width="61" height="26" class="f-mate"></rect>
-          <rect x="410" y="40" width="210" height="26" class="f-grey"></rect>
-          <rect x="150" y="85" width="209" height="26" class="f-lead"></rect>
-          <rect x="359" y="85" width="39" height="26" class="f-mate"></rect>
-          <rect x="398" y="85" width="222" height="26" class="f-grey"></rect>
-          <rect x="150" y="130" width="150" height="26" class="f-lead"></rect>
-          <rect x="300" y="130" width="43" height="26" class="f-mate"></rect>
-          <rect x="343" y="130" width="277" height="26" class="f-grey"></rect>
-          <text x="142" y="52" font-size="11.5" text-anchor="end" class="t-mono">none</text>
-          <text x="142" y="64" font-size="10" text-anchor="end" class="t-muted">85 rounds</text>
-          <text x="142" y="97" font-size="11.5" text-anchor="end" class="t-mono t-mate">dag</text>
-          <text x="142" y="109" font-size="10" text-anchor="end" class="t-muted">72 rounds</text>
-          <text x="142" y="142" font-size="11.5" text-anchor="end" class="t-mono t-lead">ancestors</text>
-          <text x="142" y="154" font-size="10" text-anchor="end" class="t-muted">44 rounds</text>
-          <text x="249" y="57" font-size="11" text-anchor="middle" class="t-mono f-surface">42.4%</text>
-          <text x="515" y="57" font-size="11" text-anchor="middle" class="t-mono f-surface">44.7%</text>
-          <text x="254" y="102" font-size="11" text-anchor="middle" class="t-mono f-surface">44.4%</text>
-          <text x="509" y="102" font-size="11" text-anchor="middle" class="t-mono f-surface">47.2%</text>
-          <text x="225" y="147" font-size="11" text-anchor="middle" class="t-mono f-surface">31.8%</text>
-          <text x="481" y="147" font-size="11" text-anchor="middle" class="t-mono f-surface">59.1%</text>
-          <text x="379" y="36" font-size="9.5" text-anchor="middle" class="t-mate">12.9</text>
-          <text x="378" y="81" font-size="9.5" text-anchor="middle" class="t-mate">8.3</text>
-          <text x="321" y="126" font-size="9.5" text-anchor="middle" class="t-mate">9.1</text>
-          <path d="M 349 32 L 349 170" class="edge-dash"></path>
-          <text x="355" y="180" font-size="10.5" class="t-muted">structural ceiling · <tspan class="t-mono">5.5 of 13.0 rounds</tspan> are removable at all; the closure removed <tspan class="t-mono">3.2</tspan></text>
-          <rect x="150" y="192" width="9" height="9" rx="2" class="f-lead"></rect><text x="164" y="200" font-size="10.5" class="t-ink2">reads only — removable</text>
-          <rect x="316" y="192" width="9" height="9" rx="2" class="f-mate"></rect><text x="330" y="200" font-size="10.5" class="t-ink2">a read plus work that has to happen anyway</text>
-          <rect x="576" y="192" width="9" height="9" rx="2" class="f-grey"></rect><text x="590" y="200" font-size="10.5" class="t-ink2">no read</text>
-        </g>
-      </svg>
-      <figcaption>The clearest sign the mechanism is real is not the totals but the multi-read rounds: <b>30.6%</b> of baseline successor rounds issue two or more reads, and that falls to <b>12.5%</b> under <span class="mono">dag</span> and <b>6.8%</b> under the closure. Complete coverage is exactly what kills a multi-read round. Reads per successor fell <b>60%</b> and mean rounds <b>25%</b> — 13.0 → 12.5 → 9.8 — which is <b>58% of the structural ceiling</b>.</figcaption>
-    </figure>
-    <div class="stack" style="gap:12px">
+  <div class="body" style="grid-template-columns: 1.08fr 1fr; gap:32px">
+    <div class="stack" style="gap:10px">
+      <p class="label">Cross-task inheritance, unlimited budget</p>
+      <table class="data xs">
+        <thead>
+          <tr><th rowspan="2" style="vertical-align:bottom">metric</th><th class="grp" colspan="2">SWE-bench<span class="sub">726 successors · 234 repos</span></th><th class="grp" colspan="2"><span class="lc">τ</span>-bench + GAIA<span class="sub">407 successors</span></th></tr>
+          <tr><th class="n">dag</th><th class="n">anc</th><th class="n">dag</th><th class="n">anc</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>byte recall</td><td class="n">0.8%</td><td class="n">1.2%</td><td class="n">11.2%</td><td class="n">27.6%</td></tr>
+          <tr><td>tokens handed over, median</td><td class="n">16,742</td><td class="n">40,601</td><td class="n"><b>497</b></td><td class="n">50,858</td></tr>
+          <tr><td>precision</td><td class="n">0.8%</td><td class="n">0.3%</td><td class="n"><b>11.6%</b></td><td class="n">0.5%</td></tr>
+          <tr><td>reading rounds per successor</td><td class="n">33.6</td><td class="n">33.6</td><td class="n">3.8</td><td class="n">3.8</td></tr>
+          <tr class="hi"><td><b>reducible rounds</b></td><td class="n">2.1%</td><td class="n">4.3%</td><td class="n"><b>12.7%</b></td><td class="n"><b>38.2%</b></td></tr>
+          <tr><td>stale bytes</td><td class="n warn">7.6%</td><td class="n warn">14.3%</td><td class="n">0.2%</td><td class="n">1.8%</td></tr>
+          <tr><td>latency saved per successor</td><td class="n">~2.6 s</td><td class="n">~5.4 s</td><td class="n">~1.0 s</td><td class="n">~3.1 s</td></tr>
+        </tbody>
+      </table>
       <div>
-        <p class="label">E1-L · the three arms live on a real codebase</p>
-        <table class="data xs" style="margin-top:6px">
-          <thead><tr><th>arm</th><th class="n">succ</th><th class="n">rounds</th><th class="n">reads</th><th class="n">span s</th><th class="n">prompt tok</th></tr></thead>
+        <p class="label">Waste is partly the model's · the identical 50 <span class="lc">τ</span>-bench tasks</p>
+        <table class="data xs xxs" style="margin-top:5px">
           <tbody>
-            <tr><td><span class="swatch grey"></span>none</td><td class="n">7</td><td class="n">13</td><td class="n"><b>10</b></td><td class="n">294</td><td class="n">46,822</td></tr>
-            <tr><td><span class="swatch mate"></span>dag</td><td class="n">6</td><td class="n">12</td><td class="n"><b>6</b></td><td class="n">252</td><td class="n" style="color:var(--warn)">90,714</td></tr>
-            <tr class="hi"><td><span class="swatch lead"></span>ancestors</td><td class="n">5</td><td class="n">12</td><td class="n"><b>4</b></td><td class="n">264</td><td class="n">74,258</td></tr>
+            <tr><td class="na">model</td><td class="n mono">gemini-2.0-flash</td><td class="n mono">gpt-4.1</td><td class="n mono">claude-3.7-sonnet</td><td class="n mono">claude-opus-4.1</td><td class="n mono">deepseek-v3</td></tr>
+            <tr><td>re-fetched what it already held</td><td class="n"><b>20.8%</b></td><td class="n">14.6%</td><td class="n">13.9%</td><td class="n">10.7%</td><td class="n"><b>5.2%</b></td></tr>
           </tbody>
         </table>
-        <p class="note xs" style="margin-top:7px">Every successor cross-owner. Δ rounds <b>−0.5</b> [−6.9, +5.7] and <b>−3.2</b> [−9.6, +2.5]; Δ span <b>−17.8</b> and <b>−32.3</b> s, both straddling zero. The only interval that excludes zero is <span class="mono">dag</span>'s <b>+42,295 prompt tokens</b> [+4,697, +81,923].</p>
+        <p class="note xs" style="margin-top:6px;max-width:none">Reducible rounds within one trajectory: a 4× spread on the same work, so what a context manager can save depends on the model as well as the workload.</p>
       </div>
-      <div>
-        <p class="label">The EXPLAIN cell is unreadable, not negative</p>
-        <p class="note xs" style="margin-top:7px">Its three <span class="mono">ancestors</span> successors took <b>1, 36 and 2</b> rounds against a baseline of 9, 6, 11, 6. <b>The median says rounds fell from 7.5 to 2 and the mean says they rose by 5.0 — the two summaries disagree in sign</b>, and the interval is <b>+5.0 [−8.0, +27.5]</b>. What survives is the token cost: <b>+95,364 [+13,316, +163,246]</b>, 195,430 tokens against 81,698.</p>
-        <p class="note xs" style="margin-top:7px">So the coverage hypothesis is <b>not refuted here — it is untested.</b> EXPLAIN is also the only cell with the headroom to move rounds: its successors reach <b>90.9%</b> round recall against MODIFY's 11.1%.</p>
+    </div>
+    <div class="stack" style="gap:8px">
+      <div class="key">
+        <p class="kh">Terms and metrics</p>
+        <dl class="gloss">
+          <dt>SWE-bench</dt><dd>fix a GitHub issue in a repository; trajectories of SWE-agent, OpenHands and mini-SWE-agent</dd>
+          <dt>τ-bench</dt><dd>airline customer service through tool calls on one shared database, five models; <b>GAIA</b>: web and file question answering</dd>
+          <dt>cross-task</dt><dd>a later task in the same repository or database inherits what earlier tasks read. There is no graph: <span class="mono">dag</span> = the task run just before, <span class="mono">anc</span> = every earlier one</dd>
+          <dt>reading rounds</dt><dd>rounds that issue a read — the only ones inheritance can remove</dd>
+          <dt>stale</dt><dd>matched bytes whose span changed content since an earlier task read it</dd>
+          <dt>latency saved</dt><dd>reducible rounds × a measured call: 3.72 s (SWE-bench, priced at GLM) or 2.09 s (HAL's median)</dd>
+        </dl>
       </div>
-      <p class="claim" style="font-size:16.5px">Bytes accumulate smoothly; rounds do not. The measurement is not underpowered against a large effect — it is well powered against a small one.</p>
+      <div class="key">
+        <p class="kh">What the values say</p>
+        <ul class="list tight xxs">
+          <li><b>A shared database is re-read across tasks; a repository mostly is not.</b> The previous task alone makes 12.7% of τ-bench/GAIA rounds reducible for 497 tokens; the extra 25 points from <span class="mono">anc</span> cost 102× the tokens.</li>
+          <li>On SWE-bench both arms send tens of thousands of tokens for 2–4% of rounds, and 7.6–14.3% of what they match has changed since it was read.</li>
+          <li>All computed from traces, not observed; the live test is next step 16.</li>
+        </ul>
+      </div>
+      <p class="claim" style="font-size:16px">If this line of work needs a target workload, it is τ-bench-shaped, not SWE-bench-shaped.</p>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/realworld_inheritance.md</span> §E1-L and <span class="mono">conclusion.md</span>. Target: <span class="mono">lab-group-56</span>, an ECE 4750 lab repository (PyMTL + Verilog), 12 cells on MODIFY with arms interleaved and a fixed seed; census runs supplied the baseline, so nine cells were new. One smaller, underpowered observation: the closure beats the direct predecessors on every metric here — fewer reads, fewer rounds, 22,000 fewer tokens — which <em>inverts</em> the scripted stage's ordering, on n = 5 against n = 6. Resolving a one-round effect here needs roughly 4× these runs.</p></div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/realworld_inheritance.md</span> §3, metrics 1 and 4; corpora <span class="mono">nvidia/Open-SWE-Traces</span> v1.1 and <span class="mono">agent-evals/hal_traces</span> (τ-bench airline over five models, GAIA; 410 tasks, 5,142 calls); tools <span class="mono">scripts/traj_ingest.py</span>, <span class="mono">scripts/hal_ingest.py</span>, <span class="mono">scripts/replay_sweep.py</span>. Correction: HAL reuses task ids across models, so the first τ-bench/GAIA numbers paired a task with itself solved by another model — <span class="mono">dag</span> read 23.2% byte recall and 30.5% reducible rounds and is actually 11.2% / 12.7%; SWE-bench was affected in 11 of 732 pairs. Threats: the cross-task order is arbitrary but not inert, so a single-source number must say which source; HAL has only 3 groups, so SWE-bench is the better-powered half.</p></div>
 </section>
 
-<!-- ===================== 10 · RESULT: LATENCY ON LOCAL HARDWARE ===================== -->
-<section class="slide" data-title="Qwen vs GLM">
+<!-- ===================== 9 · RESULT: A REAL CODEBASE ===================== -->
+<section class="slide" data-title="Real codebase">
   <div class="slide-head">
-    <div class="eyebrow"><span class="num">10</span><span>Result · the second thread · the latency breakdown rerun on Qwen3.8-27B, local vLLM (2026-09-21)</span></div>
-    <h2>The 3.7 s fixed cost of a model call was z.ai, not the harness. Served locally the round is almost pure decode — prefill is 1–6% of a call, and the harness buckets did not move</h2>
+    <div class="eyebrow"><span class="num">9</span><span>Result · two workloads on one real codebase, <span class="mono">lab-group-56</span></span></div>
+    <h2>On a real codebase, coverage — not file edits — separates reading from editing work, and matching byte ranges lifts reducible rounds 36% → 91%</h2>
   </div>
-  <div class="body" style="grid-template-columns: 1fr 1fr; gap:34px">
-    <div class="stack" style="gap:12px">
+  <div class="body" style="grid-template-columns: 1.05fr 1fr; gap:32px">
+    <div class="stack" style="gap:9px">
+      <p class="label">Is mutation what separates them? · only writing differs</p>
+      <table class="data xs xxs">
+        <thead><tr><th>successor reads</th><th class="n">EXPLAIN<span class="sub">read-only</span></th><th class="n">MODIFY<span class="sub">edits files</span></th></tr></thead>
+        <tbody>
+          <tr><td>byte recall</td><td class="n"><b>95.3%</b></td><td class="n">12.4%</td></tr>
+          <tr class="hi"><td><b>reducible rounds</b></td><td class="n"><b>90.9%</b><span class="sub">10 of 11</span></td><td class="n">11.1%<span class="sub">5 of 45</span></td></tr>
+          <tr><td>ceiling — if handed exactly its own reads</td><td class="n">100%</td><td class="n">60.0%</td></tr>
+          <tr class="grp"><td colspan="3">why each read was, or was not, already held · the four sum to 100%</td></tr>
+          <tr><td>the identical span, already fetched</td><td class="n">0.4%</td><td class="n">2.6%</td></tr>
+          <tr><td><b>stale</b> — same span, bytes changed since</td><td class="n"><b>0.0%</b></td><td class="n"><b>0.9%</b></td></tr>
+          <tr><td>another span of a file already opened</td><td class="n">53.9%</td><td class="n">33.9%</td></tr>
+          <tr><td><b>a file no predecessor opened</b></td><td class="n">45.7%</td><td class="n"><b>62.6%</b></td></tr>
+        </tbody>
+      </table>
+      <div class="key">
+        <dl class="gloss">
+          <dt>EXPLAIN</dt><dd>read-only: inventory modules, trace a request, write an orientation note</dd>
+          <dt>MODIFY</dt><dd>stamp a <span class="mono">BUILD_TAG</span> constant across two labs, add a test for it, write a changelog</dd>
+          <dt>mutation</dt><dd>an agent <b>editing a file after another read it</b>, so a handed-over copy is out of date: "stale"</dd>
+        </dl>
+        <ul class="list tight xxs" style="margin-top:7px">
+          <li>The replay blamed coding's low reuse on mutation (7.6–14.3% of SWE-bench bytes stale). Here stale is <b>0.0% against 0.9%</b>: mutation explains none of an 8× gap in rounds.</li>
+          <li>The gap is <b>coverage</b>: each MODIFY task edits its own files, so 62.6% of its reads hit files no predecessor opened.</li>
+          <li>Mutation bites only in long edit-and-verify runs (SWE-bench, ~70 rounds): a contributor, not the mechanism.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="stack" style="gap:9px">
+      <p class="label">What the retention unit is worth · EXPLAIN successors</p>
+      <table class="data xs xxs">
+        <thead><tr><th>an inherited read is matched on</th><th class="n">byte recall</th><th class="n">reducible rounds</th></tr></thead>
+        <tbody>
+          <tr><td>the whole read<span class="sub">only an identical tool result counts</span></td><td class="n">86.0%</td><td class="n">36.4%<span class="sub">4 of 11</span></td></tr>
+          <tr class="hi"><td><b>the byte range</b><span class="sub">the same lines of the same file</span></td><td class="n"><b>95.3%</b></td><td class="n"><b>90.9%</b><span class="sub">10 of 11</span></td></tr>
+          <tr><td>the line<span class="sub">the same line text, in any file</span></td><td class="n">96.6%</td><td class="n">90.9%<span class="sub">10 of 11</span></td></tr>
+        </tbody>
+      </table>
+      <div class="key">
+        <ul class="list tight xxs">
+          <li>Whole read → range buys <b>+9 points of bytes but +54 points of rounds</b>: a unit coarse enough to miss one span keeps the whole round alive. The line adds nothing beyond the range.</li>
+          <li>Agents almost never repeat a read byte for byte — 0.4% of EXPLAIN's reads, 2.6% of MODIFY's — so a cache keyed on exact observations finds almost nothing. Key on content and on ranges.</li>
+          <li>Measured over 11 reading rounds: a direction, not a precise size.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="label">Codebase work builds boards; benchmark questions do not</p>
+        <ul class="list tight xxs" style="margin-top:6px">
+          <li>20 of 20 codebase runs built a board, 11 of them at depth ≥ 3; 15 runs on lm-evaluation-harness tasks built none — a benchmark question is one deliverable, and one deliverable cannot be decomposed.</li>
+          <li>Comprehension fans in (depth 2, where <span class="mono">dag</span> and <span class="mono">anc</span> coincide); modification chains (depth 3). Even on MODIFY's baseline boards the two arms would have handed over identical bytes.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/realworld_inheritance.md</span> §G1, §G2 and §G2b; tool <span class="mono">scripts/codebase_workloads.py</span>; traces <span class="mono">traces/codebase/</span>. <span class="mono">lab-group-56</span> is an ECE 4750 lab repository (PyMTL + Verilog); MODIFY edits a sandbox copy, and the original tree was verified byte-identical afterwards. Prompts carried a neutral board frame checked against a forbidden-word list, so no dependency language reached the model. "The whole read" is the note's "whole file" unit, one unit per tool result. Threat: one repository and three runs per workload.</p></div>
+</section>
+
+<!-- ===================== 10 · RESULT: THE CEILING ===================== -->
+<section class="slide" data-title="The ceiling">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">10</span><span>Result · why the arms look weak on the real codebase</span></div>
+    <h2>The arms are working against a low ceiling: only 42% of a successor's rounds are pure reads, and the closure removed 58% of what was removable</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 600px 1fr; gap:30px">
+    <div class="stack" style="gap:10px">
       <figure>
-        <p class="label">Where a CODE agent call goes · pooled regression coefficients applied to each group</p>
+        <p class="label">Round composition · MODIFY successors on <span class="mono">lab-group-56</span>, live</p>
+        <svg viewBox="0 0 640 206" role="img" aria-label="Stacked bars of round composition for three arms. In the untreated baseline, 42.4 percent of successor rounds are reads only, 12.9 percent mix a read with other work, and 44.7 percent contain no read at all. Under the dag arm the split is 44.4, 8.3 and 47.2 percent; under the ancestors closure it is 31.8, 9.1 and 59.1 percent. A dashed line marks the structural ceiling at 42.4 percent of the baseline." style="margin-top:6px">
+          <g color="var(--ink-2)">
+            <rect x="150" y="40" width="199" height="26" class="f-lead"></rect>
+            <rect x="349" y="40" width="61" height="26" class="f-mate"></rect>
+            <rect x="410" y="40" width="210" height="26" class="f-grey"></rect>
+            <rect x="150" y="85" width="209" height="26" class="f-lead"></rect>
+            <rect x="359" y="85" width="39" height="26" class="f-mate"></rect>
+            <rect x="398" y="85" width="222" height="26" class="f-grey"></rect>
+            <rect x="150" y="130" width="150" height="26" class="f-lead"></rect>
+            <rect x="300" y="130" width="43" height="26" class="f-mate"></rect>
+            <rect x="343" y="130" width="277" height="26" class="f-grey"></rect>
+            <text x="142" y="52" font-size="11.5" text-anchor="end" class="t-mono">none</text>
+            <text x="142" y="64" font-size="10" text-anchor="end" class="t-muted">85 rounds</text>
+            <text x="142" y="97" font-size="11.5" text-anchor="end" class="t-mono t-mate">dag</text>
+            <text x="142" y="109" font-size="10" text-anchor="end" class="t-muted">72 rounds</text>
+            <text x="142" y="142" font-size="11.5" text-anchor="end" class="t-mono t-lead">anc</text>
+            <text x="142" y="154" font-size="10" text-anchor="end" class="t-muted">44 rounds</text>
+            <text x="249" y="57" font-size="11" text-anchor="middle" class="t-mono f-surface">42.4%</text>
+            <text x="515" y="57" font-size="11" text-anchor="middle" class="t-mono f-surface">44.7%</text>
+            <text x="254" y="102" font-size="11" text-anchor="middle" class="t-mono f-surface">44.4%</text>
+            <text x="509" y="102" font-size="11" text-anchor="middle" class="t-mono f-surface">47.2%</text>
+            <text x="225" y="147" font-size="11" text-anchor="middle" class="t-mono f-surface">31.8%</text>
+            <text x="481" y="147" font-size="11" text-anchor="middle" class="t-mono f-surface">59.1%</text>
+            <text x="379" y="36" font-size="9.5" text-anchor="middle" class="t-mate">12.9</text>
+            <text x="378" y="81" font-size="9.5" text-anchor="middle" class="t-mate">8.3</text>
+            <text x="321" y="126" font-size="9.5" text-anchor="middle" class="t-mate">9.1</text>
+            <path d="M 349 32 L 349 170" class="edge-dash"></path>
+            <text x="355" y="180" font-size="10" class="t-muted">ceiling: <tspan class="t-mono">5.5 of 13.0</tspan> rounds · closure removed <tspan class="t-mono">3.2</tspan></text>
+            <rect x="150" y="192" width="9" height="9" rx="2" class="f-lead"></rect><text x="164" y="200" font-size="10.5" class="t-ink2">reads only — removable</text>
+            <rect x="316" y="192" width="9" height="9" rx="2" class="f-mate"></rect><text x="330" y="200" font-size="10.5" class="t-ink2">a read plus work that has to happen anyway</text>
+            <rect x="576" y="192" width="9" height="9" rx="2" class="f-grey"></rect><text x="590" y="200" font-size="10.5" class="t-ink2">no read</text>
+          </g>
+        </svg>
+        <figcaption>Each bar splits a successor's rounds by what they did. <b>Reads only</b> could vanish if everything read were held; <b>a read plus other work</b> — an edit, a test, a message — happens anyway; <b>no read</b> is out of reach. The clearest sign the mechanism is real: rounds issuing two or more reads fall from <b>30.6%</b> of the baseline to 12.5% under <span class="mono">dag</span> and <b>6.8%</b> under the closure — complete coverage is exactly what kills a multi-read round.</figcaption>
+      </figure>
+      <div>
+        <p class="label">The high-headroom cell is unreadable, not negative</p>
+        <p class="note xs" style="margin-top:5px;max-width:none">EXPLAIN, where 90.9% of rounds are reducible, is the fair test. Its three <span class="mono">anc</span> successors took <b>1, 36 and 2</b> rounds against a baseline of 9, 6, 11 and 6: the median falls 7.5 → 2 while the mean rises, <b>+5.0 [−8.0, +27.5]</b>. Only the token cost is clear, +95,364 [+13,316, +163,246]. Coverage as the lever is untested here, not refuted.</p>
+      </div>
+    </div>
+    <div class="stack" style="gap:9px">
+      <p class="label">The three arms, live · MODIFY, 12 cells</p>
+      <table class="data xs xxs">
+        <thead><tr><th>arm</th><th class="n">succ.</th><th class="n">rounds<span class="sub">median · mean</span></th><th class="n">reads<span class="sub">median</span></th><th class="n">span s<span class="sub">median</span></th><th class="n">prompt tok<span class="sub">median</span></th></tr></thead>
+        <tbody>
+          <tr><td><span class="swatch grey"></span><span class="mono">none</span></td><td class="n">7</td><td class="n">13 · 13.0</td><td class="n"><b>10</b></td><td class="n">294</td><td class="n">46,822</td></tr>
+          <tr><td><span class="swatch mate"></span><span class="mono">dag</span></td><td class="n">6</td><td class="n">12 · 12.5</td><td class="n"><b>6</b></td><td class="n">252</td><td class="n">90,714</td></tr>
+          <tr class="hi"><td><span class="swatch lead"></span><span class="mono">anc</span></td><td class="n">5</td><td class="n">12 · <b>9.8</b></td><td class="n"><b>4</b></td><td class="n">264</td><td class="n">74,258</td></tr>
+          <tr class="grp"><td colspan="6">change in the mean against none · 95% CI</td></tr>
+          <tr><td class="mono">dag</td><td class="n na">—</td><td class="n nw">−0.5<span class="sub">[−6.9, +5.7]</span></td><td class="n na">—</td><td class="n nw">−17.8<span class="sub">[−238, +231]</span></td><td class="n nw warn">+42,295<span class="sub">[+4,697, +81,923]</span></td></tr>
+          <tr><td class="mono">anc</td><td class="n na">—</td><td class="n nw">−3.2<span class="sub">[−9.6, +2.5]</span></td><td class="n na">—</td><td class="n nw">−32.3<span class="sub">[−249, +182]</span></td><td class="n nw">+20,063<span class="sub">[−11,710, +47,920]</span></td></tr>
+        </tbody>
+      </table>
+      <div class="key">
+        <dl class="gloss">
+          <dt>succ.</dt><dd>completed MODIFY successors, all cross-owner; the upper cells are medians over them</dd>
+          <dt>span s</dt><dd>wall time from the successor's claim to its completion</dd>
+          <dt>change</dt><dd>difference in the mean against <span class="mono">none</span>, with a bootstrap 95% interval</dd>
+        </dl>
+        <ul class="list tight xxs" style="margin-top:7px">
+          <li>Reads fall 10 → 6 → 4 (−60%), but a round survives while it still needs one fetch or does other work: only 5.5 of 13.0 rounds are removable at all, and the closure removed 3.2 — <b>58% of that ceiling</b>.</li>
+          <li>The round interval still straddles zero: five successors spanning 3 to 14 rounds. The one interval that clears zero is <span class="mono">dag</span>'s token cost.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/realworld_inheritance.md</span> §E1-L and §E1-L on EXPLAIN, and <span class="mono">conclusion.md</span>; tool <span class="mono">scripts/codebase_workloads.py</span> (medians over completed successors; bootstrap of the difference in means); traces <span class="mono">traces/codebase/</span>. MODIFY is the only workload whose boards reach depth 3; 12 cells, arms interleaved on a fixed seed, nine of them new. Rounds are classified by what each did, with shell reads counted as reads. Resolving a one-round effect here needs roughly 4× these runs.</p></div>
+</section>
+
+<!-- ===================== 11 · RESULT: LATENCY, INSIDE THE CALL ===================== -->
+<section class="slide" data-title="Latency: the call">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">11</span><span>Result · the second thread · the latency breakdown rerun on Qwen3.8-27B, local vLLM (2026-09-21)</span></div>
+    <h2>The 3.7 s fixed cost of a model call was z.ai, not the harness — served locally, a call is almost pure decode and prefill is 1–6% of it</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:32px">
+    <div class="stack" style="gap:10px">
+      <figure>
+        <p class="label">Where a CODE agent call goes · the coding workload, each side's own fit</p>
         <svg viewBox="0 0 640 238" role="img" aria-label="Stacked bars of modelled agent-call time. On glm-5.3-flash a CODE lead call is 3.7 seconds fixed plus 0.1 prefill plus 4.0 decode, totalling 7.9 seconds; on Qwen it is 0.4 plus 0.4 plus 11.4, totalling 12.2. A CODE teammate call is 3.7 plus 0.0 plus 5.9 equals 9.6 on GLM and 0.4 plus 0.2 plus 26.7 equals 27.3 on Qwen." style="margin-top:6px">
           <g color="var(--ink-2)">
             <line x1="150" y1="188" x2="150" y2="26" class="axis"></line>
@@ -955,85 +1124,137 @@ table.data.xxs { font-size: 11.5px; }
             <rect x="430" y="216" width="9" height="9" rx="2" class="f-lead"></rect><text x="444" y="224" font-size="10.5" class="t-ink2">decode</text>
           </g>
         </svg>
-        <figcaption>Every group sheds the same <b>3.3 s</b> of fixed cost and pays <b>2.3×</b> per decoded token. Output length, not prompt length, is what the round pays for: at 40 ms per token a 500-token response is 20 s.</figcaption>
+        <figcaption><b>Modelled</b> = the side's own <b>a + b × computed prompt tokens + c × output tokens</b> at the group's mean token counts; <b>measured</b> = the mean call. Every group sheds the same 3.3 s of fixed cost and pays 2.3× per decoded token: at 40 ms per token, a 500-token response is 20 s.</figcaption>
       </figure>
-      <p class="claim" style="font-size:16.5px">What a cache buys is round count, not prefill — on local hardware too.</p>
+      <p class="claim" style="font-size:16px">What a cache buys is round count, not prefill — on local hardware too.</p>
     </div>
-    <div class="stack" style="gap:11px">
-      <div>
-        <p class="label">Inside the call · <span class="mono">duration = a + b × computed prompt tokens + c × output tokens</span></p>
-        <table class="data xs" style="margin-top:6px">
-          <thead><tr><th></th><th class="n">glm-5.3-flash<br><small style="font-weight:400;text-transform:none;letter-spacing:0">446 calls, via z.ai</small></th><th class="n">Qwen3.8-27B<br><small style="font-weight:400;text-transform:none;letter-spacing:0">501 calls, local vLLM</small></th></tr></thead>
-          <tbody>
-            <tr class="hi"><td><b>a</b> — fixed (s)</td><td class="n">3.72</td><td class="n"><b>0.43</b></td></tr>
-            <tr><td><b>b</b> — per computed prompt token<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;margin-top:2px">implied prefill rate</small></td><td class="n">0.033 ms<br><small style="color:var(--muted)">30,600 tok/s</small></td><td class="n">0.117 ms<br><small style="color:var(--muted)">8,600 tok/s</small></td></tr>
-            <tr><td><b>c</b> — per output token<small style="display:block;font-family:var(--body);color:var(--muted);font-size:11px;margin-top:2px">decode rate</small></td><td class="n">17.4 ms<br><small style="color:var(--muted)">57 tok/s</small></td><td class="n"><b>39.9 ms</b><br><small style="color:var(--muted)">25 tok/s</small></td></tr>
-            <tr><td>r²</td><td class="n">0.96</td><td class="n">1.00</td></tr>
-            <tr><td>client time to first block</td><td class="n">5.5–6.1 s</td><td class="n"><b>0.4–1.0 s</b></td></tr>
-            <tr><td>server queue · HTTP + SDK gap</td><td class="n">—</td><td class="n">0.000 s · 27–61 ms</td></tr>
-          </tbody>
-        </table>
-        <p class="note xs" style="margin-top:7px"><b>The GLM intercept is real</b> — z.ai delivered the first block after a flat 5.6–6.1 s regardless of prompt size. <b>The Qwen intercept is a fitting artefact</b>: the server reports zero queue, and the regression's 0.117 ms prefill slope sits below the server-measured 0.17 ms. A regression intercept is only a provider cost where the server cannot be observed.</p>
-      </div>
-      <div>
-        <p class="label">What did not change, and what it means for KV sharing</p>
-        <ul class="list tight xs" style="margin-top:7px">
-          <li><b>Quality is identical</b> — 24/24 coding, 24/24 math, FQA coverage 0.98 ± 0.02 — at <b>1.8–3.4× the wall time</b>. Prefill is <b>1–6%</b> of a call and decode <b>90–99%</b> on both.</li>
-          <li><b>Rounds per task are model-independent at this scale</b>: 7 / 4 / 3 teammate rounds, 11–14 lead rounds per team run, and the redundancy pattern is unchanged. The wall-time gap is decode speed times output length.</li>
-          <li><b>Two vLLM facts for a KV-sharing design.</b> Cache blocks are <b>784 tokens</b> on this hybrid model, and under <span class="mono">--mamba-cache-mode align</span> a foreign request can only resume from a checkpoint position — a unique block mid-prompt gave <b>0%</b> reuse even behind 15k tokens of shared prefix. Cross-agent sharing needs <span class="mono">--mamba-cache-mode all</span> (154 MB of state per checkpoint) or block-aligned prompts.</li>
-          <li><b>Turn-end memory extraction is still the largest non-agent cost</b> — 12–35 s per lead turn, <b>20–35% of run wall</b>, and worse with a thinking model. Making it asynchronous or once-per-request is the harness change with the largest payoff on both providers.</li>
+    <div class="stack" style="gap:9px">
+      <p class="label">Inside the call · the fit over every agent call of each side</p>
+      <table class="data xs xxs">
+        <thead><tr><th></th><th class="n">glm-5.3-flash<span class="sub">446 calls · z.ai, remote</span></th><th class="n">Qwen3.8-27B<span class="sub">501 calls · vLLM, local</span></th></tr></thead>
+        <tbody>
+          <tr class="hi"><td><b>a</b> — fixed per call</td><td class="n">3.72 s</td><td class="n"><b>0.43 s</b></td></tr>
+          <tr><td><b>b</b> — per computed prompt token<span class="sub">implied prefill rate</span></td><td class="n">0.033 ms<span class="sub">30,600 tok/s</span></td><td class="n">0.117 ms<span class="sub">8,600 tok/s</span></td></tr>
+          <tr><td><b>c</b> — per output token<span class="sub">decode rate</span></td><td class="n">17.4 ms<span class="sub">57 tok/s</span></td><td class="n"><b>39.9 ms</b><span class="sub">25 tok/s</span></td></tr>
+          <tr><td>r²</td><td class="n">0.96</td><td class="n">1.00</td></tr>
+          <tr><td>client wait for the first block</td><td class="n">5.5–6.1 s</td><td class="n"><b>0.4–1.0 s</b></td></tr>
+          <tr><td>server queue · HTTP + SDK gap</td><td class="n na">not observable</td><td class="n">0.000 s · 27–61 ms</td></tr>
+        </tbody>
+      </table>
+      <div class="key">
+        <dl class="gloss">
+          <dt>a</dt><dd>seconds every call pays regardless of size: network, queueing, start-up</dd>
+          <dt>b</dt><dd>seconds per prompt token the server actually computed — not served from its prefix cache</dd>
+          <dt>c</dt><dd>seconds per generated token, thinking included</dd>
+          <dt>r²</dt><dd>share of the variation in call time that the fit explains</dd>
+          <dt>first block</dt><dd>client wait for the first streamed block; the last row is measured on the server</dd>
+        </dl>
+        <ul class="list tight xxs" style="margin-top:7px">
+          <li><b>GLM's 3.72 s is real</b>: z.ai's first block came after a flat 5.6–6.1 s whatever the prompt size. <b>Qwen's 0.43 s is a fitting artefact</b>: the queue is empty and client and server differ by 27–61 ms.</li>
+          <li>Locally, decode costs <b>2.3× per token</b> and Qwen writes up to 2× more tokens, much of it thinking, so calls take 1.6–2.8× longer; prefill stays 1–6% of a call.</li>
         </ul>
       </div>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/latency_qwen_vs_glm.md</span>; all tables <span class="mono">traces/latency_profiling_qwen/latency_tables.md</span>, side by side <span class="mono">compare_glm_vs_qwen.md</span> (via <span class="mono">scripts/latency_compare.py</span>); reproduction in <span class="mono">s15_integrated_harness/latency_profile.md</span> Appendix C. 24 runs at the same harness commit, prompts and matrix as the 2026-09-12 GLM run; <span class="mono">Qwen/Qwen3.8-27B</span> bf16 on one RTX PRO 6000 Blackwell (96 GB) under vLLM 0.29.0, with server-side <span class="mono">/metrics</span> deltas per call. Caveats: one GPU, one model, one evening — decode speed is a property of dense-27B-in-bf16 on a 1.8 TB/s card, and an FP8 checkpoint or an H200 would each cut it; z.ai's serving stack is unknown. Qwen ran at <span class="mono">reasoning_effort=xhigh</span>. Qwen3.8's tokenizer yields <b>12–15% more tokens</b> than GLM's on the same text, so <b>per-token rates are not convertible between providers</b> — and every "seconds saved" figure on slides 1 through 9 is priced with GLM's constants.</p></div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/latency_qwen_vs_glm.md</span> §3B; tables <span class="mono">traces/latency_profiling_qwen/latency_tables.md</span> and <span class="mono">compare_glm_vs_qwen.md</span> (<span class="mono">scripts/latency_compare.py</span>); reproduction <span class="mono">s15_integrated_harness/latency_profile.md</span> Appendix C. Server-side prefill, decode and queue come from vLLM <span class="mono">/metrics</span> deltas per call. Qwen ran at <span class="mono">reasoning_effort=xhigh</span>, and its tokenizer yields 12–15% more tokens than GLM's on the same text, so per-token rates do not convert between providers. Every "seconds saved" figure on slides 3–10 is priced with GLM's constants.</p></div>
 </section>
 
-<!-- ===================== 11 · CONCLUSION ===================== -->
+<!-- ===================== 12 · RESULT: LATENCY, WHAT DID NOT CHANGE ===================== -->
+<section class="slide" data-title="Latency: the rest">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">12</span><span>Result · the second thread · what swapping the model left alone</span></div>
+    <h2>A local model changed only decode speed — rounds per task, quality, harness overheads and the memory tax are the same on both providers</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1.12fr 1fr; gap:32px">
+    <div class="stack" style="gap:9px">
+      <p class="label">Team runs · GLM → Qwen · mean per run or per task</p>
+      <table class="data xs xxs">
+        <thead><tr><th></th><th class="n">CODE</th><th class="n">FQA</th><th class="n">MATH</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="4">Changed · decode speed times output length</td></tr>
+          <tr><td>wall time per run</td><td class="n nw">215 → <b>470 s</b></td><td class="n nw">180 → <b>420 s</b></td><td class="n nw">165 → <b>306 s</b></td></tr>
+          <tr><td>output tokens per agent call</td><td class="n">307 → 521</td><td class="n">321 → 535</td><td class="n">457 → 475</td></tr>
+          <tr class="grp"><td colspan="4">Unchanged · the harness and the work</td></tr>
+          <tr><td>teammate rounds per task</td><td class="n">7.5 → 7.1</td><td class="n">4.0 → 4.2</td><td class="n">2.9 → 2.9</td></tr>
+          <tr><td>lead rounds per run</td><td class="n">11.2 → 12.8</td><td class="n">10.2 → 11.4</td><td class="n">11.0 → 14.2</td></tr>
+          <tr><td>quality</td><td class="n nw">24/24 → 24/24<span class="sub">tests pass</span></td><td class="n nw">0.99 → 0.98<span class="sub">keyword coverage</span></td><td class="n nw">24/24 → 24/24<span class="sub">answers correct</span></td></tr>
+          <tr><td>teammate prompt re-sent from its last call</td><td class="n nw">76–86% → 72–88%</td><td class="n nw">33–58% → 62–67%</td><td class="n nw">45–63% → 37–72%</td></tr>
+          <tr class="hi"><td><b>turn-end memory extraction</b>, per Lead turn</td><td class="n">19.1 → 20.0 s</td><td class="n">20.6 → <b>35.0 s</b></td><td class="n">13.1 → 12.4 s</td></tr>
+          <tr><td>context preparation · tools, per round</td><td class="n" colspan="3" style="text-align:center">milliseconds on both: 7–9 ms · 8–120 ms<span class="sub">GLM's CODE runs also made 2.4 memory-recall calls per run, 4.9 s each</span></td></tr>
+        </tbody>
+      </table>
+      <div class="key">
+        <dl class="gloss">
+          <dt>CODE · FQA · MATH</dt><dd>a unit-tested coding bench · question answering over files · competition math</dd>
+          <dt>team run</dt><dd>a Lead and three teammates; five repetitions per workload on each provider</dd>
+          <dt>re-sent</dt><dd>share of a teammate's prompt identical to its own previous call, range over the five runs</dd>
+          <dt>memory extraction</dt><dd>the model calls that write <span class="mono">.memory/</span> after every Lead turn</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="stack" style="gap:9px">
+      <div class="key">
+        <p class="kh">What the values say</p>
+        <ul class="list tight xxs">
+          <li><b>The control flow is identical.</b> Rounds per task, redundancy and quality match, so the 1.9–2.3× wall-time gap is decode speed times output length: rounds are 1.5–2.8× longer, not more numerous.</li>
+          <li><b>The memory tax is untouched</b>: 12–35 s per Lead turn and 20–35% of run wall on both — the largest cost outside the agents' own calls, and worse with a thinking model, since the 1,000-token extraction call is mostly thinking. That is next step 18.</li>
+          <li>Output tokens are each provider's own; Qwen's tokenizer is 12–15% denser, so its outputs are 1.05–1.8× longer in characters.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="label">Two vLLM facts a KV-sharing design must respect</p>
+        <ul class="list tight xxs" style="margin-top:6px">
+          <li><b>Cache blocks are 784 tokens</b> on this hybrid model (48 Gated-DeltaNet and 16 full-attention layers): a re-send is served from cache only in whole blocks.</li>
+          <li><b>A foreign request resumes only at a checkpoint.</b> Under <span class="mono nw">--mamba-cache-mode align</span> recurrent state is saved only where a scheduler step ended on a block boundary, so a unique block mid-prompt gave <b>0%</b> reuse even behind 15k shared tokens. Cross-agent sharing needs <span class="mono nw">--mamba-cache-mode all</span> (154 MB of state per checkpoint) or block-aligned prompts.</li>
+          <li>The cache saved 60–85% of teammate prompt tokens with the KV cache 1–5% full: prefix reuse buys capacity here, not latency.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/latency_qwen_vs_glm.md</span> §3A and §3C–§3F; side-by-side tables <span class="mono">traces/latency_profiling_qwen/compare_glm_vs_qwen.md</span>. 24 runs per provider at the same harness commit, prompts and matrix — team: Lead + 3 teammates × 5 repetitions; solo: Lead alone × 3 — GLM on 2026-09-12, Qwen on 2026-09-21. Caveats: one GPU, one model, one evening; decode speed is a property of a dense 27B in bf16 on a 1.8 TB/s card, which an FP8 checkpoint, MTP speculative decoding or an H200 would each cut; z.ai's serving stack is unknown.</p></div>
+</section>
+
+<!-- ===================== 13 · CONCLUSION ===================== -->
 <section class="slide" data-title="Conclusion">
   <div class="slide-head">
-    <div class="eyebrow"><span class="num">11</span><span>Conclusion</span></div>
-    <h2>Handing over the bytes removes read-rounds efficiently — and read-rounds are a minority of what an agent does, so total rounds move far less than the byte numbers suggest</h2>
+    <div class="eyebrow"><span class="num">13</span><span>Conclusion</span></div>
+    <h2>Handing over bytes removes read-rounds efficiently — but read-rounds are a minority of agent work, so total rounds move far less than bytes do</h2>
   </div>
   <div class="body" style="grid-template-columns: 1fr 1fr; gap:36px">
     <div class="stack" style="gap:11px">
       <p class="label">What is deployable</p>
       <div class="verdicts">
-        <div class="verdict keep"><span class="n">1</span><div class="what"><b>Rank by reuse frequency, not recency.</b> At 8 KB, LFU removes 21.9% of rounds on τ-bench/GAIA and 4.0% on SWE-bench; LRU removes 3.0% and <b>0.0%</b>. Recency truncation and last-N-round windows are the worst deployable family tested.</div></div>
-        <div class="verdict keep"><span class="n">2</span><div class="what"><b>Spend the budget on prediction, not capacity.</b> With perfect foresight 8 KB already buys the entire unlimited-budget value — 38.0 of 38.2, and 4.2 of 4.3. Every gap is a prediction failure.</div></div>
-        <div class="verdict keep"><span class="n">3</span><div class="what"><b>Key on content and on ranges, never on paths.</b> An exact-observation key finds almost nothing — agents re-issue a byte-identical read 0.4–2.6% of the time — while 86% of the bytes sit in files a predecessor already opened.</div></div>
-        <div class="verdict keep"><span class="n">4</span><div class="what"><b>Widen the pool before tuning the policy.</b> Removable rounds scale 13% → 23% → 36% as the pool grows 8 → 16 → 32 earlier tasks, roughly linear in the log.</div></div>
-        <div class="verdict keep"><span class="n">5</span><div class="what"><b>Do not partition the pool per agent.</b> Size-matched, inheriting from a different model's runs is as good as inheriting from your own, within ~2 points at every pool size.</div></div>
-      </div>
-    </div>
-    <div class="stack" style="gap:11px">
-      <div>
-        <p class="label">What is retired</p>
-        <div class="verdicts" style="margin-top:6px">
-          <div class="verdict drop"><span class="n">×</span><div class="what"><b>DAG-directed retention.</b> The task graph failed a third independent test: as a priority ordering under budget it sits near the bottom of both policy tables — 0.7% on SWE at 8 KB. It does not predict which bytes are wanted, reaching further does not convert to rounds, and it is useless as an ordering. <b>The artefact worth shipping to an engine is a per-item reuse count, not the board.</b></div></div>
-          <div class="verdict drop"><span class="n">×</span><div class="what"><b>"Evict what is simplest to recover."</b> Keeping the costliest-to-recover items reaches 11.1% and 2.3% at 8 KB, below LFU, GDSF and S3-FIFO everywhere — recovery cost correlates with size, and the large items are not the reused ones. It must also be measured <em>per item</em>: with a modelled cost, monotone in bytes, the policy silently becomes "keep the largest".</div></div>
-          <div class="verdict drop"><span class="n">×</span><div class="what"><b>lm-evaluation-harness as a source of agentic tasks.</b> It has none and cannot express one. Wrapped as a model endpoint it grades fine — 3/3 on gsm8k through full agentic sessions — but its tasks produced <b>0 task boards in 15 runs</b>. A benchmark question is one deliverable, and one deliverable cannot be decomposed.</div></div>
-        </div>
+        <div class="verdict keep"><span class="n">1</span><div class="what"><b>Prefer frequency-aware eviction to plain recency — the gain is modest.</b> At 8 KB, GDSF and LFU leave 20.8% and 19.2% of rounds reducible on τ-bench/GAIA against LRU's 15.8%, and 2.6–2.9% against 0.3% on SWE-bench.</div></div>
+        <div class="verdict keep"><span class="n">2</span><div class="what"><b>Spend the budget on prediction, not capacity.</b> On replay, foresight at 8 KB buys the whole unlimited value (38.0 of 38.2) while the best deployable policy gets 58% of it on τ-bench; our harness, whose items are whole files, needs ~32 KB.</div></div>
+        <div class="verdict keep"><span class="n">3</span><div class="what"><b>Key on content and on ranges, never on paths.</b> Agents re-issue a byte-identical read 0.4–2.6% of the time, so an exact-observation key finds almost nothing; matching byte ranges instead of whole reads lifts reducible rounds from 36.4% to 90.9%.</div></div>
       </div>
       <div>
         <p class="label">What is not established</p>
         <ul class="list tight xxs" style="margin-top:6px">
-          <li><b>The live arms are underpowered and the EXPLAIN cell is unreadable.</b> Coverage as the lever is <em>untested, not refuted</em> — it needs roughly 4× these runs.</li>
-          <li><b>Rounds removed are counterfactual on the replay side</b>, computed rather than observed.</li>
-          <li><b>One provider</b> (z.ai <span class="mono">glm-5.3-flash</span>) for everything live, and one codebase for the live arms. HAL cross-task has only 3 groups, and its τ-bench runs share one 50-task set.</li>
-          <li><b>No accuracy effect was measured</b> on the replay side — though the synthetic study found partial coverage <em>hurts</em> accuracy, 99% → 83%.</li>
+          <li><b>The live codebase arms are underpowered and the EXPLAIN cell is unreadable.</b> Complete coverage cut rounds once, on W5; on the codebase it is <em>untested, not refuted</em> — ~4× these runs.</li>
+          <li><b>Reducible rounds on the replay side are computed</b>, not observed.</li>
+          <li><b>One provider</b> (z.ai <span class="mono">glm-5.3-flash</span>) for every live inheritance run, and one codebase for the live arms. HAL cross-task has only 3 groups, and its τ-bench runs share one 50-task set.</li>
+          <li><b>No accuracy effect was measured</b> on the replay side, and harness accuracy sat at 100% in every arm, so it could only have shown a loss.</li>
         </ul>
+      </div>
+    </div>
+    <div class="stack" style="gap:11px">
+      <p class="label">What is retired</p>
+      <div class="verdicts">
+        <div class="verdict drop"><span class="n">×</span><div class="what"><b>DAG-directed retention.</b> The task graph failed three independent tests: it does not predict which bytes are wanted (slide 4), reaching further does not convert to rounds (slide 6), and as a retention ordering in our harness it never beats LRU by more than a point (slide 7). <b>The artefact worth shipping to an engine is a per-item reuse count, not the board.</b></div></div>
+        <div class="verdict drop"><span class="n">×</span><div class="what"><b>"Evict what is simplest to recover."</b> Keeping the costliest-to-recover items reaches 10.0% and 1.3% at 8 KB, below LFU, GDSF and S3-FIFO everywhere — recovery cost correlates with size, and the large items are not the reused ones. It must also be measured <em>per item</em>: with a modelled cost, monotone in bytes, the policy silently becomes "keep the largest".</div></div>
+        <div class="verdict drop"><span class="n">×</span><div class="what"><b>lm-evaluation-harness as a source of agentic tasks.</b> It has none and cannot express one. Wrapped as a model endpoint it grades fine — 3/3 on gsm8k through full agentic sessions — but its tasks produced <b>0 task boards in 15 runs</b>. A benchmark question is one deliverable, and one deliverable cannot be decomposed.</div></div>
       </div>
       <p class="claim" style="font-size:16px">In the live sweep the closure cut reads per successor 60% and mean rounds 25%, which is <b>58% of the structural ceiling</b>. The arms are working; the ceiling is low.</p>
     </div>
   </div>
-  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/conclusion.md</span>. Four numbers were corrected in this folder during the week and the corrected values are the ones quoted here: the harness stage of <span class="mono">inheritance_depth.md</span> was handed ~45% less than its recall denominator credited; its "dag 75% re-fetch" line counted every read rather than re-reads of injected paths; the first τ-bench cross-task numbers in <span class="mono">realworld_inheritance.md</span> were inflated by same-task contamination (23.2% / 30.5% → 11.2% / 12.7%); and <span class="mono">board_of</span> read the wrong key and reported every run as edgeless — reports now re-derive boards from traces, so a parser fix repairs old rows.</p></div>
+  <div class="foot"><p>Source: <span class="mono">weekly_progress/092326/conclusion.md</span>, with three changes: its scripted single-agent evidence is left out, the W5 handoff its evidence table omitted is included, and the eviction-policy numbers are the corrected replay (slide 7). Numbers corrected in this folder during the week, quoted here at their corrected values: the harness stage of <span class="mono">inheritance_depth.md</span> was handed ~45% less than its recall denominator credited; the first τ-bench cross-task numbers in <span class="mono">realworld_inheritance.md</span> were inflated by same-task contamination (23.2% / 30.5% → 11.2% / 12.7%); and <span class="mono">board_of</span> read the wrong key and reported every run as edgeless — reports now re-derive boards from traces, so a parser fix repairs old rows.</p></div>
 </section>
 
-<!-- ===================== 12 · NEXT STEPS ===================== -->
+<!-- ===================== 14 · NEXT STEPS ===================== -->
 <section class="slide" data-title="Next steps">
   <div class="slide-head">
-    <div class="eyebrow"><span class="num">12</span><span>Next steps</span></div>
+    <div class="eyebrow"><span class="num">14</span><span>Next steps</span></div>
     <h2>Next: power the one cell with headroom, build the retention unit that is worth the most and is not built, and test the deployable rule end to end</h2>
   </div>
   <div class="body" style="grid-template-columns: 1fr">
@@ -1042,23 +1263,23 @@ table.data.xxs { font-size: 11.5px; }
         <span class="group">coverage · the study's open question</span>
         <p style="font-size:13.5px;line-height:1.3"><b>Power the EXPLAIN arm properly.</b></p>
         <ul class="list tight xs" style="margin-top:7px">
-          <li>It is the only cell with the headroom to move rounds — <b>90.9%</b> round recall against MODIFY's 11.1% — and its three successors took 1, 36 and 2 rounds, so median and mean disagree in sign.</li>
-          <li>Roughly <b>4×</b> these runs, or about <b>60 successors per arm</b>; otherwise accept the scripted stage as the measurement.</li>
+          <li>It is the only cell with the headroom to move rounds — <b>90.9%</b> reducible rounds against MODIFY's 11.1% — and its three successors took 1, 36 and 2 rounds, so median and mean disagree in sign.</li>
+          <li>Roughly <b>4×</b> these runs, or about <b>60 successors per arm</b>.</li>
         </ul>
       </div></div>
       <div class="step"><span class="n">15</span><div>
         <span class="group">retention unit · the largest measured lever</span>
         <p style="font-size:13.5px;line-height:1.3"><b>Implement range-granular content addressing in the injector.</b></p>
         <ul class="list tight xs" style="margin-top:7px">
-          <li>File → byte range moves removable rounds <b>36.4% → 90.9%</b>, and line granularity adds nothing beyond range.</li>
+          <li>Whole read → byte range moves reducible rounds <b>36.4% → 90.9%</b>, and line granularity adds nothing beyond range.</li>
           <li>It is the single largest measured lever in the whole study <b>and it is not built</b>.</li>
         </ul>
       </div></div>
       <div class="step"><span class="n">16</span><div>
         <span class="group">policy · end to end</span>
-        <p style="font-size:13.5px;line-height:1.3"><b>Test the deployable rule end to end: widen the pool, rank by reuse frequency, cap at 8 KB.</b></p>
+        <p style="font-size:13.5px;line-height:1.3"><b>Test frequency-aware eviction against LRU end to end, capped at 8 KB.</b></p>
         <ul class="list tight xs" style="margin-top:7px">
-          <li><span class="mono">none</span> against <span class="mono">ancestors</span> under LFU and LRU, at 8 KB and unlimited — <b>needs no graph at all</b>.</li>
+          <li><span class="mono">none</span> against <span class="mono">ancestors</span> under GDSF, LFU and LRU at 8 KB and unlimited — <b>no graph needed</b>; size it for a 3–5 point gap.</li>
           <li>Needs a genuinely multi-part live workload: SWE-bench instances through mini-swe-agent, or AppWorld.</li>
         </ul>
       </div></div>
@@ -1066,7 +1287,7 @@ table.data.xxs { font-size: 11.5px; }
         <span class="group">staleness · long trajectories</span>
         <p style="font-size:13.5px;line-height:1.3"><b>A staleness-aware policy for long trajectories, where mutation does bite.</b></p>
         <ul class="list tight xs" style="margin-top:7px">
-          <li><b>7.6–14.3%</b> of a SWE successor's bytes are stale, even though stale spans are ~0 in short team runs.</li>
+          <li><b>7.6–14.3%</b> of a SWE-bench successor's matched bytes are stale, even though stale spans are ~0 in short team runs.</li>
           <li>Never hand over a span the successor's own base commit has moved past. Ingest AppWorld and Online Mind2Web for a third non-coding regime.</li>
         </ul>
       </div></div>
@@ -1074,7 +1295,7 @@ table.data.xxs { font-size: 11.5px; }
         <span class="group">harness · the largest payoff on both providers</span>
         <p style="font-size:13.5px;line-height:1.3"><b>Make turn-end memory extraction asynchronous or once-per-request.</b></p>
         <ul class="list tight xs" style="margin-top:7px">
-          <li><b>12–35 s per lead turn, 20–35% of run wall</b> on both GLM and Qwen, and worse with a thinking model.</li>
+          <li><b>12–35 s per Lead turn, 20–35% of run wall</b> on both GLM and Qwen, and worse with a thinking model.</li>
           <li>Also fix the two scheduling faults found this week: <span class="mono">spawn_teammate</span> silently refuses a blocked task and loses the successor, and the Lead can shut a team down with an in-progress successor while the run still reports <span class="mono">completed</span>.</li>
         </ul>
       </div></div>
@@ -1082,20 +1303,20 @@ table.data.xxs { font-size: 11.5px; }
         <span class="group">retired and carried over</span>
         <p style="font-size:13.5px;line-height:1.3"><b>Next step 13 of the 2026-09-16 deck is retired, not deferred.</b></p>
         <ul class="list tight xs" style="margin-top:7px">
-          <li>"Turn the task board into a retention policy the engine can act on" failed three independent tests: it does not predict which bytes (slide 4), reaching further does not convert to rounds (slide 6), and it never beats LRU as an ordering (slide 7).</li>
-          <li>Next step 12, "attack the eviction order rather than the prefill", <b>survives and is answered</b> — the eviction order is LFU, and the thing to ship an engine is a per-item reuse count.</li>
-          <li>Carried: re-run above ~50k tokens per call, where the precision argument may come back; measure board recall past ten items.</li>
+          <li>"Turn the task board into a retention policy the engine can act on" failed three tests: it does not predict which bytes (slide 4), reaching further does not convert to rounds (slide 6), and as an ordering it never beats LRU (slide 7).</li>
+          <li>Next step 12, "attack the eviction order rather than the prefill", <b>survives</b>: frequency-aware orders beat recency modestly; the gap to foresight is prediction.</li>
+          <li>Carried: re-run above ~50k tokens per call; measure board recall past ten items.</li>
         </ul>
       </div></div>
     </div>
   </div>
-  <div class="foot"><p>Numbering continues the 2026-09-16 deck, whose next steps were 12 and 13. Sources: <span class="mono">weekly_progress/092326/conclusion.md</span> "Next steps", plus the per-note next steps in <span class="mono">inheritance_depth.md</span>, <span class="mono">realworld_inheritance.md</span>, <span class="mono">dag_census.md</span>, <span class="mono">dag_kv_reuse.md</span> and <span class="mono">latency_qwen_vs_glm.md</span>. Two follow-ups closed this week: "test the step function directly" (F1) and "stop testing depth, test budgets" (F2). Infrastructure debt worth clearing first: <span class="mono">.env</span> points at <span class="mono">MODEL_ID=glm-5.3-flashx</span>, which is not entitled and returns 429 / code 1311, and <span class="mono">load_dotenv(override=True)</span> at <span class="mono">code.py:77</span> defeats <span class="mono">--model</span> on every script that has not been patched; the DeepSeek lane is dead on <span class="mono">Insufficient Balance</span>.</p></div>
+  <div class="foot"><p>Numbering continues the 2026-09-16 deck, whose next steps were 12 and 13. Sources: <span class="mono">weekly_progress/092326/conclusion.md</span> "Next steps", plus the per-note next steps in <span class="mono">inheritance_depth.md</span>, <span class="mono">realworld_inheritance.md</span>, <span class="mono">dag_kv_reuse.md</span> and <span class="mono">latency_qwen_vs_glm.md</span>. Closed this week: "stop testing depth, test budgets" (F2, slide 7). Infrastructure debt worth clearing first: <span class="mono">.env</span> points at <span class="mono">MODEL_ID=glm-5.3-flashx</span>, which is not entitled and returns 429 / code 1311, and <span class="mono">load_dotenv(override=True)</span> at <span class="mono">code.py:77</span> defeats <span class="mono">--model</span> on every script that has not been patched; the DeepSeek lane is dead on <span class="mono">Insufficient Balance</span>.</p></div>
 </section>
 </div>
 </div>
 <div class="hud"><div class="bar" id="bar"></div></div>
 <div class="hint">← → navigate · O overview · P print</div>
-<div class="counter"><span id="ctr">1 / 13</span><button id="ovbtn" type="button" aria-label="Toggle overview">overview</button></div>
+<div class="counter"><span id="ctr">1 / 14</span><button id="ovbtn" type="button" aria-label="Toggle overview">overview</button></div>
 
 <script>
 (function () {

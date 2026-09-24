@@ -1,0 +1,100 @@
+{
+  "label": "RW-FQA-ancestors-r2",
+  "arm": "ancestors",
+  "tasks": {
+    "0": {
+      "task_id": "task_8345d82f",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "ls -la /mnt/home/yqi10/lanes/latency_qwen/ 2>/dev/null || echo \"NOT FOUND\""
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "cd /mnt/home/yqi10/lanes/latency_qwen && grep -n -E '^### (Compaction|Hook|Skill catalog)$' s15_integrated_harness/GLOSSARY.md"
+        },
+        {
+          "tool": "read_file",
+          "path": ".tasks/task_8739aa55.json",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": ".tasks/task_c1ce8743.json",
+          "offset": 0,
+          "limit": null
+        }
+      ],
+      "result_chars": 1169
+    },
+    "1": {
+      "task_id": "task_c1ce8743",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "cd /mnt/home/yqi10/lanes/latency_qwen && grep -n -E '^#{1,4} ' s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 1,
+          "limit": 10
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 1,
+          "limit": 100
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 101,
+          "limit": 100
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 201,
+          "limit": 100
+        }
+      ],
+      "result_chars": 0
+    },
+    "2": {
+      "task_id": "task_8739aa55",
+      "reads": [],
+      "result_chars": 0
+    }
+  },
+  "injections": [
+    {
+      "agent_id": "agent-team_000003",
+      "owner": "researcher-3",
+      "task_id": "task_c1ce8743",
+      "arm": "ancestors",
+      "pairs": 4,
+      "chars": 13935,
+      "sources": [
+        "task_8345d82f"
+      ],
+      "ancestors": [
+        "task_8345d82f"
+      ],
+      "skipped_resident": 0
+    }
+  ]
+}

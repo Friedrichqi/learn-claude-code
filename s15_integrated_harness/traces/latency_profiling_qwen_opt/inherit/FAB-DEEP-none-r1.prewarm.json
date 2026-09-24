@@ -1,0 +1,136 @@
+{
+  "label": "FAB-DEEP-none-r1",
+  "arm": "none",
+  "tasks": {
+    "0": {
+      "task_id": "task_6293cd87",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"^### Compaction\" s15_integrated_harness/GLOSSARY.md; echo ---; grep -n \"^### \" s15_integrated_harness/GLOSSARY.md"
+        },
+        {
+          "tool": "bash",
+          "command": "sed -n '43,57p' s15_integrated_harness/GLOSSARY.md | cat -n"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 43,
+          "limit": 15
+        }
+      ],
+      "result_chars": 407
+    },
+    "1": {
+      "task_id": "task_d07cf9bf",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 228,
+          "limit": 25
+        }
+      ],
+      "result_chars": 0
+    },
+    "2": {
+      "task_id": "task_2c3b6a1d",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/DESIGN.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"Layer [0-9]\" s15_integrated_harness/DESIGN.md"
+        }
+      ],
+      "result_chars": 0
+    },
+    "3": {
+      "task_id": "task_fb2c19d3",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "pwd && ls -la"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/README.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"Compaction and Recovery\" s15_integrated_harness/README.md && grep -n -A2 \"runs the compaction pipeline\" s15_integrated_harness/README.md && grep -n \"tool_result_budget \u2192 snip_compact \u2192 micro_compact \u2192 compact_history\" s15_integrated_harness/README.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/README.md",
+          "offset": 149,
+          "limit": 10
+        },
+        {
+          "tool": "bash",
+          "command": "sleep 5"
+        }
+      ],
+      "result_chars": 0
+    },
+    "4": {
+      "task_id": "task_8db6387b",
+      "reads": [],
+      "result_chars": 0
+    },
+    "5": {
+      "task_id": "task_a2ca939d",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "grep -n -i \"context size\\|estimated\" /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/DESIGN.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/DESIGN.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/DESIGN.md",
+          "offset": 43,
+          "limit": 5
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/DESIGN.md",
+          "offset": 31,
+          "limit": 12
+        }
+      ],
+      "result_chars": 264
+    }
+  },
+  "injections": []
+}

@@ -1,0 +1,46 @@
+{"time": "2026-09-22T18:23:32-0400", "host": "alphagpu52", "slurm_job_id": "96562", "slurm_cpus": "16", "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition", "gpu_mem_mib": 97887, "nproc": 144, "model": "Qwen/Qwen3.8-27B", "port": 50081, "max_model_len": 262144, "gpu_util": 0.9, "max_num_seqs": 32, "max_num_batched_tokens": 16384, "extra_vllm_args": "", "team_reps": "r1 r2 r3 r4 r5", "solo_reps": "r1 r2 r3", "categories": "FQA CODE MATH", "max_seconds": 3600, "lane": "/mnt/home/yqi10/lanes/latency_qwen", "out": "/mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt", "hf_home": "/projects/co/jlin4/agenticllm/hf_cache", "vllm": "0.29.0", "torch": "2.13.0+cu130", "transformers": "5.17.0", "anthropic": "1.7.0", "git_head": "0cbddf885d05ee7ed31c08a897f97b57284aca8a"}
+[18:24:26] env: repo=/mnt/home/yqi10/learn-claude-code out=/mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt lane=/mnt/home/yqi10/lanes/latency_qwen base_url=http://127.0.0.1:50081 gpu='NVIDIA RTX PRO 6000 Blackwell Server Edition' 97887MiB maxlen=262144
+[18:24:26] server not healthy on http://127.0.0.1:50081: (re)starting
+[18:24:26] serve: starting vLLM Qwen/Qwen3.8-27B on http://127.0.0.1:50081 (max-model-len 262144, util 0.90, seqs 32, batched 16384, tag base) -> /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt/vllm_server_base_20260922T182426.log
+[18:27:20] serve: healthy after 170s (pid 3988673, tag base)
+server: {"version": "0.29.0"} | metric families: 98
+[18:27:20] pipeline finished (steps: serve)
+[inherit] 18:27:20 start RW-FQA-ancestors-r1
+[inherit] 18:43:24 end RW-FQA-ancestors-r1 exit=1
+[inherit] RW-FQA-ancestors-r1: edges=2 executed=1 accuracy=0/5 wall=955.1s status=timeout
+[inherit] 18:43:34 start FAB-DEEP-ancestors-r1
+[inherit] 18:58:50 end FAB-DEEP-ancestors-r1 exit=1
+[inherit] FAB-DEEP-ancestors-r1: edges=4 executed=1 accuracy=0/4 wall=908.1s status=timeout
+[inherit] 18:59:00 start RW-FQA-none-r1
+[inherit] 19:15:42 end RW-FQA-none-r1 exit=1
+[inherit] RW-FQA-none-r1: edges=2 executed=1 accuracy=0/5 wall=994.2s status=timeout
+[inherit] 19:15:52 start FAB-DEEP-none-r1
+[inherit] 19:34:22 end FAB-DEEP-none-r1 exit=1
+[inherit] FAB-DEEP-none-r1: edges=4 executed=2 accuracy=0/4 wall=921.2s status=timeout
+[inherit] 19:34:32 start RW-FQA-none-r2
+[inherit] 19:51:02 end RW-FQA-none-r2 exit=1
+[inherit] RW-FQA-none-r2: edges=2 executed=1 accuracy=0/5 wall=980.7s status=timeout
+[inherit] 19:51:12 start FAB-DEEP-none-r2
+[inherit] 20:08:06 end FAB-DEEP-none-r2 exit=1
+[inherit] FAB-DEEP-none-r2: edges=4 executed=1 accuracy=0/4 wall=960.3s status=timeout
+[inherit] 20:08:16 start RW-FQA-ancestors-r2
+[inherit] 20:26:21 end RW-FQA-ancestors-r2 exit=1
+[inherit] RW-FQA-ancestors-r2: edges=2 executed=1 accuracy=0/5 wall=1028.0s status=timeout
+[inherit] 20:26:31 start FAB-DEEP-ancestors-r2
+[inherit] 20:43:34 end FAB-DEEP-ancestors-r2 exit=1
+[inherit] FAB-DEEP-ancestors-r2: edges=4 executed=2 accuracy=0/4 wall=910.4s status=timeout
+
+| cell | edges | executed | cross-owner | accuracy | wall s | status |
+|---|---|---|---|---|---|---|
+| RW-FQA-ancestors-r1 | 2 | 1 | 1 | 0/5 | 955.1 | timeout |
+| FAB-DEEP-ancestors-r1 | 4 | 1 | 1 | 0/4 | 908.1 | timeout |
+| RW-FQA-none-r1 | 2 | 1 | 1 | 0/5 | 994.2 | timeout |
+| FAB-DEEP-none-r1 | 4 | 2 | 2 | 0/4 | 921.2 | timeout |
+| RW-FQA-none-r2 | 2 | 1 | 1 | 0/5 | 980.7 | timeout |
+| FAB-DEEP-none-r2 | 4 | 1 | 1 | 0/4 | 960.3 | timeout |
+| RW-FQA-ancestors-r2 | 2 | 1 | 1 | 0/5 | 1028.0 | timeout |
+| FAB-DEEP-ancestors-r2 | 4 | 2 | 2 | 0/4 | 910.4 | timeout |
+{"time": "2026-09-22T20:43:44-0400", "host": "alphagpu52", "slurm_job_id": "96562", "slurm_cpus": "16", "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition", "gpu_mem_mib": 97887, "nproc": 144, "model": "Qwen/Qwen3.8-27B", "port": 50081, "max_model_len": 262144, "gpu_util": 0.9, "max_num_seqs": 32, "max_num_batched_tokens": 16384, "extra_vllm_args": "", "team_reps": "r1 r2 r3 r4 r5", "solo_reps": "r1 r2 r3", "categories": "FQA CODE MATH", "max_seconds": 3600, "lane": "/mnt/home/yqi10/lanes/latency_qwen", "out": "/mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt", "hf_home": "/projects/co/jlin4/agenticllm/hf_cache", "vllm": "0.29.0", "torch": "2.13.0+cu130", "transformers": "5.17.0", "anthropic": "1.7.0", "git_head": "0cbddf885d05ee7ed31c08a897f97b57284aca8a"}
+[20:44:35] env: repo=/mnt/home/yqi10/learn-claude-code out=/mnt/home/yqi10/learn-claude-code/s15_integrated_harness/traces/latency_profiling_qwen_opt lane=/mnt/home/yqi10/lanes/latency_qwen base_url=http://127.0.0.1:50081 gpu='NVIDIA RTX PRO 6000 Blackwell Server Edition' 97887MiB maxlen=262144
+[20:44:35] stop: terminating vLLM (session 3988673)
+[20:44:37] pipeline finished (steps: stop)

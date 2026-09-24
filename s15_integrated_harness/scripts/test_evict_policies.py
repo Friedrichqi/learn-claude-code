@@ -75,6 +75,48 @@ def test_whole_items_only():
             assert ep.retained(p, policy, b) <= keys, policy
 
 
+def stream(p: list[ep.Item], seed: int, n: int = 120) -> list[ep.Item]:
+    """A read stream over pool `p`: every item read once in order, then random re-reads."""
+    rng = random.Random(seed)
+    order = list(p) + [rng.choice(p) for _ in range(n - len(p))]
+    return [ep.Item(key=it.key, nbytes=it.nbytes, round_idx=t // 3, first_ms=float(t),
+                    last_ms=float(t), model_s=it.model_s, tool_s=it.tool_s, locate_s=it.locate_s)
+            for t, it in enumerate(order)]
+
+
+def test_stream_invariants():
+    """The stream path keeps the same contract: budget, whole items, convergence at unlimited."""
+    for seed in range(30):
+        p = pool(seed)
+        s = stream(p, seed)
+        keys = {i.key for i in p}
+        for policy in ep.ONLINE:
+            assert ep.retained(p, policy, None, accesses=s) == keys, policy
+            for b in BUDGETS:
+                keep = ep.retained(p, policy, b, accesses=s)
+                assert keep <= keys, policy
+                assert sum(i.nbytes for i in p if i.key in keep) <= b, policy
+
+
+def _item(key: str, nbytes: int = 4000, freq: int = 1) -> ep.Item:
+    return ep.Item(key=(key,), nbytes=nbytes, round_idx=0, first_ms=0.0, last_ms=0.0, freq=freq)
+
+
+def test_stream_lru_refreshes_on_a_hit_and_fifo_does_not():
+    a, b, c = _item("a"), _item("b"), _item("c")
+    reads = [a, b, a, c]                            # 8 KB holds two: a was re-read after b
+    assert ep.retained([a, b, c], "lru", 8000, accesses=reads) == {("a",), ("c",)}
+    assert ep.retained([a, b, c], "fifo", 8000, accesses=reads) == {("b",), ("c",)}
+
+
+def test_stream_lfu_counts_only_reads_it_has_seen():
+    """Frequency must come from the stream, never from `Item.freq`: a caller that counts reads the
+    cache has not seen yet (the successor's, later tasks') hands LFU the answer."""
+    a, b, c = _item("a"), _item("b", freq=99), _item("c")
+    reads = [a, a, a, b, c]
+    assert ep.retained([a, b, c], "lfu", 8000, accesses=reads) == {("a",), ("c",)}
+
+
 def test_recovery_cost_charges_the_locating_round():
     """A read of a known path is cheap; the grep that found the path is not.  If the locating round
     is not charged to the item, 'evict what is cheapest to recover' evicts the expensive thing."""

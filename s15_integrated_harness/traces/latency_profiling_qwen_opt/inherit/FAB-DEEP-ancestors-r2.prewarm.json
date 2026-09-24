@@ -1,0 +1,194 @@
+{
+  "label": "FAB-DEEP-ancestors-r2",
+  "arm": "ancestors",
+  "tasks": {
+    "0": {
+      "task_id": "task_631f9376",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/GLOSSARY.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"^### Compaction\" s15_integrated_harness/GLOSSARY.md"
+        },
+        {
+          "tool": "bash",
+          "command": "sleep 2"
+        },
+        {
+          "tool": "read_file",
+          "path": ".tasks/task_e92c465e.json",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": ".tasks/task_4a5a5bbb.json",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": ".tasks/task_98954b16.json",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": ".tasks/task_fd6aad7f.json",
+          "offset": 0,
+          "limit": null
+        }
+      ],
+      "result_chars": 674
+    },
+    "1": {
+      "task_id": "task_e92c465e",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "grep -n \"^## 6\" /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/ARCHITECTURE.md; grep -n \"^## \" /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/ARCHITECTURE.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 231,
+          "limit": 50
+        },
+        {
+          "tool": "bash",
+          "command": "sed -n '231,280p' /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/ARCHITECTURE.md | grep -n \"Order\\|tool_result_budget\\|snip_compact\\|micro_compact\\|fit_tool_results\\|compact_history\\|---\" "
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 238,
+          "limit": 12
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/ARCHITECTURE.md",
+          "offset": 236,
+          "limit": 16
+        }
+      ],
+      "result_chars": 370
+    },
+    "2": {
+      "task_id": "task_98954b16",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/DESIGN.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "read_file",
+          "path": ".tasks/task_98954b16.json",
+          "offset": 0,
+          "limit": null
+        }
+      ],
+      "result_chars": 0
+    },
+    "3": {
+      "task_id": "task_fd6aad7f",
+      "reads": [
+        {
+          "tool": "bash",
+          "command": "grep -n \"Compaction and Recovery\" /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/README.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "/mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/README.md",
+          "offset": 145,
+          "limit": 60
+        },
+        {
+          "tool": "bash",
+          "command": "awk 'NR>=151 && NR<=160 {printf \"%d: %s\\n\", NR, $0}' /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/README.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "/mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/README.md",
+          "offset": 150,
+          "limit": 12
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n \"tool_result_budget \u2192 snip_compact\" /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/README.md"
+        },
+        {
+          "tool": "bash",
+          "command": "ls -la /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/"
+        }
+      ],
+      "result_chars": 575
+    },
+    "4": {
+      "task_id": "task_4a5a5bbb",
+      "reads": [],
+      "result_chars": 0
+    },
+    "5": {
+      "task_id": "task_8e9068a4",
+      "reads": [
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/DESIGN.md",
+          "offset": 0,
+          "limit": null
+        },
+        {
+          "tool": "bash",
+          "command": "grep -n -i \"estimated\" /mnt/home/yqi10/lanes/latency_qwen/s15_integrated_harness/DESIGN.md"
+        },
+        {
+          "tool": "read_file",
+          "path": "s15_integrated_harness/DESIGN.md",
+          "offset": 40,
+          "limit": 10
+        }
+      ],
+      "result_chars": 255
+    }
+  },
+  "injections": [
+    {
+      "agent_id": "agent-team_000003",
+      "owner": "s15-design",
+      "task_id": "task_e92c465e",
+      "arm": "ancestors",
+      "pairs": 2,
+      "chars": 12832,
+      "sources": [
+        "task_631f9376"
+      ],
+      "ancestors": [
+        "task_631f9376"
+      ],
+      "skipped_resident": 0
+    },
+    {
+      "agent_id": "agent-team_000001",
+      "owner": "s15-glossary",
+      "task_id": "task_98954b16",
+      "arm": "ancestors",
+      "pairs": 5,
+      "chars": 7365,
+      "sources": [
+        "task_e92c465e"
+      ],
+      "ancestors": [
+        "task_631f9376",
+        "task_e92c465e"
+      ],
+      "skipped_resident": 7
+    }
+  ]
+}

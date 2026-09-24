@@ -17,7 +17,10 @@ TWO FAMILIES, because the policies people actually name are not all the same kin
                         that overflows the budget the policy names a victim.  The answer is whatever
                         is still resident at the cut point.  LRU, LFU, FIFO, GDSF, S3-FIFO, SIEVE,
                         sliding-window and random are of this kind -- they are defined by what they
-                        do under pressure, not by a global ranking.
+                        do under pressure, not by a global ranking.  Pass `accesses` (one Item per
+                        READ, repeats included) to `retained` and a hit refreshes recency and bumps
+                        a count of reads seen so far; without it each item is seen once, so LRU
+                        degenerates to FIFO and LFU ranks on whatever `freq` the caller supplied.
 
   OFFLINE (`select`)    A one-shot ranking with a budget.  The graph-derived policies, the size
                         heuristics, cheapest-whole-rounds and Belady are of this kind: they rank the
@@ -37,6 +40,7 @@ carries that, and `recovery_seconds` includes it.
 from __future__ import annotations
 
 import random as _random
+from collections import OrderedDict, defaultdict
 from dataclasses import dataclass, field
 
 # Measured on this harness, 2026-09-12 (weekly_progress/091626/latency_breakdown.md).  Kept here so
@@ -346,6 +350,203 @@ ONLINE = {
     "random_online": _sim_random,
 }
 
+# --------------------------------------------------------------------------- online caches over a stream
+# The simulations above see each item ONCE, in first-read order, with `freq` and `last_ms` supplied by
+# the caller, so they cannot express a cache hit: LRU never refreshes (it is FIFO by first read) and
+# LFU ranks on whatever count the caller computed.  In the 2026-09-18 cross-task replay that count
+# spanned the whole group -- the successor's own reads and every later task's -- so LFU was in effect
+# told what the successor would want (21.9% vs a causal 19.2% at 8 KB on tau-bench/GAIA) while LRU,
+# unrefreshed, sat at the random control (3.0% vs 15.8%).  Given the real access stream -- one Item
+# per READ, repeats included, in order -- these replay an actual cache: a hit refreshes recency and
+# bumps a count that only ever reflects reads seen so far.  `Item.freq` and `Item.last_ms` are ignored.
+# As in the textbook versions, the item being inserted is never its own victim (evict, then insert):
+# with causal counts every newcomer starts at 1, and letting it lose to residents would turn LFU into
+# a frequency admission filter that rejects every first read once the cache is full.
+
+def _stream_recency(accesses: list[Item], budget: int, refresh: bool) -> set:
+    """LRU (refresh on hit) and FIFO (insertion order only)."""
+    resident: OrderedDict = OrderedDict()           # key -> bytes, least recent first
+    spent = 0
+    for it in accesses:
+        if it.key in resident:
+            if refresh:
+                resident.move_to_end(it.key)
+            continue
+        if it.nbytes > budget:
+            continue
+        resident[it.key] = it.nbytes
+        spent += it.nbytes
+        while spent > budget:
+            spent -= resident.popitem(last=False)[1]
+    return set(resident)
+
+
+def _stream_lru(accesses: list[Item], budget: int) -> set:
+    return _stream_recency(accesses, budget, refresh=True)
+
+
+def _stream_fifo(accesses: list[Item], budget: int) -> set:
+    return _stream_recency(accesses, budget, refresh=False)
+
+
+def _stream_lfu(accesses: list[Item], budget: int) -> set:
+    """Evict the resident item read fewest times SO FAR (history counts survive eviction), ties to
+    the least recently read -- the same victim rule as `_sim_lfu`, on causal counts."""
+    resident: dict = {}
+    count: dict = defaultdict(int)
+    last: dict = {}
+    spent = 0
+    for t, it in enumerate(accesses):
+        count[it.key] += 1
+        last[it.key] = t
+        if it.key in resident:
+            continue
+        if it.nbytes > budget:
+            continue
+        resident[it.key] = it.nbytes
+        spent += it.nbytes
+        while spent > budget:
+            victim = min((k for k in resident if k != it.key), key=lambda k: (count[k], last[k]))
+            spent -= resident.pop(victim)
+    return set(resident)
+
+
+def _stream_gdsf(accesses: list[Item], budget: int) -> set:
+    """GDSF with H = L + reads_so_far * cost / size, recomputed on every hit."""
+    resident: dict = {}
+    pri: dict = {}
+    count: dict = defaultdict(int)
+    clock, spent = 0.0, 0
+    for it in accesses:
+        count[it.key] += 1
+        if it.key in resident:
+            pri[it.key] = clock + count[it.key] * it.recovery_seconds / max(it.nbytes, 1)
+            continue
+        if it.nbytes > budget:
+            continue
+        resident[it.key] = it.nbytes
+        pri[it.key] = clock + count[it.key] * it.recovery_seconds / max(it.nbytes, 1)
+        spent += it.nbytes
+        while spent > budget:
+            vkey = min((k for k in resident if k != it.key), key=lambda k: pri[k])
+            clock = pri[vkey]
+            spent -= resident.pop(vkey)
+            del pri[vkey]
+    return set(resident)
+
+
+def _stream_sliding_window(accesses: list[Item], budget: int) -> set:
+    """Keep the most recent ROUNDS whole; `round_idx` must increase along the stream."""
+    by_round: dict[int, dict] = {}
+    for it in accesses:
+        by_round.setdefault(it.round_idx, {})[it.key] = it.nbytes
+    kept, spent = set(), 0
+    for r in sorted(by_round, reverse=True):
+        new = {k: b for k, b in by_round[r].items() if k not in kept}
+        cost = sum(new.values())
+        if spent + cost > budget:
+            break
+        kept |= set(new)
+        spent += cost
+    return kept
+
+
+def _stream_sieve(accesses: list[Item], budget: int) -> set:
+    """SIEVE with visited bits set by real hits rather than seeded from a final count."""
+    queue: list = []                                # oldest first
+    size: dict = {}
+    visited: dict = {}
+    spent, hand = 0, 0
+    for it in accesses:
+        if it.key in size:
+            visited[it.key] = True
+            continue
+        if it.nbytes > budget:
+            continue
+        queue.append(it.key)
+        size[it.key] = it.nbytes
+        visited[it.key] = False
+        spent += it.nbytes
+        while spent > budget and queue:
+            if hand >= len(queue):
+                hand = 0
+            k = queue[hand]
+            if visited[k] or k == it.key:
+                visited[k] = False
+                hand += 1
+                continue
+            spent -= size.pop(k)
+            del visited[k]
+            queue.pop(hand)
+    return set(size)
+
+
+def _stream_s3fifo(accesses: list[Item], budget: int) -> set:
+    """S3-FIFO with hit counts earned from the stream -- promotion needs a real re-read in S."""
+    small_cap = max(budget // 10, 1)
+    main_cap = max(budget - small_cap, 1)
+    small: list = []
+    main: list = []
+    size: dict = {}
+    hits: dict = {}
+    present: set = set()
+    s_spent = m_spent = 0
+    for it in accesses:
+        if it.key in present:
+            hits[it.key] = hits.get(it.key, 0) + 1
+            continue
+        if it.nbytes > budget:
+            continue
+        small.append(it.key)
+        present.add(it.key)
+        size[it.key] = it.nbytes
+        hits[it.key] = 0
+        s_spent += it.nbytes
+        while s_spent > small_cap and small:
+            k = small.pop(0)
+            s_spent -= size[k]
+            if hits.get(k, 0) > 0:
+                main.append(k)
+                m_spent += size[k]
+            else:
+                present.discard(k)
+        while m_spent > main_cap and main:
+            k = main.pop(0)
+            if hits.get(k, 0) > 0:
+                hits[k] -= 1                        # second chance
+                main.append(k)
+                continue
+            m_spent -= size[k]
+            present.discard(k)
+    return present
+
+
+def _stream_random(accesses: list[Item], budget: int, seed: int = 20260918) -> set:
+    rng = _random.Random(seed)
+    resident: dict = {}
+    spent = 0
+    for it in accesses:
+        if it.key in resident or it.nbytes > budget:
+            continue
+        resident[it.key] = it.nbytes
+        spent += it.nbytes
+        while spent > budget:
+            spent -= resident.pop(rng.choice([k for k in resident if k != it.key]))
+    return set(resident)
+
+
+STREAM = {
+    "lru": _stream_lru,
+    "fifo": _stream_fifo,
+    "lfu": _stream_lfu,
+    "gdsf": _stream_gdsf,
+    "sliding_window": _stream_sliding_window,
+    "sieve": _stream_sieve,
+    "s3fifo": _stream_s3fifo,
+    "random_online": _stream_random,
+}
+assert set(STREAM) == set(ONLINE)
+
 # Measured, not assumed (60 random pools, scripts/test_evict_policies.py): the OFFLINE rankings are
 # monotone in budget, and EVERY online cache is not -- LRU and FIFO violate it in 17 of 60 pools,
 # SIEVE 12, S3-FIFO 13.  This is not a bug in any of them.  LRU's stack property (the resident set
@@ -378,14 +579,22 @@ LABEL = {
 
 
 def retained(items: list[Item], policy: str, budget: int | None,
-             seed: int = 20260918) -> set:
+             seed: int = 20260918, accesses: list[Item] | None = None) -> set:
     """The resident key set under `policy` at `budget`.  Unlimited budget keeps everything, for
     every policy -- an ordering can only matter under a constraint, and that invariant is the first
-    thing every sweep checks."""
+    thing every sweep checks.
+
+    `accesses`, when given, is the read stream behind `items` (one Item per read, repeats included,
+    in order, over the same keys); online policies then replay it as a real cache.  Offline rankings
+    always rank `items`."""
     if not items:
         return set()
     if budget is None:
         return {it.key for it in items}
     if policy in ONLINE:
+        if accesses is not None:
+            if policy == "random_online":
+                return _stream_random(accesses, budget, seed)
+            return STREAM[policy](accesses, budget)
         return ONLINE[policy](items, budget)
     return {items[i].key for i in select(items, policy, budget, seed)}
