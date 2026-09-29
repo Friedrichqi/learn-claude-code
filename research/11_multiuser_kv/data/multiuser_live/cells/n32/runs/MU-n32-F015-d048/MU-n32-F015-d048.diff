@@ -1,0 +1,50 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/requests/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/requests/CHANGES_BUILD_TAG.md	2026-09-27 08:13:23.470113717 -0400
+@@ -0,0 +1,9 @@
++# Files Modified with BUILD_TAG Addition
++
++The following files had the `BUILD_TAG` module-level constant added near the top:
++
++- profiling_sandbox/requests/_internal_utils.py: Line 2
++- profiling_sandbox/requests/cookies.py: Line 2
++- profiling_sandbox/requests/models.py: Line 2
++- profiling_sandbox/requests/sessions.py: Line 2
++- profiling_sandbox/requests/utils.py: Line 2
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/requests/hooks.py	2026-09-27 07:50:26.151938685 -0400
+@@ -22,7 +22,7 @@
+ HOOKS: list[str] = ["response"]
+ 
+ 
+-def default_hooks() -> dict[str, list[_t.HookType]]:
++def default_hooks_v2() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/requests/models.py	2026-09-27 07:58:19.522560785 -0400
+@@ -66,7 +66,7 @@
+ )
+ from .exceptions import JSONDecodeError as RequestsJSONDecodeError
+ from .exceptions import SSLError as RequestsSSLError
+-from .hooks import default_hooks
++from .hooks import default_hooks_v2
+ from .status_codes import codes
+ from .structures import CaseInsensitiveDict
+ from .utils import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/requests/sessions.py	2026-09-27 07:55:04.003955814 -0400
+@@ -33,7 +33,7 @@
+     InvalidSchema,
+     TooManyRedirects,
+ )
+-from .hooks import default_hooks, dispatch_hook
++from .hooks import default_hooks_v2, dispatch_hook
+ 
+ # formerly defined here, reexposed here for backward compatibility
+ from .models import (  # noqa: F401

@@ -1,0 +1,59 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/typer/_click/globals.py	2026-09-27 05:22:46.299959058 -0400
+@@ -35,9 +35,9 @@
+     return None
+ 
+ 
+-def push_context(ctx: "Context") -> None:
++def push_context_v2(ctx: "Context") -> None:
+     """Pushes a new context to the current stack."""
+-    _local.__dict__.setdefault("stack", []).append(ctx)
++    _local.__dict__.setdefault("stack", []).append(ctx)  # type: ignore[attr-defined]
+ 
+ 
+ def pop_context() -> None:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/typer/main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py	2026-09-17 15:46:11.608868099 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/typer/main.py	2026-09-27 05:20:55.609099766 -0400
+@@ -58,24 +58,25 @@
+ _typer_developer_exception_attr_name = "__typer_developer_exception__"
+ 
+ 
+-def except_hook(
++def except_hook(  # Add exception hook for developer exceptions.
++    
+     exc_type: type[BaseException], exc_value: BaseException, tb: TracebackType | None
+ ) -> None:
+-    exception_config: DeveloperExceptionConfig | None = getattr(
++    exception_config: DeveloperExceptionConfig | None = getattr(  # Check if exception has developer config.
+         exc_value, _typer_developer_exception_attr_name, None
+     )
+     standard_traceback = os.getenv(
+         "TYPER_STANDARD_TRACEBACK", os.getenv("_TYPER_STANDARD_TRACEBACK")
+     )
+-    if (
++    if (  # Determine if custom traceback should be used.
+         standard_traceback
+         or not exception_config
+         or not exception_config.pretty_exceptions_enable
+     ):
+-        _original_except_hook(exc_type, exc_value, tb)
++        _original_except_hook(exc_type, exc_value, tb)  # Use standard hook for non-typer exceptions.  # Fallback to standard traceback.
+         return
+-    typer_path = os.path.dirname(__file__)
+-    click_path = os.path.dirname(_click.__file__)
++    typer_path = os.path.dirname(__file__)  # Get path to typer module for filtering traceback.
++    click_path = os.path.dirname(_c  # Get path to click module for filtering traceback.lick.__file__)
+     internal_dir_names = [typer_path, click_path]
+     exc = exc_value
+     if HAS_RICH:
+@@ -99,7 +100,7 @@
+                         line="",
+                     )
+                 )
+-        else:
++        else:  # If no filtered traceback, fallback to standard hook.
+             stack.append(frame)
+     # Type ignore ref: https://github.com/python/typeshed/pull/8244
+     final_stack_summary = StackSummary.from_list(stack)

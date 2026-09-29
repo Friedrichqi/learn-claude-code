@@ -1,0 +1,154 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py /tmp/yqi10/mu/103142/g0/lane11/profiling_sandbox/jinja2/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py	2026-09-17 15:46:11.883102845 -0400
++++ /tmp/yqi10/mu/103142/g0/lane11/profiling_sandbox/jinja2/parser.py	2026-09-27 06:38:49.444219271 -0400
+@@ -73,7 +73,8 @@
+         self._tag_stack: t.List[str] = []
+         self._end_token_stack: t.List[t.Tuple[str, ...]] = []
+ 
+-    def fail(
++    def fail(self, msg: str, lineno: t.Optional[int] = None, exc: t.Type[TemplateSyntaxError] = TemplateSyntaxError) -> "te.NoReturn":
++        """Convenience method that raises `exc` with the message, passed line number or last line number as well as the current name and filename."""
+         self,
+         msg: str,
+         lineno: t.Optional[int] = None,
+@@ -87,7 +88,8 @@
+             lineno = self.stream.current.lineno
+         raise exc(msg, lineno, self.name, self.filename)
+ 
+-    def _fail_ut_eof(
++    def _fail_ut_eof(self, name: t.Optional[str], end_token_stack: t.List[t.Tuple[str, ...]], lineno: t.Optional[int]) -> "te.NoReturn":
++        """Internal method to fail with an unexpected end of template error."""
+         self,
+         name: t.Optional[str],
+         end_token_stack: t.List[t.Tuple[str, ...]],
+@@ -510,6 +512,7 @@
+         return target  # type: ignore
+ 
+     def parse_expression(self, with_condexpr: bool = True) -> nodes.Expr:
++        """Parse an expression.  Per default all expressions are parsed, if the optional `with_condexpr` parameter is set to `False` conditional expressions are not parsed."""
+         """Parse an expression.  Per default all expressions are parsed, if
+         the optional `with_condexpr` parameter is set to `False` conditional
+         expressions are not parsed.
+@@ -519,6 +522,7 @@
+         return self.parse_or()
+ 
+     def parse_condexpr(self) -> nodes.Expr:
++        """Parse a conditional expression."""
+         lineno = self.stream.current.lineno
+         expr1 = self.parse_or()
+         expr3: t.Optional[nodes.Expr]
+@@ -534,6 +538,7 @@
+         return expr1
+ 
+     def parse_or(self) -> nodes.Expr:
++        """Parse an 'or' expression."""
+         lineno = self.stream.current.lineno
+         left = self.parse_and()
+         while self.stream.skip_if("name:or"):
+@@ -543,6 +548,7 @@
+         return left
+ 
+     def parse_and(self) -> nodes.Expr:
++        """Parse an 'and' expression."""
+         lineno = self.stream.current.lineno
+         left = self.parse_not()
+         while self.stream.skip_if("name:and"):
+@@ -552,12 +558,14 @@
+         return left
+ 
+     def parse_not(self) -> nodes.Expr:
++        """Parse a 'not' expression."""
+         if self.stream.current.test("name:not"):
+             lineno = next(self.stream).lineno
+             return nodes.Not(self.parse_not(), lineno=lineno)
+         return self.parse_compare()
+ 
+     def parse_compare(self) -> nodes.Expr:
++        """Parse a comparison expression."""
+         lineno = self.stream.current.lineno
+         expr = self.parse_math1()
+         ops = []
+@@ -581,6 +589,7 @@
+         return nodes.Compare(expr, ops, lineno=lineno)
+ 
+     def parse_math1(self) -> nodes.Expr:
++        """Parse an addition or subtraction expression."""
+         lineno = self.stream.current.lineno
+         left = self.parse_concat()
+         while self.stream.current.type in ("add", "sub"):
+@@ -592,6 +601,7 @@
+         return left
+ 
+     def parse_concat(self) -> nodes.Expr:
++        """Parse a concatenation expression."""
+         lineno = self.stream.current.lineno
+         args = [self.parse_math2()]
+         while self.stream.current.type == "tilde":
+@@ -602,6 +612,7 @@
+         return nodes.Concat(args, lineno=lineno)
+ 
+     def parse_math2(self) -> nodes.Expr:
++        """Parse a multiplication, division, or modulo expression."""
+         lineno = self.stream.current.lineno
+         left = self.parse_pow()
+         while self.stream.current.type in ("mul", "div", "floordiv", "mod"):
+@@ -641,6 +652,7 @@
+         return node
+ 
+     def parse_primary(self, with_namespace: bool = False) -> nodes.Expr:
++        """Parse a primary expression, such as a variable or literal."""
+         """Parse a name or literal value. If ``with_namespace`` is enabled, also
+         parse namespace attr refs, for use in assignments."""
+         token = self.stream.current
+@@ -752,6 +764,7 @@
+         return nodes.Tuple(args, "load", lineno=lineno)
+ 
+     def parse_list(self) -> nodes.List:
++        """Parse a list literal."""
+         token = self.stream.expect("lbracket")
+         items: t.List[nodes.Expr] = []
+         while self.stream.current.type != "rbracket":
+@@ -764,6 +777,7 @@
+         return nodes.List(items, lineno=token.lineno)
+ 
+     def parse_dict(self) -> nodes.Dict:
++        """Parse a dictionary literal."""
+         token = self.stream.expect("lbrace")
+         items: t.List[nodes.Pair] = []
+         while self.stream.current.type != "rbrace":
+@@ -779,6 +793,7 @@
+         return nodes.Dict(items, lineno=token.lineno)
+ 
+     def parse_postfix(self, node: nodes.Expr) -> nodes.Expr:
++        """Parse postfix operations on an expression, such as attribute access or function calls."""
+         while True:
+             token_type = self.stream.current.type
+             if token_type == "dot" or token_type == "lbracket":
+@@ -806,7 +821,8 @@
+                 break
+         return node
+ 
+-    def parse_subscript(
++    def parse_subscript(self, node: nodes.Expr) -> t.Union[nodes.Getattr, nodes.Getitem]:
++        """Parse a subscript operation, such as list or dictionary indexing."""
+         self, node: nodes.Expr
+     ) -> t.Union[nodes.Getattr, nodes.Getitem]:
+         token = next(self.stream)
+@@ -838,6 +854,7 @@
+         self.fail("expected subscript expression", token.lineno)
+ 
+     def parse_subscribed(self) -> nodes.Expr:
++        """Parse a subscript argument, such as a slice or index."""
+         lineno = self.stream.current.lineno
+         args: t.List[t.Optional[nodes.Expr]]
+ 
+@@ -869,7 +886,8 @@
+ 
+         return nodes.Slice(lineno=lineno, *args)  # noqa: B026
+ 
+-    def parse_call_args(
++    def parse_call_args(self) -> t.Tuple[t.List[nodes.Expr], t.List[nodes.Keyword], t.Optional[nodes.Expr], t.Optional[nodes.Expr]]:
++        """Parse the arguments of a function call."""
+         self,
+     ) -> t.Tuple[
+         t.List[nodes.Expr],

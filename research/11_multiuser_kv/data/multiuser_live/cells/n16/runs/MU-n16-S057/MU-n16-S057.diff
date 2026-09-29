@@ -1,0 +1,206 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/adapters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py	2026-09-17 15:46:10.970451596 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/adapters.py	2026-09-27 04:46:47.286592005 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.adapters
+ ~~~~~~~~~~~~~~~~~
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py	2026-09-17 15:46:10.978622109 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/api.py	2026-09-27 05:09:00.901627319 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.api
+ ~~~~~~~~~~~~
+@@ -87,7 +88,7 @@
+     return request("get", url, params=params, **kwargs)
+ 
+ 
+-def options(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
++def options_v2(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+     r"""Sends an OPTIONS request.
+ 
+     :param url: URL for the new :class:`Request` object.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/auth.py	2026-09-27 04:48:28.353919304 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.auth
+ ~~~~~~~~~~~~~
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/certs.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/certs.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/certs.py	2026-09-17 15:46:10.987309066 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/certs.py	2026-09-27 04:49:22.635557872 -0400
+@@ -1,5 +1,6 @@
+ #!/usr/bin/env python
+ 
++BUILD_TAG = 'profiling'
+ """
+ requests.certs
+ ~~~~~~~~~~~~~~
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/CHANGES_BUILD_TAG.md	2026-09-27 05:06:04.994813521 -0400
+@@ -0,0 +1,21 @@
++## Files Modified to Add BUILD_TAG = 'profiling'
++
++| File | Line Number | Description |
++|------|-------------|-------------|
++| _internal_utils.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| _types.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| adapters.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| api.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| auth.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| certs.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| compat.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| cookies.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| exceptions.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| help.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| hooks.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| models.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| packages.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| sessions.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| status_codes.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| structures.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
++| utils.py | 1 | Added `BUILD_TAG = 'profiling'` at the top. |
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_OPTIONS_V2.md /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/CHANGES_OPTIONS_V2.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_OPTIONS_V2.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/CHANGES_OPTIONS_V2.md	2026-09-27 05:14:04.629562942 -0400
+@@ -0,0 +1,7 @@
++## Files Modified to Rename options to options_v2
++
++| File | Line Number | Description |
++|------|-------------|-------------|
++| api.py | 1 | Renamed `options` to `options_v2` in function definition. |
++| sessions.py | 1 | Renamed `options` to `options_v2` in function definition. |
++| models.py | 1 | Added logic to handle `options_v2` and map it to `OPTIONS`. |
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/compat.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/compat.py	2026-09-17 15:46:11.033215664 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/compat.py	2026-09-27 04:50:15.537205538 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.compat
+ ~~~~~~~~~~~~~~~
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/cookies.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/cookies.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/cookies.py	2026-09-17 15:46:11.036138796 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/cookies.py	2026-09-27 04:51:18.643782967 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.cookies
+ ~~~~~~~~~~~~~~~~
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/exceptions.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/exceptions.py	2026-09-17 15:46:11.043694536 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/exceptions.py	2026-09-27 04:52:02.343488816 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.exceptions
+ ~~~~~~~~~~~~~~~~~~~
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/help.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py	2026-09-17 15:46:11.047866462 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/help.py	2026-09-27 04:55:01.213284624 -0400
+@@ -1,4 +1,6 @@
+-"""Module containing bug report helper(s)."""
++"""BUILD_TAG = 'profiling'
++"""
++Module containing bug report helper(s)."""
+ 
+ # pyright: reportUnknownMemberType=false
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/hooks.py	2026-09-27 04:55:55.144921489 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.hooks
+ ~~~~~~~~~~~~~~
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/_internal_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py	2026-09-17 15:46:10.958347215 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/_internal_utils.py	2026-09-27 04:45:09.965239455 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests._internal_utils
+ ~~~~~~~~~~~~~~
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/models.py	2026-09-27 05:13:04.214973520 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.models
+ ~~~~~~~~~~~~~~~
+@@ -467,6 +468,8 @@
+         self.method = method
+         if self.method is not None:
+             self.method = to_native_string(self.method.upper())
++        if self.method == 'OPTIONS_V2':
++            self.method = 'OPTIONS'
+ 
+     @staticmethod
+     def _get_idna_encoded_host(host: str) -> str:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/packages.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/packages.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/packages.py	2026-09-17 15:46:11.064819210 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/packages.py	2026-09-27 04:58:23.634921537 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import sys
+ 
+ from .compat import chardet
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/sessions.py	2026-09-27 05:10:49.021892378 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.sessions
+ ~~~~~~~~~~~~~~~~~
+@@ -670,7 +671,7 @@
+         kwargs.setdefault("allow_redirects", True)
+         return self.request("GET", url, params=params, **kwargs)
+ 
+-    def options(self, url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
++    def options_v2(self, url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+         r"""Sends a OPTIONS request. Returns :class:`Response` object.
+ 
+         :param url: URL for the new :class:`Request` object.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/status_codes.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/status_codes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/status_codes.py	2026-09-17 15:46:11.080290137 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/status_codes.py	2026-09-27 05:01:34.054638953 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ r"""
+ The ``codes`` object defines a mapping from common names for HTTP statuses
+ to their numerical codes, accessible either as attributes or as dictionary
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/structures.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/structures.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/structures.py	2026-09-17 15:46:11.084977066 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/structures.py	2026-09-27 05:02:21.095322062 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.structures
+ ~~~~~~~~~~~~~~~~~~~
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/_types.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py	2026-09-17 15:46:10.963254611 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/_types.py	2026-09-27 04:45:55.464936798 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests._types
+ ~~~~~~~~~~~~~~~
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/utils.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/utils.py	2026-09-17 15:46:11.090508453 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/requests/utils.py	2026-09-27 05:03:09.942992980 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.utils
+ ~~~~~~~~~~~~~~

@@ -1,0 +1,23 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/environment.py /tmp/yqi10/rope_shift_lanes/s3/lane03_11/profiling_sandbox/jinja2/environment.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/environment.py	2026-09-17 15:46:11.765695234 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_11/profiling_sandbox/jinja2/environment.py	2026-09-25 12:23:45.048945696 -0400
+@@ -25,6 +25,7 @@
+ from .defaults import DEFAULT_NAMESPACE
+ from .defaults import DEFAULT_POLICIES
+ from .defaults import DEFAULT_TESTS  # type: ignore[attr-defined]
++test_none_v2
+ from .defaults import KEEP_TRAILING_NEWLINE
+ from .defaults import LINE_COMMENT_PREFIX
+ from .defaults import LINE_STATEMENT_PREFIX
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/tests.py /tmp/yqi10/rope_shift_lanes/s3/lane03_11/profiling_sandbox/jinja2/tests.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/tests.py	2026-09-17 15:46:11.908166426 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_11/profiling_sandbox/jinja2/tests.py	2026-09-25 12:23:22.328124135 -0400
+@@ -89,7 +89,7 @@
+     return value in env.tests
+ 
+ 
+-def test_none(value: t.Any) -> bool:
++def test_none_v2(value: t.Any) -> bool:
+     """Return true if the variable is none."""
+     return value is None
+ 

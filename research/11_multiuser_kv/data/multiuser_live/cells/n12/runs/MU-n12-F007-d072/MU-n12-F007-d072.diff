@@ -1,0 +1,64 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/rich/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py	2026-09-17 15:46:12.127567061 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/rich/__init__.py	2026-09-27 10:52:43.626511944 -0400
+@@ -5,7 +5,7 @@
+ 
+ from ._extension import load_ipython_extension  # noqa: F401
+ 
+-__all__ = ["get_console", "reconfigure", "print", "inspect", "print_json"]
++__all__ = ["get_console", "reconfigure", "print", "inspect", "print_json_v2"]
+ 
+ if TYPE_CHECKING:
+     from .console import Console
+@@ -74,7 +74,7 @@
+     return write_console.print(*objects, sep=sep, end=end)
+ 
+ 
+-def print_json(
++def print_json_v2(
+     json: Optional[str] = None,
+     *,
+     data: Any = None,
+@@ -172,6 +172,5 @@
+     )
+     _console.print(_inspect)
+ 
+-
+ if __name__ == "__main__":  # pragma: no cover
+-    print("Hello, **World**")
++    print("Hello, **World**")
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/json.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/rich/json.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/json.py	2026-09-17 15:46:12.496002352 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/rich/json.py	2026-09-27 10:59:23.979918378 -0400
+@@ -5,7 +5,6 @@
+ from .text import Text
+ from .highlighter import JSONHighlighter, NullHighlighter
+ 
+-
+ class JSON:
+     """A renderable which pretty prints JSON.
+ 
+@@ -21,7 +20,6 @@
+             in to something that can be JSON encoded. Defaults to None.
+         sort_keys (bool, optional): Sort dictionary keys. Defaults to False.
+     """
+-
+     def __init__(
+         self,
+         json: str,
+@@ -101,7 +99,6 @@
+     def __rich__(self) -> Text:
+         return self.text
+ 
+-
+ if __name__ == "__main__":
+     import argparse
+     import sys
+@@ -136,4 +133,4 @@
+         error_console.print(f"Unable to read {args.path!r}; {error}")
+         sys.exit(-1)
+ 
+-    console.print(JSON(json_data, indent=args.indent), soft_wrap=True)
++    console.print(JSON(json_data, indent=args.indent), soft_wrap=True)
+\ No newline at end of file

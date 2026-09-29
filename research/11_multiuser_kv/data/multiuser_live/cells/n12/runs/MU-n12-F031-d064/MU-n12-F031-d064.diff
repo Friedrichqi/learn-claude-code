@@ -1,0 +1,68 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py	2026-09-17 15:46:11.085591258 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_api.py	2026-09-27 10:55:28.681267144 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import typing
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py	2026-09-17 15:46:11.090183787 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_auth.py	2026-09-27 10:55:51.427233419 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import hashlib
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_client.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py	2026-09-17 15:46:11.111585027 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_client.py	2026-09-27 10:56:12.832201684 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import datetime
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_config.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_config.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_config.py	2026-09-17 15:46:11.116833128 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_config.py	2026-09-27 10:56:37.672164858 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_content.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py	2026-09-17 15:46:11.123390582 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_content.py	2026-09-27 10:57:12.324113492 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import inspect
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/__init__.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/__init__.py	2026-09-17 15:46:11.073056972 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/__init__.py	2026-09-27 10:53:47.181417668 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from .__version__ import __description__, __title__, __version__
+ from ._api import *
+ from ._auth import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_multipart.py	2026-09-27 10:50:24.606718232 -0400
+@@ -53,7 +53,7 @@
+     return None
+ 
+ 
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/__version__.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/__version__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/__version__.py	2026-09-17 15:46:11.079778304 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/__version__.py	2026-09-27 10:54:31.505351930 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ __title__ = "httpx"
+ __description__ = "A next generation HTTP client, for Python 3."
+ __version__ = "0.28.1"

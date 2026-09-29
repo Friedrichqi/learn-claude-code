@@ -1,0 +1,315 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/mu/102748/g1/lane00/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/mu/102748/g1/lane00/profiling_sandbox/packaging/pylock.py	2026-09-26 21:58:01.877114995 -0400
+@@ -58,6 +58,7 @@
+ 
+ 
+ def __dir__() -> list[str]:
++    """Return the list of module members."""
+     return __all__
+ 
+ 
+@@ -66,6 +67,7 @@
+ 
+ 
+ class _FromMappingProtocol(Protocol):  # pragma: no cover
++    """Base protocol for dataclass objects constructed from a dictionary."""
+     @classmethod
+     def _from_dict(cls, d: Mapping[str, Any]) -> Self: ...
+ 
+@@ -78,14 +80,17 @@
+ 
+ def is_valid_pylock_path(path: Path) -> bool:
+     """Check if the given path is a valid pylock file path."""
++    """Check if the given path is a valid pylock file path."""
+     return path.name == "pylock.toml" or bool(_PYLOCK_FILE_NAME_RE.match(path.name))
+ 
+ 
+ def _toml_key(key: str) -> str:
++    """Convert a key to TOML format."""
+     return key.replace("_", "-")
+ 
+ 
+ def _toml_value(key: str, value: Any) -> Any:  # noqa: ANN401
++    """Convert a value to TOML format."""
+     if isinstance(value, (Version, Marker, SpecifierSet)):
+         return str(value)
+     if isinstance(value, Sequence) and key == "environments":
+@@ -94,6 +99,7 @@
+ 
+ 
+ def _toml_dict_factory(data: list[tuple[str, Any]]) -> dict[str, Any]:
++    """Create a dictionary from a list of key-value pairs in TOML format."""
+     return {
+         _toml_key(key): _toml_value(key, value)
+         for key, value in data
+@@ -103,6 +109,7 @@
+ 
+ def _get(d: Mapping[str, Any], expected_type: type[_T], key: str) -> _T | None:
+     """Get a value from the dictionary and verify it's the expected type."""
++    """Get a value from the dictionary and verify it's the expected type."""
+     if (value := d.get(key)) is None:
+         return None
+     if not isinstance(value, expected_type) or (
+@@ -119,6 +126,7 @@
+ 
+ def _get_required(d: Mapping[str, Any], expected_type: type[_T], key: str) -> _T:
+     """Get a required value from the dictionary and verify it's the expected type."""
++    """Get a required value from the dictionary and verify it's the expected type."""
+     if (value := _get(d, expected_type, key)) is None:
+         raise _PylockRequiredKeyError(key)
+     return value
+@@ -128,6 +136,7 @@
+     d: Mapping[str, Any], expected_item_type: type[_T], key: str
+ ) -> Sequence[_T] | None:
+     """Get a list value from the dictionary and verify it's the expected items type."""
++    """Get a list value from the dictionary and verify it's the expected items type."""
+     if (value := _get(d, Sequence, key)) is None:  # type: ignore[type-abstract]
+         return None
+     if isinstance(value, (str, bytes)):
+@@ -157,6 +166,11 @@
+ 
+     This assumes the target_type constructor accepts the value.
+     """
++    """Get a value from the dictionary, verify it's the expected type,
++    and convert to the target type.
++
++    This assumes the target_type constructor accepts the value.
++    """
+     if (value := _get(d, expected_type, key)) is None:
+         return None
+     try:
+@@ -173,6 +187,8 @@
+ ) -> _T2:
+     """Get a required value from the dict, verify it's the expected type,
+     and convert to the target type."""
++    """Get a required value from the dict, verify it's the expected type,
++    and convert to the target type."""
+     if (value := _get_as(d, expected_type, target_type, key)) is None:
+         raise _PylockRequiredKeyError(key)
+     return value
+@@ -185,6 +201,7 @@
+     key: str,
+ ) -> list[_T2] | None:
+     """Get list value from dictionary and verify expected items type."""
++    """Get list value from dictionary and verify expected items type."""
+     if (value := _get_sequence(d, expected_item_type, key)) is None:
+         return None
+     result = []
+@@ -201,6 +218,7 @@
+     d: Mapping[str, Any], target_type: type[_FromMappingProtocolT], key: str
+ ) -> _FromMappingProtocolT | None:
+     """Get a dictionary value from the dictionary and convert it to a dataclass."""
++    """Get a dictionary value from the dictionary and convert it to a dataclass."""
+     if (value := _get(d, Mapping, key)) is None:  # type: ignore[type-abstract]
+         return None
+     try:
+@@ -213,6 +231,7 @@
+     d: Mapping[str, Any], target_item_type: type[_FromMappingProtocolT], key: str
+ ) -> list[_FromMappingProtocolT] | None:
+     """Get a list value from the dictionary and convert its items to a dataclass."""
++    """Get a list value from the dictionary and convert its items to a dataclass."""
+     if (value := _get_sequence(d, Mapping, key)) is None:  # type: ignore[type-abstract]
+         return None
+     result: list[_FromMappingProtocolT] = []
+@@ -230,6 +249,8 @@
+ ) -> Sequence[_FromMappingProtocolT]:
+     """Get a required list value from the dictionary and convert its items to a
+     dataclass."""
++    """Get a required list value from the dictionary and convert its items to a
++    dataclass."""
+     if (result := _get_sequence_of_objects(d, target_item_type, key)) is None:
+         raise _PylockRequiredKeyError(key)
+     return result
+@@ -237,17 +258,20 @@
+ 
+ def _validate_normalized_name(name: str) -> NormalizedName:
+     """Validate that a string is a NormalizedName."""
++    """Validate that a string is a NormalizedName."""
+     if not is_normalized_name(name):
+         raise PylockValidationError(f"Name {name!r} is not normalized")
+     return NormalizedName(name)
+ 
+ 
+ def _validate_path_url(path: str | None, url: str | None) -> None:
++    """Ensure that either path or url is provided."""
+     if not path and not url:
+         raise PylockValidationError("path or url must be provided")
+ 
+ 
+ def _path_name(path: str | None) -> str | None:
++    """Extract the name from a path."""
+     if not path:
+         return None
+     # If the path is relative it MAY use POSIX-style path separators explicitly
+@@ -261,6 +285,7 @@
+ 
+ 
+ def _url_name(url: str | None) -> str | None:
++    """Extract the name from a URL."""
+     if not url:
+         return None
+     url_path = urlparse(url).path
+@@ -269,6 +294,7 @@
+ 
+ 
+ def _validate_hashes(hashes: Mapping[str, Any]) -> Mapping[str, Any]:
++    """Ensure that at least one hash is provided and all hash values are strings."""
+     if not hashes:
+         raise PylockValidationError("At least one hash must be provided")
+     if not all(isinstance(hash_val, str) for hash_val in hashes.values()):
+@@ -277,12 +303,17 @@
+ 
+ 
+ class PylockValidationError(Exception):
++    """Raised when input data is not spec-compliant."""
+     """Raised when when input data is not spec-compliant."""
+ 
+     context: str | None = None
+     message: str
+ 
+-    def __init__(
++    def __init__(self, """Initialize the Pylock instance."""
++self, """Initialize the Pylock instance."""
++self, """Initialize the Pylock instance."""
++self, """Initialize the Pylock instance."""
++
+         self,
+         cause: str | Exception,
+         *,
+@@ -307,12 +338,14 @@
+ 
+ 
+ class _PylockRequiredKeyError(PylockValidationError):
++    """Error for missing required keys in validation."""
+     def __init__(self, key: str) -> None:
+         super().__init__("Missing required value", context=key)
+ 
+ 
+ class PylockUnsupportedVersionError(PylockValidationError):
+     """Raised when encountering an unsupported `lock_version`."""
++    """Raised when encountering an unsupported `lock_version`."""
+ 
+ 
+ class PylockSelectError(Exception):
+@@ -320,10 +353,15 @@
+ 
+     .. versionadded:: 26.1
+     """
++    """Base exception for errors raised by :meth:`Pylock.select`.
++
++    .. versionadded:: 26.1
++    """
+ 
+ 
+ @dataclass(frozen=True, init=False)
+ class PackageVcs:
++    """Represents a version control system package."""
+     type: str
+     url: str | None = None
+     path: str | None = None
+@@ -365,6 +403,7 @@
+ 
+ @dataclass(frozen=True, init=False)
+ class PackageDirectory:
++    """Represents a directory-based package."""
+     path: str
+     editable: bool | None = None
+     subdirectory: str | None = None
+@@ -392,6 +431,7 @@
+ 
+ @dataclass(frozen=True, init=False)
+ class PackageArchive:
++    """Represents an archive-based package."""
+     url: str | None = None
+     path: str | None = None
+     size: int | None = None
+@@ -433,6 +473,7 @@
+ 
+ @dataclass(frozen=True, init=False)
+ class PackageSdist:
++    """Represents a source distribution package."""
+     name: str | None = None
+     upload_time: datetime | None = None
+     url: str | None = None
+@@ -485,6 +526,7 @@
+ 
+ @dataclass(frozen=True, init=False)
+ class PackageWheel:
++    """Represents a wheel distribution package."""
+     name: str | None = None
+     upload_time: datetime | None = None
+     url: str | None = None
+@@ -534,6 +576,7 @@
+ 
+ @dataclass(frozen=True, init=False)
+ class Package:
++    """Represents a package with metadata and distribution information."""
+     name: NormalizedName
+     version: Version | None = None
+     marker: Marker | None = None
+@@ -669,6 +712,7 @@
+ @dataclass(frozen=True, init=False)
+ class Pylock:
+     """A class representing a pylock file."""
++    """A class representing a pylock file."""
+ 
+     lock_version: Version
+     environments: Sequence[Marker] | None = None
+@@ -728,7 +772,8 @@
+         return pylock
+ 
+     @classmethod
+-    def from_dict(cls, d: Mapping[str, Any], /) -> Self:
++    def from_dict(cls, d: Mapping[str, Any], /) -> Self: """Create and validate a Pylock instance from a TOML dictionary."""
++
+         """Create and validate a Pylock instance from a TOML dictionary.
+ 
+         Raises :class:`PylockValidationError` if the input data is not
+@@ -736,17 +781,22 @@
+         """
+         return cls._from_dict(d)
+ 
+-    def to_dict(self) -> Mapping[str, Any]:
++    def to_dict(self) -> Mapping[str, Any]: """Convert the Pylock instance to a TOML dictionary."""
++
+         """Convert the Pylock instance to a TOML dictionary."""
+         return dataclasses.asdict(self, dict_factory=_toml_dict_factory)
+ 
+-    def validate(self) -> None:
++    def validate(self) -> None: """Validate the Pylock instance against the specification."""
++
+         """Validate the Pylock instance against the specification.
+ 
+         Raises :class:`PylockValidationError` otherwise."""
+         self.from_dict(self.to_dict())
+ 
+-    def select(
++    def select(self, """Select what to install from the lock file."""
++self, """Select what to install from the lock file."""
++self, """Select what to install from the lock file."""
++
+         self,
+         *,
+         environment: Environment | None = None,
+@@ -789,7 +839,7 @@
+         .. versionchanged:: 26.3
+             Added the *prefer_sdist_predicate* parameter.
+         """
+-        compatible_tags_selector = create_compatible_tags_selector(
++        compatible_tags_selector = create_compatible_tags_selector_v2(
+             tags if tags is not None else sys_tags()
+         )
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py /tmp/yqi10/mu/102748/g1/lane00/profiling_sandbox/packaging/tags.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py	2026-09-17 15:46:11.805606681 -0400
++++ /tmp/yqi10/mu/102748/g1/lane00/profiling_sandbox/packaging/tags.py	2026-09-26 21:57:59.876116829 -0400
+@@ -1007,7 +1007,7 @@
+     yield from compatible_tags(interpreter=interp)
+ 
+ 
+-def create_compatible_tags_selector(
++def create_compatible_tags_selector_v2(
+     tags: Iterable[Tag],
+ ) -> Callable[[Iterable[tuple[_T, AbstractSet[Tag]]]], Iterator[_T]]:
+     """Create a callable to select things compatible with supported tags.

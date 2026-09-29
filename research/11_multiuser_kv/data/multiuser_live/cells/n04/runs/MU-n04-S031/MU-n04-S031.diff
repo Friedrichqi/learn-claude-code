@@ -1,0 +1,130 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/CHANGES_BUILD_TAG.md	2026-09-27 01:51:28.983917126 -0400
+@@ -0,0 +1,14 @@
++## Build Tag Addition
++
++The following files have been updated with the `BUILD_TAG` constant set to 'profiling':
++
++- `profiling_sandbox/typer/_completion_classes.py` (Line 1)
++- `profiling_sandbox/typer/_completion_shared.py` (Line 1)
++- `profiling_sandbox/typer/_types.py` (Line 1)
++- `profiling_sandbox/typer/_typing.py` (Line 1)
++- `profiling_sandbox/typer/cli.py` (Line 1)
++- `profiling_sandbox/typer/colors.py` (Line 1)
++- `profiling_sandbox/typer/completion.py` (Line 1)
++- `profiling_sandbox/typer/core.py` (Line 1)
++- `profiling_sandbox/typer/models.py` (Line 1)
++- `profiling_sandbox/typer/utils.py` (Line 1)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/cli.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/cli.py	2026-09-17 15:46:11.577894575 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/cli.py	2026-09-27 01:51:01.788982627 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import importlib.util
+ import re
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/colors.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/colors.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/colors.py	2026-09-17 15:46:11.585963779 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/colors.py	2026-09-27 01:51:04.342976469 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ # Variable names to colors, just for completion
+ BLACK = "black"
+ RED = "red"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_completion_classes.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/_completion_classes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_completion_classes.py	2026-09-17 15:46:11.557447983 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/_completion_classes.py	2026-09-27 01:50:51.811006703 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import importlib.util
+ import os
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/completion.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/completion.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/completion.py	2026-09-17 15:46:11.594426718 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/completion.py	2026-09-27 01:51:06.832970466 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import os
+ import sys
+ from collections.abc import MutableMapping
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_completion_shared.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/_completion_shared.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_completion_shared.py	2026-09-17 15:46:11.562108792 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/_completion_shared.py	2026-09-27 01:50:54.369000528 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import os
+ import re
+ import subprocess
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/core.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/core.py	2026-09-17 15:46:11.599826507 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/core.py	2026-09-27 01:51:11.565959059 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import errno
+ import inspect
+ import os
+@@ -17,7 +19,7 @@
+ from ._click import types
+ from ._click.parser import _OptionParser
+ from ._click.shell_completion import CompletionItem
+-from ._typing import Literal
++from ._typing import Literal, literal_values_v2, literal_values_v2
+ from .exceptions import Abort, Exit
+ from .utils import parse_boolean_env_var
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/models.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/models.py	2026-09-17 15:46:11.614341877 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/models.py	2026-09-27 01:51:18.919941346 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import inspect
+ import io
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_types.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/_types.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_types.py	2026-09-17 15:46:11.567533351 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/_types.py	2026-09-27 01:50:56.976994235 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from collections.abc import Iterable, Mapping, Sequence
+ from enum import Enum
+ from typing import Any, Generic, TypeVar
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/_typing.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py	2026-09-17 15:46:11.573110818 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/_typing.py	2026-09-27 01:50:59.180988918 -0400
+@@ -3,6 +3,8 @@
+ # Reduced drastically to only include Typer-specific 3.9+ functionality
+ # mypy: ignore-errors
+ 
++BUILD_TAG = 'profiling'
++
+ import types
+ from collections.abc import Callable
+ from typing import (
+@@ -56,7 +58,7 @@
+     return get_origin(type_) is Literal
+ 
+ 
+-def literal_values(type_: type[Any]) -> tuple[Any, ...]:
++def literal_values_v2(type_: type[Any]) -> tuple[Any, ...]:
+     return get_args(type_)
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/utils.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/utils.py	2026-09-17 15:46:11.634583822 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/typer/utils.py	2026-09-27 01:51:22.451932844 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import inspect
+ from collections.abc import Callable
+ from copy import copy

@@ -1,0 +1,12 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/rope_shift_lanes/s5/lane05_04/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_04/profiling_sandbox/packaging/utils.py	2026-09-25 11:46:16.225071877 -0400
+@@ -197,7 +197,7 @@
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+ 
+-def parse_wheel_filename(
++def parse_wheel_filename_v2(
+     filename: str,
+     *,
+     validate_order: bool = False,

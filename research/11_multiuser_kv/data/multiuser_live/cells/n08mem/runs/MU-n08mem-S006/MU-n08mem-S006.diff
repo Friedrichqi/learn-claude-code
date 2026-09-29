@@ -1,0 +1,197 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/metadata.py /tmp/yqi10/mu/102994/g0/lane01/profiling_sandbox/packaging/metadata.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/metadata.py	2026-09-17 15:46:11.733192659 -0400
++++ /tmp/yqi10/mu/102994/g0/lane01/profiling_sandbox/packaging/metadata.py	2026-09-27 08:21:19.586749806 -0400
+@@ -18,6 +18,7 @@
+ )
+ 
+ from . import licenses, requirements, specifiers, utils
++from .utils import parse_wheel_filename_v2 as parse_wheel_filename
+ from . import version as version_module
+ from .errors import ExceptionGroup, _ErrorCollector
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102994/g0/lane01/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102994/g0/lane01/profiling_sandbox/packaging/version.py	2026-09-27 08:23:45.340522567 -0400
+@@ -98,6 +98,20 @@
+     'b'
+     >>> normalize_pre('rc')
+     'rc'
++    """
++    letter = letter.lower()
++    return _LETTER_NORMALIZATION.get(letter, letter)letter: str, /) -> str:
++    """Normalize the pre-release segment of a version string.
++
++    Returns a lowercase version of the string if not a known pre-release
++    identifier.
++
++    >>> normalize_pre('alpha')
++    'a'
++    >>> normalize_pre('BETA')
++    'b'
++    >>> normalize_pre('rc')
++    'rc'
+ 
+     :param letter:
+ 
+@@ -114,6 +128,14 @@
+ 
+     >>> parse('1.0.dev1')
+     <Version('1.0.dev1')>
++    """
++    return Version(version)version: str) -> Version:
++    """Parse the given version string.
++
++    This is identical to the :class:`Version` constructor.
++
++    >>> parse('1.0.dev1')
++    <Version('1.0.dev1')>
+ 
+     :param version: The version string to parse.
+     :raises InvalidVersion: When the version string is not a valid version.
+@@ -129,9 +151,17 @@
+         ...
+     packaging.version.InvalidVersion: Invalid version: 'invalid'
+     """
++    """Raised when a version string is not a valid version.
++
++    >>> Version("invalid")
++    Traceback (most recent call last):
++        ...
++    packaging.version.InvalidVersion: Invalid version: 'invalid'
++    """
+ 
+ 
+ class _BaseVersion:
++    """Base class for version comparison logic."""
+     __slots__ = ()
+ 
+     # This can also be a normal member (see the packaging_legacy package);
+@@ -140,6 +170,27 @@
+     if typing.TYPE_CHECKING:
+ 
+         @property
++    def base_version(self) -> str:
++        """The 'base version' of the version."""
++    def public(self) -> str:
++        """The public portion of the version."""
++    def local(self) -> str | None:
++        """The local version segment of the version."""
++    def dev(self) -> int | None:
++        """The development number of the version."""
++    def post(self) -> int | None:
++        """The post-release number of the version."""
++    def pre(self) -> tuple[Literal["a", "b", "rc"], int] | None:
++        """The pre-release segment of the version."""
++    def release(self) -> tuple[int, ...]:
++        """The components of the 'release' segment of the version."""
++    def epoch(self) -> int:
++        """The epoch of the version."""
++    @_deprecated("Version._version is private and will be removed soon")
++    def _version(self) -> _Version:
++        """Property for match_args."""
++    def _key(self) -> CmpKey:
++        """Key which will be used for sorting."""
+         def _key(self) -> tuple[Any, ...]: ...
+ 
+     def __hash__(self) -> int:
+@@ -345,6 +396,16 @@
+ 
+     >>> v1 = Version("1.0a5")
+     >>> v2 = Version("1.0")
++    >>> v1 < v2
++    True
++    """
++    """This class abstracts handling of a project's versions.
++
++    A :class:`Version` instance is comparison aware and can be compared and
++    sorted using the standard Python interfaces.
++
++    >>> v1 = Version("1.0a5")
++    >>> v2 = Version("1.0")
+     >>> v1
+     <Version('1.0a5')>
+     >>> v2
+@@ -406,6 +467,15 @@
+     _key_cache: CmpKey | None
+ 
+     def __init__(self, version: str) -> None:
++    """Initialize a Version object.
++
++    :param version:
++        The string representation of a version which will be parsed and normalized
++        before use.
++    :raises InvalidVersion:
++        If the ``version`` does not conform to PEP 440 in any way then this
++        exception will be raised.
++    """
+         """Initialize a Version object.
+ 
+         :param version:
+@@ -466,6 +536,16 @@
+         self._hash_cache = None
+ 
+     @classmethod
++    def from_parts(cls, *, epoch: int = 0, release: tuple[int, ...], pre: tuple[str, int] | None = None, post: int | None = None, dev: int | None = None, local: str | None = None) -> Self:
++        """Return a new version composed of the various parts.
++
++        This allows you to build a version without going though a string and
++        running a regular expression. It normalizes pre-release strings. The
++        ``release=`` keyword argument is required.
++
++        >>> Version.from_parts(release=(1,2,3))
++        <Version('1.2.3')>
++        """
+     def from_parts(
+         cls,
+         *,
+@@ -513,6 +593,17 @@
+         return new_version
+ 
+     def __replace__(self, **kwargs: Unpack[_VersionReplace]) -> Self:
++        """__replace__(*, epoch=..., release=..., pre=..., post=..., dev=..., local=...)
++
++        Return a new version with parts replaced.
++
++        This returns a new version (unless no parts were changed). The
++        pre-release is normalized. Setting a value to ``None`` clears it.
++
++        >>> v = Version("1.2.3")
++        >>> v.__replace__(pre=("a", 1))
++        <Version('1.2.3a1')>
++        """
+         """
+         __replace__(*, epoch=..., release=..., pre=..., post=..., dev=..., local=...)
+ 
+@@ -765,7 +856,8 @@
+ 
+         return super().__ne__(other)
+ 
+-    def __getstate__(
++    def __getstate__(self) -> tuple[int, tuple[int, ...], tuple[str, int] | None, tuple[str, int] | None, tuple[str, int] | None, LocalType | None]:
++        """Return state as a 6-item tuple for compactness."""
+         self,
+     ) -> tuple[
+         int,
+@@ -857,12 +949,22 @@
+         >>> Version('1.0.0')
+         <Version('1.0.0')>
+         """
++        """A representation of the Version that shows all internal state.
++
++        >>> Version('1.0.0')
++        <Version('1.0.0')>
++        """
+         return f"<{self.__class__.__name__}({str(self)!r})>"
+ 
+     def __str__(self) -> str:
+         """A string representation of the version that can be round-tripped.
+ 
+         >>> str(Version("1.0a5"))
++        '1.0a5'
++        """
++        """A string representation of the version that can be round-tripped.
++
++        >>> str(Version("1.0a5"))
+         '1.0a5'
+         """
+         # This is a hot function, so not calling self.base_version

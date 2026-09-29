@@ -1,0 +1,188 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/adapters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py	2026-09-17 15:46:10.970451596 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/adapters.py	2026-09-25 11:58:12.668157278 -0400
+@@ -6,6 +6,7 @@
+ and maintain connections.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import os.path
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py	2026-09-17 15:46:10.978622109 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/api.py	2026-09-25 11:58:29.603020107 -0400
+@@ -8,6 +8,7 @@
+ :license: Apache2, see LICENSE for more details.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ from typing import TYPE_CHECKING
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/auth.py	2026-09-25 11:58:41.686922262 -0400
+@@ -5,6 +5,7 @@
+ This module contains the authentication handlers for Requests.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import hashlib
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/certs.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/certs.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/certs.py	2026-09-17 15:46:10.987309066 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/certs.py	2026-09-25 11:59:04.594736852 -0400
+@@ -12,6 +12,7 @@
+ packaged CA bundle.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from certifi import where
+ 
+ if __name__ == "__main__":
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/CHANGES_BUILD_TAG.md	2026-09-25 12:02:11.704226175 -0400
+@@ -0,0 +1,19 @@
++# Build Tag Addition Changelog
++
++The following files have had the `BUILD_TAG` constant added:
++
++- [__version__.py](#__version__py): Line 8
++- [_internal_utils.py](#_internal_utils_py): Line 1
++- [_types.py](#_types_py): Line 2
++- [adapters.py](#adapters_py): Line 2
++- [api.py](#api_py): Line 2
++- [auth.py](#auth_py): Line 2
++- [certs.py](#certs_py): Line 4
++- [compat.py](#compat_py): Line 2
++- [cookies.py](#cookies_py): Line 2
++- [exceptions.py](#exceptions_py): Line 2
++- [help.py](#help_py): Line 3
++- [models.py](#models_py): Line 2
++- [sessions.py](#sessions_py): Line 2
++- [structures.py](#structures_py): Line 2
++- [utils.py](#utils_py): Line 2
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/compat.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/compat.py	2026-09-17 15:46:11.033215664 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/compat.py	2026-09-25 11:59:24.279577609 -0400
+@@ -9,6 +9,7 @@
+ 
+ # pyright: reportUnusedImport=false
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import importlib
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/cookies.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/cookies.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/cookies.py	2026-09-17 15:46:11.036138796 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/cookies.py	2026-09-25 11:59:44.240416209 -0400
+@@ -7,6 +7,7 @@
+ requests.utils imports from here, so be careful with imports.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import calendar
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/exceptions.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/exceptions.py	2026-09-17 15:46:11.043694536 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/exceptions.py	2026-09-25 12:00:03.774258336 -0400
+@@ -5,6 +5,7 @@
+ This module contains the set of Requests' exceptions.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ from typing import TYPE_CHECKING, Any
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/help.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py	2026-09-17 15:46:11.047866462 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/help.py	2026-09-25 12:00:29.690048995 -0400
+@@ -2,6 +2,7 @@
+ 
+ # pyright: reportUnknownMemberType=false
+ 
++BUILD_TAG = 'profiling'
+ import json
+ import platform
+ import ssl
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/_internal_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py	2026-09-17 15:46:10.958347215 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/_internal_utils.py	2026-09-25 11:57:41.625408868 -0400
+@@ -6,6 +6,7 @@
+ which depend on extremely few external helpers (such as compat)
+ """
+ 
++BUILD_TAG = 'profiling'
+ import re
+ 
+ from .compat import builtin_str
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/models.py	2026-09-25 12:00:48.274898949 -0400
+@@ -5,6 +5,7 @@
+ This module contains the primary objects that power Requests.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import datetime
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/sessions.py	2026-09-25 12:01:10.161722328 -0400
+@@ -6,6 +6,7 @@
+ requests (cookies, auth, proxies).
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/structures.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/structures.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/structures.py	2026-09-17 15:46:11.084977066 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/structures.py	2026-09-25 12:01:31.551549805 -0400
+@@ -5,6 +5,7 @@
+ Data structures that power Requests.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ from collections import OrderedDict
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/_types.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py	2026-09-17 15:46:10.963254611 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/_types.py	2026-09-25 11:57:56.489288378 -0400
+@@ -7,6 +7,7 @@
+ by external code.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ from collections.abc import Callable, Iterable, Mapping, MutableMapping, Sequence
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/utils.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/utils.py	2026-09-17 15:46:11.090508453 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/utils.py	2026-09-25 12:01:53.598372071 -0400
+@@ -6,6 +6,7 @@
+ that are also useful for external consumption.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import codecs
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__version__.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/__version__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__version__.py	2026-09-17 15:46:10.952958246 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/requests/__version__.py	2026-09-25 11:57:35.131461523 -0400
+@@ -2,6 +2,7 @@
+ # |(  |-  |.| | | |-  `-.  |  `-.
+ # ' ' `-' `-`.`-' `-' `-'  '  `-'
+ 
++BUILD_TAG = 'profiling'
+ __title__ = "requests"
+ __description__ = "Python HTTP for Humans."
+ __url__ = "https://requests.readthedocs.io"

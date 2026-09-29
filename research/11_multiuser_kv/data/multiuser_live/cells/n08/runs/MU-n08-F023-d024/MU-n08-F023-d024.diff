@@ -1,0 +1,404 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-27 02:43:49.866158170 -0400
+@@ -0,0 +1,12 @@
++# Build Tag Changes
++
++The `BUILD_TAG` constant has been added to the following files under `profiling_sandbox/packaging/` (excluding `__init__.py` and test files):
++
++1. `profiling_sandbox/packaging/_elffile.py` - Line 2
++2. `profiling_sandbox/packaging/_manylinux.py` - Line 2
++3. `profiling_sandbox/packaging/_musllinux.py` - Line 2
++4. `profiling_sandbox/packaging/_parser.py` - Line 2
++5. `profiling_sandbox/packaging/_ranges.py` - Line 2
++6. `profiling_sandbox/packaging/_tokenizer.py` - Line 2
++7. `profiling_sandbox/packaging/specifiers.py` - Line 2
++8. `profiling_sandbox/packaging/version.py` - Line 2
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_elffile.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py	2026-09-17 15:46:11.629142343 -0400
++++ /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_elffile.py	2026-09-27 02:43:09.050247720 -0400
+@@ -9,6 +9,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import os
+ import struct
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_manylinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py	2026-09-17 15:46:11.633151751 -0400
++++ /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_manylinux.py	2026-09-27 02:43:12.823239434 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import collections
+ import contextlib
+ import functools
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_musllinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py	2026-09-17 15:46:11.638075106 -0400
++++ /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_musllinux.py	2026-09-27 02:43:16.345231701 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import functools
+ import re
+ import subprocess
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py	2026-09-17 15:46:11.642860903 -0400
++++ /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_parser.py	2026-09-27 02:43:20.144223361 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import ast
+ from collections.abc import Sequence
+ from typing import Literal, NamedTuple, Union
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_ranges.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py	2026-09-17 15:46:11.647379794 -0400
++++ /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_ranges.py	2026-09-27 02:43:26.438209548 -0400
+@@ -5,6 +5,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import functools
+ from typing import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/specifiers.py	2026-09-27 02:43:36.979186423 -0400
+@@ -10,6 +10,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import abc
+ import re
+ import typing
+@@ -62,6 +64,7 @@
+ 
+ 
+ def _validate_spec(spec: object, /) -> TypeGuard[tuple[str, str]]:
++    """Validate that spec is a tuple of two strings."""
+     return (
+         isinstance(spec, tuple)
+         and len(spec) == 2
+@@ -71,6 +74,7 @@
+ 
+ 
+ def _validate_pre(pre: object, /) -> TypeGuard[bool | None]:
++    """Validate that pre is a bool or None."""
+     return pre is None or isinstance(pre, bool)
+ 
+ 
+@@ -91,6 +95,8 @@
+ 
+ 
+ def _fast_match(specifier: Specifier, parsed: Version) -> bool | None:
++    """Match parsed against specifier without building a range. Handles direct comparison operators when no local is present."""
++    """Match parsed against specifier without building a range."""
+     """Match ``parsed`` against ``specifier`` without building a range.
+ 
+     Handles ``>=``, ``<=``, ``==``, ``!=``, ``<``, ``>`` when the spec is
+@@ -120,6 +126,7 @@
+ 
+ 
+ class InvalidSpecifier(ValueError):
++    """Raised when attempting to create a Specifier with an invalid specifier string."""
+     """
+     Raised when attempting to create a :class:`Specifier` with a specifier
+     string that is invalid.
+@@ -132,6 +139,7 @@
+ 
+ 
+ class BaseSpecifier(metaclass=abc.ABCMeta):
++    """Abstract base class for Specifier and SpecifierSet."""
+     """
+     Abstract base class for :class:`Specifier` and :class:`SpecifierSet`.
+     """
+@@ -146,6 +154,8 @@
+ 
+     @abc.abstractmethod
+     def __str__(self) -> str:
++    """Return a string representation of the SpecifierSet that can be round-tripped."""
++    """Return a string representation of the Specifier that can be round-tripped."""
+         """
+         Returns the str representation of this Specifier-like object. This
+         should be representative of the Specifier itself.
+@@ -153,12 +163,15 @@
+ 
+     @abc.abstractmethod
+     def __hash__(self) -> int:
++    """Return a hash value for the canonical specifier set."""
++    """Return a hash value for the canonical specifier."""
+         """
+         Returns a hash value for this Specifier-like object.
+         """
+ 
+     @abc.abstractmethod
+-    def __eq__(self, other: object) -> bool:
++    def __eq__(self) -> bool:
++    """Determine if two Specifier-like objects are equal, ignoring prereleases."""
+         """
+         Returns a boolean representing whether or not the two Specifier-like
+         objects are equal.
+@@ -183,13 +196,19 @@
+         """
+ 
+     @abc.abstractmethod
+-    def contains(self, item: str, prereleases: bool | None = None) -> bool:
++    def contains(
++    self, item: UnparsedVersion, prereleases: bool | None = None, installed: bool | None = None) -> bool:
++    """Determine if the item is contained in this SpecifierSet, considering prereleases and installed status."""self, item: str, prereleases: bool | None = None) -> bool:
+         """
+         Determines if the given item is contained within this specifier.
+         """
+ 
+     @typing.overload
+     def filter(
++    self, iterable: Iterable[Any], prereleases: bool | None = None, key: Callable[[Any], UnparsedVersion] | None = None) -> Iterator[Any]:
++    """Filter items in the given iterable that match the specifiers in this set."""
++    self, iterable: Iterable[Any], prereleases: bool | None = None, key: Callable[[Any], UnparsedVersion] | None = None) -> Iterator[Any]:
++    """Filter items in the given iterable that match the specifier."""
+         self,
+         iterable: Iterable[UnparsedVersionVar],
+         prereleases: bool | None = None,
+@@ -218,6 +237,7 @@
+ 
+ 
+ class Specifier(BaseSpecifier):
++    """Abstracts handling of version specifiers. Use SpecifierSet for parsing comma-separated specifiers."""
+     """This class abstracts handling of version specifiers.
+ 
+     .. tip::
+@@ -353,6 +373,7 @@
+     }
+ 
+     def __init__(self, spec: str = "", prereleases: bool | None = None) -> None:
++    """Initialize a Specifier instance with the given specifier string and prereleases setting."""
+         """Initialize a Specifier instance.
+ 
+         :param spec:
+@@ -388,6 +409,7 @@
+         self._ranges: Sequence[Interval] | None = None
+ 
+     def _get_spec_version(self, version: str) -> Version | None:
++    """Get the spec version, using a one-element cache."""
+         """One element cache, as only one spec Version is needed per Specifier."""
+         if self._spec_version is not None and self._spec_version[0] == version:
+             return self._spec_version[1]
+@@ -400,6 +422,7 @@
+         return version_specifier
+ 
+     def _require_spec_version(self, version: str) -> Version:
++    """Get spec version, asserting it is valid (not for === operator)."""
+         """Get spec version, asserting it's valid (not for === operator).
+ 
+         This method should only be called for operators where version
+@@ -410,6 +433,7 @@
+         return spec_version
+ 
+     def _to_ranges(self) -> Sequence[Interval]:
++    """Convert this specifier to sorted, non-overlapping version ranges."""
+         """Convert this specifier to sorted, non-overlapping version ranges.
+ 
+         Each standard operator maps to one or two ranges.  ``===`` is
+@@ -463,12 +487,15 @@
+         self._prereleases = value
+ 
+     def __getstate__(self) -> tuple[tuple[str, str], bool | None]:
++    """Return state as a 2-item tuple for compactness."""
+         # Return state as a 2-item tuple for compactness:
+         #   ((operator, version), prereleases)
+         # Cache members are excluded and will be recomputed on demand.
+         return (self._spec, self._prereleases)
+ 
+     def __setstate__(self, state: object) -> None:
++    """Set state from a 2-item tuple, discarding cached values."""
++    """Set state from a 2-item tuple, discarding cached values."""
+         # Always discard cached values - they will be recomputed on demand.
+         self._spec_version = None
+         self._ranges = None
+@@ -520,6 +547,8 @@
+         return self._spec[1]
+ 
+     def __repr__(self) -> str:
++    """Return a representation of the SpecifierSet with all internal state."""
++    """Return a representation of the Specifier with all internal state."""
+         """A representation of the Specifier that shows all internal state.
+ 
+         >>> Specifier('>=1.0.0')
+@@ -549,6 +578,7 @@
+ 
+     @property
+     def _canonical_spec(self) -> tuple[str, str]:
++    """Return a canonical representation of the specifier."""
+         operator, version = self._spec
+         if operator == "===" or version.endswith(".*"):
+             return operator, version
+@@ -565,6 +595,7 @@
+         return hash(self._canonical_spec)
+ 
+     def __eq__(self, other: object) -> bool:
++    """Determine if two SpecifierSet-like objects are equal, ignoring prereleases."""
+         """Whether or not the two Specifier-like objects are equal.
+ 
+         :param other: The other object to check against.
+@@ -594,6 +625,7 @@
+         return self._canonical_spec == other._canonical_spec
+ 
+     def __contains__(self, item: str | Version) -> bool:
++    """Check if the item is contained in this specifier."""
+         """Return whether or not the item is contained in this specifier.
+ 
+         :param item: The item to check for.
+@@ -615,6 +647,7 @@
+         return self.contains(item)
+ 
+     def contains(self, item: UnparsedVersion, prereleases: bool | None = None) -> bool:
++    """Determine if the item is contained in this specifier, considering prereleases."""
+         """Return whether or not the item is contained in this specifier.
+ 
+         :param item:
+@@ -764,6 +797,7 @@
+ 
+ 
+ class SpecifierSet(BaseSpecifier):
++    """Abstracts handling of a set of version specifiers. Can be initialized with a single specifier or a comma-separated list."""
+     """This class abstracts handling of a set of version specifiers.
+ 
+     It can be passed a single specifier (``>=3.0``), a comma-separated list of
+@@ -868,6 +902,7 @@
+         self._is_unsatisfiable = None
+ 
+     def __getstate__(self) -> tuple[tuple[Specifier, ...], bool | None]:
++    """Return state as a 2-item tuple for compactness."""
+         # Return state as a 2-item tuple for compactness:
+         #   (specs, prereleases)
+         # Cache members are excluded and will be recomputed on demand.
+@@ -968,6 +1003,7 @@
+         return hash(self._canonical_specs())
+ 
+     def __and__(self, other: SpecifierSet | str) -> SpecifierSet:
++    """Return a SpecifierSet which is a combination of the two sets."""
+         """Return a SpecifierSet which is a combination of the two sets.
+ 
+         :param other: The other object to combine with.
+@@ -1026,10 +1062,12 @@
+         return self._canonical_specs() == other._canonical_specs()
+ 
+     def __len__(self) -> int:
++    """Return the number of specifiers in this specifier set."""
+         """Returns the number of specifiers in this specifier set."""
+         return len(self._specs)
+ 
+     def __iter__(self) -> Iterator[Specifier]:
++    """Return an iterator over all underlying Specifier instances."""
+         """
+         Returns an iterator over all the underlying :class:`Specifier` instances
+         in this specifier set.
+@@ -1040,6 +1078,7 @@
+         return iter(self._specs)
+ 
+     def _get_ranges(self) -> Sequence[Interval]:
++    """Intersect all specifiers into a single sequence of version ranges."""
+         """Intersect all specifiers into a single sequence of version ranges.
+ 
+         Empty when unsatisfiable. Callers must ensure ``self._specs``
+@@ -1052,6 +1091,7 @@
+         return self._ranges
+ 
+     def is_unsatisfiable(self) -> bool:
++    """Check whether this specifier set can never be satisfied."""
+         """Check whether this specifier set can never be satisfied.
+ 
+         Returns True if no version can satisfy all specifiers simultaneously.
+@@ -1087,6 +1127,7 @@
+         return result
+ 
+     def _check_arbitrary_unsatisfiable(self) -> bool:
++    """Check === (arbitrary equality) specs for unsatisfiability."""
+         """Check === (arbitrary equality) specs for unsatisfiability.
+ 
+         === uses case-insensitive string comparison, so the only candidate
+@@ -1126,6 +1167,7 @@
+         return not all(s.contains(candidate) for s in standard)
+ 
+     def to_range(self) -> ranges.VersionRange:
++    """Return the VersionRange this set accepts."""
+         """Return the :class:`~packaging.ranges.VersionRange` this set accepts.
+ 
+         An empty set yields the full range; an unsatisfiable set yields the
+@@ -1141,12 +1183,14 @@
+         return VersionRange._from_specifier_set(self)
+ 
+     def _check_relation_operand(self, other: object) -> None:
++    """Check if other is a valid operand for set relations."""
+         if not isinstance(other, SpecifierSet):
+             raise TypeError("expected a SpecifierSet")
+         if self._has_arbitrary or other._has_arbitrary:
+             raise ValueError("set relations do not support === specifiers")
+ 
+     def is_subset(self, other: SpecifierSet) -> bool:
++    """Return whether every version matching this set also matches other."""
+         """Return whether every version matching this set also matches other.
+ 
+         :raises ValueError:
+@@ -1167,6 +1211,7 @@
+         return self.to_range().is_subset(other.to_range())
+ 
+     def is_superset(self, other: SpecifierSet) -> bool:
++    """Return whether every version matching other also matches this set."""
+         """Return whether every version matching other also matches this set.
+ 
+         :raises ValueError:
+@@ -1185,6 +1230,7 @@
+         return self.to_range().is_superset(other.to_range())
+ 
+     def is_disjoint(self, other: SpecifierSet) -> bool:
++    """Return whether this set and other share no matching versions."""
+         """Return whether this set and other share no matching versions.
+ 
+         :raises ValueError:
+@@ -1205,6 +1251,7 @@
+         return self.to_range().is_disjoint(other.to_range())
+ 
+     def __contains__(self, item: UnparsedVersion) -> bool:
++    """Check if the item is contained in this specifier set."""
+         """Return whether or not the item is contained in this specifier.
+ 
+         :param item: The item to check for.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_tokenizer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py	2026-09-17 15:46:11.688359887 -0400
++++ /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/_tokenizer.py	2026-09-27 02:43:30.036201653 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import contextlib
+ import re
+ from dataclasses import dataclass
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102767/g1/lane02/profiling_sandbox/packaging/version.py	2026-09-27 02:43:41.795175862 -0400
+@@ -9,6 +9,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import re
+ import sys
+ import typing

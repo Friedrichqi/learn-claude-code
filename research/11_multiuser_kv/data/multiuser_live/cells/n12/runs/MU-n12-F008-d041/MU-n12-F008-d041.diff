@@ -1,0 +1,62 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md	2026-09-27 08:25:03.737403048 -0400
+@@ -0,0 +1,9 @@
++# BUILD_TAG Changelog
++
++The `BUILD_TAG` constant was added to the following files:
++
++- `profiling_sandbox/httpx/_transports/asgi.py`: Added at line 14
++- `profiling_sandbox/httpx/_transports/base.py`: Added at line 17
++- `profiling_sandbox/httpx/_transports/default.py`: Added at line 113
++- `profiling_sandbox/httpx/_transports/mock.py`: Could not be edited due to text not found
++- `profiling_sandbox/httpx/_transports/wsgi.py`: Could not be edited due to text not found
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_models.py	2026-09-27 08:33:54.314591514 -0400
+@@ -361,7 +361,7 @@
+ 
+         self_list = [(key, value) for _, key, value in self._list]
+         other_list = [(key, value) for _, key, value in other_headers._list]
+-        return sorted(self_list) == sorted(other_list)
++        return sorted(self_list) == sorted(other_list)  # Compare header lists for equality.
+ 
+     def __repr__(self) -> str:
+         class_name = self.__class__.__name__
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/asgi.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_transports/asgi.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/asgi.py	2026-09-17 15:46:11.287984465 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_transports/asgi.py	2026-09-27 08:14:39.765396462 -0400
+@@ -6,6 +6,8 @@
+ from .._types import AsyncByteStream
+ from .base import AsyncBaseTransport
+ 
++BUILD_TAG = 'profiling'
++
+ if typing.TYPE_CHECKING:  # pragma: no cover
+     import asyncio
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/base.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_transports/base.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/base.py	2026-09-17 15:46:11.292517015 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_transports/base.py	2026-09-27 08:15:30.776313991 -0400
+@@ -10,6 +10,8 @@
+ 
+ __all__ = ["AsyncBaseTransport", "BaseTransport"]
+ 
++BUILD_TAG = 'profiling'
++
+ 
+ class BaseTransport:
+     def __enter__(self: T) -> T:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/default.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_transports/default.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/default.py	2026-09-17 15:46:11.295850152 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/httpx/_transports/default.py	2026-09-27 08:17:06.948158483 -0400
+@@ -68,6 +68,8 @@
+ 
+ __all__ = ["AsyncHTTPTransport", "HTTPTransport"]
+ 
++BUILD_TAG = 'profiling'
++
+ HTTPCORE_EXC_MAP: dict[type[Exception], type[httpx.HTTPError]] = {}
+ 
+ 

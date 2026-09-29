@@ -1,0 +1,904 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/adapters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py	2026-09-17 15:46:10.970451596 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/adapters.py	2026-09-27 01:37:33.442836631 -0400
+@@ -154,7 +154,6 @@
+         """Cleans up adapter specific items."""
+         raise NotImplementedError
+ 
+-
+ class HTTPAdapter(BaseAdapter):
+     """The built-in HTTP Adapter for urllib3.
+ 
+@@ -495,7 +494,7 @@
+             if not proxy_url.host:
+                 raise InvalidProxyURL(
+                     "Please check proxy URL. It is malformed "
+-                    "and could be missing the host."
++                    "and could be missing the host.""
+                 )
+             proxy_manager = self.proxy_manager_for(proxy)
+             conn = proxy_manager.connection_from_host(
+@@ -540,7 +539,7 @@
+             if not proxy_url.host:
+                 raise InvalidProxyURL(
+                     "Please check proxy URL. It is malformed "
+-                    "and could be missing the host."
++                    "and could be missing the host.""
+                 )
+             proxy_manager = self.proxy_manager_for(proxy)
+             conn = proxy_manager.connection_from_url(url)
+@@ -746,3 +745,5 @@
+                 raise
+ 
+         return self.build_response(request, resp)
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py	2026-09-17 15:46:10.978622109 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/api.py	2026-09-27 01:38:26.435721644 -0400
+@@ -20,7 +20,6 @@
+ 
+     from . import _types as _t
+ 
+-
+ def request(
+     method: str, url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]
+ ) -> Response:
+@@ -64,13 +63,12 @@
+       <Response [200]>
+     """
+ 
+-    # By using the 'with' statement we are sure the session is closed, thus we
+-    # avoid leaving sockets open which can trigger a ResourceWarning in some
++    # By using the 'with' statement we are sure the session is closed, thus we avoid
++    # leaving sockets open which can trigger a ResourceWarning in some
+     # cases, and look like a memory leak in others.
+     with sessions.Session() as session:
+         return session.request(method=method, url=url, **kwargs)
+ 
+-
+ def get(
+     url: _t.UriType, params: _t.ParamsType = None, **kwargs: Unpack[_t.GetKwargs]
+ ) -> Response:
+@@ -86,7 +84,6 @@
+ 
+     return request("get", url, params=params, **kwargs)
+ 
+-
+ def options(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+     r"""Sends an OPTIONS request.
+ 
+@@ -98,7 +95,6 @@
+ 
+     return request("options", url, **kwargs)
+ 
+-
+ def head(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+     r"""Sends a HEAD request.
+ 
+@@ -113,7 +109,6 @@
+     kwargs.setdefault("allow_redirects", False)
+     return request("head", url, **kwargs)
+ 
+-
+ def post(
+     url: _t.UriType,
+     data: _t.DataType = None,
+@@ -133,7 +128,6 @@
+ 
+     return request("post", url, data=data, json=json, **kwargs)
+ 
+-
+ def put(
+     url: _t.UriType, data: _t.DataType = None, **kwargs: Unpack[_t.DataKwargs]
+ ) -> Response:
+@@ -150,7 +144,6 @@
+ 
+     return request("put", url, data=data, **kwargs)
+ 
+-
+ def patch(
+     url: _t.UriType, data: _t.DataType = None, **kwargs: Unpack[_t.DataKwargs]
+ ) -> Response:
+@@ -167,7 +160,6 @@
+ 
+     return request("patch", url, data=data, **kwargs)
+ 
+-
+ def delete(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+     r"""Sends a DELETE request.
+ 
+@@ -178,3 +170,5 @@
+     """
+ 
+     return request("delete", url, **kwargs)
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/auth.py	2026-09-27 01:16:28.174790437 -0400
+@@ -30,7 +30,6 @@
+ CONTENT_TYPE_FORM_URLENCODED: Final = "application/x-www-form-urlencoded"
+ CONTENT_TYPE_MULTI_PART: Final = "multipart/form-data"
+ 
+-
+ def _basic_auth_str(username: bytes | str, password: bytes | str) -> str:
+     """Returns a Basic Auth string."""
+ 
+@@ -74,14 +73,12 @@
+ 
+     return authstr
+ 
+-
+ class AuthBase:
+     """Base class that all auth implementations derive from"""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+         raise NotImplementedError("Auth hooks must be callable.")
+ 
+-
+ class HTTPBasicAuth(AuthBase):
+     """Attaches HTTP Basic Authentication to the given Request object."""
+ 
+@@ -112,7 +109,6 @@
+         r.headers["Authorization"] = _basic_auth_str(self.username, self.password)
+         return r
+ 
+-
+ class HTTPProxyAuth(HTTPBasicAuth):
+     """Attaches HTTP Proxy Authentication to a given Request object."""
+ 
+@@ -120,7 +116,6 @@
+         r.headers["Proxy-Authorization"] = _basic_auth_str(self.username, self.password)
+         return r
+ 
+-
+ class HTTPDigestAuth(AuthBase):
+     """Attaches HTTP Digest Authentication to the given Request object."""
+ 
+@@ -352,3 +347,5 @@
+ 
+     def __ne__(self, other: Any) -> bool:
+         return not self == other
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/certs.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/certs.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/certs.py	2026-09-17 15:46:10.987309066 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/certs.py	2026-09-27 01:16:33.393777237 -0400
+@@ -1,11 +1,10 @@
+ #!/usr/bin/env python
+-
+ """
+ requests.certs
+ ~~~~~~~~~~~~~~
+ 
+ This module returns the preferred default CA certificate bundle. There is
+-only one — the one from the certifi package.
++only one - the one from the certifi package.
+ 
+ If you are packaging Requests, e.g., for a Linux distribution or a managed
+ environment, you can change the definition of where() to return a separately
+@@ -16,3 +15,5 @@
+ 
+ if __name__ == "__main__":
+     print(where())
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/CHANGES_BUILD_TAG.md	2026-09-27 01:39:35.463572695 -0400
+@@ -0,0 +1,13 @@
++# Build Tag Changes
++
++The following files have been updated with the `BUILD_TAG = 'profiling'` constant:
++
++- `__version__.py` - Added at line 12
++- `_internal_utils.py` - Added at line 138
++- `_types.py` - Added at line 577
++- `adapters.py` - Added at line 28079
++- `api.py` - Added at line 7167
++- `hooks.py` - Added at line 1158
++- `models.py` - Added at line 41768
++- `cookies.py` - Added at line 21564
++- `status_codes.py` - Added at line 4884
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/cookies.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/cookies.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/cookies.py	2026-09-17 15:46:11.036138796 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/cookies.py	2026-09-27 01:43:06.764122279 -0400
+@@ -27,7 +27,6 @@
+ 
+ import threading
+ 
+-
+ class MockRequest:
+     """Wraps a `requests.PreparedRequest` to mimic a `urllib2.Request`.
+ 
+@@ -49,15 +48,19 @@
+         self.type = urlparse(self._r.url).scheme
+ 
+     def get_type(self) -> str:
++        """Returns the type of the request."""
+         return self.type
+ 
+     def get_host(self) -> str:
++        """Returns the host of the request."""
+         return urlparse(self._r.url).netloc
+ 
+     def get_origin_req_host(self) -> str:
++        """Returns the origin request host."""
+         return self.get_host()
+ 
+     def get_full_url(self) -> str:
++        """Returns the full URL of the request."""
+         # Only return the response's URL if the user hadn't set the Host
+         # header
+         if not self._r.headers.get("Host"):
+@@ -78,12 +81,15 @@
+         )
+ 
+     def is_unverifiable(self) -> bool:
++        """Returns whether the request is unverifiable."""
+         return True
+ 
+     def has_header(self, name: str) -> bool:
++        """Checks if the request has a header with the given name."""
+         return name in self._r.headers or name in self._new_headers
+ 
+     def get_header(self, name: str, default: str | None = None) -> str | None:
++        """Returns the header with the given name, or the default if not found."""
+         return self._r.headers.get(name, self._new_headers.get(name, default))  # type: ignore[return-value]
+ 
+     def add_header(self, key: str, val: str) -> None:
+@@ -93,24 +99,28 @@
+         )
+ 
+     def add_unredirected_header(self, name: str, value: str) -> None:
++        """Adds an unredirected header to the request."""
+         self._new_headers[name] = value
+ 
+     def get_new_headers(self) -> dict[str, str]:
++        """Returns the new headers added to the request."""
+         return self._new_headers
+ 
+     @property
+     def unverifiable(self) -> bool:
++        """Whether the request is unverifiable."""
+         return self.is_unverifiable()
+ 
+     @property
+     def origin_req_host(self) -> str:
++        """The origin request host."""
+         return self.get_origin_req_host()
+ 
+     @property
+     def host(self) -> str:
++        """The host of the request."""
+         return self.get_host()
+ 
+-
+ class MockResponse:
+     """Wraps a `httplib.HTTPMessage` to mimic a `urllib.addinfourl`.
+ 
+@@ -126,12 +136,13 @@
+         self._headers = headers
+ 
+     def info(self) -> Any:
++        """Returns the headers from the response."""
+         return self._headers
+ 
+     def getheaders(self, name: str) -> Any:
++        """Returns the headers with the given name."""
+         self._headers.getheaders(name)
+ 
+-
+ def extract_cookies_to_jar(
+     jar: CookieJar, request: PreparedRequest, response: Any
+ ) -> None:
+@@ -149,10 +160,8 @@
+     res = MockResponse(response._original_response.msg)
+     jar.extract_cookies(res, req)  # type: ignore[arg-type]
+ 
+-
+ def get_cookie_header(jar: CookieJar, request: PreparedRequest) -> str | None:
+-    """
+-    Produce an appropriate Cookie header string to be sent with `request`, or None.
++    """Produce an appropriate Cookie header string to be sent with `request`, or None.
+ 
+     :rtype: str
+     """
+@@ -160,7 +169,6 @@
+     jar.add_cookie_header(r)  # type: ignore[arg-type]
+     return r.get_new_headers().get("Cookie")
+ 
+-
+ def remove_cookie_by_name(
+     cookiejar: CookieJar, name: str, domain: str | None = None, path: str | None = None
+ ) -> None:
+@@ -181,13 +189,11 @@
+     for domain, path, name in clearables:
+         cookiejar.clear(domain, path, name)
+ 
+-
+ class CookieConflictError(RuntimeError):
+     """There are two cookies that meet the criteria specified in the cookie jar.
+     Use .get and .set and include domain and path args in order to be more specific.
+     """
+ 
+-
+ class RequestsCookieJar(CookieJar, MutableMapping[str, str | None]):  # type: ignore[misc]
+     """Compatibility class; is a http.cookiejar.CookieJar, but exposes a dict
+     interface.
+@@ -382,8 +388,8 @@
+     def set_cookie(self, cookie: Cookie, *args: Any, **kwargs: Any) -> None:
+         if (
+             (value := cookie.value) is not None
+-            and value.startswith('"')
+-            and value.endswith('"')
++            and value.startswith("\"")
++            and value.endswith("\"")
+         ):
+             cookie.value = value.replace('\\"', "")
+         return super().set_cookie(cookie, *args, **kwargs)
+@@ -475,7 +481,6 @@
+         """Return the CookiePolicy instance used."""
+         return self._policy
+ 
+-
+ def _copy_cookie_jar(jar: CookieJar | None) -> CookieJar | None:  # type: ignore[reportUnusedFunction]  # cross-module usage in models.py
+     if jar is None:
+         return None
+@@ -490,7 +495,6 @@
+         new_jar.set_cookie(copy.copy(cookie))
+     return new_jar
+ 
+-
+ def create_cookie(name: str, value: str, **kwargs: Any) -> Cookie:
+     """Make a cookie from underspecified parameters.
+ 
+@@ -503,7 +507,7 @@
+         "value": value,
+         "port": None,
+         "domain": "",
+-        "path": "/",
++        "path": "",
+         "secure": False,
+         "expires": None,
+         "discard": True,
+@@ -527,7 +531,6 @@
+ 
+     return cookielib.Cookie(**result)
+ 
+-
+ def morsel_to_cookie(morsel: Morsel[Any]) -> Cookie:
+     """Convert a Morsel object into a Cookie containing the one k/v pair."""
+ 
+@@ -559,16 +562,16 @@
+ 
+ _CookieJarT = TypeVar("_CookieJarT", bound=CookieJar)
+ 
+-
+ @overload
++
+ def cookiejar_from_dict(
+     cookie_dict: dict[str, str] | None,
+     cookiejar: None = None,
+     overwrite: bool = True,
+ ) -> RequestsCookieJar: ...
+ 
+-
+ @overload
++
+ def cookiejar_from_dict(
+     cookie_dict: dict[str, str] | None,
+     cookiejar: _CookieJarT,
+@@ -600,7 +603,6 @@
+ 
+     return cookiejar
+ 
+-
+ def merge_cookies(
+     cookiejar: CookieJar, cookies: dict[str, str] | CookieJar | None
+ ) -> CookieJar:
+@@ -623,3 +625,5 @@
+                 cookiejar.set_cookie(cookie_in_jar)
+ 
+     return cookiejar
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/exceptions.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/exceptions.py	2026-09-17 15:46:11.043694536 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/exceptions.py	2026-09-27 01:19:30.543335076 -0400
+@@ -16,7 +16,6 @@
+ if TYPE_CHECKING:
+     from .models import PreparedRequest, Request, Response
+ 
+-
+ class RequestException(IOError):
+     """There was an ambiguous exception that occurred while handling your
+     request.
+@@ -34,11 +33,9 @@
+             self.request = response.request
+         super().__init__(*args, **kwargs)
+ 
+-
+ class InvalidJSONError(RequestException):
+     """A JSON error occurred."""
+ 
+-
+ class JSONDecodeError(InvalidJSONError, CompatJSONDecodeError):
+     """Couldn't decode the text into json"""
+ 
+@@ -62,23 +59,18 @@
+         """
+         return CompatJSONDecodeError.__reduce__(self)
+ 
+-
+ class HTTPError(RequestException):
+     """An HTTP error occurred."""
+ 
+-
+ class ConnectionError(RequestException):
+     """A Connection error occurred."""
+ 
+-
+ class ProxyError(ConnectionError):
+     """A proxy error occurred."""
+ 
+-
+ class SSLError(ConnectionError):
+     """An SSL error occurred."""
+ 
+-
+ class Timeout(RequestException):
+     """The request timed out.
+ 
+@@ -87,76 +79,58 @@
+     :exc:`~requests.exceptions.ReadTimeout` errors.
+     """
+ 
+-
+ class ConnectTimeout(ConnectionError, Timeout):
+     """The request timed out while trying to connect to the remote server.
+ 
+     Requests that produced this error are safe to retry.
+     """
+ 
+-
+ class ReadTimeout(Timeout):
+     """The server did not send any data in the allotted amount of time."""
+ 
+-
+ class URLRequired(RequestException):
+     """A valid URL is required to make a request."""
+ 
+-
+ class TooManyRedirects(RequestException):
+     """Too many redirects."""
+ 
+-
+ class MissingSchema(RequestException, ValueError):
+     """The URL scheme (e.g. http or https) is missing."""
+ 
+-
+ class InvalidSchema(RequestException, ValueError):
+     """The URL scheme provided is either invalid or unsupported."""
+ 
+-
+ class InvalidURL(RequestException, ValueError):
+     """The URL provided was somehow invalid."""
+ 
+-
+ class InvalidHeader(RequestException, ValueError):
+     """The header value provided was somehow invalid."""
+ 
+-
+ class InvalidProxyURL(InvalidURL):
+     """The proxy URL provided is invalid."""
+ 
+-
+ class ChunkedEncodingError(RequestException):
+     """The server declared chunked encoding but sent an invalid chunk."""
+ 
+-
+ class ContentDecodingError(RequestException, BaseHTTPError):
+     """Failed to decode response content."""
+ 
+-
+ class StreamConsumedError(RequestException, TypeError):
+     """The content for this response was already consumed."""
+ 
+-
+ class RetryError(RequestException):
+     """Custom retries logic failed"""
+ 
+-
+ class UnrewindableBodyError(RequestException):
+     """Requests encountered an error when trying to rewind a body."""
+ 
+-
+-# Warnings
+-
+-
+ class RequestsWarning(Warning):
+     """Base warning for Requests."""
+ 
+-
+ class FileModeWarning(RequestsWarning, DeprecationWarning):
+     """A file was opened in text mode, but Requests determined its binary length."""
+ 
+-
+ class RequestsDependencyWarning(RequestsWarning):
+     """An imported dependency doesn't match the expected version range."""
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/hooks.py	2026-09-27 01:19:40.333310965 -0400
+@@ -21,14 +21,10 @@
+ 
+ HOOKS: list[str] = ["response"]
+ 
+-
+ def default_hooks() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+-
+ # TODO: response is the only one
+-
+-
+ def dispatch_hook(
+     key: str,
+     hooks: _t.HooksInputType | None,
+@@ -46,3 +42,5 @@
+             if _hook_data is not None:
+                 hook_data = _hook_data
+     return hook_data
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/_internal_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py	2026-09-17 15:46:10.958347215 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/_internal_utils.py	2026-09-27 01:09:22.907893582 -0400
+@@ -10,10 +10,10 @@
+ 
+ from .compat import builtin_str
+ 
+-_VALID_HEADER_NAME_RE_BYTE = re.compile(rb"^[^:\s][^:\r\n]*\Z")
+-_VALID_HEADER_NAME_RE_STR = re.compile(r"^[^:\s][^:\r\n]*\Z")
+-_VALID_HEADER_VALUE_RE_BYTE = re.compile(rb"^\S[^\r\n]*\Z|^\Z")
+-_VALID_HEADER_VALUE_RE_STR = re.compile(r"^\S[^\r\n]*\Z|^\Z")
++_VALID_HEADER_NAME_RE_BYTE = re.compile(rb"^[^:\\s][^:\\r\\n]*\Z")
++_VALID_HEADER_NAME_RE_STR = re.compile(r"^[^:\\s][^:\\r\\n]*\Z")
++_VALID_HEADER_VALUE_RE_BYTE = re.compile(rb"^\\S[^\\r\\n]*\Z|^\Z")
++_VALID_HEADER_VALUE_RE_STR = re.compile(r"^\\S[^\\r\\n]*\Z|^\Z")
+ 
+ _HEADER_VALIDATORS_STR = (_VALID_HEADER_NAME_RE_STR, _VALID_HEADER_VALUE_RE_STR)
+ _HEADER_VALIDATORS_BYTE = (_VALID_HEADER_NAME_RE_BYTE, _VALID_HEADER_VALUE_RE_BYTE)
+@@ -22,7 +22,6 @@
+     str: _HEADER_VALIDATORS_STR,
+ }
+ 
+-
+ def to_native_string(string: str | bytes, encoding: str = "ascii") -> str:
+     """Given a string object, regardless of type, returns a representation of
+     that string in the native string type, encoding and decoding where
+@@ -35,7 +34,6 @@
+ 
+     return out
+ 
+-
+ def unicode_is_ascii(u_string: str) -> bool:
+     """Determine if unicode string only contains ASCII characters.
+ 
+@@ -49,3 +47,5 @@
+         return True
+     except UnicodeEncodeError:
+         return False
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/models.py	2026-09-27 01:29:38.158895237 -0400
+@@ -13,7 +13,7 @@
+ # Implicit import within threads may cause LookupError when standard library is in a ZIP,
+ # such as in Embedded Python. See https://github.com/psf/requests/issues/3578.
+ import encodings.idna  # noqa: F401  # type: ignore[reportUnusedImport]
+-from collections.abc import Callable, Generator, Iterable, Iterator, Mapping
++from collections.abc import Callable, Iterable, Iterator, Mapping
+ from io import UnsupportedOperation
+ from typing import (
+     TYPE_CHECKING,
+@@ -105,6 +105,7 @@
+ CONTENT_CHUNK_SIZE: int = 10 * 1024
+ ITER_CHUNK_SIZE: int = 512
+ 
++BUILD_TAG = 'profiling'
+ 
+ class RequestEncodingMixin:
+     url: str | None
+@@ -251,7 +252,6 @@
+ 
+         return body, content_type
+ 
+-
+ class RequestHooksMixin:
+     hooks: dict[str, list[_t.HookType]]
+ 
+@@ -279,7 +279,6 @@
+         except ValueError:
+             return False
+ 
+-
+ class Request(RequestHooksMixin):
+     """A user-created :class:`Request <Request>` object.
+ 
+@@ -372,7 +371,6 @@
+         )
+         return p
+ 
+-
+ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
+     """The fully mutable :class:`PreparedRequest <PreparedRequest>` object,
+     containing the exact bytes that will be sent to the server.
+@@ -528,7 +526,7 @@
+                 host = self._get_idna_encoded_host(host)
+             except UnicodeError:
+                 raise InvalidURL("URL has an invalid label.")
+-        elif host.startswith(("*", ".")):
++        elif host.startswith(('*", ".")):
+             raise InvalidURL("URL has an invalid label.")
+ 
+         # Carefully reconstruct the network location
+@@ -704,7 +702,7 @@
+         will not be regenerated if it already exists, meaning this function
+         can only be called once for the life of the
+         :class:`PreparedRequest <PreparedRequest>` object. Any subsequent calls
+-        to ``prepare_cookies`` will have no actual effect, unless the "Cookie"
++        will have no actual effect, unless the "Cookie"
+         header is removed beforehand.
+         """
+         if isinstance(cookies, cookielib.CookieJar):
+@@ -726,7 +724,6 @@
+         for event in hooks:
+             self.register_hook(event, hooks[event])
+ 
+-
+ class Response:
+     """The :class:`Response <Response>` object, which contains a
+     server's response to an HTTP request.
+@@ -957,7 +954,7 @@
+             raise StreamConsumedError()
+         elif chunk_size is not None and not isinstance(chunk_size, int):  # type: ignore[reportUnnecessaryIsInstance]  # runtime guard for untyped callers
+             raise TypeError(
+-                f"chunk_size must be an int, it is instead a {type(chunk_size)}."
++                f"chunk_size must be an int, it is instead a {type(chunk_size)}.)
+             )
+ 
+         if self._content_consumed:
+@@ -1177,4 +1174,4 @@
+ 
+         release_conn = getattr(self.raw, "release_conn", None)
+         if release_conn is not None:
+-            release_conn()
++            release_conn()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/status_codes.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/status_codes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/status_codes.py	2026-09-17 15:46:11.080290137 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/status_codes.py	2026-09-27 01:39:14.046618810 -0400
+@@ -27,7 +27,7 @@
+     102: ("processing", "early-hints"),
+     103: ("checkpoint",),
+     122: ("uri_too_long", "request_uri_too_long"),
+-    200: ("ok", "okay", "all_ok", "all_okay", "all_good", "\\o/", "✓"),
++    200: ("ok", "okay", "all_ok", "all_okay", "all_good", "\o/", "✓"),
+     201: ("created",),
+     202: ("accepted",),
+     203: ("non_authoritative_info", "non_authoritative_information"),
+@@ -39,7 +39,7 @@
+     226: ("im_used",),
+     # Redirection.
+     300: ("multiple_choices",),
+-    301: ("moved_permanently", "moved", "\\o-"),
++    301: ("moved_permanently", "moved", "\o-"),
+     302: ("found",),
+     303: ("see_other", "other"),
+     304: ("not_modified",),
+@@ -65,42 +65,109 @@
+     410: ("gone",),
+     411: ("length_required",),
+     412: ("precondition_failed", "precondition"),
+-    413: ("request_entity_too_large", "content_too_large"),
+-    414: ("request_uri_too_large", "uri_too_long"),
+-    415: ("unsupported_media_type", "unsupported_media", "media_type"),
++    413: (
++        "request_entity_too_large",
++        "content_too_large",
++    ),
++    414: (
++        "request_uri_too_large",
++        "uri_too_long",
++    ),
++    415: (
++        "unsupported_media_type",
++        "unsupported_media",
++        "media_type",
++    ),
+     416: (
+         "requested_range_not_satisfiable",
+         "requested_range",
+         "range_not_satisfiable",
+     ),
+     417: ("expectation_failed",),
+-    418: ("im_a_teapot", "teapot", "i_am_a_teapot"),
++    418: (
++        "im_a_teapot",
++        "teapot",
++        "i_am_a_teapot",
++    ),
+     421: ("misdirected_request",),
+-    422: ("unprocessable_entity", "unprocessable", "unprocessable_content"),
++    422: (
++        "unprocessable_entity",
++        "unprocessable",
++        "unprocessable_content",
++    ),
+     423: ("locked",),
+-    424: ("failed_dependency", "dependency"),
+-    425: ("unordered_collection", "unordered", "too_early"),
+-    426: ("upgrade_required", "upgrade"),
+-    428: ("precondition_required", "precondition"),
+-    429: ("too_many_requests", "too_many"),
+-    431: ("header_fields_too_large", "fields_too_large"),
+-    444: ("no_response", "none"),
+-    449: ("retry_with", "retry"),
+-    450: ("blocked_by_windows_parental_controls", "parental_controls"),
+-    451: ("unavailable_for_legal_reasons", "legal_reasons"),
++    424: (
++        "failed_dependency",
++        "dependency",
++    ),
++    425: (
++        "unordered_collection",
++        "unordered",
++        "too_early",
++    ),
++    426: (
++        "upgrade_required",
++        "upgrade",
++    ),
++    428: (
++        "precondition_required",
++        "precondition",
++    ),
++    429: (
++        "too_many_requests",
++        "too_many",
++    ),
++    431: (
++        "header_fields_too_large",
++        "fields_too_large",
++    ),
++    444: (
++        "no_response",
++        "none",
++    ),
++    449: (
++        "retry_with",
++        "retry",
++    ),
++    450: (
++        "blocked_by_windows_parental_controls",
++        "parental_controls",
++    ),
++    451: (
++        "unavailable_for_legal_reasons",
++        "legal_reasons",
++    ),
+     499: ("client_closed_request",),
+     # Server Error.
+-    500: ("internal_server_error", "server_error", "/o\\", "✗"),
++    500: (
++        "internal_server_error",
++        "server_error",
++        "/o\",
++        "✗",
++    ),
+     501: ("not_implemented",),
+     502: ("bad_gateway",),
+-    503: ("service_unavailable", "unavailable"),
++    503: (
++        "service_unavailable",
++        "unavailable",
++    ),
+     504: ("gateway_timeout",),
+-    505: ("http_version_not_supported", "http_version"),
++    505: (
++        "http_version_not_supported",
++        "http_version",
++    ),
+     506: ("variant_also_negotiates",),
+     507: ("insufficient_storage",),
+-    509: ("bandwidth_limit_exceeded", "bandwidth"),
++    509: (
++        "bandwidth_limit_exceeded",
++        "bandwidth",
++    ),
+     510: ("not_extended",),
+-    511: ("network_authentication_required", "network_auth", "network_authentication"),
++    511: (
++        "network_authentication_required",
++        "network_auth",
++        "network_authentication",
++    ),
+ }
+ 
+ codes: LookupDict[int] = LookupDict(name="status_codes")
+@@ -126,3 +193,5 @@
+ 
+ 
+ _init()
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/_types.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py	2026-09-17 15:46:10.963254611 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/_types.py	2026-09-27 01:10:02.894795046 -0400
+@@ -38,7 +38,6 @@
+ HookType: TypeAlias = Callable[["Response"], Any]
+ HooksInputType: TypeAlias = Mapping[str, Iterable[HookType] | HookType]
+ 
+-
+ def is_prepared(request: PreparedRequest) -> TypeIs[_ValidatedRequest]:
+     """Verify a PreparedRequest has been fully prepared."""
+     if TYPE_CHECKING:
+@@ -69,7 +68,6 @@
+         is the explicit contract for Requests but Python's typing doesn't have a
+         better way to represent the requirement.
+         """
+-
+         url: str  # type: ignore[reportIncompatibleVariableOverride]
+         method: str  # type: ignore[reportIncompatibleVariableOverride]
+ 
+@@ -164,7 +162,6 @@
+ 
+     class RequestKwargs(BaseRequestKwargs, total=False):
+         """kwargs for request(), options(), head(), delete()."""
+-
+         params: ParamsType
+         data: DataType
+         json: JsonType
+@@ -178,6 +175,7 @@
+ 
+     class DataKwargs(BaseRequestKwargs, total=False):
+         """kwargs for put(), patch()."""
+-
+         params: ParamsType
+         json: JsonType
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__version__.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/__version__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__version__.py	2026-09-17 15:46:10.952958246 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/requests/__version__.py	2026-09-27 01:08:40.112985879 -0400
+@@ -1,6 +1,6 @@
+ # .-. .-. .-. . . .-. .-. .-. .-.
+ # |(  |-  |.| | | |-  `-.  |  `-.
+-# ' ' `-' `-`.`-' `-' `-'  '  `-'
++# ' ' `-' `-`.`-' `-' `-'  '  `-.'
+ 
+ __title__ = "requests"
+ __description__ = "Python HTTP for Humans."
+@@ -12,3 +12,5 @@
+ __license__ = "Apache-2.0"
+ __copyright__ = "Copyright Kenneth Reitz"
+ __cake__ = "\u2728 \U0001f370 \u2728"
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file

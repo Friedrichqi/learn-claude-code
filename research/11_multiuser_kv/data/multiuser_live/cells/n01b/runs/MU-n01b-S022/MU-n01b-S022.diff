@@ -1,0 +1,25 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/typer/_click/globals.py	2026-09-26 23:11:28.774627420 -0400
+@@ -35,7 +35,7 @@
+     return None
+ 
+ 
+-def push_context(ctx: "Context") -> None:
++def push_context_v2(ctx: "Context") -> None:
+     """Pushes a new context to the current stack."""
+     _local.__dict__.setdefault("stack", []).append(ctx)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/typer/main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py	2026-09-17 15:46:11.608868099 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/typer/main.py	2026-09-26 23:10:25.345746757 -0400
+@@ -58,7 +58,8 @@
+ _typer_developer_exception_attr_name = "__typer_developer_exception__"
+ 
+ 
+-def except_hook(
++def except_hook(  # Handles uncaught exceptions with optional pretty formatting.
++    
+     exc_type: type[BaseException], exc_value: BaseException, tb: TracebackType | None
+ ) -> None:
+     exception_config: DeveloperExceptionConfig | None = getattr(

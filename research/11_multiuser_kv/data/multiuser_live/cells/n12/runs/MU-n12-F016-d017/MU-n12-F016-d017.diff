@@ -1,0 +1,55 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py /tmp/yqi10/mu/102994/g1/lane00/profiling_sandbox/rich/markdown.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py	2026-09-17 15:46:12.551882609 -0400
++++ /tmp/yqi10/mu/102994/g1/lane00/profiling_sandbox/rich/markdown.py	2026-09-27 06:49:41.059145404 -0400
+@@ -27,15 +27,7 @@
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
+-        """Factory to create markdown element,
+-
+-        Args:
+-            markdown (Markdown): The parent Markdown object.
+-            token (Token): A node from markdown-it.
+-
+-        Returns:
+-            MarkdownElement: A new markdown element
+-        """
++        """Factory to create markdown element."""
+         return cls()
+ 
+     def on_enter(self, context: MarkdownContext) -> None:
+@@ -94,6 +86,7 @@
+     style_name = "none"
+ 
+     def on_enter(self, context: MarkdownContext) -> None:
++        """Initialize the element when the node is entered."""
+         self.style = context.enter_style(self.style_name)
+         self.text = Text(justify="left")
+ 
+@@ -331,6 +324,7 @@
+         self.justify = justify
+ 
+     def on_text(self, context: MarkdownContext, text: TextType) -> None:
++        """Append text to the content of the table data element."""
+         if isinstance(text, str):
+             self.content.append(text, context.current_style)
+         else:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py /tmp/yqi10/mu/102994/g1/lane00/profiling_sandbox/rich/_unicode_data/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py	2026-09-17 15:46:12.223663421 -0400
++++ /tmp/yqi10/mu/102994/g1/lane00/profiling_sandbox/rich/_unicode_data/__init__.py	2026-09-27 07:13:17.164611321 -0400
+@@ -56,7 +56,7 @@
+ 
+ 
+ @cache
+-def load(unicode_version: str = "auto") -> CellTable:
++def load_v2(unicode_version: str = "auto") -> CellTable:
+     """Load a cell table for the given unicode version.
+ 
+     Args:
+@@ -90,4 +90,4 @@
+     module = import_module(module_name, "rich._unicode_data")
+     if TYPE_CHECKING:
+         assert isinstance(module.cell_table, CellTable)
+-    return module.cell_table
++    return module.cell_table
+\ No newline at end of file

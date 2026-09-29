@@ -1,0 +1,251 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g1/lane00/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g1/lane00/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md	2026-09-27 08:43:14.590725987 -0400
+@@ -0,0 +1,8 @@
++# Build Tag Changelog
++
++Added `BUILD_TAG = 'profiling'` to the following files:
++
++1. `code.py` - Line 4
++2. `trace_runtime.py` - Line 4
++3. `trace_stats.py` - Line 4
++4. `trace_view.py` - Line 4
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/mu/103142/g1/lane00/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/mu/103142/g1/lane00/profiling_sandbox/s15_harness/trace_view.py	2026-09-27 08:27:32.585175838 -0400
+@@ -29,6 +29,7 @@
+ 
+ @dataclass(frozen=True)
+ class Interval:
++    """Represents a time interval between start and end events."""
+     start_ns: int
+     end_ns: int
+     start_event: dict[str, Any]
+@@ -36,28 +37,34 @@
+ 
+     @property
+     def duration_ms(self) -> float:
++        """Duration of the interval in milliseconds."""
+         return max(0, self.end_ns - self.start_ns) / 1_000_000
+ 
+     @property
+     def agent_id(self) -> str | None:
++        """Agent ID associated with the interval."""
+         return self.start_event.get("agent_id") or self.end_event.get("agent_id")
+ 
+     @property
+     def kind(self) -> str:
++        """Type of the event."""
+         return str(self.start_event.get("event", "unknown"))
+ 
+     @property
+     def start_data(self) -> dict[str, Any]:
++        """Data from the start event."""
+         data = self.start_event.get("data", {})
+         return data if isinstance(data, dict) else {}
+ 
+     @property
+     def end_data(self) -> dict[str, Any]:
++        """Data from the end event."""
+         data = self.end_event.get("data", {})
+         return data if isinstance(data, dict) else {}
+ 
+ 
+ def load_trace(path: Path) -> list[dict[str, Any]]:
++    """Load and validate a JSONL trace file."""
+     records = []
+     with path.open("r", encoding="utf-8") as handle:
+         for line_number, line in enumerate(handle, start=1):
+@@ -77,6 +84,7 @@
+ 
+ 
+ def pair_spans(events: Iterable[dict[str, Any]]) -> list[Interval]:
++    """Pair start and end events into intervals."""
+     starts: dict[str, dict[str, Any]] = {}
+     intervals = []
+     for event in events:
+@@ -98,6 +106,7 @@
+ 
+ 
+ def _ranges(intervals: Iterable[Interval]) -> list[tuple[int, int]]:
++    """Extract start and end times from intervals."""
+     return sorted(
+         (interval.start_ns, interval.end_ns)
+         for interval in intervals
+@@ -106,6 +115,7 @@
+ 
+ 
+ def _union_ns(intervals: Iterable[Interval]) -> int:
++    """Calculate the total time covered by intervals."""
+     total = 0
+     current_start = current_end = None
+     for start, end in _ranges(intervals):
+@@ -122,6 +132,7 @@
+ 
+ 
+ def _merge_ranges(ranges: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
++    """Merge overlapping time ranges."""
+     merged: list[list[int]] = []
+     for start, end in sorted(ranges):
+         if not merged or start > merged[-1][1]:
+@@ -132,6 +143,7 @@
+ 
+ 
+ def _agent_maps(events: Iterable[dict[str, Any]]):
++    """Build maps of agent information."""
+     info: dict[str, dict[str, Any]] = {
+         "agent-root": {"role": "lead", "name": "Root Agent", "task": "interactive session"}
+     }
+@@ -160,6 +172,7 @@
+ 
+ 
+ def _depths(parents: dict[str, str | None]) -> dict[str, int]:
++    """Calculate agent hierarchy depths."""
+     memo: dict[str, int] = {}
+ 
+     def depth(agent_id: str, visiting: set[str]) -> int:
+@@ -178,6 +191,7 @@
+ 
+ 
+ def _tool_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
++    """Filter tool execution intervals."""
+     work = []
+     for interval in intervals:
+         if interval.kind == "background_start":
+@@ -190,6 +204,7 @@
+ 
+ 
+ def _active_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
++    """Filter active work intervals."""
+     return [
+         interval for interval in intervals
+         if interval.kind == "model_request"
+@@ -201,6 +216,7 @@
+ 
+ 
+ def _maximum_parallel_agents(intervals: Iterable[Interval]) -> int:
++    """Calculate maximum parallel agents."""
+     per_agent: dict[str, list[tuple[int, int]]] = defaultdict(list)
+     for interval in intervals:
+         if interval.agent_id:
+@@ -219,6 +235,7 @@
+ 
+ 
+ def calculate_metrics(events: list[dict[str, Any]]) -> dict[str, Any]:
++    """Calculate performance metrics from trace events."""
+     intervals = pair_spans(events)
+     info, parents, _created_at = _agent_maps(events)
+     depths = _depths(parents)
+@@ -337,6 +354,7 @@
+ 
+ 
+ def build_summary(path: Path, events: list[dict[str, Any]]) -> dict[str, Any]:
++    """Build a summary of trace file information."""
+     trace_files = sorted(path.parent.glob("run_*.jsonl"), key=lambda item: item.name)
+     summary: dict[str, Any] = {
+         "trace_file": str(path),
+@@ -375,6 +393,7 @@
+ 
+ 
+ def _short(value: Any, limit: int = 100) -> str:
++    """Shorten a value for display."""
+     if isinstance(value, dict) and "preview" in value:
+         value = value.get("preview", "")
+     elif not isinstance(value, str):
+@@ -384,6 +403,7 @@
+ 
+ 
+ def _agent_label(agent_id: str, info: dict[str, dict[str, Any]]) -> str:
++    """Generate a label for an agent."""
+     data = info.get(agent_id, {})
+     if agent_id == "agent-root":
+         return "Root Agent"
+@@ -392,6 +412,7 @@
+ 
+ 
+ def _event_label(event: dict[str, Any], starts: dict[str, dict[str, Any]]) -> str | None:
++    """Generate a label for an event."""
+     name = event.get("event")
+     data = event.get("data", {})
+     data = data if isinstance(data, dict) else {}
+@@ -402,7 +423,7 @@
+         start_data = start.get("data", {}) if isinstance(start.get("data", {}), dict) else {}
+         purpose = data.get("purpose") or start_data.get("purpose") or "unspecified"
+         if name == "model_error":
+-            return f"LLM [{purpose}] error{duration_text}: {_short(data.get('error', ''))}"
++            return f"LLM [{purpose}] error{duration_text}: {\"_short(data.get('error', ''))}"
+         actions = data.get("requested_actions", [])
+         tools = [action.get("tool") for action in actions
+                  if isinstance(action, dict) and action.get("type") == "tool_use"]
+@@ -438,11 +459,12 @@
+             f"({data.get('reason', 'unspecified')}{suffix})"
+         )
+     if name == "context_compact":
+-        return f"Context compact: {data.get('strategy', 'unknown')}"
++        return f"Context compact: {data.get('strategy', 'unknown')}`
+     return None
+ 
+ 
+ def render_tree(events: list[dict[str, Any]]) -> str:
++    """Render an agent/execution tree from trace events."""
+     info, parents, created_at = _agent_maps(events)
+     children: dict[str | None, list[str]] = defaultdict(list)
+     for agent_id, parent in parents.items():
+@@ -452,7 +474,7 @@
+         values.sort(key=lambda agent_id: created_at.get(agent_id, 0))
+ 
+     starts = {
+-        str(event["span_id"]): event
++        str(event["span_id"]: event
+         for event in events
+         if event.get("span_id") and event.get("event") in START_TO_END
+     }
+@@ -503,6 +525,7 @@
+ 
+ 
+ def render_timeline(events: list[dict[str, Any]], width: int = 90) -> str:
++    """Render a timeline visualization of trace events."""
+     intervals = pair_spans(events)
+     info, _parents, _created = _agent_maps(events)
+     first_ns = int(events[0].get("monotonic_ns", 0))
+@@ -540,7 +563,7 @@
+         for offset, character in enumerate(label):
+             if position + offset < chart_width:
+                 axis[position + offset] = character
+-    lines = ["Timeline", " " * (label_width + 2) + "".join(axis),
++    lines = ["Timeline", " " * (label_width + 2) + ''.join(axis),
+              " " * (label_width + 2) + "|" + "-" * (chart_width - 2) + "|"]
+ 
+     order = sorted(
+@@ -583,6 +606,7 @@
+ 
+ 
+ def render_metrics(metrics: dict[str, Any]) -> str:
++    """Render performance metrics as text."""
+     ordered = [
+         "run_id", "total_runtime_ms", "total_model_calls", "model_errors",
+         "total_tool_calls", "tool_calls_by_type", "total_subagents", "total_agents",
+@@ -604,6 +628,7 @@
+ 
+ 
+ def _latest_trace(directory: Path) -> Path:
++    """Find the most recently modified trace file."""
+     candidates = sorted(directory.glob("run_*.jsonl"), key=lambda path: path.stat().st_mtime)
+     if not candidates:
+         raise ValueError(f"no run_*.jsonl files found in {directory}")
+@@ -611,6 +636,7 @@
+ 
+ 
+ def main(argv: list[str] | None = None) -> int:
++    """Main entry point for the trace viewer."""
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("trace", nargs="?", type=Path,
+                         help="trace JSONL (default: latest file in traces/)")
+@@ -644,4 +670,4 @@
+ 
+ 
+ if __name__ == "__main__":
+-    sys.exit(main())
++    sys.exit(main())
+\ No newline at end of file

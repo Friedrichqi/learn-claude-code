@@ -1,0 +1,33 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/rope_shift_lanes/s1/lane01_14/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/rope_shift_lanes/s1/lane01_14/profiling_sandbox/yaml/__init__.py	2026-09-25 12:24:16.602041462 -0400
+@@ -175,7 +175,7 @@
+     if getvalue:
+         return getvalue()
+ 
+-def serialize_all(nodes, stream=None, Dumper=Dumper,
++def serialize_v2_all(nodes, stream=None, Dumper=Dumper,
+         canonical=None, indent=None, width=None,
+         allow_unicode=None, line_break=None,
+         encoding=None, explicit_start=None, explicit_end=None,
+@@ -205,7 +205,7 @@
+     if getvalue:
+         return getvalue()
+ 
+-def serialize(node, stream=None, Dumper=Dumper, **kwds):
++def serialize_v2(node, stream=None, Dumper=Dumper, **kwds):
+     """
+     Serialize a representation tree into a YAML stream.
+     If stream is None, return the produced string instead.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py /tmp/yqi10/rope_shift_lanes/s1/lane01_14/profiling_sandbox/yaml/serializer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py	2026-09-21 20:03:49.604638529 -0400
++++ /tmp/yqi10/rope_shift_lanes/s1/lane01_14/profiling_sandbox/yaml/serializer.py	2026-09-25 12:27:04.936728468 -0400
+@@ -43,7 +43,7 @@
+     #def __del__(self):
+     #    self.close()
+ 
+-    def serialize(self, node):
++    def serialize_v2(self, node):
+         if self.closed is None:
+             raise SerializerError("serializer is not opened")
+         elif self.closed:

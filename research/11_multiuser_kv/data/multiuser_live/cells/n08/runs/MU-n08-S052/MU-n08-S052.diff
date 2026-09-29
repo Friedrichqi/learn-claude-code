@@ -1,0 +1,32 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/packaging/specifiers.py	2026-09-27 01:58:31.925918869 -0400
+@@ -8,6 +8,16 @@
+     from packaging.version import Version
+ """
+ 
++# This file is dual licensed under the terms of the Apache License, Version
++# 2.0, and the BSD License. See the LICENSE file in the root of this repository
++# for complete details.
++"""
++.. testsetup::
++
++    from packaging.specifiers import Specifier, SpecifierSet, InvalidSpecifier
++    from packaging.version import Version
++"""
++
+ from __future__ import annotations
+ 
+ import abc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/packaging/utils.py	2026-09-27 01:59:17.857812589 -0400
+@@ -151,7 +151,7 @@
+     return _normalized_regex.fullmatch(name) is not None
+ 
+ 
+-def canonicalize_version(
++def canonicalize_version_v2(
+     version: Version | str, *, strip_trailing_zero: bool = True
+ ) -> str:
+     """Return a canonical form of a version as a string.

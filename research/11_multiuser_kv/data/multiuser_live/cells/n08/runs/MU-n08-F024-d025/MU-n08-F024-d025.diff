@@ -1,0 +1,168 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/packaging/requirements.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py	2026-09-17 15:46:11.755435528 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/packaging/requirements.py	2026-09-27 02:35:50.781222323 -0400
+@@ -9,7 +9,7 @@
+ from ._tokenizer import ParserSyntaxError
+ from .markers import Marker, _normalize_extra_values
+ from .specifiers import InvalidSpecifier, SpecifierSet
+-from .utils import canonicalize_name
++from .utils import canonicalize_version_v2 as canonicalize_name
+ 
+ if TYPE_CHECKING:
+     from collections.abc import Iterator
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/packaging/specifiers.py	2026-09-27 02:39:16.999760641 -0400
+@@ -33,7 +33,7 @@
+     resolve_prereleases,
+     trim_release,
+ )
+-from .utils import canonicalize_version
++from .utils import canonicalize_version_v2 as canonicalize_version
+ from .version import Version
+ 
+ if TYPE_CHECKING:
+@@ -146,6 +146,8 @@
+ 
+     @abc.abstractmethod
+     def __str__(self) -> str:
++        """Return the string representation of the Specifier."""self) -> str:
++        """Return the string representation of the Specifier."""self) -> str:
+         """
+         Returns the str representation of this Specifier-like object. This
+         should be representative of the Specifier itself.
+@@ -153,12 +155,15 @@
+ 
+     @abc.abstractmethod
+     def __hash__(self) -> int:
++        """Returns a hash value for this Specifier-like object."""self) -> int:
+         """
+         Returns a hash value for this Specifier-like object.
+         """
+ 
+     @abc.abstractmethod
+-    def __eq__(self, other: object) -> bool:
++    def __eq__(self, other: Any) -> bool:
++        """Check if this Specifier is equal to another object."""self, other: Any) -> bool:
++        """Check if this Specifier is equal to another object."""self, other: object) -> bool:
+         """
+         Returns a boolean representing whether or not the two Specifier-like
+         objects are equal.
+@@ -183,7 +188,8 @@
+         """
+ 
+     @abc.abstractmethod
+-    def contains(self, item: str, prereleases: bool | None = None) -> bool:
++    def contains(self, item: UnparsedVersion, prereleases: bool | None = None) -> bool:
++        """Return whether or not the item is contained in this specifier."""self, item: str, prereleases: bool | None = None) -> bool:
+         """
+         Determines if the given item is contained within this specifier.
+         """
+@@ -204,6 +210,28 @@
+         key: Callable[[T], UnparsedVersion] = ...,
+     ) -> Iterator[T]: ...
+ 
++    def filter(
++        self,
++        iterable: Iterable[Any],
++        prereleases: bool | None = None,
++        key: Callable[[Any], UnparsedVersion] | None = None,
++    ) -> Iterator[Any]:
++        """Takes an iterable of items and filters them so that only items which
++        are contained within this specifier are allowed in it."""
++        self,
++        iterable: Iterable[UnparsedVersionVar],
++        prereleases: bool | None = None,
++        key: None = ...,
++    ) -> Iterator[UnparsedVersionVar]: ...
++
++    @typing.overload
++    def filter(
++        self,
++        iterable: Iterable[T],
++        prereleases: bool | None = None,
++        key: Callable[[T], UnparsedVersion] = ...,
++    ) -> Iterator[T]: ...
++
+     @abc.abstractmethod
+     def filter(
+         self,
+@@ -352,7 +380,8 @@
+         "===": "arbitrary",
+     }
+ 
+-    def __init__(self, spec: str = "", prereleases: bool | None = None) -> None:
++    def __init__(self, version: str) -> None:
++        """Initialize a Specifier with a version string."""self, spec: str = "", prereleases: bool | None = None) -> None:
+         """Initialize a Specifier instance.
+ 
+         :param spec:
+@@ -520,6 +549,8 @@
+         return self._spec[1]
+ 
+     def __repr__(self) -> str:
++        """Return the official string representation of the Specifier."""self) -> str:
++        """Return the official string representation of the Specifier."""self) -> str:
+         """A representation of the Specifier that shows all internal state.
+ 
+         >>> Specifier('>=1.0.0')
+@@ -968,6 +999,7 @@
+         return hash(self._canonical_specs())
+ 
+     def __and__(self, other: SpecifierSet | str) -> SpecifierSet:
++        """Return a SpecifierSet which is a combination of the two sets."""self, other: SpecifierSet | str) -> SpecifierSet:
+         """Return a SpecifierSet which is a combination of the two sets.
+ 
+         :param other: The other object to combine with.
+@@ -1052,6 +1084,7 @@
+         return self._ranges
+ 
+     def is_unsatisfiable(self) -> bool:
++        """Check whether this specifier set can never be satisfied."""self) -> bool:
+         """Check whether this specifier set can never be satisfied.
+ 
+         Returns True if no version can satisfy all specifiers simultaneously.
+@@ -1126,6 +1159,7 @@
+         return not all(s.contains(candidate) for s in standard)
+ 
+     def to_range(self) -> ranges.VersionRange:
++        """Return the :class:`~packaging.ranges.VersionRange` this set accepts."""self) -> ranges.VersionRange:
+         """Return the :class:`~packaging.ranges.VersionRange` this set accepts.
+ 
+         An empty set yields the full range; an unsatisfiable set yields the
+@@ -1147,6 +1181,7 @@
+             raise ValueError("set relations do not support === specifiers")
+ 
+     def is_subset(self, other: SpecifierSet) -> bool:
++        """Return whether every version matching this set also matches other."""self, other: SpecifierSet) -> bool:
+         """Return whether every version matching this set also matches other.
+ 
+         :raises ValueError:
+@@ -1167,6 +1202,7 @@
+         return self.to_range().is_subset(other.to_range())
+ 
+     def is_superset(self, other: SpecifierSet) -> bool:
++        """Return whether every version matching other also matches this set."""self, other: SpecifierSet) -> bool:
+         """Return whether every version matching other also matches this set.
+ 
+         :raises ValueError:
+@@ -1185,6 +1221,7 @@
+         return self.to_range().is_superset(other.to_range())
+ 
+     def is_disjoint(self, other: SpecifierSet) -> bool:
++        """Return whether this set and other share no matching versions."""self, other: SpecifierSet) -> bool:
+         """Return whether this set and other share no matching versions.
+ 
+         :raises ValueError:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/packaging/utils.py	2026-09-27 02:35:38.572249843 -0400
+@@ -151,7 +151,7 @@
+     return _normalized_regex.fullmatch(name) is not None
+ 
+ 
+-def canonicalize_version(
++def canonicalize_version_v2(
+     version: Version | str, *, strip_trailing_zero: bool = True
+ ) -> str:
+     """Return a canonical form of a version as a string.

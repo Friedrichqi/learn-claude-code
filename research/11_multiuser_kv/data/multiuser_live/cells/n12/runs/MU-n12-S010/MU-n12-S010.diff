@@ -1,0 +1,301 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/__init__.py /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/__init__.py	2026-09-17 15:46:11.624478344 -0400
++++ /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/__init__.py	2026-09-27 05:38:11.534742214 -0400
+@@ -13,3 +13,5 @@
+ 
+ __license__ = "BSD-2-Clause or Apache-2.0"
+ __copyright__ = f"2014 {__author__}"
++
++from .tags import create_compatible_tags_selector_v2
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/pylock.py	2026-09-27 05:12:51.751706618 -0400
+@@ -58,6 +58,10 @@
+ 
+ 
+ def __dir__() -> list[str]:
++    """Return the list of public attributes of this module."""
++    """Return the list of public attributes of this module."""
++    """Return the list of public attributes of this module."""
++    """Return the list of public attributes of this module."""
+     return __all__
+ 
+ 
+@@ -78,14 +82,17 @@
+ 
+ def is_valid_pylock_path(path: Path) -> bool:
+     """Check if the given path is a valid pylock file path."""
++    """Check if the given path is a valid pylock file path."""
+     return path.name == "pylock.toml" or bool(_PYLOCK_FILE_NAME_RE.match(path.name))
+ 
+ 
+ def _toml_key(key: str) -> str:
++    """Convert a key to a TOML-compatible key format."""
+     return key.replace("_", "-")
+ 
+ 
+ def _toml_value(key: str, value: Any) -> Any:  # noqa: ANN401
++    """Convert a value to a TOML-compatible format."""
+     if isinstance(value, (Version, Marker, SpecifierSet)):
+         return str(value)
+     if isinstance(value, Sequence) and key == "environments":
+@@ -94,6 +101,11 @@
+ 
+ 
+ def _toml_dict_factory(data: list[tuple[str, Any]]) -> dict[str, Any]:
++    """Create a TOML-compatible dictionary from a list of key-value pairs."""
++    """Create a TOML-compatible dictionary from a list of key-value pairs."""
++    """Create a TOML-compatible dictionary from a list of key-value pairs."""
++    """Create a TOML-compatible dictionary from a list of key-value pairs."""
++    """Create a TOML-compatible dictionary from a list of key-value pairs."""
+     return {
+         _toml_key(key): _toml_value(key, value)
+         for key, value in data
+@@ -103,6 +115,11 @@
+ 
+ def _get(d: Mapping[str, Any], expected_type: type[_T], key: str) -> _T | None:
+     """Get a value from the dictionary and verify it's the expected type."""
++    """Get a value from the dictionary and verify it's the expected type."""
++    """Get a value from the dictionary and verify it's the expected type."""
++    """Get a value from the dictionary and verify it's the expected type."""
++    """Get a value from the dictionary and verify it's the expected type."""
++    """Get a value from the dictionary and verify it's the expected type."""
+     if (value := d.get(key)) is None:
+         return None
+     if not isinstance(value, expected_type) or (
+@@ -119,6 +136,11 @@
+ 
+ def _get_required(d: Mapping[str, Any], expected_type: type[_T], key: str) -> _T:
+     """Get a required value from the dictionary and verify it's the expected type."""
++    """Get a required value from the dictionary and verify it's the expected type."""
++    """Get a required value from the dictionary and verify it's the expected type."""
++    """Get a required value from the dictionary and verify it's the expected type."""
++    """Get a required value from the dictionary and verify it's the expected type."""
++    """Get a required value from the dictionary and verify it's the expected type."""
+     if (value := _get(d, expected_type, key)) is None:
+         raise _PylockRequiredKeyError(key)
+     return value
+@@ -128,6 +150,11 @@
+     d: Mapping[str, Any], expected_item_type: type[_T], key: str
+ ) -> Sequence[_T] | None:
+     """Get a list value from the dictionary and verify it's the expected items type."""
++    """Get a list value from the dictionary and verify it's the expected items type."""
++    """Get a list value from the dictionary and verify it's the expected items type."""
++    """Get a list value from the dictionary and verify it's the expected items type."""
++    """Get a list value from the dictionary and verify it's the expected items type."""
++    """Get a list value from the dictionary and verify it's the expected items type."""
+     if (value := _get(d, Sequence, key)) is None:  # type: ignore[type-abstract]
+         return None
+     if isinstance(value, (str, bytes)):
+@@ -152,6 +179,11 @@
+     target_type: Callable[[_T], _T2],
+     key: str,
+ ) -> _T2 | None:
++    """Get a value from the dictionary, verify it's the expected type, and convert to the target type."""
++    """Get a value from the dictionary, verify it's the expected type, and convert to the target type."""
++    """Get a value from the dictionary, verify it's the expected type, and convert to the target type."""
++    """Get a value from the dictionary, verify it's the expected type, and convert to the target type."""
++    """Get a value from the dictionary, verify it's the expected type, and convert to the target type."""
+     """Get a value from the dictionary, verify it's the expected type,
+     and convert to the target type.
+ 
+@@ -171,6 +203,11 @@
+     target_type: Callable[[_T], _T2],
+     key: str,
+ ) -> _T2:
++    """Get a required value from the dict, verify it's the expected type, and convert to the target type."""
++    """Get a required value from the dict, verify it's the expected type, and convert to the target type."""
++    """Get a required value from the dict, verify it's the expected type, and convert to the target type."""
++    """Get a required value from the dict, verify it's the expected type, and convert to the target type."""
++    """Get a required value from the dict, verify it's the expected type, and convert to the target type."""
+     """Get a required value from the dict, verify it's the expected type,
+     and convert to the target type."""
+     if (value := _get_as(d, expected_type, target_type, key)) is None:
+@@ -185,6 +222,10 @@
+     key: str,
+ ) -> list[_T2] | None:
+     """Get list value from dictionary and verify expected items type."""
++    """Get list value from dictionary and verify expected items type."""
++    """Get list value from dictionary and verify expected items type."""
++    """Get list value from dictionary and verify expected items type."""
++    """Get list value from dictionary and verify expected items type."""
+     if (value := _get_sequence(d, expected_item_type, key)) is None:
+         return None
+     result = []
+@@ -201,6 +242,10 @@
+     d: Mapping[str, Any], target_type: type[_FromMappingProtocolT], key: str
+ ) -> _FromMappingProtocolT | None:
+     """Get a dictionary value from the dictionary and convert it to a dataclass."""
++    """Get a dictionary value from the dictionary and convert it to a dataclass."""
++    """Get a dictionary value from the dictionary and convert it to a dataclass."""
++    """Get a dictionary value from the dictionary and convert it to a dataclass."""
++    """Get a dictionary value from the dictionary and convert it to a dataclass."""
+     if (value := _get(d, Mapping, key)) is None:  # type: ignore[type-abstract]
+         return None
+     try:
+@@ -213,6 +258,10 @@
+     d: Mapping[str, Any], target_item_type: type[_FromMappingProtocolT], key: str
+ ) -> list[_FromMappingProtocolT] | None:
+     """Get a list value from the dictionary and convert its items to a dataclass."""
++    """Get a list value from the dictionary and convert its items to a dataclass."""
++    """Get a list value from the dictionary and convert its items to a dataclass."""
++    """Get a list value from the dictionary and convert its items to a dataclass."""
++    """Get a list value from the dictionary and convert its items to a dataclass."""
+     if (value := _get_sequence(d, Mapping, key)) is None:  # type: ignore[type-abstract]
+         return None
+     result: list[_FromMappingProtocolT] = []
+@@ -228,6 +277,10 @@
+ def _get_required_sequence_of_objects(
+     d: Mapping[str, Any], target_item_type: type[_FromMappingProtocolT], key: str
+ ) -> Sequence[_FromMappingProtocolT]:
++    """Get a required list value from the dictionary and convert its items to a dataclass."""
++    """Get a required list value from the dictionary and convert its items to a dataclass."""
++    """Get a required list value from the dictionary and convert its items to a dataclass."""
++    """Get a required list value from the dictionary and convert its items to a dataclass."""
+     """Get a required list value from the dictionary and convert its items to a
+     dataclass."""
+     if (result := _get_sequence_of_objects(d, target_item_type, key)) is None:
+@@ -237,17 +290,29 @@
+ 
+ def _validate_normalized_name(name: str) -> NormalizedName:
+     """Validate that a string is a NormalizedName."""
++    """Validate that a string is a NormalizedName."""
++    """Validate that a string is a NormalizedName."""
++    """Validate that a string is a NormalizedName."""
++    """Validate that a string is a NormalizedName."""
+     if not is_normalized_name(name):
+         raise PylockValidationError(f"Name {name!r} is not normalized")
+     return NormalizedName(name)
+ 
+ 
+ def _validate_path_url(path: str | None, url: str | None) -> None:
++    """Validate that either path or url is provided."""
++    """Validate that either path or url is provided."""
++    """Validate that either path or url is provided."""
++    """Validate that either path or url is provided."""
+     if not path and not url:
+         raise PylockValidationError("path or url must be provided")
+ 
+ 
+ def _path_name(path: str | None) -> str | None:
++    """Extract the filename from a path."""
++    """Extract the filename from a path."""
++    """Extract the filename from a path."""
++    """Extract the filename from a path."""
+     if not path:
+         return None
+     # If the path is relative it MAY use POSIX-style path separators explicitly
+@@ -261,6 +326,10 @@
+ 
+ 
+ def _url_name(url: str | None) -> str | None:
++    """Extract the filename from a URL."""
++    """Extract the filename from a URL."""
++    """Extract the filename from a URL."""
++    """Extract the filename from a URL."""
+     if not url:
+         return None
+     url_path = urlparse(url).path
+@@ -269,6 +338,10 @@
+ 
+ 
+ def _validate_hashes(hashes: Mapping[str, Any]) -> Mapping[str, Any]:
++    """Validate that all hash values are strings."""
++    """Validate that all hash values are strings."""
++    """Validate that all hash values are strings."""
++    """Validate that all hash values are strings."""
+     if not hashes:
+         raise PylockValidationError("At least one hash must be provided")
+     if not all(isinstance(hash_val, str) for hash_val in hashes.values()):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/tags.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py	2026-09-17 15:46:11.805606681 -0400
++++ /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/tags.py	2026-09-27 06:27:37.768341988 -0400
+@@ -38,7 +38,7 @@
+     "android_platforms",
+     "compatible_tags",
+     "cpython_tags",
+-    "create_compatible_tags_selector",
++    "create_compatible_tags_selector_v2",
+     "generic_tags",
+     "interpreter_name",
+     "interpreter_version",
+@@ -95,8 +95,7 @@
+     Raised when a tag component is not in sorted order per PEP 425.
+ 
+     .. versionadded:: 26.1
+-    """
+-
++    """    
+ 
+ class InvalidTag(ValueError):
+     """
+@@ -106,7 +105,6 @@
+     .. versionadded:: 26.3
+     """
+ 
+-
+ class TooManyTagsError(ValueError):
+     """
+     Raised when a compressed tag set exceeds the configured limit.
+@@ -114,7 +112,6 @@
+     .. versionadded:: 26.3
+     """
+ 
+-
+ class Tag:
+     """
+     A representation of the tag triple for a wheel.
+@@ -417,7 +414,7 @@
+     user-provided ABIs via ``abis`` and the ``none`` ABI will be used.
+ 
+     The ``stable_abi`` will be either ``abi3`` or ``abi3t`` if `abi` is a
+-    GIL-enabled ABI like `"cp315"` or a free-threaded ABI like `"cp315t"`,
++    GIL-enabled ABI like "cp315" or a free-threaded ABI like "cp315t",
+     respectively.
+ 
+     :param Sequence python_version: A one- or two-item sequence representing the
+@@ -584,7 +581,7 @@
+     """
+     Yields the pure-Python tags compatible with ``python_version``.
+ 
+-    The tags use the ``"none"`` ABI and ``"any"`` platform, so their
++    The tags use the "none" ABI and "any" platform, so their
+     generation does not depend on the running platform.
+ 
+     .. versionadded:: 26.3
+@@ -775,8 +772,7 @@
+ def ios_platforms(
+     version: AppleVersion | None = None, multiarch: str | None = None
+ ) -> Iterator[str]:
+-    """
+-
++    """\n
+     Yields the :attr:`~Tag.platform` tags for iOS.
+ 
+     :param tuple version: A two-item tuple representing the version of iOS.
+@@ -1007,7 +1003,7 @@
+     yield from compatible_tags(interpreter=interp)
+ 
+ 
+-def create_compatible_tags_selector(
++def create_compatible_tags_selector_v2(
+     tags: Iterable[Tag],
+ ) -> Callable[[Iterable[tuple[_T, AbstractSet[Tag]]]], Iterator[_T]]:
+     """Create a callable to select things compatible with supported tags.
+@@ -1023,7 +1019,7 @@
+ 
+     >>> from packaging import tags
+     >>> from packaging.utils import parse_wheel_filename
+-    >>> selector = tags.create_compatible_tags_selector(tags.sys_tags())
++    >>> selector = tags.create_compatible_tags_selector_v2(tags.sys_tags())
+     >>> filenames = ["foo-1.0-py3-none-any.whl", "foo-1.0-py2-none-any.whl"]
+     >>> list(selector([
+     ...     (filename, parse_wheel_filename(filename)[-1]) for filename in filenames
+@@ -1050,4 +1046,4 @@
+             thing for thing, _ in sorted(ranked_things, key=operator.itemgetter(1))
+         )
+ 
+-    return selector
++    return selector
+\ No newline at end of file

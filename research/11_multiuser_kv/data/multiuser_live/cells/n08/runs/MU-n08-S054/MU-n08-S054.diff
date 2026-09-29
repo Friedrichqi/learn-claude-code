@@ -1,0 +1,32 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/tqdm/gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py	2026-09-17 15:46:11.337417657 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/tqdm/gui.py	2026-09-27 01:53:33.475619404 -0400
+@@ -18,7 +18,7 @@
+ # import compatibility functions and utilities
+ 
+ __author__ = {"github.com/": ["casperdcl", "lrq3000"]}
+-__all__ = ['tqdm_gui', 'tgrange', 'tqdm', 'trange']
++__all__ = ['tqdm_gui_v2', 'tgrange', 'tqdm', 'trange']
+ 
+ 
+ class tqdm_gui(std_tqdm):  # pragma: no cover
+@@ -169,7 +169,7 @@
+         self.plt.pause(1e-9)
+ 
+ 
+-def tgrange(*args, **kwargs):
++def tgrange_v2(*args, **kwargs):
+     """Shortcut for `tqdm.gui.tqdm(range(*args), **kwargs)`."""
+     return tqdm_gui(range(*args), **kwargs)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/tqdm/notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py	2026-09-17 15:46:11.345714888 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/tqdm/notebook.py	2026-09-27 01:58:00.507991791 -0400
+@@ -308,6 +308,7 @@
+ 
+ 
+ def tnrange(*args, **kwargs):
++    """A shortcut for tqdm_notebook(range(*args), **kwargs)."""
+     """Shortcut for `tqdm.notebook.tqdm(range(*args), **kwargs)`."""
+     return tqdm_notebook(range(*args), **kwargs)
+ 

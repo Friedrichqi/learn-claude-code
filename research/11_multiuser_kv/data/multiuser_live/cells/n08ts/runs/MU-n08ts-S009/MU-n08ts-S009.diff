@@ -1,0 +1,60 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md	2026-09-27 12:19:45.918727031 -0400
+@@ -0,0 +1 @@
++# Build Tag Changelog\n\nThis file tracks the addition of the `BUILD_TAG` constant to each Python file in the `profiling_sandbox/yaml/` directory.\n\n## Changes\n\n- **loader.py** (Line 1): Added `BUILD_TAG = 'profiling'` at the top of the file.\n- **scanner.py** (Line 1): Added `BUILD_TAG = 'profiling'` at the top of the file.\n- **parser.py** (Line 1): Added `BUILD_TAG = 'profiling'` at the top of the file.\n- **constructor.py** (Line 1): Added `BUILD_TAG = 'profiling'` at the top of the file.\n- **resolver.py** (Line 1): Added `BUILD_TAG = 'profiling'` at the top of the file.\n- **emitter.py** (Line 1): Added `BUILD_TAG = 'profiling'` at the top of the file.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/constructor.py	2026-09-27 13:22:31.370314141 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = [
+     'BaseConstructor',
+     'SafeConstructor',
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/__init__.py	2026-09-27 13:09:23.024450005 -0400
+@@ -284,7 +284,7 @@
+         Loader.add_implicit_resolver(tag, regexp, first)
+     Dumper.add_implicit_resolver(tag, regexp, first)
+ 
+-def add_path_resolver(tag, path, kind=None, Loader=None, Dumper=Dumper):
++def add_path_resolver_v2(tag, path, kind=None, Loader=None, Dumper=Dumper):
+     """
+     Add a path based resolver for the given tag.
+     A path is a list of keys that forms a path
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/parser.py	2026-09-27 12:24:46.244282618 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ # The following YAML grammar is LL(1) and is parsed by a recursive descent
+ # parser.
+ #
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/resolver.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py	2026-09-21 20:03:49.582954680 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/resolver.py	2026-09-27 13:22:51.225282113 -0400
+@@ -35,7 +35,7 @@
+             cls.yaml_implicit_resolvers.setdefault(ch, []).append((tag, regexp))
+ 
+     @classmethod
+-    def add_path_resolver(cls, tag, path, kind=None):
++    def add_path_resolver_v2(cls, tag, path, kind=None):
+         # Note: `add_path_resolver` is experimental.  The API could be changed.
+         # `new_path` is a pattern that is matched against the path from the
+         # root to the node that is being considered.  `node_path` elements are
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/scanner.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py	2026-09-21 20:03:49.601022318 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/yaml/scanner.py	2026-09-27 12:21:29.119574307 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ # Scanner produces tokens of the following types:
+ # STREAM-START
+ # STREAM-END

@@ -1,0 +1,87 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/packaging/specifiers.py	2026-09-27 09:35:06.255542365 -0400
+@@ -15,6 +15,15 @@
+ import typing
+ from typing import (
+     TYPE_CHECKING,
++    get_args,
++    Any,
++    Callable,
++    Final,
++    TypeVar,
++    Union,
++    get_args,
++)
++    TYPE_CHECKING,
+     Any,
+     Callable,
+     Final,
+@@ -39,11 +48,64 @@
+ if TYPE_CHECKING:
+     import sys
+     from collections.abc import Iterable, Iterator, Sequence
++from typing import get_args
+ 
+     if sys.version_info >= (3, 10):
+-        from typing import TypeGuard
+-    else:
+-        from typing_extensions import TypeGuard
++        from typing import TypeGuard, get_args
++    from collections.abc import Sequence
++    from sys import version_info
++    from re import Pattern
++    from enum import Enum
++    from functools import singledispatch
++    from re import Pattern
++    from enum import Enum
++    from functools import singledispatch
++    from itertools import chain
++    from typing import TYPE_CHECKING
++    from typing import get_args
++    from sys import version_info
++    from re import Pattern
++    from enum import Enum
++    from functools import singledispatch
++    from itertools import chain
++    from typing import TYPE_CHECKING
++    from typing import get_args
++    from sys import version_info
++    from re import Pattern
++    from enum import Enum
++    from functools import singledispatch
++    from itertools import chain
++    from typing import TYPE_CHECKING
++    from typing import get_args
++    from sys import version_info
++    from re import Pattern
++    from enum import Enum
++    from functools import singledispatch
++    from itertools import chain
++    from typing import TYPE_CHECKING
++    from typing import get_args
++    from sys import version_info
++    from re import Pattern
++    from enum import Enum
++    from functools import singledispatch
++    from itertools import chain
++    from typing import TYPE_CHECKING
++    from typing import get_args
++    from sys import version_info
++    from re import Pattern
++    from enum import Enum
++    from functools import singledispatch
++    from itertools import chain
++    from typing import TYPE_CHECKING
++    from typing import get_args
++    from sys import version_info
++    from re import Pattern
++    from enum import Enum
++    from functools import singledispatch
++    from itertools import chain
++    from typing import TYPE_CHECKING
++    from typing import get_args
++    from sys import version_infog_extensions import TypeGuardg_extensions import TypeGuard
+ 
+     from . import ranges
+     from ._ranges import Interval

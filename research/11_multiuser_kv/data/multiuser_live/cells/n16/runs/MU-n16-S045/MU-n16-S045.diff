@@ -1,0 +1,86 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/_auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py	2026-09-17 15:46:11.090183787 -0400
++++ /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/_auth.py	2026-09-27 03:09:02.926475564 -0400
+@@ -10,7 +10,7 @@
+ 
+ from ._exceptions import ProtocolError
+ from ._models import Cookies, Request, Response
+-from ._utils import to_bytes, to_str, unquote
++from ._utils import to_bytes, to_str, unquote_v2
+ 
+ if typing.TYPE_CHECKING:  # pragma: no cover
+     from hashlib import _Hash
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md	2026-09-27 03:14:45.195118474 -0400
+@@ -0,0 +1,21 @@
++# Build Tag Changes
++
++The `BUILD_TAG = 'profiling'` constant has been added to the following files:
++
++1. `profiling_sandbox/httpx/_api.py` (Line 2)
++2. `profiling_sandbox/httpx/_auth.py` (Line 2)
++3. `profiling_sandbox/httpx/_client.py` (Line 2)
++4. `profiling_sandbox/httpx/_config.py` (Line 2)
++5. `profiling_sandbox/httpx/_content.py` (Line 2)
++6. `profiling_sandbox/httpx/_decoders.py` (Line 2)
++7. `profiling_sandbox/httpx/_exceptions.py` (Line 2)
++8. `profiling_sandbox/httpx/_main.py` (Line 2)
++9. `profiling_sandbox/httpx/_models.py` (Line 2)
++10. `profiling_sandbox/httpx/_multipart.py` (Line 2)
++11. `profiling_sandbox/httpx/_status_codes.py` (Line 2)
++12. `profiling_sandbox/httpx/_transports/base.py` (Line 2)
++13. `profiling_sandbox/httpx/_transports/default.py` (Line 2)
++14. `profiling_sandbox/httpx/_types.py` (Line 2)
++15. `profiling_sandbox/httpx/_urlparse.py` (Line 2)
++16. `profiling_sandbox/httpx/_urls.py` (Line 2)
++17. `profiling_sandbox/httpx/_utils.py` (Line 2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/_client.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py	2026-09-17 15:46:11.111585027 -0400
++++ /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/_client.py	2026-09-27 03:06:43.433436118 -0400
+@@ -46,7 +46,7 @@
+     TimeoutTypes,
+ )
+ from ._urls import URL, QueryParams
+-from ._utils import URLPattern, get_environment_proxies
++from ._utils import URLPattern, get_environment_proxies, unquote_v2
+ 
+ if typing.TYPE_CHECKING:
+     import ssl  # pragma: no cover
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/_content.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py	2026-09-17 15:46:11.123390582 -0400
++++ /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/_content.py	2026-09-27 03:11:52.242309579 -0400
+@@ -23,7 +23,7 @@
+     ResponseContent,
+     SyncByteStream,
+ )
+-from ._utils import peek_filelike_length, primitive_value_to_str
++from ._utils import peek_filelike_length, primitive_value_to_str, unquote_v2
+ 
+ __all__ = ["ByteStream"]
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_urls.py /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/_urls.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_urls.py	2026-09-17 15:46:11.268242973 -0400
++++ /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/_urls.py	2026-09-27 03:07:58.568918740 -0400
+@@ -7,7 +7,7 @@
+ 
+ from ._types import QueryParamTypes
+ from ._urlparse import urlparse
+-from ._utils import primitive_value_to_str
++from ._utils import primitive_value_to_str, unquote_v2
+ 
+ __all__ = ["URL", "QueryParams"]
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_utils.py /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_utils.py	2026-09-17 15:46:11.273403356 -0400
++++ /tmp/yqi10/mu/102768/g0/lane14/profiling_sandbox/httpx/_utils.py	2026-09-27 03:04:53.695191742 -0400
+@@ -88,7 +88,7 @@
+     return value if isinstance(match_type_of, str) else value.encode()
+ 
+ 
+-def unquote(value: str) -> str:
++def unquote_v2(value: str) -> str:
+     return value[1:-1] if value[0] == value[-1] == '"' else value
+ 
+ 

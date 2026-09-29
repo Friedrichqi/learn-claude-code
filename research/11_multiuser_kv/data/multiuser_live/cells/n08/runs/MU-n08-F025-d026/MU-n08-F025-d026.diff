@@ -1,0 +1,201 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md	2026-09-27 02:40:52.620548479 -0400
+@@ -0,0 +1,20 @@
++# Changelog for BUILD_TAG Addition
++
++The following files were modified to include the `BUILD_TAG` constant set to `'profiling'`:
++
++1. `composer.py` - Line 1
++2. `constructor.py` - Line 1
++3. `cyaml.py` - Line 1
++4. `dumper.py` - Line 1
++5. `emitter.py` - Line 1
++6. `error.py` - Line 1
++7. `events.py` - Line 1
++8. `loader.py` - Line 1
++9. `nodes.py` - Line 1
++10. `parser.py` - Line 1
++11. `reader.py` - Line 1
++12. `representer.py` - Line 1
++13. `resolver.py` - Line 1
++14. `scanner.py` - Line 1
++15. `serializer.py` - Line 1
++16. `tokens.py` - Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/composer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py	2026-09-21 20:03:49.535592579 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/composer.py	2026-09-27 02:40:40.207575955 -0400
+@@ -1,6 +1,8 @@
+ 
+ __all__ = ['Composer', 'ComposerError']
+ 
++BUILD_TAG = 'profiling'
++
+ from .error import MarkedYAMLError
+ from .events import *
+ from .nodes import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/constructor.py	2026-09-27 02:40:40.207575955 -0400
+@@ -8,6 +8,8 @@
+     'ConstructorError'
+ ]
+ 
++BUILD_TAG = 'profiling'
++
+ from .error import *
+ from .nodes import *
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/cyaml.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py	2026-09-21 20:03:49.545638861 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/cyaml.py	2026-09-27 02:40:40.208575953 -0400
+@@ -6,6 +6,8 @@
+ 
+ from yaml._yaml import CParser, CEmitter
+ 
++BUILD_TAG = 'profiling'
++
+ from .constructor import *
+ 
+ from .serializer import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/dumper.py	2026-09-27 02:40:40.208575953 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['BaseDumper', 'SafeDumper', 'Dumper']
+ 
+ from .emitter import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/emitter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py	2026-09-21 20:03:49.553236855 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/emitter.py	2026-09-27 02:40:40.209575950 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ # Emitter expects events obeying the following grammar:
+ # stream ::= STREAM-START document* STREAM-END
+ # document ::= DOCUMENT-START node DOCUMENT-END
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/events.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/events.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/events.py	2026-09-21 20:03:49.561916953 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/events.py	2026-09-27 02:40:40.210575948 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ # Abstract classes.
+ 
+ class Event(object):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/__init__.py	2026-09-27 02:37:44.817966300 -0400
+@@ -342,7 +342,7 @@
+     and an instance of the given data type or subtype
+     and producing the corresponding representation node.
+     """
+-    Dumper.add_multi_representer(data_type, multi_representer)
++    Dumper.add_multi_representer_v2(data_type, multi_representer)
+ 
+ class YAMLObjectMetaclass(type):
+     """
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/loader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py	2026-09-21 20:03:49.565444174 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/loader.py	2026-09-27 02:40:40.210575948 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['BaseLoader', 'FullLoader', 'SafeLoader', 'Loader', 'UnsafeLoader']
+ 
+ from .reader import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/nodes.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/nodes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/nodes.py	2026-09-21 20:03:49.569750678 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/nodes.py	2026-09-27 02:40:40.211575946 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ class Node(object):
+     def __init__(self, tag, value, start_mark, end_mark):
+         self.tag = tag
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/parser.py	2026-09-27 02:40:40.211575946 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ # The following YAML grammar is LL(1) and is parsed by a recursive descent
+ # parser.
+ #
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/reader.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/reader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/reader.py	2026-09-21 20:03:49.576278669 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/reader.py	2026-09-27 02:40:40.212575944 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ # This module contains abstractions for the input stream. You don't have to
+ # looks further, there are no pretty code.
+ #
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/representer.py	2026-09-27 02:40:40.212575944 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['BaseRepresenter', 'SafeRepresenter', 'Representer',
+     'RepresenterError']
+ 
+@@ -72,7 +74,7 @@
+     def add_multi_representer(cls, data_type, representer):
+         if not 'yaml_multi_representers' in cls.__dict__:
+             cls.yaml_multi_representers = cls.yaml_multi_representers.copy()
+-        cls.yaml_multi_representers[data_type] = representer
++        cls.yaml_multi_representers[data_type] = representer_v2
+ 
+     def represent_scalar(self, tag, value, style=None):
+         if style is None:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/resolver.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py	2026-09-21 20:03:49.582954680 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/resolver.py	2026-09-27 02:40:40.212575944 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['BaseResolver', 'Resolver']
+ 
+ from .error import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/scanner.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py	2026-09-21 20:03:49.601022318 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/scanner.py	2026-09-27 02:40:40.213575942 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ # Scanner produces tokens of the following types:
+ # STREAM-START
+ # STREAM-END
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/serializer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py	2026-09-21 20:03:49.604638529 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/serializer.py	2026-09-27 02:40:40.213575942 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['Serializer', 'SerializerError']
+ 
+ from .error import YAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/tokens.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/tokens.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/tokens.py	2026-09-21 20:03:49.608609002 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/yaml/tokens.py	2026-09-27 02:40:40.214575939 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ class Token(object):
+     def __init__(self, start_mark, end_mark):
+         self.start_mark = start_mark

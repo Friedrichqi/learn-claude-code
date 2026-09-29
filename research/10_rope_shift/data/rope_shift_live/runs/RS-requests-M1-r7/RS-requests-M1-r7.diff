@@ -1,0 +1,327 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py /tmp/yqi10/rope_shift_lanes/s4/lane04_11/profiling_sandbox/requests/adapters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py	2026-09-17 15:46:10.970451596 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_11/profiling_sandbox/requests/adapters.py	2026-09-25 11:58:53.587825926 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.adapters
+ ~~~~~~~~~~~~~~~~~
+@@ -154,7 +155,6 @@
+         """Cleans up adapter specific items."""
+         raise NotImplementedError
+ 
+-
+ class HTTPAdapter(BaseAdapter):
+     """The built-in HTTP Adapter for urllib3.
+ 
+@@ -745,4 +745,4 @@
+             else:
+                 raise
+ 
+-        return self.build_response(request, resp)
++        return self.build_response(request, resp)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py /tmp/yqi10/rope_shift_lanes/s4/lane04_11/profiling_sandbox/requests/api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py	2026-09-17 15:46:10.978622109 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_11/profiling_sandbox/requests/api.py	2026-09-25 11:58:57.306795827 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests.api
+ ~~~~~~~~~~~~
+@@ -32,41 +33,29 @@
+         in the query string for the :class:`Request`.
+     :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+         object to send in the body of the :class:`Request`.
+-    :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
++    :param json: (optional) json data to send in the body of the :class:`Request`.
+     :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
+     :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
+-    :param files: (optional) Dictionary of ``'name': file-like-objects`` (or ``{'name': file-tuple}``) for multipart encoding upload.
+-        ``file-tuple`` can be a 2-tuple ``('filename', fileobj)``, 3-tuple ``('filename', fileobj, 'content_type')``
+-        or a 4-tuple ``('filename', fileobj, 'content_type', custom_headers)``, where ``'content_type'`` is a string
+-        defining the content type of the given file and ``custom_headers`` a dict-like object containing additional headers
+-        to add for the file.
++    :param files: (optional) Dictionary of ``'name': file-like-objects`` (or 
++        ``'name': ('filename', file-like-object)``) for multipart encoding upload.
+     :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
+-    :param timeout: (optional) How many seconds to wait for the server to send data
+-        before giving up, as a float, or a :ref:`(connect timeout, read
+-        timeout) <timeouts>` tuple.
++    :param timeout: (optional) How long to wait for the server to send data
++        before giving up, as a float, or a :ref:`(connect timeout, read timeout) <timeouts>` tuple.
+     :type timeout: float or tuple
+-    :param allow_redirects: (optional) Boolean. Enable/disable GET/OPTIONS/POST/PUT/PATCH/DELETE/HEAD redirection. Defaults to ``True``.
+-    :type allow_redirects: bool
++    :param allow_redirects: (optional) Set to True by default.
++
++        Set this to False to prevent Requests from automatically handling redirects.
+     :param proxies: (optional) Dictionary mapping protocol to the URL of the proxy.
+     :param verify: (optional) Either a boolean, in which case it controls whether we verify
+-            the server's TLS certificate, or a string, in which case it must be a path
+-            to a CA bundle to use. Defaults to ``True``.
+-    :param stream: (optional) if ``False``, the response content will be immediately downloaded.
+-    :param cert: (optional) if String, path to ssl client cert file (.pem). If Tuple, ('cert', 'key') pair.
++        the server's "TLS" certificate, or a string, in which case it must be a path
++        to a CA bundle to use.
++    :param cert: (optional) Any user-provided SSL certificate to be trusted.
++    :param stream: (optional) Whether to immediately download the response content.
++        Defaults to False.
++    :param trust_env: (optional) Set to False to prevent urllib3 from reading HTTP proxies
++        from environment variables.
+     :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+-
+-    Usage::
+-
+-      >>> import requests
+-      >>> req = requests.request('GET', 'https://httpbin.org/get')
+-      >>> req
+-      <Response [200]>
+     """
+-
+-    # By using the 'with' statement we are sure the session is closed, thus we
+-    # avoid leaving sockets open which can trigger a ResourceWarning in some
+-    # cases, and look like a memory leak in others.
+     with sessions.Session() as session:
+         return session.request(method=method, url=url, **kwargs)
+ 
+@@ -74,44 +63,39 @@
+ def get(
+     url: _t.UriType, params: _t.ParamsType = None, **kwargs: Unpack[_t.GetKwargs]
+ ) -> Response:
+-    r"""Sends a GET request.
++    """Sends a GET request.
+ 
+     :param url: URL for the new :class:`Request` object.
+     :param params: (optional) Dictionary, list of tuples or bytes to send
+         in the query string for the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param \**kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+     """
+-
+-    return request("get", url, params=params, **kwargs)
++    return request("GET", url, params=params, **kwargs)
+ 
+ 
+-def options(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+-    r"""Sends an OPTIONS request.
++def options(
++    url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]
++) -> Response:
++    """Sends a OPTIONS request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param \**kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+     """
+-
+-    return request("options", url, **kwargs)
++    return request("OPTIONS", url, **kwargs)
+ 
+ 
+-def head(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+-    r"""Sends a HEAD request.
++def head(
++    url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]
++) -> Response:
++    """Sends a HEAD request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes. If
+-        `allow_redirects` is not provided, it will be set to `False` (as
+-        opposed to the default :meth:`request` behavior).
++    :param \**kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+     """
+-
+-    kwargs.setdefault("allow_redirects", False)
+-    return request("head", url, **kwargs)
++    return request("HEAD", url, **kwargs)
+ 
+ 
+ def post(
+@@ -120,61 +104,57 @@
+     json: _t.JsonType = None,
+     **kwargs: Unpack[_t.PostKwargs],
+ ) -> Response:
+-    r"""Sends a POST request.
++    """Sends a POST request.
+ 
+     :param url: URL for the new :class:`Request` object.
+     :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+         object to send in the body of the :class:`Request`.
+-    :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param json: (optional) json data to send in the body of the :class:`Request`.
++    :param \**kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+     """
+-
+-    return request("post", url, data=data, json=json, **kwargs)
++    return request("POST", url, data=data, json=json, **kwargs)
+ 
+ 
+ def put(
+-    url: _t.UriType, data: _t.DataType = None, **kwargs: Unpack[_t.DataKwargs]
++    url: _t.UriType,
++    data: _t.DataType = None,
++    **kwargs: Unpack[_t.DataKwargs],
+ ) -> Response:
+-    r"""Sends a PUT request.
++    """Sends a PUT request.
+ 
+     :param url: URL for the new :class:`Request` object.
+     :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+         object to send in the body of the :class:`Request`.
+-    :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param \**kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+     """
+-
+-    return request("put", url, data=data, **kwargs)
++    return request("PUT", url, data=data, **kwargs)
+ 
+ 
+ def patch(
+-    url: _t.UriType, data: _t.DataType = None, **kwargs: Unpack[_t.DataKwargs]
++    url: _t.UriType,
++    data: _t.DataType = None,
++    **kwargs: Unpack[_t.DataKwargs],
+ ) -> Response:
+-    r"""Sends a PATCH request.
++    """Sends a PATCH request.
+ 
+     :param url: URL for the new :class:`Request` object.
+     :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+         object to send in the body of the :class:`Request`.
+-    :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param \**kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+     """
+-
+-    return request("patch", url, data=data, **kwargs)
++    return request("PATCH", url, data=data, **kwargs)
+ 
+ 
+-def delete(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+-    r"""Sends a DELETE request.
++def delete(
++    url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]
++) -> Response:
++    """Sends a DELETE request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param \**kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+     """
+-
+-    return request("delete", url, **kwargs)
++    return request("DELETE", url, **kwargs)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md /tmp/yqi10/rope_shift_lanes/s4/lane04_11/profiling_sandbox/requests/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_11/profiling_sandbox/requests/CHANGES_BUILD_TAG.md	2026-09-25 12:00:51.999868884 -0400
+@@ -0,0 +1,6 @@
++# Build Tag Changes
++
++The following files have had the `BUILD_TAG` constant added:
++
++- `adapters.py` - Line 1
++- `api.py` - Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py /tmp/yqi10/rope_shift_lanes/s4/lane04_11/profiling_sandbox/requests/_internal_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py	2026-09-17 15:46:10.958347215 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_11/profiling_sandbox/requests/_internal_utils.py	2026-09-25 11:58:34.481980597 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests._internal_utils
+ ~~~~~~~~~~~~~~
+@@ -10,10 +11,13 @@
+ 
+ from .compat import builtin_str
+ 
+-_VALID_HEADER_NAME_RE_BYTE = re.compile(rb"^[^:\s][^:\r\n]*\Z")
+-_VALID_HEADER_NAME_RE_STR = re.compile(r"^[^:\s][^:\r\n]*\Z")
+-_VALID_HEADER_VALUE_RE_BYTE = re.compile(rb"^\S[^\r\n]*\Z|^\Z")
+-_VALID_HEADER_VALUE_RE_STR = re.compile(r"^\S[^\r\n]*\Z|^\Z")
++
++_VALID_HEADER_NAME_RE_BYTE = re.compile(rb"^[^:\\s][^:\\r\\n]*\\Z")
++_VALID_HEADER_NAME_RE_STR = re.compile(r"^[^:\\s][^:\\r\\n]*\\Z")
++_VALID_HEADER_VALUE_RE_BYTE = re.compile(rb"^\\S[^
++]*\\Z|^\\Z")
++_VALID_HEADER_VALUE_RE_STR = re.compile(r"^\\S[^
++]*\\Z|^\\Z")
+ 
+ _HEADER_VALIDATORS_STR = (_VALID_HEADER_NAME_RE_STR, _VALID_HEADER_VALUE_RE_STR)
+ _HEADER_VALIDATORS_BYTE = (_VALID_HEADER_NAME_RE_BYTE, _VALID_HEADER_VALUE_RE_BYTE)
+@@ -24,10 +28,10 @@
+ 
+ 
+ def to_native_string(string: str | bytes, encoding: str = "ascii") -> str:
+-    """Given a string object, regardless of type, returns a representation of
++    \"""Given a string object, regardless of type, returns a representation of
+     that string in the native string type, encoding and decoding where
+     necessary. This assumes ASCII unless told otherwise.
+-    """
++    \"""
+     if isinstance(string, builtin_str):
+         out = string
+     else:
+@@ -37,15 +41,15 @@
+ 
+ 
+ def unicode_is_ascii(u_string: str) -> bool:
+-    """Determine if unicode string only contains ASCII characters.
++    \"""Determine if unicode string only contains ASCII characters.
+ 
+     :param str u_string: unicode string to check. Must be unicode
+         and not Python 2 `str`.
+     :rtype: bool
+-    """
++    \"""
+     assert isinstance(u_string, str)
+     try:
+         u_string.encode("ascii")
+         return True
+     except UnicodeEncodeError:
+-        return False
++        return False
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py /tmp/yqi10/rope_shift_lanes/s4/lane04_11/profiling_sandbox/requests/_types.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py	2026-09-17 15:46:10.963254611 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_11/profiling_sandbox/requests/_types.py	2026-09-25 11:58:38.420948704 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ requests._types
+ ~~~~~~~~~~~~~~~
+@@ -101,7 +102,7 @@
+         | str
+         | bytes
+         | Buffer
+-        | SupportsRead[str | bytes]
++        | SupportsRead[bytes | str]
+         | None
+     )
+ 
+@@ -180,4 +181,4 @@
+         """kwargs for put(), patch()."""
+ 
+         params: ParamsType
+-        json: JsonType
++        json: JsonType
+\ No newline at end of file

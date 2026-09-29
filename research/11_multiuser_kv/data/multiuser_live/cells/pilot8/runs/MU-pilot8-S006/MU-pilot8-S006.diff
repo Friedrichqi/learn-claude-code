@@ -1,0 +1,132 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102748/g1/lane07/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102748/g1/lane07/profiling_sandbox/packaging/utils.py	2026-09-26 21:42:30.317875955 -0400
+@@ -197,7 +197,7 @@
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+ 
+-def parse_wheel_filename(
++def parse_wheel_filename_v2_v2_v2_v2(
+     filename: str,
+     *,
+     validate_order: bool = False,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102748/g1/lane07/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102748/g1/lane07/profiling_sandbox/packaging/version.py	2026-09-26 21:50:40.393520407 -0400
+@@ -87,48 +87,33 @@
+ 
+ 
+ def normalize_pre(letter: str, /) -> str:
+-    """Normalize the pre-release segment of a version string.
+-
+-    Returns a lowercase version of the string if not a known pre-release
+-    identifier.
+-
+-    >>> normalize_pre('alpha')
++    """Normalize the pre-release segment of a version string."""
++    """Returns a lowercase version of the string if not a known pre-release identifier."""
++    """\n    >>> normalize_pre('alpha')
+     'a'
+     >>> normalize_pre('BETA')
+     'b'
+     >>> normalize_pre('rc')
+-    'rc'
+-
+-    :param letter:
+-
+-    .. versionadded:: 26.1
++    'rc'\n    :param letter:\n    .. versionadded:: 26.1
+     """
+     letter = letter.lower()
+     return _LETTER_NORMALIZATION.get(letter, letter)
+ 
+ 
+ def parse(version: str) -> Version:
+-    """Parse the given version string.
+-
+-    This is identical to the :class:`Version` constructor.
+-
+-    >>> parse('1.0.dev1')
+-    <Version('1.0.dev1')>
+-
+-    :param version: The version string to parse.
+-    :raises InvalidVersion: When the version string is not a valid version.
+-    """
++    """Parse the given version string."""
++    """This is identical to the :class:`Version` constructor."""
++    """\n    >>> parse('1.0.dev1')
++    <Version('1.0.dev1')>\n    :param version: The version string to parse.\n    :raises InvalidVersion: When the version string is not a valid version.\n    """
+     return Version(version)
+ 
+ 
+ class InvalidVersion(ValueError):
+-    """Raised when a version string is not a valid version.
+-
+-    >>> Version("invalid")
++    """Raised when a version string is not a valid version."""
++    """\n    >>> Version("invalid")
+     Traceback (most recent call last):
+         ...
+-    packaging.version.InvalidVersion: Invalid version: 'invalid'
+-    """
++    packaging.version.InvalidVersion: Invalid version: 'invalid'\n    """
+ 
+ 
+ class _BaseVersion:
+@@ -338,12 +323,9 @@
+ 
+ 
+ class Version(_BaseVersion):
+-    """This class abstracts handling of a project's versions.
+-
+-    A :class:`Version` instance is comparison aware and can be compared and
+-    sorted using the standard Python interfaces.
+-
+-    >>> v1 = Version("1.0a5")
++    """This class abstracts handling of a project's versions."""
++    """A :class:`Version` instance is comparison aware and can be compared and\nsorted using the standard Python interfaces."""
++    """\n    >>> v1 = Version("1.0a5")
+     >>> v2 = Version("1.0")
+     >>> v1
+     <Version('1.0a5')>
+@@ -358,21 +340,7 @@
+     >>> v1 >= v2
+     False
+     >>> v1 <= v2
+-    True
+-
+-    :class:`Version` is immutable; use :meth:`__replace__` to change
+-    part of a version.
+-
+-    Instances are safe to serialize with :mod:`pickle`. They use a stable
+-    format so the same pickle can be loaded in future packaging releases.
+-
+-    .. versionchanged:: 26.2
+-
+-        Added a stable pickle format. Pickles created with packaging 26.2+ can
+-        be unpickled with future releases.  Backward compatibility with pickles
+-        from packaging < 26.2 is supported but may be removed in a future
+-        release.
+-    """
++    True\n    :class:`Version` is immutable; use :meth:`__replace__` to change\n    part of a version.\n    Instances are safe to serialize with :mod:`pickle`. They use a stable\n    format so the same pickle can be loaded in future packaging releases.\n    .. versionchanged:: 26.2\n        Added a stable pickle format. Pickles created with packaging 26.2+ can\n        be unpickled with future releases.  Backward compatibility with pickles\n        from packaging < 26.2 is supported but may be removed in a future\n        release.\n    """
+ 
+     __slots__ = (
+         "_dev",
+@@ -406,15 +374,8 @@
+     _key_cache: CmpKey | None
+ 
+     def __init__(self, version: str) -> None:
+-        """Initialize a Version object.
+-
+-        :param version:
+-            The string representation of a version which will be parsed and normalized
+-            before use.
+-        :raises InvalidVersion:
+-            If the ``version`` does not conform to PEP 440 in any way then this
+-            exception will be raised.
+-        """
++        """Initialize a Version object."""
++        """\n        :param version:\n            The string representation of a version which will be parsed and normalized\n            before use.\n        :raises InvalidVersion:\n            If the ``version`` does not conform to PEP 440 in any way then this\n            exception will be raised.\n        """
+         try:
+             is_simple = _SIMPLE_VERSION_INDICATORS.issuperset(version)
+         except TypeError:

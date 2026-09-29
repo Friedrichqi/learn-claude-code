@@ -1,0 +1,96 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g1/lane03/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g1/lane03/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md	2026-09-27 07:33:33.789412410 -0400
+@@ -0,0 +1,36 @@
++## Changelog for BUILD_TAG addition
++
++### Added `BUILD_TAG = 'profiling'` constant
++
++- **File**: `profiling_sandbox/yaml/constructor.py`
++  - **Line**: 34
++
++- **File**: `profiling_sandbox/yaml/composer.py`
++  - **Line**: 34
++
++- **File**: `profiling_sandbox/yaml/error.py`
++  - **Line**: 34
++
++- **File**: `profiling_sandbox/yaml/events.py`
++  - **Line**: 34
++
++- **File**: `profiling_sandbox/yaml/loader.py`
++  - **Line**: 34
++
++- **File**: `profiling_sandbox/yaml/nodes.py`
++  - **Line**: 34
++
++- **File**: `profiling_sandbox/yaml/parser.py`
++  - **Line**: 34
++
++- **File**: `profiling_sandbox/yaml/reader.py`
++  - **Line**: 34
++
++- **File**: `profiling_sandbox/yaml/resolver.py`
++  - **Line**: 34
++
++- **File**: `profiling_sandbox/yaml/scanner.py`
++  - **Line**: 34
++
++- **File**: `profiling_sandbox/yaml/tokens.py`
++  - **Line**: 34
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_RENAME.md /tmp/yqi10/mu/103142/g1/lane03/profiling_sandbox/yaml/CHANGES_RENAME.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_RENAME.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g1/lane03/profiling_sandbox/yaml/CHANGES_RENAME.md	2026-09-27 07:54:28.512351390 -0400
+@@ -0,0 +1,9 @@
++## Changelog for Rename of `add_multi_representer` to `add_multi_representer_v2`
++
++- **File**: `profiling_sandbox/yaml/__init__.py`
++  - **Line**: Function renamed from `add_multi_representer` to `add_multi_representer_v2`.
++
++- **File**: `profiling_sandbox/yaml/representer.py`
++  - **Line 15**: Function renamed from `add_multi_representer` to `add_multi_representer_v2`.
++  - **Line 32**: Call site updated to use `add_multi_representer_v2`.
++  - **Line 36**: Call site updated to use `add_multi_representer_v2`.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/mu/103142/g1/lane03/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/mu/103142/g1/lane03/profiling_sandbox/yaml/__init__.py	2026-09-27 07:52:44.566518825 -0400
+@@ -335,7 +335,7 @@
+     """
+     Dumper.add_representer(data_type, representer)
+ 
+-def add_multi_representer(data_type, multi_representer, Dumper=Dumper):
++def add_multi_representer_v2(data_type, multi_representer, Dumper=Dumper):
+     """
+     Add a representer for the given type.
+     Multi-representer is a function accepting a Dumper instance
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/mu/103142/g1/lane03/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/mu/103142/g1/lane03/profiling_sandbox/yaml/representer.py	2026-09-27 07:54:15.869371758 -0400
+@@ -69,7 +69,7 @@
+         cls.yaml_representers[data_type] = representer
+ 
+     @classmethod
+-    def add_multi_representer(cls, data_type, representer):
++    def add_multi_representer_v2(cls, data_type, representer):
+         if not 'yaml_multi_representers' in cls.__dict__:
+             cls.yaml_multi_representers = cls.yaml_multi_representers.copy()
+         cls.yaml_multi_representers[data_type] = representer
+@@ -369,7 +369,7 @@
+ Representer.add_representer(tuple,
+         Representer.represent_tuple)
+ 
+-Representer.add_multi_representer(type,
++Representer.add_multi_representer_v2(type,
+         Representer.represent_name)
+ 
+ Representer.add_representer(collections.OrderedDict,
+@@ -384,6 +384,6 @@
+ Representer.add_representer(types.ModuleType,
+         Representer.represent_module)
+ 
+-Representer.add_multi_representer(object,
++Representer.add_multi_representer_v2(object,
+         Representer.represent_object)
+ 

@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/cells.py /tmp/yqi10/mu/103142/g1/lane27/profiling_sandbox/rich/cells.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/cells.py	2026-09-17 15:46:12.407927976 -0400
++++ /tmp/yqi10/mu/103142/g1/lane27/profiling_sandbox/rich/cells.py	2026-09-27 07:21:41.535674364 -0400
+@@ -4,7 +4,7 @@
+ from operator import itemgetter
+ from typing import Callable, NamedTuple, Sequence, Tuple
+ 
+-from rich._unicode_data import load as load_cell_table
++from rich._unicode_data import load_v2 as load_cell_table
+ 
+ CellSpan = Tuple[int, int, int]
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py /tmp/yqi10/mu/103142/g1/lane27/profiling_sandbox/rich/_unicode_data/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py	2026-09-17 15:46:12.223663421 -0400
++++ /tmp/yqi10/mu/103142/g1/lane27/profiling_sandbox/rich/_unicode_data/__init__.py	2026-09-27 07:21:32.967690166 -0400
+@@ -56,7 +56,7 @@
+ 
+ 
+ @cache
+-def load(unicode_version: str = "auto") -> CellTable:
++def load_v2(unicode_version: str = "auto") -> CellTable:
+     """Load a cell table for the given unicode version.
+ 
+     Args:

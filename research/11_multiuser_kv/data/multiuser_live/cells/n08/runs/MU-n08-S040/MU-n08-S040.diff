@@ -1,0 +1,297 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_compat.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/typer/_click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_compat.py	2026-09-17 15:46:11.474602189 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/typer/_click/_compat.py	2026-09-27 01:29:16.858943937 -0400
+@@ -52,23 +52,17 @@
+ 
+ 
+ class _NonClosingTextIOWrapper(io.TextIOWrapper):
+-    def __init__(
+-        self,
+-        stream: BinaryIO,
+-        encoding: str | None,
+-        errors: str | None,
+-        **extra: Any,
+-    ) -> None:
++    def __init__(self, stream: BinaryIO, encoding: str | None, errors: str | None, **extra: Any) -> None:  # type: ignore
+         self._stream = stream = cast(BinaryIO, _FixupStream(stream))
+         super().__init__(stream, encoding, errors, **extra)
+ 
+-    def __del__(self) -> None:
++    def __del__(self) -> None:  # type: ignore
+         try:
+             self.detach()
+         except Exception:  # pragma: no cover
+             pass
+ 
+-    def isatty(self) -> bool:
++    def isatty(self) -> bool:  # type: ignore
+         # https://bitbucket.org/pypy/pypy/issue/1803
+         return self._stream.isatty()
+ 
+@@ -79,16 +73,13 @@
+     some circumstances.
+     """
+ 
+-    def __init__(
+-        self,
+-        stream: BinaryIO,
+-    ):
++    def __init__(self, stream: BinaryIO) -> None:  # type: ignore
+         self._stream = stream
+ 
+-    def __getattr__(self, name: str) -> Any:
++    def __getattr__(self, name: str) -> Any:  # type: ignore
+         return getattr(self._stream, name)
+ 
+-    def read1(self, size: int) -> bytes:
++    def read1(self, size: int) -> bytes:  # type: ignore
+         f = getattr(self._stream, "read1", None)
+ 
+         if f is not None:
+@@ -96,20 +87,20 @@
+ 
+         return self._stream.read(size)
+ 
+-    def readable(self) -> bool:
++    def readable(self) -> bool:  # type: ignore
+         return True
+ 
+-    def writable(self) -> bool:
++    def writable(self) -> bool:  # type: ignore
+         return True
+ 
+-    def seekable(self) -> bool:
++    def seekable(self) -> bool:  # type: ignore
+         x = getattr(self._stream, "seekable", None)
+         if x is not None:
+             return cast(bool, x())
+         return False
+ 
+ 
+-def _is_binary_reader(stream: IO[Any], default: bool = False) -> bool:
++def _is_binary_reader(stream: IO[Any], default: bool = False) -> bool:  # type: ignore
+     try:
+         return isinstance(stream.read(0), bytes)
+     except Exception:  # pragma: no cover
+@@ -118,7 +109,7 @@
+         # closed.  In this case, we assume the default.
+ 
+ 
+-def _is_binary_writer(stream: IO[Any], default: bool = False) -> bool:
++def _is_binary_writer(stream: IO[Any], default: bool = False) -> bool:  # type: ignore
+     try:
+         stream.write(b"")
+     except Exception:  # pragma: no cover
+@@ -131,7 +122,7 @@
+     return True
+ 
+ 
+-def _find_binary_reader(stream: IO[Any]) -> BinaryIO | None:
++def _find_binary_reader(stream: IO[Any]) -> BinaryIO | None:  # type: ignore
+     # We need to figure out if the given stream is already binary.
+     # This can happen because the official docs recommend detaching
+     # the streams to get binary streams.  Some code might do this, so
+@@ -149,7 +140,7 @@
+     return None
+ 
+ 
+-def _find_binary_writer(stream: IO[Any]) -> BinaryIO | None:
++def _find_binary_writer(stream: IO[Any]) -> BinaryIO | None:  # type: ignore
+     # We need to figure out if the given stream is already binary.
+     # This can happen because the official docs recommend detaching
+     # the streams to get binary streams.  Some code might do this, so
+@@ -167,7 +158,7 @@
+     return None
+ 
+ 
+-def _stream_is_misconfigured(stream: TextIO) -> bool:
++def _stream_is_misconfigured(stream: TextIO) -> bool:  # type: ignore
+     """A stream is misconfigured if its encoding is ASCII."""
+     # If the stream does not have an encoding set, we assume it's set
+     # to ASCII.  This appears to happen in certain unittest
+@@ -176,7 +167,7 @@
+     return is_ascii_encoding(getattr(stream, "encoding", None) or "ascii")
+ 
+ 
+-def _is_compat_stream_attr(stream: TextIO, attr: str, value: str | None) -> bool:
++def _is_compat_stream_attr(stream: TextIO, attr: str, value: str | None) -> bool:  # type: ignore
+     """A stream attribute is compatible if it is equal to the
+     desired value or the desired value is unset and the attribute
+     has a value.
+@@ -185,9 +176,7 @@
+     return stream_value == value or (value is None and stream_value is not None)
+ 
+ 
+-def _is_compatible_text_stream(
+-    stream: TextIO, encoding: str | None, errors: str | None
+-) -> bool:
++def _is_compatible_text_stream(stream: TextIO, encoding: str | None, errors: str | None) -> bool:  # type: ignore
+     """Check if a stream's encoding and errors attributes are
+     compatible with the desired values.
+     """
+@@ -196,13 +185,7 @@
+     ) and _is_compat_stream_attr(stream, "errors", errors)
+ 
+ 
+-def _force_correct_text_stream(
+-    text_stream: IO[Any],
+-    encoding: str | None,
+-    errors: str | None,
+-    is_binary: Callable[[IO[Any], bool], bool],
+-    find_binary: Callable[[IO[Any]], BinaryIO | None],
+-) -> TextIO:
++def _force_correct_text_stream(text_stream: IO[Any], encoding: str | None, errors: str | None, is_binary: Callable[[IO[Any], bool], bool], find_binary: Callable[[IO[Any]], BinaryIO | None]) -> TextIO:  # type: ignore
+     if is_binary(text_stream, False):
+         binary_reader = cast(BinaryIO, text_stream)
+     else:
+@@ -238,11 +221,7 @@
+     )
+ 
+ 
+-def _force_correct_text_reader(
+-    text_reader: IO[Any],
+-    encoding: str | None,
+-    errors: str | None,
+-) -> TextIO:
++def _force_correct_text_reader(text_reader: IO[Any], encoding: str | None, errors: str | None) -> TextIO:  # type: ignore
+     return _force_correct_text_stream(
+         text_reader,
+         encoding,
+@@ -252,11 +231,7 @@
+     )
+ 
+ 
+-def _force_correct_text_writer(
+-    text_writer: IO[Any],
+-    encoding: str | None,
+-    errors: str | None,
+-) -> TextIO:
++def _force_correct_text_writer(text_writer: IO[Any], encoding: str | None, errors: str | None) -> TextIO:  # type: ignore
+     return _force_correct_text_stream(
+         text_writer,
+         encoding,
+@@ -266,54 +241,49 @@
+     )
+ 
+ 
+-def get_binary_stdin() -> BinaryIO:
++def get_binary_stdin() -> BinaryIO:  # type: ignore
+     reader = _find_binary_reader(sys.stdin)
+     if reader is None:  # pragma: no cover
+         raise RuntimeError("Was not able to determine binary stream for sys.stdin.")
+     return reader
+ 
+ 
+-def get_binary_stdout() -> BinaryIO:
++def get_binary_stdout() -> BinaryIO:  # type: ignore
+     writer = _find_binary_writer(sys.stdout)
+     if writer is None:  # pragma: no cover
+         raise RuntimeError("Was not able to determine binary stream for sys.stdout.")
+     return writer
+ 
+ 
+-def get_binary_stderr() -> BinaryIO:
++def get_binary_stderr() -> BinaryIO:  # type: ignore
+     writer = _find_binary_writer(sys.stderr)
+     if writer is None:  # pragma: no cover
+         raise RuntimeError("Was not able to determine binary stream for sys.stderr.")
+     return writer
+ 
+ 
+-def get_text_stdin(encoding: str | None = None, errors: str | None = None) -> TextIO:
++def get_text_stdin(encoding: str | None = None, errors: str | None = None) -> TextIO:  # type: ignore
+     rv = _get_windows_console_stream(sys.stdin, encoding, errors)
+     if rv is not None:
+         return rv
+     return _force_correct_text_reader(sys.stdin, encoding, errors)
+ 
+ 
+-def get_text_stdout(encoding: str | None = None, errors: str | None = None) -> TextIO:
++def get_text_stdout(encoding: str | None = None, errors: str | None = None) -> TextIO:  # type: ignore
+     rv = _get_windows_console_stream(sys.stdout, encoding, errors)
+     if rv is not None:
+         return rv
+     return _force_correct_text_writer(sys.stdout, encoding, errors)
+ 
+ 
+-def get_text_stderr(encoding: str | None = None, errors: str | None = None) -> TextIO:
++def get_text_stderr(encoding: str | None = None, errors: str | None = None) -> TextIO:  # type: ignore
+     rv = _get_windows_console_stream(sys.stderr, encoding, errors)
+     if rv is not None:
+         return rv
+     return _force_correct_text_writer(sys.stderr, encoding, errors)
+ 
+ 
+-def _wrap_io_open(
+-    file: str | os.PathLike[str] | int,
+-    mode: str,
+-    encoding: str | None,
+-    errors: str | None,
+-) -> IO[Any]:
++def _wrap_io_open(file: str | os.PathLike[str] | int, mode: str, encoding: str | None, errors: str | None) -> IO[Any]:  # type: ignore
+     """Handles not passing ``encoding`` and ``errors`` in binary mode."""
+     if "b" in mode:
+         return open(file, mode)
+@@ -321,13 +291,7 @@
+     return open(file, mode, encoding=encoding, errors=errors)
+ 
+ 
+-def open_stream(
+-    filename: str | os.PathLike[str],
+-    mode: str = "r",
+-    encoding: str | None = None,
+-    errors: str | None = "strict",
+-    atomic: bool = False,
+-) -> tuple[IO[Any], bool]:
++def open_stream(filename: str | os.PathLike[str], mode: str = "r", encoding: str | None = None, errors: str | None = "strict", atomic: bool = False) -> tuple[IO[Any], bool]:  # type: ignore
+     binary = "b" in mode
+     filename = os.fspath(filename)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/exceptions.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/typer/_click/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/exceptions.py	2026-09-17 15:46:11.501831032 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/typer/_click/exceptions.py	2026-09-27 01:32:09.944551486 -0400
+@@ -24,7 +24,7 @@
+         super().__init__(message)
+         # The context will be removed by the time we print the message, so cache
+         # the color settings here to be used later on (in `show`)
+-        self.show_color: bool | None = resolve_color_default()
++        self.show_color: bool | None = resolve_color_default_v2()
+ 
+     def show(self, file: IO[Any] | None = None) -> None:
+         if file is None:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/typer/_click/globals.py	2026-09-27 01:31:55.525583899 -0400
+@@ -45,7 +45,7 @@
+     _local.stack.pop()
+ 
+ 
+-def resolve_color_default(color: bool | None = None) -> bool | None:
++def resolve_color_default_v2(color: bool | None = None) -> bool | None:
+     """Internal helper to get the default value of the color flag.  If a
+     value is passed it's returned unchanged, otherwise it's looked up from
+     the current context.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/termui.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/typer/_click/termui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/termui.py	2026-09-17 15:46:11.537520074 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/typer/_click/termui.py	2026-09-27 01:32:03.034567013 -0400
+@@ -278,7 +278,7 @@
+     """
+     from ._termui_impl import ProgressBar
+ 
+-    color = resolve_color_default(color)
++    color = resolve_color_default_v2(color)
+     return ProgressBar(
+         iterable=iterable,
+         length=length,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/utils.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/typer/_click/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/utils.py	2026-09-17 15:46:11.549912342 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/typer/_click/utils.py	2026-09-27 01:32:20.266528313 -0400
+@@ -255,7 +255,7 @@
+     # ANSI style code support. For no message or bytes, nothing happens.
+     # When outputting to a file instead of a terminal, strip codes.
+     else:
+-        color = resolve_color_default(color)
++        color = resolve_color_default_v2(color)
+ 
+         if should_strip_ansi(file, color):
+             out = strip_ansi(out)

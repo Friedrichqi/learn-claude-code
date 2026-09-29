@@ -1,0 +1,114 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/102768/g1/lane27/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/102768/g1/lane27/profiling_sandbox/requests/auth.py	2026-09-27 04:58:00.330078487 -0400
+@@ -32,7 +32,7 @@
+ 
+ 
+ def _basic_auth_str(username: bytes | str, password: bytes | str) -> str:
+-    """Returns a Basic Auth string."""
++    """Returns a Basic Authentication header string."""
+ 
+     # "I want us to put a big-ol' comment on top of it that
+     # says that this behaviour is dumb but we need to preserve
+@@ -76,14 +76,14 @@
+ 
+ 
+ class AuthBase:
+-    """Base class that all auth implementations derive from"""
++    """Base class that all authentication implementations derive from."""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+         raise NotImplementedError("Auth hooks must be callable.")
+ 
+ 
+ class HTTPBasicAuth(AuthBase):
+-    """Attaches HTTP Basic Authentication to the given Request object."""
++    """Attaches HTTP Basic Authentication to the given PreparedRequest object."""
+ 
+     username: bytes | str
+     password: bytes | str
+@@ -114,7 +114,7 @@
+ 
+ 
+ class HTTPProxyAuth(HTTPBasicAuth):
+-    """Attaches HTTP Proxy Authentication to a given Request object."""
++    """Attaches HTTP Proxy Authentication to a given PreparedRequest object."""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+         r.headers["Proxy-Authorization"] = _basic_auth_str(self.username, self.password)
+@@ -122,7 +122,7 @@
+ 
+ 
+ class HTTPDigestAuth(AuthBase):
+-    """Attaches HTTP Digest Authentication to the given Request object."""
++    """Attaches HTTP Digest Authentication to the given PreparedRequest object."""
+ 
+     username: bytes | str
+     password: bytes | str
+@@ -155,6 +155,7 @@
+             self._thread_local.num_401_calls = None
+ 
+     def build_digest_header(self, method: str, url: str) -> str | None:
++        """Builds the Digest Authentication header for the given request method and URL."""
+         """
+         :rtype: str
+         """
+@@ -266,17 +267,21 @@
+         return f"Digest {base}"
+ 
+     def handle_redirect(self, r: Response, **kwargs: Any) -> None:
+-        """Reset num_401_calls counter on redirects."""
++        """Resets the num_401_calls counter when handling redirects."""
++        """Resets the num_401_calls counter when handling redirects."""
+         if r.is_redirect:
+             self._thread_local.num_401_calls = 1
+ 
+     def handle_401(self, r: Response, **kwargs: Any) -> Response:
++        """Handles 401 responses by attempting Digest Authentication if needed."""
++        """Handles 401 responses by attempting Digest Authentication if needed."""
+         """
+         Takes the given response and tries digest-auth, if needed.
+ 
+         :rtype: requests.Response
+         """
+ 
++        """Handles responses that are not 4xx by resetting the 401 call counter."""
+         # If response is not 4xx, do not auth
+         # See https://github.com/psf/requests/issues/3772
+         if not 400 <= r.status_code < 500:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102768/g1/lane27/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102768/g1/lane27/profiling_sandbox/requests/hooks.py	2026-09-27 05:04:23.291498804 -0400
+@@ -22,7 +22,7 @@
+ HOOKS: list[str] = ["response"]
+ 
+ 
+-def default_hooks() -> dict[str, list[_t.HookType]]:
++def default_hooks_v2() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102768/g1/lane27/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102768/g1/lane27/profiling_sandbox/requests/models.py	2026-09-27 05:10:18.879097264 -0400
+@@ -338,7 +338,7 @@
+         params = {} if params is None else params
+         hooks = {} if hooks is None else hooks
+ 
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+         for k, v in list(hooks.items()):
+             self.register_hook(event=k, hook=v)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102768/g1/lane27/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102768/g1/lane27/profiling_sandbox/requests/sessions.py	2026-09-27 05:07:22.005294569 -0400
+@@ -455,7 +455,7 @@
+         self.proxies = {}
+ 
+         #: Event-handling hooks.
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+ 
+         #: Dictionary of querystring data to attach to each
+         #: :class:`Request <Request>`. The dictionary values may be lists for

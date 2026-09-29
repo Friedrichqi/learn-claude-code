@@ -1,0 +1,70 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/dumper.py	2026-09-25 11:49:44.965296719 -0400
+@@ -22,6 +22,7 @@
+                 version=version, tags=tags)
+         Representer.__init__(self, default_style=default_style,
+                 default_flow_style=default_flow_style, sort_keys=sort_keys)
++        Resolver.add_path_resolver_v2(self.__class__, 'tag:yaml.org,2002:resolver', ['tag'])
+         Resolver.__init__(self)
+ 
+ class SafeDumper(Emitter, Serializer, SafeRepresenter, Resolver):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/__init__.py	2026-09-25 12:00:46.957909580 -0400
+@@ -284,7 +284,7 @@
+         Loader.add_implicit_resolver(tag, regexp, first)
+     Dumper.add_implicit_resolver(tag, regexp, first)
+ 
+-def add_path_resolver(tag, path, kind=None, Loader=None, Dumper=Dumper):
++def add_path_resolver_v2(tag, path, kind=None, Loader=None, Dumper=Dumper):
+     """
+     Add a path based resolver for the given tag.
+     A path is a list of keys that forms a path
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/loader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py	2026-09-21 20:03:49.565444174 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/loader.py	2026-09-25 12:07:31.567658456 -0400
+@@ -26,6 +26,7 @@
+         Parser.__init__(self)
+         Composer.__init__(self)
+         FullConstructor.__init__(self)
++        Resolver.add_path_resolver_v2('tag:yaml.org,2002:resolver', ['tag'], self.__class__)
+         Resolver.__init__(self)
+ 
+ class SafeLoader(Reader, Scanner, Parser, Composer, SafeConstructor, Resolver):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/representer.py	2026-09-25 11:48:48.087763880 -0400
+@@ -15,7 +15,7 @@
+     yaml_representers = {}
+     yaml_multi_representers = {}
+ 
+-    def __init__(self, default_style=None, default_flow_style=False, sort_keys=True):
++    def __init__(self, default_style=None, default_flow_style=False, sort_keys=True, add_path_resolver=None):
+         self.default_style = default_style
+         self.sort_keys = sort_keys
+         self.default_flow_style = default_flow_style
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/resolver.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py	2026-09-21 20:03:49.582954680 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/resolver.py	2026-09-25 12:04:18.711204445 -0400
+@@ -35,7 +35,7 @@
+             cls.yaml_implicit_resolvers.setdefault(ch, []).append((tag, regexp))
+ 
+     @classmethod
+-    def add_path_resolver(cls, tag, path, kind=None):
++    def add_path_resolver_v2(cls, tag, path, kind=None):
+         # Note: `add_path_resolver` is experimental.  The API could be changed.
+         # `new_path` is a pattern that is matched against the path from the
+         # root to the node that is being considered.  `node_path` elements are
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/serializer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py	2026-09-21 20:03:49.604638529 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_05/profiling_sandbox/yaml/serializer.py	2026-09-25 11:49:51.249245150 -0400
+@@ -12,7 +12,7 @@
+ 
+     ANCHOR_TEMPLATE = 'id%03d'
+ 
+-    def __init__(self, encoding=None,
++    def __init__(self, encoding=None):
+             explicit_start=None, explicit_end=None, version=None, tags=None):
+         self.use_encoding = encoding
+         self.use_explicit_start = explicit_start

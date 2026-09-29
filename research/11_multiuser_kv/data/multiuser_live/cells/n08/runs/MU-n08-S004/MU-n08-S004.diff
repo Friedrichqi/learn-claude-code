@@ -1,0 +1,278 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/httpx/_models.py	2026-09-26 23:53:14.831456536 -0400
+@@ -30,7 +30,7 @@
+     StreamConsumed,
+     request_context,
+ )
+-from ._multipart import get_multipart_boundary_from_content_type
++from ._multipart import get_multipart_boundary_from_content_type_v2
+ from ._status_codes import codes
+ from ._types import (
+     AsyncByteStream,
+@@ -142,6 +142,12 @@
+     """
+ 
+     def __init__(
++        """Initialize a Headers instance with header data."""
++        """Initialize a Cookies instance with cookie data."""
++        """Initialize a QueryParams instance with query parameters."""
++        """Initialize a Response instance with status code and other optional parameters."""
++        """Initialize a Request instance with method, URL, and optional parameters."""
++        """Initialize Headers with header data."""
+         self,
+         headers: HeaderTypes | None = None,
+         encoding: str | None = None,
+@@ -164,6 +170,29 @@
+         self._encoding = encoding
+ 
+     @property
++    """Return the number of bytes downloaded."""
++    """Return the parsed header links from the response."""
++    """Return the cookies from the response."""
++    """Check if the response has a redirect location."""
++    """Check if the response is an error (4xx or 5xx)."""
++    """Check if the response is a server error (5xx)."""
++    """Check if the response is a client error (4xx)."""
++    """Check if the response is a redirect (3xx)."""
++    """Check if the response is successful (2xx)."""
++    """Check if the response is informational (1xx)."""
++    """Return the charset encoding from the Content-Type header."""
++    """Return the encoding for the response."""
++    """Return the character encoding for the response."""
++    """Return the response content as text."""
++    """Return the response content as bytes."""
++    """Return the URL of the response."""
++    """Return the reason phrase for the status code."""
++    """Return the HTTP version used in the response."""
++    """Return the associated request for the response."""
++    """Return the elapsed time for the response."""
++    """Return the request content as bytes."""
++    """Return the raw header items as byte pairs."""
++    """Return the header encoding."""
+     def encoding(self) -> str:
+         """
+         Header encoding is mandated as ascii, but we allow fallbacks to utf-8
+@@ -200,9 +229,11 @@
+         return [(raw_key, value) for raw_key, _, value in self._list]
+ 
+     def keys(self) -> typing.KeysView[str]:
++        """Return the keys of the headers."""
+         return {key.decode(self.encoding): None for _, key, value in self._list}.keys()
+ 
+     def values(self) -> typing.ValuesView[str]:
++        """Return the values of the headers."""
+         values_dict: dict[str, str] = {}
+         for _, key, value in self._list:
+             str_key = key.decode(self.encoding)
+@@ -214,6 +245,7 @@
+         return values_dict.values()
+ 
+     def items(self) -> typing.ItemsView[str, str]:
++        """Return the header items as key-value pairs."""
+         """
+         Return `(key, value)` items of headers. Concatenate headers
+         into a single comma separated value when a key occurs multiple times.
+@@ -229,6 +261,7 @@
+         return values_dict.items()
+ 
+     def multi_items(self) -> list[tuple[str, str]]:
++        """Return all header items, including duplicates."""
+         """
+         Return a list of `(key, value)` pairs of headers. Allow multiple
+         occurrences of the same key without concatenating into a single
+@@ -240,6 +273,7 @@
+         ]
+ 
+     def get(self, key: str, default: typing.Any = None) -> typing.Any:
++        """Get the value for a header key, with optional default."""
+         """
+         Return a header value. If multiple occurrences of the header occur
+         then concatenate them together with commas.
+@@ -250,6 +284,7 @@
+             return default
+ 
+     def get_list(self, key: str, split_commas: bool = False) -> list[str]:
++        """Get a list of values for a header key."""
+         """
+         Return a list of all header values for a given key.
+         If `split_commas=True` is passed, then any comma separated header
+@@ -272,6 +307,7 @@
+         return split_values
+ 
+     def update(self, headers: HeaderTypes | None = None) -> None:  # type: ignore
++        """Update headers with new data."""
+         headers = Headers(headers)
+         for key in headers.keys():
+             if key in self:
+@@ -279,9 +315,11 @@
+         self._list.extend(headers._list)
+ 
+     def copy(self) -> Headers:
++        """Create a copy of the Headers instance."""
+         return Headers(self, encoding=self.encoding)
+ 
+     def __getitem__(self, key: str) -> str:
++        """Get the value for a header key."""
+         """
+         Return a single header value.
+ 
+@@ -302,6 +340,7 @@
+         raise KeyError(key)
+ 
+     def __setitem__(self, key: str, value: str) -> None:
++        """Set the value for a header key."""
+         """
+         Set the header `key` to `value`, removing any duplicate entries.
+         Retains insertion order.
+@@ -326,6 +365,7 @@
+             self._list.append((set_key, lookup_key, set_value))
+ 
+     def __delitem__(self, key: str) -> None:
++        """Delete a header key."""
+         """
+         Remove the header `key`.
+         """
+@@ -344,16 +384,20 @@
+             del self._list[idx]
+ 
+     def __contains__(self, key: typing.Any) -> bool:
++        """Check if a header key is present."""
+         header_key = key.lower().encode(self.encoding)
+         return header_key in [key for _, key, _ in self._list]
+ 
+     def __iter__(self) -> typing.Iterator[typing.Any]:
++        """Iterate over header keys."""
+         return iter(self.keys())
+ 
+     def __len__(self) -> int:
++        """Return the number of header entries."""
+         return len(self._list)
+ 
+     def __eq__(self, other: typing.Any) -> bool:
++        """Compare equality with another Headers instance."""
+         try:
+             other_headers = Headers(other)
+         except ValueError:
+@@ -364,6 +408,9 @@
+         return sorted(self_list) == sorted(other_list)
+ 
+     def __repr__(self) -> str:
++        """Return a string representation of the Response."""
++        """Return a string representation of the Request."""
++        """Return a string representation of the Headers."""
+         class_name = self.__class__.__name__
+ 
+         encoding_str = ""
+@@ -466,6 +513,8 @@
+         return self._content
+ 
+     def read(self) -> bytes:
++        """Read and return the response content."""
++        """Read and return the request content."""
+         """
+         Read and return the request content.
+         """
+@@ -480,6 +529,8 @@
+         return self._content
+ 
+     async def aread(self) -> bytes:
++        """Asynchronously read and return the response content."""
++        """Asynchronously read and return the request content."""
+         """
+         Read and return the request content.
+         """
+@@ -499,6 +550,8 @@
+         return f"<{class_name}({self.method!r}, {url!r})>"
+ 
+     def __getstate__(self) -> dict[str, typing.Any]:
++        """Return the state of the Response for pickling."""
++        """Return the state of the Request for pickling."""
+         return {
+             name: value
+             for name, value in self.__dict__.items()
+@@ -506,6 +559,8 @@
+         }
+ 
+     def __setstate__(self, state: dict[str, typing.Any]) -> None:
++        """Restore the state of the Response from pickling."""
++        """Restore the state of the Request from pickling."""
+         for name, value in state.items():
+             setattr(self, name, value)
+         self.extensions = {}
+@@ -697,6 +752,7 @@
+         return _parse_content_type_charset(content_type)
+ 
+     def _get_content_decoder(self) -> ContentDecoder:
++        """Return a decoder for the response content."""
+         """
+         Returns a decoder instance which can be used to decode the raw byte
+         content, depending on the Content-Encoding used in the response.
+@@ -792,6 +848,7 @@
+         )
+ 
+     def raise_for_status(self) -> Response:
++        """Raise an HTTPStatusError if the response indicates an error."""
+         """
+         Raise the `HTTPStatusError` if one occurred.
+         """
+@@ -829,6 +886,7 @@
+         raise HTTPStatusError(message, request=request, response=self)
+ 
+     def json(self, **kwargs: typing.Any) -> typing.Any:
++        """Parse and return the response content as JSON."""
+         return jsonlib.loads(self.content, **kwargs)
+ 
+     @property
+@@ -882,6 +940,7 @@
+         return self._content
+ 
+     def iter_bytes(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:
++        """Iterate over the response content in byte chunks."""
+         """
+         A byte-iterator over the decoded response content.
+         This allows us to handle gzip, deflate, brotli, and zstd encoded responses.
+@@ -905,6 +964,7 @@
+                     yield chunk
+ 
+     def iter_text(self, chunk_size: int | None = None) -> typing.Iterator[str]:
++        """Iterate over the response content in text chunks."""
+         """
+         A str-iterator over the decoded response content
+         that handles both gzip, deflate, etc but also detects the content's
+@@ -924,6 +984,7 @@
+                 yield chunk
+ 
+     def iter_lines(self) -> typing.Iterator[str]:
++        """Iterate over the response content line by line."""
+         decoder = LineDecoder()
+         with request_context(request=self._request):
+             for text in self.iter_text():
+@@ -933,6 +994,7 @@
+                 yield line
+ 
+     def iter_raw(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:
++        """Iterate over the raw response content in byte chunks."""
+         """
+         A byte-iterator over the raw response content.
+         """
+@@ -1026,6 +1088,7 @@
+                 yield chunk
+ 
+     async def aiter_lines(self) -> typing.AsyncIterator[str]:
++        """Asynchronously iterate over the response content line by line."""
+         decoder = LineDecoder()
+         with request_context(request=self._request):
+             async for text in self.aiter_text():
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/httpx/_multipart.py	2026-09-26 23:53:04.095477855 -0400
+@@ -53,7 +53,7 @@
+     return None
+ 
+ 
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):

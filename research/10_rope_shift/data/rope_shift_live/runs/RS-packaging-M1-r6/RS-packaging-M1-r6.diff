@@ -1,0 +1,285 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py /tmp/yqi10/rope_shift_lanes/s0/lane00_01/profiling_sandbox/packaging/_elffile.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py	2026-09-17 15:46:11.629142343 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_01/profiling_sandbox/packaging/_elffile.py	2026-09-25 12:30:16.476171326 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ ELF file parser.
+ 
+@@ -18,17 +20,14 @@
+ class ELFInvalid(ValueError):
+     pass
+ 
+-
+ class EIClass(enum.IntEnum):
+     C32 = 1
+     C64 = 2
+ 
+-
+ class EIData(enum.IntEnum):
+     Lsb = 1
+     Msb = 2
+ 
+-
+ class EMachine(enum.IntEnum):
+     I386 = 3
+     S390 = 22
+@@ -36,7 +35,6 @@
+     X8664 = 62
+     AArch64 = 183
+ 
+-
+ class ELFFile:
+     """
+     Representation of an ELF executable.
+@@ -105,4 +103,4 @@
+                 continue
+             self._f.seek(data[self._p_idx[1]])
+             return os.fsdecode(self._f.read(data[self._p_idx[2]])).strip("\0")
+-        return None
++        return None
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py /tmp/yqi10/rope_shift_lanes/s0/lane00_01/profiling_sandbox/packaging/_manylinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py	2026-09-17 15:46:11.633151751 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_01/profiling_sandbox/packaging/_manylinux.py	2026-09-25 12:34:59.358622210 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import collections
+@@ -79,7 +81,6 @@
+ # with the actual value.
+ _LAST_GLIBC_MINOR: dict[int, int] = collections.defaultdict(lambda: 50)
+ 
+-
+ class _GLibCVersion(NamedTuple):
+     major: int
+     minor: int
+@@ -275,4 +276,4 @@
+ 
+                     # Handle the legacy manylinux1, manylinux2010, manylinux2014 tags.
+                     if legacy_tag := _LEGACY_MANYLINUX_MAP.get(glibc_version):
+-                        yield f"{legacy_tag}_{arch}"
++                        yield f"{legacy_tag}_{arch}"
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py /tmp/yqi10/rope_shift_lanes/s0/lane00_01/profiling_sandbox/packaging/_musllinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py	2026-09-17 15:46:11.638075106 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_01/profiling_sandbox/packaging/_musllinux.py	2026-09-25 12:36:04.858263302 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """PEP 656 support.
+ 
+ This module implements logic to detect if the currently running Python is
+@@ -17,12 +19,10 @@
+ if TYPE_CHECKING:
+     from collections.abc import Iterator, Sequence
+ 
+-
+ class _MuslVersion(NamedTuple):
+     major: int
+     minor: int
+ 
+-
+ def _parse_musl_version(output: str) -> _MuslVersion | None:
+     lines = [n for n in (n.strip() for n in output.splitlines()) if n]
+     if len(lines) < 2 or lines[0][:4] != "musl":
+@@ -85,4 +85,4 @@
+     print("musl:", _get_musl_version(sys.executable))
+     print("tags:", end=" ")
+     for t in platform_tags([re.sub(r"[.-]", "_", plat.split("-", 1)[-1])]):
+-        print(t, end="\n      ")
++        print(t, end=\n      ")
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py /tmp/yqi10/rope_shift_lanes/s0/lane00_01/profiling_sandbox/packaging/_parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py	2026-09-17 15:46:11.642860903 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_01/profiling_sandbox/packaging/_parser.py	2026-09-25 12:40:15.419889609 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """Handwritten parser of dependency specifiers.
+ 
+ The docstring for each __parse_* function contains EBNF-inspired grammar representing
+@@ -12,7 +14,6 @@
+ 
+ from ._tokenizer import DEFAULT_RULES, ParserSyntaxError, Tokenizer
+ 
+-
+ class Node:
+     __slots__ = ("value",)
+ 
+@@ -56,42 +57,37 @@
+             return
+         raise TypeError(f"Cannot restore {self.__class__.__name__} from {state!r}")
+ 
+-
+ class Variable(Node):
+     __slots__ = ()
+ 
+     def serialize(self) -> str:
+         return str(self)
+ 
+-
+ class Value(Node):
+     __slots__ = ()
+ 
+     def serialize(self) -> str:
+         value = str(self)
+         if '"' not in value:
+-            return f'"{value}"'
++            return f'"{value}"
+         if "'" not in value:
+-            return f"'{value}'"
++            return f'"{value}"
+         raise ValueError(
+             "Cannot serialize marker value containing both quote characters"
+         )
+ 
+-
+ class Op(Node):
+     __slots__ = ()
+ 
+     def serialize(self) -> str:
+         return str(self)
+ 
+-
+ MarkerLogical = Literal["and", "or"]
+ MarkerVar = Union[Variable, Value]
+ MarkerItem = tuple[MarkerVar, Op, MarkerVar]
+ MarkerAtom = Union[MarkerItem, Sequence["MarkerAtom"]]
+ MarkerList = list[Union["MarkerList", MarkerAtom, MarkerLogical]]
+ 
+-
+ class ParsedRequirement(NamedTuple):
+     name: str
+     url: str
+@@ -106,7 +102,6 @@
+ def parse_requirement(source: str) -> ParsedRequirement:
+     return _parse_requirement(Tokenizer(source, rules=DEFAULT_RULES))
+ 
+-
+ def _parse_requirement(tokenizer: Tokenizer) -> ParsedRequirement:
+     """
+     requirement = WS? IDENTIFIER WS? extras WS? requirement_details
+@@ -127,7 +122,6 @@
+ 
+     return ParsedRequirement(name, url, extras, specifier, marker)
+ 
+-
+ def _parse_requirement_details(
+     tokenizer: Tokenizer,
+ ) -> tuple[str, str, MarkerList | None]:
+@@ -180,7 +174,6 @@
+ 
+     return (url, specifier, marker)
+ 
+-
+ def _parse_requirement_marker(
+     tokenizer: Tokenizer, *, span_start: int, expected: str
+ ) -> MarkerList:
+@@ -201,7 +194,6 @@
+ 
+     return marker
+ 
+-
+ def _parse_extras(tokenizer: Tokenizer) -> list[str]:
+     """
+     extras = (LEFT_BRACKET wsp* extras_list? wsp* RIGHT_BRACKET)?
+@@ -220,7 +212,6 @@
+ 
+     return extras
+ 
+-
+ def _parse_extras_list(tokenizer: Tokenizer) -> list[str]:
+     """
+     extras_list = identifier (wsp* ',' wsp* identifier)*
+@@ -247,7 +238,6 @@
+ 
+     return extras
+ 
+-
+ def _parse_specifier(tokenizer: Tokenizer) -> str:
+     """
+     specifier = LEFT_PARENTHESIS WS? version_many WS? RIGHT_PARENTHESIS
+@@ -264,7 +254,6 @@
+ 
+     return parsed_specifiers
+ 
+-
+ def _parse_version_many(tokenizer: Tokenizer) -> str:
+     """
+     version_many = (SPECIFIER (WS? COMMA WS? SPECIFIER)*)?
+@@ -302,20 +291,17 @@
+ 
+     return parsed_specifiers
+ 
+-
+ # --------------------------------------------------------------------------------------
+ # Recursive descent parser for marker expression
+ # --------------------------------------------------------------------------------------
+ def parse_marker(source: str) -> MarkerList:
+     return _parse_full_marker(Tokenizer(source, rules=DEFAULT_RULES))
+ 
+-
+ def _parse_full_marker(tokenizer: Tokenizer) -> MarkerList:
+     retval = _parse_marker(tokenizer)
+     tokenizer.expect("END", expected="end of marker expression")
+     return retval
+ 
+-
+ def _parse_marker(tokenizer: Tokenizer) -> MarkerList:
+     """
+     marker = marker_atom (BOOLOP marker_atom)+
+@@ -327,7 +313,6 @@
+         expression.extend((token.text, expr_right))
+     return expression
+ 
+-
+ def _parse_marker_atom(tokenizer: Tokenizer) -> MarkerAtom:
+     """
+     marker_atom = WS? LEFT_PARENTHESIS WS? marker WS? RIGHT_PARENTHESIS WS?
+@@ -349,7 +334,6 @@
+     tokenizer.consume("WS")
+     return marker
+ 
+-
+ def _parse_marker_item(tokenizer: Tokenizer) -> MarkerItem:
+     """
+     marker_item = WS? marker_var WS? marker_op WS? marker_var WS?
+@@ -363,7 +347,6 @@
+     tokenizer.consume("WS")
+     return (marker_var_left, marker_op, marker_var_right)
+ 
+-
+ def _parse_marker_var(tokenizer: Tokenizer) -> MarkerVar:  # noqa: RET503
+     """
+     marker_var = VARIABLE | QUOTED_STRING
+@@ -385,19 +368,16 @@
+             message="Expected a marker variable or quoted string"
+         )
+ 
+-
+ def process_env_var(env_var: str) -> Variable:
+     if env_var in ("platform_python_implementation", "python_implementation"):
+         return Variable("platform_python_implementation")
+     else:
+         return Variable(env_var)
+ 
+-
+ def process_python_str(python_str: str) -> Value:
+     value = ast.literal_eval(python_str)
+     return Value(str(value))
+ 
+-
+ def _parse_marker_op(tokenizer: Tokenizer) -> Op:
+     """
+     marker_op = IN | NOT IN | OP
+@@ -415,4 +395,4 @@
+     else:
+         return tokenizer.raise_syntax_error(
+             "Expected marker operator, one of <=, <, !=, ==, >=, >, ~=, ===, in, not in"
+-        )
++        )
+\ No newline at end of file

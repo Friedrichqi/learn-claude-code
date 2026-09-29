@@ -1,0 +1,23 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/core.py /tmp/yqi10/mu/102748/g0/lane00/profiling_sandbox/typer/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/core.py	2026-09-17 15:46:11.599826507 -0400
++++ /tmp/yqi10/mu/102748/g0/lane00/profiling_sandbox/typer/core.py	2026-09-26 21:43:49.019827389 -0400
+@@ -34,6 +34,7 @@
+ 
+ # Copy from _click.parser._split_opt
+ def _split_opt(opt: str) -> tuple[str, str]:
++    """Splits an option string into the option character and the rest of the string."""
+     first = opt[:1]
+     if first.isalnum():
+         return "", opt
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py /tmp/yqi10/mu/102748/g0/lane00/profiling_sandbox/typer/_typing.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py	2026-09-17 15:46:11.573110818 -0400
++++ /tmp/yqi10/mu/102748/g0/lane00/profiling_sandbox/typer/_typing.py	2026-09-26 21:41:16.096920947 -0400
+@@ -56,7 +56,7 @@
+     return get_origin(type_) is Literal
+ 
+ 
+-def literal_values(type_: type[Any]) -> tuple[Any, ...]:
++def literal_values_v2(type_: type[Any]) -> tuple[Any, ...]:
+     return get_args(type_)
+ 
+ 

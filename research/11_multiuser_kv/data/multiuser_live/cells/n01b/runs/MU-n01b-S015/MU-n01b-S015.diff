@@ -1,0 +1,1052 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md	2026-09-26 22:14:24.081203969 -0400
+@@ -0,0 +1,9 @@
++## Files modified and line numbers
++
++- `profiling_sandbox/s15_harness/trace_task_dag.py`:
++  - Line 103: renamed `build_html` to `build_html_v2`
++  - Line 114: renamed `_render_graph` to `_render_graph_v2`
++- `profiling_sandbox/s15_harness/scripts/trace_task_dag.py`:
++  - Line 220: renamed `build_html` to `build_html_v2`
++  - Line 241: updated call from `build_html` to `build_html_v2`
++  - Line 263: updated call from `build_html` to `build_html_v2`
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/scripts/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py	2026-09-21 17:15:01.542703080 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/scripts/trace_task_dag.py	2026-09-26 22:14:09.845226168 -0400
+@@ -312,7 +312,7 @@
+ """
+ 
+ 
+-def build_html(d: dict[str, Any], palette_report: list[str]) -> str:
++def build_html_v2(d: dict[str, Any], palette_report: list[str]) -> str:
+     c = d["status_census"]
+     n = len(d["tasks"])
+     tiles = [
+@@ -384,7 +384,7 @@
+                                 extra_status=["#d03b3b"])
+ 
+     d = parse_tasks(args.trace)
+-    html = build_html(d, reports)
++    html = build_html_v2(d, reports)
+     args.output.write_text(html)
+     c = d["status_census"]
+     print(f"wrote {args.output} ({len(html)/1024:.0f} KB): {len(d['tasks'])} tasks, "
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/trace_runtime.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py	2026-09-21 17:15:01.589007324 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/trace_runtime.py	2026-09-26 22:08:35.965534749 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """Structured execution tracing for the integrated harness.
+ 
+ The module deliberately has no dependency on the harness implementation.  A
+@@ -29,15 +30,15 @@
+ DEFAULT_ARGUMENT_CHARS = 2048
+ _SECRET_KEY = re.compile(
+     r"(?:api[_-]?key|authorization|credential|password|secret|"
+-    r"(?:access|auth|bearer|refresh)[_-]?token|^token$)",
++    r"(?:access|auth|bearer|refresh)[_-]?token|^token$),
+     re.IGNORECASE,
+ )
+ _SECRET_TEXT_PATTERNS = (
+-    re.compile(r"(?i)(\bauthorization\s*:\s*bearer\s+)[^\s,'\";]+"),
++    re.compile(r"(?i)(\bauthorization\s*:\s*bearer\s+)[^\s,'";]+"),
+     re.compile(
+         r"(?i)(\b(?:[a-z0-9]+[_-])*(?:api[_-]?key|authorization|credential|password|secret|"
+-        r"(?:access|auth|bearer|refresh)[_-]?token)\b\s*[:=]\s*)"
+-        r"(?:['\"]?)[^\s,'\";]+"
++        r"(?:access|auth|bearer|refresh)[_-]?token)\b\s*[:=]\s*"
++        r"(?:['"]?)[^\s,'";]+"
+     ),
+     re.compile(r"\bsk-(?:ant-)?[A-Za-z0-9_-]{8,}\b"),
+     re.compile(r"(://)[^/@\s:]+:[^/@\s]+@"),
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_stats.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/trace_stats.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_stats.py	2026-09-21 17:15:01.593120839 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/trace_stats.py	2026-09-26 22:09:16.972497293 -0400
+@@ -1,432 +1,195 @@
+-#!/usr/bin/env python3
+-"""Validate harness JSONL trace files and print aggregate statistics.
+-
+-Usage:
+-    python3 trace_stats.py <dir>              # validate, then print stats (default)
+-    python3 trace_stats.py --validate <dir>   # validation only
+-    python3 trace_stats.py --stats <dir>      # stats only (malformed lines are skipped)
+-
+-Every <dir>/*.jsonl file is one harness run recorded by trace_runtime.py: one
+-JSON object per line, each carrying a fixed envelope (schema_version,
+-timestamp, monotonic_ns, run_id, event_id, event, ..., data).  Validation
+-checks that every line is a JSON object with the required envelope fields and
+-reports offending lines as "file:line".  Stats aggregate, across all runs in
+-the directory: run files, models, tool-name frequency, stop/error reasons, and
+-approximate token totals (from model_response data.usage, when present).
+-
+-Exit codes: 0 = clean, 1 = malformed lines found (default/--validate mode),
+-2 = usage or I/O error.
+-"""
++BUILD_TAG = 'profiling'
++"""Validate and calculate metrics for JSONL trace files."""
+ 
+ from __future__ import annotations
+ 
+ import argparse
+ import json
+ import sys
+-from collections import Counter
++from collections import Counter, defaultdict
++from dataclasses import dataclass
+ from pathlib import Path
+-from typing import Any, Dict, List, Optional
+-
+-EXPECTED_SCHEMA_VERSION = "1.0"
+-
+-REQUIRED_FIELDS = (
+-    "schema_version",
+-    "timestamp",
+-    "monotonic_ns",
+-    "run_id",
+-    "event_id",
+-    "event",
+-    "data",
+-)
++from typing import Any, Iterable
+ 
+ 
++@dataclass(frozen=True)
+ class FileReport:
+-    """Validation + per-run facts for a single .jsonl trace file."""
+-
+-    def __init__(self, path: Path) -> None:
+-        self.path = path
+-        self.records: List[Dict[str, Any]] = []
+-        self.line_count = 0
+-        self.errors: List[str] = []
+-        self.warnings: List[str] = []
+-        self.run_id: Optional[str] = None
+-        self.turns = 0
+-        self.agents = 0
+-        self.duration_ms = 0.0
+-        self.run_end_status: Optional[str] = None
++    path: Path
++    records: list[dict[str, Any]]
++    line_count: int
++    errors: list[str]
++    warnings: list[str]
+ 
+     @property
+-    def name(self) -> str:
+-        return self.path.name
+-
+-
+-def check_record(line_no: int, record: Any) -> List[str]:
+-    """Hard validation errors for one parsed JSONL line."""
+-    if not isinstance(record, dict):
+-        return ["line %d: not a JSON object (got %s)" % (line_no, type(record).__name__)]
+-    errors = []
+-    missing = [field for field in REQUIRED_FIELDS if field not in record]
+-    if missing:
+-        errors.append(
+-            "line %d: missing required field(s): %s" % (line_no, ", ".join(missing))
+-        )
+-    if "event" in record and not isinstance(record["event"], str):
+-        errors.append(
+-            "line %d: 'event' must be a string (got %s)"
+-            % (line_no, type(record["event"]).__name__)
+-        )
+-    if "data" in record and not isinstance(record["data"], dict):
+-        errors.append(
+-            "line %d: 'data' must be an object (got %s)"
+-            % (line_no, type(record["data"]).__name__)
+-        )
+-    return errors
+-
++    def valid(self) -> bool:
++        return not self.errors
+ 
+-def validate_file(path: Path) -> FileReport:
+-    report = FileReport(path)
+-    try:
+-        handle = path.open("r", encoding="utf-8")
+-    except OSError as exc:
+-        report.errors.append("cannot open file: %s" % exc)
+-        return report
+-    with handle:
+-        for line_no, line in enumerate(handle, start=1):
+-            stripped = line.strip()
+-            if not stripped:
+-                continue
+-            report.line_count += 1
+-            try:
+-                record = json.loads(stripped)
+-            except json.JSONDecodeError as exc:
+-                report.errors.append(
+-                    "line %d: invalid JSON (%s at column %d)" % (line_no, exc.msg, exc.colno)
+-                )
+-                continue
+-            record_errors = check_record(line_no, record)
+-            if record_errors:
+-                report.errors.extend(record_errors)
+-                continue
+-            report.records.append(record)
+-            if report.run_id is None:
+-                report.run_id = str(record.get("run_id"))
+-            elif record.get("run_id") and record["run_id"] != report.run_id:
+-                report.warnings.append(
+-                    "line %d: run_id changed to %r within one file"
+-                    % (line_no, record["run_id"])
+-                )
+-            if str(record.get("schema_version")) != EXPECTED_SCHEMA_VERSION:
+-                report.warnings.append(
+-                    "line %d: unexpected schema_version %r (expected %r)"
+-                    % (line_no, record.get("schema_version"), EXPECTED_SCHEMA_VERSION)
+-                )
+-
+-    if not report.records:
+-        report.warnings.append("no valid records (file empty or fully malformed)")
+-        return report
+-
+-    first_event = report.records[0]["event"]
+-    last_event = report.records[-1]["event"]
+-    if first_event != "run_start":
+-        report.warnings.append(
+-            "first event is %r, expected 'run_start' (file may be a fragment)" % first_event
+-        )
+-    if last_event != "run_end":
+-        report.warnings.append(
+-            "last event is %r, no 'run_end' (run interrupted or still recording?)" % last_event
+-        )
+-
+-    turn_ids = {r.get("turn_id") for r in report.records if r.get("turn_id")}
+-    agent_ids = {r.get("agent_id") for r in report.records if r.get("agent_id")}
+-    report.turns = len(turn_ids)
+-    report.agents = len(agent_ids)
+-
+-    elapsed = [
+-        r["elapsed_ms"]
+-        for r in report.records
+-        if isinstance(r.get("elapsed_ms"), (int, float))
+-    ]
+-    if elapsed:
+-        # elapsed_ms values are already milliseconds; do not rescale.
+-        report.duration_ms = max(0.0, max(elapsed) - min(elapsed))
+-
+-    return report
++    @property
++    def has_warnings(self) -> bool:
++        return bool(self.warnings)
+ 
+ 
+ class Aggregate:
+-    """Directory-wide statistics built from validated records."""
+-
+     def __init__(self) -> None:
+         self.record_count = 0
+         self.model_calls = 0
+-        self.models: Counter = Counter()
+-        self.tools: Counter = Counter()
+-        self.stop_reasons: Counter = Counter()
+-        self.tool_end_status: Counter = Counter()
+-        self.tool_end_status_by_tool: Counter = Counter()
+-        self.model_errors: Counter = Counter()
+-        self.model_retries: Counter = Counter()
+-        self.event_names: Counter = Counter()
+-        self.input_tokens = 0
+-        self.output_tokens = 0
+-        self.cache_creation_tokens = 0
+-        self.cache_read_tokens = 0
+-        self.calls_with_usage = 0
++        self.models = Counter()
++        self.tools = Counter()
++        self.stop_reasons = Counter()
++        self.tool_end_status = Counter()
++        self.model_errors = 0
+ 
+-    def add_file(self, report: FileReport) -> None:
++    def merge(self, report: FileReport) -> None:
++        self.record_count += len(report.records)
+         for record in report.records:
+-            self.record_count += 1
+-            event = record["event"]
+-            data = record["data"]
+-            self.event_names[event] += 1
+-
+-            if event == "run_end":
+-                report.run_end_status = str(data.get("status", "unknown"))
+-            elif event == "model_request":
++            event = record.get("event")
++            if event == "model_request":
+                 self.model_calls += 1
+-                self.models[str(data.get("model") or "unknown")] += 1
+-            elif event == "model_response":
+-                self.stop_reasons[str(data.get("stop_reason") or "unknown")] += 1
+-                usage = data.get("usage")
+-                if isinstance(usage, dict):
+-                    self.calls_with_usage += 1
+-                    self.input_tokens += int(usage.get("input_tokens") or 0)
+-                    self.output_tokens += int(usage.get("output_tokens") or 0)
+-                    self.cache_creation_tokens += int(
+-                        usage.get("cache_creation_input_tokens") or 0
+-                    )
+-                    self.cache_read_tokens += int(
+-                        usage.get("cache_read_input_tokens") or 0
+-                    )
+-            elif event == "model_error":
+-                self.model_errors[
+-                    str(data.get("error_type") or data.get("status") or "unknown")
+-                ] += 1
+-            elif event == "model_retry":
+-                self.model_retries[str(data.get("reason") or "unknown")] += 1
++                model = record.get("model")
++                if model:
++                    self.models[model] += 1
+             elif event == "tool_start":
+-                self.tools[str(data.get("tool") or "unknown")] += 1
++                tool = record.get("tool")
++                if tool:
++                    self.tools[tool] += 1
++            elif event == "model_response":
++                stop_reason = record.get("stop_reason")
++                if stop_reason:
++                    self.stop_reasons[stop_reason] += 1
+             elif event == "tool_end":
+-                status = str(data.get("status") or "unknown")
+-                self.tool_end_status[status] += 1
+-                if status != "ok":
+-                    self.tool_end_status_by_tool["%s / %s" % (status, data.get("tool") or "?")] += 1
+-
+-
+-def _table(counter: Counter, top: Optional[int] = None) -> List[str]:
+-    items = counter.most_common()
+-    if top is not None:
+-        items = items[:top]
+-    if not items:
+-        return ["    (none observed)"]
+-    width = max(len(str(name)) for name, _ in items)
+-    return ["    %-*s  %d" % (width, name, count) for name, count in items]
+-
+-
+-def _format_ms(value_ms: float) -> str:
+-    if value_ms >= 60000.0:
+-        return "%.1f min" % (value_ms / 60000.0)
+-    if value_ms >= 1000.0:
+-        return "%.1f s" % (value_ms / 1000.0)
+-    return "%.0f ms" % value_ms
+-
+-
+-def render_text(directory: Path, reports: List[FileReport], agg: Aggregate,
+-                do_validate: bool, top: int) -> str:
+-    lines: List[str] = []
+-    total_errors = sum(len(r.errors) for r in reports)
+-    lines.append("Trace stats: %s" % directory)
+-    lines.append("  %d run file(s), %d event record(s)" % (len(reports), agg.record_count))
+-    lines.append("")
+-
+-    if do_validate:
+-        lines.append("Validation")
+-        if total_errors == 0:
+-            lines.append(
+-                "  OK: all %d lines across %d file(s) are well-formed."
+-                % (sum(r.line_count for r in reports), len(reports))
+-            )
++                status = record.get("status")
++                if status:
++                    self.tool_end_status[status] += 1
++            elif event == "model_error":
++                self.model_errors += 1
++
++    def render_text(self) -> str:
++        lines = [
++            f"Total records: {self.record_count}",
++            f"Model calls: {self.model_calls}",
++            f"Model errors: {self.model_errors}",
++            f"Tool calls: {sum(self.tools.values())}",
++        ]
++        if self.models:
++            lines.append("\nModel usage:")
++            for model, count in self.models.most_common():
++                lines.append(f"  {model}: {count}")
++        if self.tools:
++            lines.append("\nTool usage:")
++            for tool, count in self.tools.most_common():
++                lines.append(f"  {tool}: {count}")
++        if self.stop_reasons:
++            lines.append("\nStop reasons:")
++            for reason, count in self.stop_reasons.most_common():
++                lines.append(f"  {reason}: {count}")
++        if self.tool_end_status:
++            lines.append("\nTool end statuses:")
++            for status, count in self.tool_end_status.most_common():
++                lines.append(f"  {status}: {count}")
++        return "\n".join(lines)
++
++    def render_json(self) -> dict[str, Any]:
++        return {
++            "total_records": self.record_count,
++            "model_calls": self.model_calls,
++            "model_errors": self.model_errors,
++            "tool_calls": sum(self.tools.values()),
++            "model_usage": dict(self.models),
++            "tool_usage": dict(self.tools),
++            "stop_reasons": dict(self.stop_reasons),
++            "tool_end_statuses": dict(self.tool_end_status),
++        }
++
++
++def load_file(path: Path) -> FileReport:
++    records = []
++    line_count = 0
++    errors = []
++    warnings = []
++    try:
++        with path.open("r", encoding="utf-8") as handle:
++            for line_number, line in enumerate(handle, start=1):
++                line = line.rstrip("
++")
++                line_count += 1
++                if not line:
++                    continue
++                try:
++                    record = json.loads(line)
++                except json.JSONDecodeError as exc:
++                    errors.append(f"invalid JSON at {path}:{line_number}: {exc}")
++                    continue
++                if not isinstance(record, dict) or not isinstance(record.get("event"), str):
++                    errors.append(f"invalid trace record at {path}:{line_number}")
++                    continue
++                records.append(record)
++        if not records:
++            errors.append(f"trace is empty: {path}")
+         else:
+-            lines.append("  ERROR: %d malformed line(s):" % total_errors)
+-            for report in reports:
+-                for error in report.errors:
+-                    lines.append("    - %s: %s" % (report.name, error))
+-        for report in reports:
+-            for warning in report.warnings:
+-                lines.append("  warning: %s: %s" % (report.name, warning))
+-        lines.append("")
+-
+-    lines.append("Runs")
+-    if not reports:
+-        lines.append("    (none)")
+-    for index, report in enumerate(reports, start=1):
+-        status = report.run_end_status or "unknown (no run_end)"
+-        lines.append(
+-            "  %d. %-14s %s  %d events, %d turns, %d agent(s), %s, status=%s"
+-            % (
+-                index,
+-                report.run_id or "?",
+-                report.name,
+-                len(report.records),
+-                report.turns,
+-                report.agents,
+-                _format_ms(report.duration_ms),
+-                status,
+-            )
+-        )
+-    lines.append("")
+-
+-    lines.append("Models (model_request)")
+-    lines.extend(_table(agg.models, top))
+-    lines.append("")
+-
+-    lines.append("Tool calls (tool_start)")
+-    lines.extend(_table(agg.tools, top))
+-    lines.append("")
+-
+-    lines.append("Model stop reasons (model_response)")
+-    lines.extend(_table(agg.stop_reasons, top))
+-    lines.append("")
+-
+-    lines.append("Errors and non-ok outcomes")
+-    if agg.tool_end_status:
+-        lines.append(
+-            "  tool_end status: "
+-            + ", ".join(
+-                "%s %d" % (status, count) for status, count in agg.tool_end_status.most_common()
+-            )
+-        )
+-        if agg.tool_end_status_by_tool:
+-            lines.append("    by tool:")
+-            lines.extend(_table(agg.tool_end_status_by_tool, top))
+-    else:
+-        lines.append("  tool_end status: (none observed)")
+-    if agg.model_errors:
+-        lines.append(
+-            "  model_error: "
+-            + ", ".join(
+-                "%s %d" % (name, count) for name, count in agg.model_errors.most_common()
+-            )
+-        )
+-    else:
+-        lines.append("  model_error: 0")
+-    if agg.model_retries:
+-        lines.append(
+-            "  model_retry: "
+-            + ", ".join(
+-                "%s %d" % (name, count) for name, count in agg.model_retries.most_common()
+-            )
+-        )
+-    else:
+-        lines.append("  model_retry: 0")
+-    lines.append("")
++            schema_version = records[0].get("schema_version")
++            if schema_version != "1.0":
++                warnings.append(f"unsupported schema version {schema_version}: {path}")
++    except OSError as exc:
++        errors.append(f"error reading {path}: {exc}")
++    return FileReport(path, records, line_count, errors, warnings)
+ 
+-    lines.append("Tokens (approx; summed over model_response data.usage)")
+-    if agg.model_calls:
+-        lines.append(
+-            "  model calls: %d (usage reported on %d)" % (agg.model_calls, agg.calls_with_usage)
+-        )
+-        lines.append(
+-            "  input %s | output %s | cache_write %s | cache_read %s"
+-            % (
+-                format(agg.input_tokens, ","),
+-                format(agg.output_tokens, ","),
+-                format(agg.cache_creation_tokens, ","),
+-                format(agg.cache_read_tokens, ","),
+-            )
+-        )
+-    else:
+-        lines.append("  (no model calls observed)")
+-    lines.append("")
+-    return "\n".join(lines)
+-
+-
+-def render_json(directory: Path, reports: List[FileReport], agg: Aggregate) -> str:
+-    return json.dumps(
+-        {
+-            "directory": str(directory),
+-            "files": [
+-                {
+-                    "file": report.name,
+-                    "run_id": report.run_id,
+-                    "lines": report.line_count,
+-                    "events": len(report.records),
+-                    "turns": report.turns,
+-                    "agents": report.agents,
+-                    "duration_ms": round(report.duration_ms, 3),
+-                    "run_end_status": report.run_end_status,
+-                    "errors": report.errors,
+-                    "warnings": report.warnings,
+-                }
+-                for report in reports
+-            ],
+-            "totals": {
+-                "records": agg.record_count,
+-                "model_calls": agg.model_calls,
+-                "models": dict(agg.models),
+-                "tool_calls": dict(agg.tools),
+-                "stop_reasons": dict(agg.stop_reasons),
+-                "tool_end_status": dict(agg.tool_end_status),
+-                "model_errors": dict(agg.model_errors),
+-                "model_retries": dict(agg.model_retries),
+-                "input_tokens": agg.input_tokens,
+-                "output_tokens": agg.output_tokens,
+-                "cache_creation_input_tokens": agg.cache_creation_tokens,
+-                "cache_read_input_tokens": agg.cache_read_tokens,
+-                "model_calls_with_usage": agg.calls_with_usage,
+-            },
+-        },
+-        indent=2,
+-        sort_keys=False,
+-    )
+-
+-
+-def main(argv: Optional[List[str]] = None) -> int:
+-    parser = argparse.ArgumentParser(
+-        description="Validate JSONL trace files in a directory and print aggregate stats.",
+-    )
+-    parser.add_argument("directory", help="directory containing run_*.jsonl trace files")
+-    mode = parser.add_mutually_exclusive_group()
+-    mode.add_argument("--validate", action="store_true",
+-                      help="run validation only and exit (default: validation + stats)")
+-    mode.add_argument("--stats", action="store_true",
+-                      help="print stats only; malformed lines are skipped, not gated on")
+-    parser.add_argument("--top", type=int, default=15,
+-                        help="max rows in frequency tables (default: 15)")
+-    parser.add_argument("--json", action="store_true", dest="as_json",
+-                        help="emit a machine-readable JSON report instead of text")
++
++def check_record(line_number: int, record: dict[str, Any]) -> list[str]:
++    errors = []
++    event = record.get("event")
++    if event in {"model_request", "model_response", "model_error"}:
++        if "model" not in record:
++            errors.append(f"missing model field in {event} at line {line_number}")
++        if "elapsed_ms" not in record:
++            errors.append(f"missing elapsed_ms field in {event} at line {line_number}")
++    elif event in {"tool_start", "tool_end"}:
++        if "tool" not in record:
++            errors.append(f"missing tool field in {event} at line {line_number}")
++        if "elapsed_ms" not in record:
++            errors.append(f"missing elapsed_ms field in {event} at line {line_number}")
++    return errors
++
++
++def main(argv: list[str] | None = None) -> int:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("directory", nargs="?", default=".", help="trace directory (default: .)")
++    parser.add_argument("--view", choices=("text", "json"), default="text", help="output format")
++    parser.add_argument("--summary", action="store_true", help="print summary JSON")
++    parser.add_argument("--no-validate", action="store_true", help="skip validation")
+     args = parser.parse_args(argv)
+ 
+-    directory = Path(args.directory)
+-    if not directory.exists():
+-        print("error: directory not found: %s" % directory, file=sys.stderr)
+-        return 2
++    directory = Path(args.directory).resolve()
+     if not directory.is_dir():
+-        print("error: not a directory: %s" % directory, file=sys.stderr)
+-        return 2
++        parser.error(f"{directory} is not a directory")
+ 
+-    files = sorted(directory.glob("*.jsonl"))
++    files = sorted(directory.glob("run_*.jsonl"))
+     if not files:
+-        print("No .jsonl trace files found in %s" % directory)
+-        return 0
+-
+-    reports = [validate_file(path) for path in files]
+-    total_errors = sum(len(report.errors) for report in reports)
++        parser.error(f"no run_*.jsonl files found in {directory}")
+ 
+     aggregate = Aggregate()
+-    for report in reports:
+-        aggregate.add_file(report)
++    for file in files:
++        report = load_file(file)
++        if not args.no_validate:
++            for record in report.records:
++                errors = check_record(report.records.index(record) + 1, record)
++                report.errors.extend(errors)
++        if report.errors:
++            for error in report.errors:
++                print(f"{file.name}: {error}", file=sys.stderr)
++        else:
++            aggregate.merge(report)
++
++    if args.summary:
++        print(json.dumps(aggregate.render_json(), indent=2))
++        return 0
+ 
+-    do_validate = not args.stats
+-    if args.as_json:
+-        print(render_json(directory, reports, aggregate))
++    if args.view == "json":
++        print(json.dumps(aggregate.render_json(), indent=2))
+     else:
+-        print(render_text(directory, reports, aggregate, do_validate, args.top))
++        print(aggregate.render_text())
+ 
+-    if args.validate or do_validate:
+-        return 1 if total_errors else 0
+-    return 0
++    return 0 if all(report.valid for report in (load_file(file) for file in files)) else 1
+ 
+ 
+ if __name__ == "__main__":
+-    sys.exit(main())
++    sys.exit(main())
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_task_dag.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_task_dag.py	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/trace_task_dag.py	2026-09-26 22:14:01.253237826 -0400
+@@ -0,0 +1,299 @@
++BUILD_TAG = 'profiling'
++"""Reconstruct task dependency graph from a JSONL trace file."""
++
++from __future__ import annotations
++
++import argparse
++import json
++import sys
++from collections import defaultdict
++from dataclasses import dataclass
++from pathlib import Path
++from typing import Any, Iterable, Iterator
++
++
++def load_trace(path: Path) -> list[dict[str, Any]]:
++    records = []
++    with path.open("r", encoding="utf-8") as handle:
++        for line_number, line in enumerate(handle, start=1):
++            if not line.strip():
++                continue
++            try:
++                record = json.loads(line)
++            except json.JSONDecodeError as exc:
++                raise ValueError(f"invalid JSON at {path}:{line_number}: {exc}") from exc
++            if not isinstance(record, dict) or not isinstance(record.get("event"), str):
++                raise ValueError(f"invalid trace record at {path}:{line_number}")
++            records.append(record)
++    records.sort(key=lambda event: int(event.get("monotonic_ns", 0)))
++    if not records:
++        raise ValueError(f"trace is empty: {path}")
++    return records
++
++
++def _latest_trace(directory: Path) -> Path:
++    candidates = sorted(directory.glob("run_*.jsonl"), key=lambda path: path.stat().st_mtime)
++    if not candidates:
++        raise ValueError(f"no run_*.jsonl files found in {directory}")
++    return candidates[-1]
++
++
++def _short(value: Any, limit: int = 100) -> str:
++    if isinstance(value, dict) and "preview" in value:
++        value = value.get("preview", "")
++    elif not isinstance(value, str):
++        value = json.dumps(value, ensure_ascii=True, sort_keys=True, default=str)
++    value = " ".join(str(value).split())
++    return value if len(value) <= limit else value[: max(0, limit - 3)] + "..."
++
++
++class Node:
++    def __init__(self, id: str, label: str, agent_id: str, task: str, kind: str, start_ns: int, end_ns: int):
++        self.id = id
++        self.label = label
++        self.agent_id = agent_id
++        self.task = task
++        self.kind = kind
++        self.start_ns = start_ns
++        self.end_ns = end_ns
++        self.dependencies: list[Node] = []
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "id": self.id,
++            "label": self.label,
++            "agent_id": self.agent_id,
++            "task": self.task,
++            "kind": self.kind,
++            "start": self.start_ns,
++            "end": self.end_ns,
++            "dependencies": [dep.id for dep in self.dependencies],
++        }
++
++
++def _is_tool_node(event: dict[str, Any]) -> bool:
++    return event.get("event") in {"tool_start", "tool_end"}
++
++
++def _is_model_node(event: dict[str, Any]) -> bool:
++    return event.get("event") in {"model_request", "model_response"}
++
++
++def _is_agent_node(event: dict[str, Any]) -> bool:
++    return event.get("event") in {"agent_start", "agent_end"}
++
++
++def _is_workflow_node(event: dict[str, Any]) -> bool:
++    return event.get("event") in {"workflow_node_start", "workflow_node_end"}
++
++
++def _is_harness_node(event: dict[str, Any]) -> bool:
++    return event.get("event") in {"harness_decision", "context_compact"}
++
++
++def _is_background_node(event: dict[str, Any]) -> bool:
++    return event.get("event") in {"background_start", "background_end"}
++
++
++def _is_message_node(event: dict[str, Any]) -> bool:
++    return event.get("event") in {"message_send"}
++
++
++def _is_dependency_node(event: dict[str, Any]) -> bool:
++    return event.get("event") in {"workflow_dependency"}
++
++
++def _is_unknown_node(event: dict[str, Any]) -> bool:
++    return not any(
++        _is_tool_node(event), _is_model_node(event), _is_agent_node(event),
++        _is_workflow_node(event), _is_harness_node(event), _is_background_node(event),
++        _is_message_node(event), _is_dependency_node(event)
++    )
++
++
++def _node_from_event(event: dict[str, Any]) -> Node | None:
++    event_type = event.get("event")
++    if event_type is None:
++        return None
++
++    agent_id = event.get("agent_id")
++    if agent_id is None:
++        agent_id = "harness"
++
++    data = event.get("data", {})
++    if not isinstance(data, dict):
++        data = {}
++
++    if _is_tool_node(event):
++        tool = data.get("tool", "unknown")
++        arguments = data.get("arguments", {})
++        status = data.get("status", "unknown")
++        return Node(
++            id=event.get("event_id", "unknown"),
++            label=f"Tool: {tool} {_short(arguments, 80)} -> {status}",
++            agent_id=agent_id,
++            task=data.get("task", "unknown"),
++            kind="tool",
++            start_ns=int(event.get("monotonic_ns", 0)),
++            end_ns=int(event.get("monotonic_ns", 0)),
++        )
++
++    if _is_model_node(event):
++        model = data.get("model", "unknown")
++        purpose = data.get("purpose", "unspecified")
++        return Node(
++            id=event.get("event_id", "unknown"),
++            label=f"LLM [{purpose}]",
++            agent_id=agent_id,
++            task=data.get("task", "unknown"),
++            kind="model",
++            start_ns=int(event.get("monotonic_ns", 0)),
++            end_ns=int(event.get("monotonic_ns", 0)),
++        )
++
++    if _is_agent_node(event):
++        role = data.get("role", "agent")
++        return Node(
++            id=event.get("event_id", "unknown"),
++            label=f"Agent: {role} ({agent_id})",
++            agent_id=agent_id,
++            task=data.get("task", "unknown"),
++            kind="agent",
++            start_ns=int(event.get("monotonic_ns", 0)),
++            end_ns=int(event.get("monotonic_ns", 0)),
++        )
++
++    if _is_workflow_node(event):
++        label = data.get("label", "unknown")
++        return Node(
++            id=event.get("event_id", "unknown"),
++            label=f"Workflow Node: {label}",
++            agent_id=agent_id,
++            task=data.get("task", "unknown"),
++            kind="workflow",
++            start_ns=int(event.get("monotonic_ns", 0)),
++            end_ns=int(event.get("monotonic_ns", 0)),
++        )
++
++    if _is_harness_node(event):
++        action = data.get("action", "unknown")
++        return Node(
++            id=event.get("event_id", "unknown"),
++            label=f"Harness: {action}",
++            agent_id=agent_id,
++            task=data.get("task", "unknown"),
++            kind="harness",
++            start_ns=int(event.get("monotonic_ns", 0)),
++            end_ns=int(event.get("monotonic_ns", 0)),
++        )
++
++    if _is_background_node(event):
++        tool = data.get("tool", "unknown")
++        return Node(
++            id=event.get("event_id", "unknown"),
++            label=f"Background: {tool}",
++            agent_id=agent_id,
++            task=data.get("task", "unknown"),
++            kind="background",
++            start_ns=int(event.get("monotonic_ns", 0)),
++            end_ns=int(event.get("monotonic_ns", 0)),
++        )
++
++    if _is_message_node(event):
++        from_agent = data.get("from")
++        to_agent = data.get("to")
++        message_type = data.get("message_type", "unknown")
++        return Node(
++            id=event.get("event_id", "unknown"),
++            label=f"Message: {from_agent} -> {to_agent} ({message_type})",
++            agent_id=agent_id,
++            task=data.get("task", "unknown"),
++            kind="message",
++            start_ns=int(event.get("monotonic_ns", 0)),
++            end_ns=int(event.get("monotonic_ns", 0)),
++        )
++
++    if _is_dependency_node(event):
++        from_node = data.get("from_node_id", "unknown")
++        to_node = data.get("to_node_id", "unknown")
++        return Node(
++            id=event.get("event_id", "unknown"),
++            label=f"Depends: {from_node} -> {to_node}",
++            agent_id=agent_id,
++            task=data.get("task", "unknown"),
++            kind="dependency",
++            start_ns=int(event.get("monotonic_ns", 0)),
++            end_ns=int(event.get("monotonic_ns", 0)),
++        )
++
++    if _is_unknown_node(event):
++        return Node(
++            id=event.get("event_id", "unknown"),
++            label=f"Unknown: {event_type}",
++            agent_id=agent_id,
++            task=data.get("task", "unknown"),
++            kind="unknown",
++            start_ns=int(event.get("monotonic_ns", 0)),
++            end_ns=int(event.get("monotonic_ns", 0)),
++        )
++
++    return None
++
++
++def _build_graph(events: list[dict[str, Any]]) -> dict[str, Node]:
++    nodes: dict[str, Node] = {}
++    for event in events:
++        node = _node_from_event(event)
++        if node is None:
++            continue
++        nodes[node.id] = node
++    for event in events:
++        node = nodes.get(event.get("event_id"))
++        if node is None:
++            continue
++        if _is_dependency_node(event):
++            data = event.get("data", {})
++            if not isinstance(data, dict):
++                continue
++            from_node_id = data.get("from_node_id")
++            if from_node_id in nodes:
++                node.dependencies.append(nodes[from_node_id])
++    return nodes
++
++
++def _format_node(node: Node) -> str:
++    return f"{node.id} {node.label} (Agent: {node.agent_id}, Task: {node.task})"
++
++
++def _render_graph_v2(nodes: dict[str, Node]) -> str:
++    lines = ["Task Dependency Graph"]
++    for node in nodes.values():
++        lines.append(f"  {_format_node(node)}")
++        for dep in node.dependencies:
++            lines.append(f"    Depends on: {_format_node(dep)}")
++    return "\n".join(lines)
++
++
++def main(argv: list[str] | None = None) -> int:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("trace", nargs="?", type=Path,
++                        help="trace JSONL (default: latest file in traces/)")
++    parser.add_argument("--format", choices=("text", "json"), default="text",
++                        help="output format (default: text)")
++    args = parser.parse_args(argv)
++    try:
++        path = args.trace or _latest_trace(Path("traces"))
++        events = load_trace(path)
++    except (OSError, ValueError) as exc:
++        parser.error(str(exc))
++
++    graph = _build_graph(events)
++    if args.format == "json":
++        print(json.dumps({node_id: node.to_dict() for node_id, node in graph.items()}, indent=2))
++    else:
++        print(_render_graph_v2(graph))
++    return 0
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/trace_view.py	2026-09-26 22:11:50.694356948 -0400
+@@ -1,5 +1,7 @@
+-#!/usr/bin/env python3
+-"""Render an integrated-harness JSONL trace as metrics, a tree, and a timeline."""
++BUILD_TAG = 'profiling'
++"""
++Render an integrated-harness JSONL trace as metrics, a tree, and a timeline.
++"""
+ 
+ from __future__ import annotations
+ 
+@@ -12,21 +14,6 @@
+ from typing import Any, Iterable
+ 
+ 
+-START_TO_END = {
+-    "agent_start": {"agent_end"},
+-    "agent_active_start": {"agent_active_end"},
+-    "model_request": {"model_response", "model_error"},
+-    "tool_start": {"tool_end"},
+-    "tool_execution_start": {"tool_execution_end"},
+-    "background_start": {"background_end"},
+-    "workflow_node_start": {"workflow_node_end"},
+-    "context_prepare": {"context_prepared"},
+-    "permission_wait_start": {"permission_wait_end"},
+-    "input_wait_start": {"input_wait_end"},
+-}
+-WRAPPER_TOOLS = {"task", "spawn_teammate", "Workflow"}
+-
+-
+ @dataclass(frozen=True)
+ class Interval:
+     start_ns: int
+@@ -142,9 +129,7 @@
+         if not agent_id:
+             continue
+         agent_id = str(agent_id)
+-        data = event.get("data", {})
+-        if not isinstance(data, dict):
+-            data = {}
++        data = event.get("data", {}) if isinstance(event.get("data", {}), dict) else {}
+         if event.get("event") in {"agent_create", "agent_start"}:
+             current = info.setdefault(agent_id, {})
+             for key in ("role", "name", "task", "label", "execution", "workflow_name"):
+@@ -347,8 +332,8 @@
+     }
+     stamped = [event for event in events if event.get("monotonic_ns") is not None]
+     if stamped:
+-        first_ns = min(int(event["monotonic_ns"]) for event in stamped)
+-        last_ns = max(int(event["monotonic_ns"]) for event in stamped)
++        first_ns = min(int(event["monotonic_ns"] for event in stamped)
++        last_ns = max(int(event["monotonic_ns"] for event in stamped)
+         summary["duration_ms"] = round((last_ns - first_ns) / 1_000_000, 3)
+     input_tokens = output_tokens = cache_tokens = 0
+     has_usage = False
+@@ -393,8 +378,7 @@
+ 
+ def _event_label(event: dict[str, Any], starts: dict[str, dict[str, Any]]) -> str | None:
+     name = event.get("event")
+-    data = event.get("data", {})
+-    data = data if isinstance(data, dict) else {}
++    data = event.get("data", {}) if isinstance(event.get("data", {}), dict) else {}
+     duration = data.get("duration_ms")
+     duration_text = f" {float(duration):.1f}ms" if isinstance(duration, (int, float)) else ""
+     if name in {"model_response", "model_error"}:
+@@ -429,7 +413,7 @@
+     if name == "message_send":
+         return f"Message: {data.get('from')} -> {data.get('to')} ({data.get('message_type')})"
+     if name == "workflow_dependency":
+-        return f"Depends: {data.get('from_node_id')} -> {data.get('to_node_id')}"
++        return f"Depends: {data.get('from_node_id')} -> {data.get('to_node_id')}`"
+     if name == "harness_decision":
+         action = data.get("action")
+         suffix = f" / {action}" if action else ""
+@@ -452,7 +436,7 @@
+         values.sort(key=lambda agent_id: created_at.get(agent_id, 0))
+ 
+     starts = {
+-        str(event["span_id"]): event
++        str(event["span_id"]: event
+         for event in events
+         if event.get("span_id") and event.get("event") in START_TO_END
+     }
+@@ -644,4 +628,4 @@
+ 
+ 
+ if __name__ == "__main__":
+-    sys.exit(main())
++    sys.exit(main())
+\ No newline at end of file

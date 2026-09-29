@@ -1,0 +1,1371 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/asyncio.py	2026-09-27 09:18:46.165384626 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Asynchronous progress bar decorator for iterators.
+ Includes a default `range` iterator printing to `stderr`.
+@@ -15,89 +17,6 @@
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = ['tqdm_asyncio', 'tarange', 'tqdm', 'trange']
+ 
+-
+ class tqdm_asyncio(std_tqdm):
+     """
+-    Asynchronous-friendly version of tqdm.
+-    """
+-    def __init__(self, iterable=None, *args, **kwargs):
+-        super().__init__(iterable, *args, **kwargs)
+-        self.iterable_awaitable = False
+-        if iterable is not None:
+-            if hasattr(iterable, "__anext__"):
+-                self.iterable_next = iterable.__anext__
+-                self.iterable_awaitable = True
+-            elif hasattr(iterable, "__aiter__"):
+-                self.iterable_iterator = iterable.__aiter__()
+-                self.iterable_next = self.iterable_iterator.__anext__
+-                self.iterable_awaitable = True
+-            elif hasattr(iterable, "__next__"):
+-                self.iterable_next = iterable.__next__
+-            else:
+-                self.iterable_iterator = iter(iterable)
+-                self.iterable_next = self.iterable_iterator.__next__
+-
+-    def __aiter__(self):
+-        return self
+-
+-    async def __anext__(self):
+-        try:
+-            if self.iterable_awaitable:
+-                res = await self.iterable_next()
+-            else:
+-                res = self.iterable_next()
+-            self.update()
+-            return res
+-        except StopIteration:
+-            self.close()
+-            raise StopAsyncIteration
+-        except BaseException:
+-            self.close()
+-            raise
+-
+-    def send(self, *args, **kwargs):
+-        return self.iterable.send(*args, **kwargs)
+-
+-    @classmethod
+-    def as_completed(cls, fs, *, loop=None, timeout=None, total=None, **tqdm_kwargs):
+-        """
+-        Wrapper for `asyncio.as_completed`.
+-        """
+-        if total is None:
+-            total = len(fs)
+-        kwargs = {}
+-        if version_info[:2] < (3, 10):
+-            kwargs['loop'] = loop
+-        yield from cls(asyncio.as_completed(fs, timeout=timeout, **kwargs),
+-                       total=total, **tqdm_kwargs)
+-
+-    @classmethod
+-    async def gather(cls, *fs, loop=None, timeout=None, total=None, return_exceptions=False,
+-                     **tqdm_kwargs):
+-        """
+-        Wrapper for `asyncio.gather`.
+-        """
+-        async def wrap_awaitable(i, f):
+-            try:
+-                return i, await f
+-            except Exception as e:  # noqa: BLE001
+-                if return_exceptions:
+-                    return i, e
+-                raise
+-
+-        ifs = [wrap_awaitable(i, f) for i, f in enumerate(fs)]
+-        res = [await f for f in cls.as_completed(ifs, loop=loop, timeout=timeout,
+-                                                 total=total, **tqdm_kwargs)]
+-        return [i for _, i in sorted(res)]
+-
+-
+-def tarange(*args, **kwargs):
+-    """
+-    A shortcut for `tqdm.asyncio.tqdm(range(*args), **kwargs)`.
+-    """
+-    return tqdm_asyncio(range(*args), **kwargs)
+-
+-
+-# Aliases
+-tqdm = tqdm_asyncio
+-trange = tarange
++... (83 more lines)"""
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/autonotebook.py	2026-09-27 09:23:34.251367636 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Automatically choose between `tqdm.notebook` and `tqdm.std`.
+ 
+@@ -18,21 +20,4 @@
+         if 'qt' in ipy or 'spyder' in ipy:
+             raise ImportError("console")  # older jupyter-qtconsole/spyder
+         # jupyter-notebook/jupyterlab/vscode/binder/colab
+-    elif 'IPython.utils._process_emscripten' in sys.modules:
+-        pass  # jupyterlite (pyodide)/jupyterlite-xeus
+-    else:
+-        raise ImportError("console")  # ipython/jupyter-console
+-    from .notebook import WARN_NOIPYW, IProgress
+-    if IProgress is None:
+-        from .std import TqdmWarning
+-        warn(WARN_NOIPYW, TqdmWarning, stacklevel=2)
+-        raise ImportError('ipywidgets')
+-except Exception:
+-    from .std import tqdm, trange
+-else:  # pragma: no cover
+-    from .notebook import tqdm, trange
+-    from .std import TqdmExperimentalWarning
+-    warn("Using `tqdm.autonotebook.tqdm` in notebook mode."
+-         " Use `tqdm.tqdm` instead to force console mode"
+-         " (e.g. in jupyter console)", TqdmExperimentalWarning, stacklevel=2)
+-__all__ = ["tqdm", "trange"]
++... (18 more lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/auto.py	2026-09-27 09:20:55.804477132 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Enables multiple commonly used features.
+ 
+@@ -18,23 +20,4 @@
+ 
+ with warnings.catch_warnings():
+     warnings.simplefilter("ignore", category=TqdmExperimentalWarning)
+-    from .autonotebook import tqdm as notebook_tqdm
+-
+-from .asyncio import tqdm as asyncio_tqdm
+-from .std import tqdm as std_tqdm
+-
+-if notebook_tqdm != std_tqdm:
+-    class tqdm(notebook_tqdm, asyncio_tqdm):  # pylint: disable=inconsistent-mro
+-        pass
+-else:
+-    tqdm = asyncio_tqdm
+-
+-
+-def trange(*args, **kwargs):
+-    """
+-    A shortcut for `tqdm.auto.tqdm(range(*args), **kwargs)`.
+-    """
+-    return tqdm(range(*args), **kwargs)
+-
+-
+-__all__ = ["tqdm", "trange"]
++... (20 more lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/cli.py	2026-09-27 09:25:34.922522412 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Module version for monitoring CLI pipes (`... | python -m tqdm | ...`).
+ """
+@@ -13,312 +15,8 @@
+ __all__ = ["main"]
+ log = logging.getLogger(__name__)
+ 
+-
+ def cast(val, typ):
+     log.debug((val, typ))
+     if " or " in typ:
+         for t in typ.split(" or "):
+-            try:
+-                return cast(val, t)
+-            except TqdmTypeError:
+-                pass
+-        raise TqdmTypeError(f"{val} : {typ}")
+-
+-    # sys.stderr.write('\ndebug | `val:type`: `' + val + ':' + typ + '`.\n')
+-    if typ == 'bool':
+-        if (val == 'True') or (val == ''):
+-            return True
+-        if val == 'False':
+-            return False
+-        raise TqdmTypeError(val + ' : ' + typ)
+-    if typ == 'chr':
+-        if len(val) == 1:
+-            return val.encode()
+-        if re.match(r"^\\\w+$", val):
+-            return literal_eval(f'"{val}"').encode()
+-        raise TqdmTypeError(f"{val} : {typ}")
+-    if typ == 'str':
+-        return val
+-    if typ == 'int':
+-        try:
+-            return int(val)
+-        except ValueError as exc:
+-            raise TqdmTypeError(f"{val} : {typ}") from exc
+-    if typ == 'float':
+-        try:
+-            return float(val)
+-        except ValueError as exc:
+-            raise TqdmTypeError(f"{val} : {typ}") from exc
+-    raise TqdmTypeError(f"{val} : {typ}")
+-
+-
+-def posix_pipe(fin, fout, delim=b'\\n', buf_size=256,
+-               callback=lambda float: None, callback_len=True):
+-    """
+-    Params
+-    ------
+-    fin  : binary file with `read(buf_size : int)` method
+-    fout  : binary file with `write` (and optionally `flush`) methods.
+-    callback  : function(float), e.g.: `tqdm.update`
+-    callback_len  : If (default: True) do `callback(len(buffer))`.
+-      Otherwise, do `callback(data) for data in buffer.split(delim)`.
+-    """
+-    fp_write = fout.write
+-
+-    if not delim:
+-        while True:
+-            tmp = fin.read(buf_size)
+-
+-            # flush at EOF
+-            if not tmp:
+-                getattr(fout, 'flush', lambda: None)()
+-                return
+-
+-            fp_write(tmp)
+-            callback(len(tmp))
+-        # return
+-
+-    buf = b''
+-    len_delim = len(delim)
+-    # n = 0
+-    while True:
+-        tmp = fin.read(buf_size)
+-
+-        # flush at EOF
+-        if not tmp:
+-            if buf:
+-                fp_write(buf)
+-                if callback_len:
+-                    # n += 1 + buf.count(delim)
+-                    callback(1 + buf.count(delim))
+-                else:
+-                    for i in buf.split(delim):
+-                        callback(i)
+-            getattr(fout, 'flush', lambda: None)()
+-            return  # n
+-
+-        while True:
+-            i = tmp.find(delim)
+-            if i < 0:
+-                buf += tmp
+-                break
+-            fp_write(buf + tmp[:i + len(delim)])
+-            # n += 1
+-            callback(1 if callback_len else (buf + tmp[:i]))
+-            buf = b''
+-            tmp = tmp[i + len_delim:]
+-
+-
+-# ((opt, type), ... )
+-RE_OPTS = re.compile(r'\n {4}(\S+)\s{2,}:\s*([^,]+)')
+-# better split method assuming no positional args
+-RE_SHLEX = re.compile(r'\s*(?<!\S)--?([^\s=]+)(\s+|=|$)')
+-
+-# TODO: add custom support for some of the following?
+-UNSUPPORTED_OPTS = ('iterable', 'gui', 'out', 'file')
+-
+-# The 8 leading spaces are required for consistency
+-CLI_EXTRA_DOC = r"""
+-    Extra CLI Options
+-    -----------------
+-    name  : type, optional
+-        TODO: find out why this is needed.
+-    delim  : chr, optional
+-        Delimiting character [default: '\n']. Use '\0' for null.
+-        N.B.: on Windows systems, Python converts '\n' to '\r\n'.
+-    buf_size  : int, optional
+-        String buffer size in bytes [default: 256]
+-        used when `delim` is specified.
+-    bytes  : bool, optional
+-        If true, will count bytes, ignore `delim`, and default
+-        `unit_scale` to True, `unit_divisor` to 1024, and `unit` to 'B'.
+-    tee  : bool, optional
+-        If true, passes `stdin` to both `stderr` and `stdout`.
+-    update  : bool, optional
+-        If true, will treat input as newly elapsed iterations,
+-        i.e. numbers to pass to `update()`. Note that this is slow
+-        (~2e5 it/s) since every input must be decoded as a number.
+-    update_to  : bool, optional
+-        If true, will treat input as total elapsed iterations,
+-        i.e. numbers to assign to `self.n`. Note that this is slow
+-        (~2e5 it/s) since every input must be decoded as a number.
+-    null  : bool, optional
+-        If true, will discard input (no stdout).
+-    manpath  : str, optional
+-        Directory in which to install tqdm man pages.
+-    comppath  : str, optional
+-        Directory in which to place tqdm completion.
+-    log  : str, optional
+-        CRITICAL|FATAL|ERROR|WARN(ING)|[default: 'INFO']|DEBUG|NOTSET.
+-"""
+-
+-
+-def main(fp=sys.stderr, argv=None):
+-    """
+-    Parameters (internal use only)
+-    ---------
+-    fp  : file-like object for tqdm
+-    argv  : list (default: sys.argv[1:])
+-    """
+-    if argv is None:
+-        argv = sys.argv[1:]
+-    try:
+-        log_idx = argv.index('--log')
+-    except ValueError:
+-        for i in argv:
+-            if i.startswith('--log='):
+-                logLevel = i[len('--log='):]
+-                break
+-        else:
+-            logLevel = 'INFO'
+-    else:
+-        # argv.pop(log_idx)
+-        # logLevel = argv.pop(log_idx)
+-        logLevel = argv[log_idx + 1]
+-    logging.basicConfig(level=getattr(logging, logLevel),
+-                        format="%(levelname)s:%(module)s:%(lineno)d:%(message)s")
+-
+-    # py<3.13 doesn't dedent docstrings
+-    d = (tqdm.__doc__ if sys.version_info < (3, 13)
+-         else indent(tqdm.__doc__, "    ")) + CLI_EXTRA_DOC
+-
+-    opt_types = dict(RE_OPTS.findall(d))
+-    # opt_types['delim'] = 'chr'
+-
+-    for o in UNSUPPORTED_OPTS:
+-        opt_types.pop(o)
+-
+-    log.debug(sorted(opt_types.items()))
+-
+-    # d = RE_OPTS.sub(r'  --\1=<\1>  : \2', d)
+-    split = RE_OPTS.split(d)
+-    opt_types_desc = zip(split[1::3], split[2::3], split[3::3])
+-    d = ''.join(('\n  --{0}  : {2}{3}' if otd[1] == 'bool' else
+-                 '\n  --{0}=<{1}>  : {2}{3}').format(
+-                     otd[0].replace('_', '-'), otd[0], *otd[1:])
+-                for otd in opt_types_desc if otd[0] not in UNSUPPORTED_OPTS)
+-
+-    help_short = "Usage:\n  tqdm [--help | options]\n"
+-    d = help_short + """
+-Options:
+-  -h, --help     Print this help and exit.
+-  -v, --version  Print version and exit.
+-""" + d.strip('\n') + '\n'
+-
+-    # opts = docopt(d, version=__version__)
+-    if any(v in argv for v in ('-v', '--version')):
+-        sys.stdout.write(__version__ + '\n')
+-        sys.exit(0)
+-    elif any(v in argv for v in ('-h', '--help')):
+-        sys.stdout.write(d + '\n')
+-        sys.exit(0)
+-    elif argv and argv[0][:2] != '--':
+-        sys.stderr.write(f"Error:Unknown argument:{argv[0]}\n{help_short}")
+-
+-    argv = RE_SHLEX.split(' '.join(["tqdm"] + argv))
+-    opts = dict(zip(argv[1::3], argv[3::3]))
+-
+-    log.debug(opts)
+-    opts.pop('log', True)
+-
+-    tqdm_args = {'file': fp}
+-    try:
+-        for (o, v) in opts.items():
+-            o = o.replace('-', '_')
+-            try:
+-                tqdm_args[o] = cast(v, opt_types[o])
+-            except KeyError as e:
+-                raise TqdmKeyError(str(e))
+-        log.debug('args:' + str(tqdm_args))
+-
+-        delim_per_char = tqdm_args.pop('bytes', False)
+-        update = tqdm_args.pop('update', False)
+-        update_to = tqdm_args.pop('update_to', False)
+-        if sum((delim_per_char, update, update_to)) > 1:
+-            raise TqdmKeyError("Can only have one of --bytes --update --update_to")
+-    except Exception:
+-        fp.write("\nError:\n" + help_short)
+-        stdin, stdout_write = sys.stdin, sys.stdout.write
+-        for i in stdin:
+-            stdout_write(i)
+-        raise
+-    else:
+-        buf_size = tqdm_args.pop('buf_size', 256)
+-        delim = tqdm_args.pop('delim', b'\\n')
+-        tee = tqdm_args.pop('tee', False)
+-        manpath = tqdm_args.pop('manpath', None)
+-        comppath = tqdm_args.pop('comppath', None)
+-        if tqdm_args.pop('null', False):
+-            class stdout:
+-                @staticmethod
+-                def write(_):
+-                    pass
+-        else:
+-            stdout = sys.stdout
+-            stdout = getattr(stdout, 'buffer', stdout)
+-        stdin = getattr(sys.stdin, 'buffer', sys.stdin)
+-        if manpath or comppath:
+-            try:  # py<3.9
+-                import importlib_resources as resources
+-            except ImportError:
+-                from importlib import resources
+-            from pathlib import Path
+-
+-            def cp(name, dst):
+-                """copy resource `name` to `dst`"""
+-                fi = resources.files('tqdm') / name
+-                dst.write_bytes(fi.read_bytes())
+-                log.info("written:%s", dst)
+-            if manpath is not None:
+-                cp('tqdm.1', Path(manpath) / 'tqdm.1')
+-            if comppath is not None:
+-                cp('completion.sh', Path(comppath) / 'tqdm_completion.sh')
+-            sys.exit(0)
+-        if tee:
+-            stdout_write = stdout.write
+-            fp_write = getattr(fp, 'buffer', fp).write
+-
+-            class stdout:  # pylint: disable=function-redefined
+-                @staticmethod
+-                def write(x):
+-                    with tqdm.external_write_mode(file=fp):
+-                        fp_write(x)
+-                    stdout_write(x)
+-        if delim_per_char:
+-            tqdm_args.setdefault('unit', 'B')
+-            tqdm_args.setdefault('unit_scale', True)
+-            tqdm_args.setdefault('unit_divisor', 1024)
+-            log.debug(tqdm_args)
+-            with tqdm(**tqdm_args) as t:
+-                posix_pipe(stdin, stdout, '', buf_size, t.update)
+-        elif delim == b'\\n':
+-            log.debug(tqdm_args)
+-            write = stdout.write
+-            if update or update_to:
+-                with tqdm(**tqdm_args) as t:
+-                    if update:
+-                        def callback(i):
+-                            t.update(literal_eval(i.decode()))
+-                    else:  # update_to
+-                        def callback(i):
+-                            t.update(literal_eval(i.decode()) - t.n)
+-                    for i in stdin:
+-                        write(i)
+-                        callback(i)
+-            else:
+-                for i in tqdm(stdin, **tqdm_args):
+-                    write(i)
+-        else:
+-            log.debug(tqdm_args)
+-            with tqdm(**tqdm_args) as t:
+-                callback_len = False
+-                if update:
+-                    def callback(i):
+-                        t.update(literal_eval(i.decode()))
+-                elif update_to:
+-                    def callback(i):
+-                        t.update(literal_eval(i.decode()) - t.n)
+-                else:
+-                    callback = t.update
+-                    callback_len = True
+-                posix_pipe(stdin, stdout, delim, buf_size, callback, callback_len)
++... (304 more lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/bells.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/contrib/bells.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/bells.py	2026-09-17 15:46:11.398479427 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/contrib/bells.py	2026-09-27 09:30:12.594576731 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Even more features than `tqdm.auto` (all the bells & whistles):
+ 
+@@ -18,11 +20,4 @@
+     from .slack import tqdm, trange
+ elif getenv("TQDM_TELEGRAM_TOKEN") and getenv("TQDM_TELEGRAM_CHAT_ID"):
+     from .telegram import tqdm, trange
+-elif getenv("TQDM_DISCORD_TOKEN") and getenv("TQDM_DISCORD_CHANNEL_ID"):
+-    from .discord import tqdm, trange
+-else:
+-    from ..auto import tqdm, trange
+-
+-with warnings.catch_warnings():
+-    warnings.simplefilter("ignore", category=FutureWarning)
+-    tqdm.pandas()
++... (8 more lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/contrib/concurrent.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py	2026-09-17 15:46:11.404865043 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/contrib/concurrent.py	2026-09-27 09:32:08.162766627 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Thin wrappers around `concurrent.futures`.
+ """
+@@ -11,249 +13,10 @@
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = ['thread_map', 'process_map', 'interpreter_map']
+ 
+-
+ class _InterpreterLock:
+     """Reentrant lock backed by a cross-interpreter queue."""
+     from threading import get_ident
+     from time import monotonic as _time
+ 
+     def __init__(self, queue):
+-        from threading import RLock
+-        self._queue = queue
+-        self._lock = RLock()
+-        self._owner = None
+-        self._depth = 0
+-
+-    def acquire(self, blocking=True, timeout=-1):
+-        from queue import Empty
+-        start = self._time()
+-        if timeout == -1:
+-            acquired = self._lock.acquire(blocking)
+-        else:
+-            acquired = self._lock.acquire(blocking, timeout)
+-        if not acquired:
+-            return False
+-        if self._depth:
+-            self._depth += 1
+-            return True
+-        try:
+-            if not blocking:
+-                self._queue.get_nowait()
+-            elif timeout == -1:
+-                self._queue.get()
+-            else:
+-                remaining = max(0, timeout - (self._time() - start))
+-                self._queue.get(timeout=remaining)
+-        except Empty:
+-            self._lock.release()
+-            return False
+-        self._owner = self.get_ident()
+-        self._depth = 1
+-        return True
+-
+-    def release(self):
+-        if self._owner != self.get_ident():
+-            raise RuntimeError("cannot release un-acquired lock")
+-        self._depth -= 1
+-        if not self._depth:
+-            self._owner = None
+-            self._queue.put(None)
+-        self._lock.release()
+-
+-    def __enter__(self):
+-        self.acquire()
+-        return self
+-
+-    def __exit__(self, *exc):
+-        self.release()
+-
+-
+-@contextmanager
+-def ensure_lock(tqdm_class, lock_name="", lock=None):
+-    """get (create if necessary) and then restore `tqdm_class`'s lock"""
+-    old_lock = getattr(tqdm_class, '_lock', None)  # don't create a new lock
+-    if lock is None:
+-        lock = old_lock or tqdm_class.get_lock()  # maybe create a new lock
+-    lock = getattr(lock, lock_name, lock)  # maybe subtype
+-    tqdm_class.set_lock(lock)
+-    yield lock
+-    if old_lock is None:
+-        del tqdm_class._lock
+-    else:
+-        tqdm_class.set_lock(old_lock)
+-
+-
+-def _get_interpreter_init(tqdm_class, lock_queue_id):
+-    """Return an initializer which bootstraps the parent import path and lock."""
+-    code = (
+-        "import sys\n"
+-        f"sys.path[:] = {sys.path!r}\n"
+-        "from concurrent import interpreters\n"
+-        "from importlib import import_module\n"
+-        "from tqdm.contrib.concurrent import _InterpreterLock\n"
+-        f"tqdm_class = import_module({tqdm_class.__module__!r})\n"
+-        f"for name in {tqdm_class.__qualname__.split('.')!r}:\n"
+-        "    tqdm_class = getattr(tqdm_class, name)\n"
+-        "tqdm_class.monitor_interval = 0\n"
+-        f"tqdm_class.set_lock(_InterpreterLock(interpreters.Queue({lock_queue_id!r})))")
+-    return exec, (code,)
+-
+-
+-def _min_map_len(iterables):
+-    """min(map(length_hint, iterables), default=0)"""
+-    return min((n for it in iterables if (n := length_hint(it, -1)) >= 0), default=0)
+-
+-
+-def _executor_map(
+-    PoolExecutor, fn, *iterables, max_workers=None, timeout=None, chunksize=1, lock_name="",
+-    tqdm_class=tqdm_auto, smoothing=0.0, _lock=None, _initializer=None, _initargs=None,
+-    **tqdm_kwargs
+-):
+-    """
+-    Implementation of `thread_map`, `process_map` and `interpreter_map`.
+-
+-    Parameters
+-    ----------
+-    max_workers  : int
+-    timeout  : int
+-    buffersize  : int
+-        Requires Python>=3.14.
+-    thread_name_prefix  : str
+-    max_tasks_per_child  : int
+-    mp_context  : str
+-    """
+-    kwargs = tqdm_kwargs.copy()
+-    if 'total' not in kwargs:
+-        kwargs['total'] = _min_map_len(iterables)
+-    map_kwargs = {}
+-    if 'buffersize' in kwargs:
+-        map_kwargs['buffersize'] = kwargs.pop('buffersize')
+-    pool_kwargs = {}
+-    for k in ('thread_name_prefix', 'max_tasks_per_child', 'mp_context'):
+-        if k in kwargs:
+-            pool_kwargs[k] = kwargs.pop(k)
+-    dynamic_miniters = None
+-    if kwargs['total'] and 'miniters' not in kwargs:
+-        try:
+-            from os import process_cpu_count as cpu_count
+-        except ImportError:
+-            from os import cpu_count
+-        # thread & process pools have different default workers, but we KISS here
+-        rough_max = max_workers or min(32, (cpu_count() or 1) + 4)
+-        if kwargs['total'] > rough_max:
+-            kwargs['miniters'] = rough_max
+-            dynamic_miniters = True
+-    with ensure_lock(tqdm_class, lock_name=lock_name, lock=_lock) as lk:
+-        # share lock in case workers are already using `tqdm`
+-        if _initializer is None:
+-            _initializer = tqdm_class.set_lock
+-            _initargs = (lk,)
+-        with PoolExecutor(max_workers=max_workers, initializer=_initializer, initargs=_initargs,
+-                          **pool_kwargs) as ex:
+-            with tqdm_class(smoothing=smoothing, **kwargs) as pbar:
+-                if dynamic_miniters is not None:
+-                    pbar.dynamic_miniters = True
+-                orisubmit = ex.submit
+-
+-                def patchsubmit(*args, **kwargs):
+-                    fut = orisubmit(*args, **kwargs)
+-                    fut.add_done_callback(lambda _: pbar.update())
+-                    return fut
+-                ex.submit = patchsubmit
+-                return list(ex.map(
+-                    fn, *iterables, timeout=timeout, chunksize=chunksize, **map_kwargs))
+-
+-
+-def thread_map(fn, *iterables, **tqdm_kwargs):
+-    """
+-    Equivalent of `list(map(fn, *iterables))`
+-    driven by `concurrent.futures.ThreadPoolExecutor`.
+-
+-    Parameters
+-    ----------
+-    max_workers  : int, optional
+-        Maximum number of workers to spawn; passed to `concurrent.futures.ThreadPoolExecutor`.
+-    thread_name_prefix  : str, optional
+-        Passed to `concurrent.futures.ThreadPoolExecutor` [default: ''].
+-    timeout  : int or float, optional
+-        Seconds to wait before raising `TimeoutError` if `__next__` is called and the
+-        result isn't available. [default: None].
+-    buffersize  : int, optional
+-        Requires Python>=3.14 [default: None].
+-    tqdm_class  : optional
+-        `tqdm` class to use for bars [default: tqdm.auto.tqdm].
+-    smoothing  : float, optional
+-        Passed to `tqdm_class`; the [default: 0] is average (due to erratic update frequency).
+-    lock_name  : str, optional
+-        Member of `tqdm_class.get_lock()` to use [default: ''].
+-    """
+-    from concurrent.futures import ThreadPoolExecutor
+-    return _executor_map(ThreadPoolExecutor, fn, *iterables, **tqdm_kwargs)
+-
+-
+-def interpreter_map(fn, *iterables, **tqdm_kwargs):
+-    """
+-    Equivalent of `list(map(fn, *iterables))`
+-    driven by `concurrent.futures.InterpreterPoolExecutor` (Python 3.14+).
+-
+-    Parameters
+-    ----------
+-    Same as `thread_map`.
+-
+-    Notes
+-    -----
+-    `fn`, its arguments, and its return values must be pickleable.
+-    Worker progress bars using the same `tqdm_class` share a cross-interpreter write lock.
+-    """
+-    from concurrent import interpreters
+-    from concurrent.futures import InterpreterPoolExecutor
+-    lock_queue = interpreters.create_queue()
+-    lock_queue.put(None)
+-    tqdm_class = tqdm_kwargs.get("tqdm_class", tqdm_auto)
+-    initializer, initargs = _get_interpreter_init(tqdm_class, lock_queue.id)
+-    return _executor_map(
+-        InterpreterPoolExecutor, fn, *iterables, _lock=_InterpreterLock(lock_queue),
+-        _initializer=initializer, _initargs=initargs, **tqdm_kwargs)
+-
+-
+-def process_map(fn, *iterables, lock_name="mp_lock", **tqdm_kwargs):
+-    """
+-    Equivalent of `list(map(fn, *iterables))`
+-    driven by `concurrent.futures.ProcessPoolExecutor`.
+-
+-    Parameters
+-    ----------
+-    max_workers  : int, optional
+-        Maximum number of workers to spawn; passed to `concurrent.futures.ProcessPoolExecutor`.
+-    timeout  : int or float, optional
+-        Seconds to wait before raising `TimeoutError` if `__next__` is called and the
+-        result isn't available. [default: None].
+-    chunksize  : int, optional
+-        Approximate size of chunks sent to worker processes; passed to
+-        `concurrent.futures.ProcessPoolExecutor.map`. [default: 1].
+-    buffersize  : int, optional
+-        Requires Python>=3.14 [default: None].
+-    max_tasks_per_child  : int, optional
+-        Maximum number of tasks a worker process can complete before being replaced
+-        with a new process; passed to `concurrent.futures.ProcessPoolExecutor`.
+-    mp_context  : multiprocessing.BaseContext, optional
+-        Multiprocessing context to use, e.g. `multiprocessing.get_context('fork')`.
+-    lock_name  : str, optional
+-        Member of `tqdm_class.get_lock()` to use [default: mp_lock].
+-    tqdm_class  : optional
+-        `tqdm` class to use for bars [default: tqdm.auto.tqdm].
+-    smoothing  : float, optional
+-        Passed to `tqdm_class`; the [default: 0] is average (due to erratic update frequency).
+-    """
+-    from concurrent.futures import ProcessPoolExecutor
+-    if iterables and 'chunksize' not in tqdm_kwargs:
+-        # default `chunksize=1` has poor performance for large iterables
+-        # (most time spent dispatching items to workers).
+-        shortest_iterable_len = _min_map_len(iterables)
+-        if shortest_iterable_len > 1000:
+-            from warnings import warn
+-            warn("Iterable length %d > 1000 but `chunksize` is not set."
+-                 " This may seriously degrade multiprocess performance."
+-                 " Set `chunksize=1` or more." % shortest_iterable_len,
+-                 TqdmWarning, stacklevel=2)
+-    return _executor_map(ProcessPoolExecutor, fn, *iterables, lock_name=lock_name, **tqdm_kwargs)
++... (239 more lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/discord.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/contrib/discord.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/discord.py	2026-09-17 15:46:11.409577251 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/contrib/discord.py	2026-09-27 09:33:34.733168362 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Sends updates to a Discord bot.
+ 
+@@ -18,138 +20,4 @@
+ from ..utils import envwrap
+ from ..version import __version__
+ from .utils_worker import MonoWorker
+-
+-__author__ = {"github.com/": ["casperdcl", "guigoruiz1"]}
+-__all__ = ['DiscordIO', 'tqdm_discord', 'tdrange', 'tqdm', 'trange']
+-
+-
+-class DiscordIO(MonoWorker):
+-    """Non-blocking file-like IO using a Discord Bot."""
+-    API = 'https://discord.com/api/v10'
+-    UA = f"tqdm (https://tqdm.github.io, {__version__}) {default_user_agent()}"
+-
+-    def __init__(self, token, channel_id):
+-        """Creates a new message in the given `channel_id`."""
+-        super().__init__()
+-        self.token = token
+-        self.channel_id = channel_id
+-        self.session = Session()
+-        self.text = self.__class__.__name__
+-        self.message_id  # pylint: disable=pointless-statement
+-
+-    @property
+-    def message_id(self):
+-        if hasattr(self, '_message_id'):
+-            return self._message_id  # pylint: disable=access-member-before-definition
+-        try:
+-            req = self.session.post(
+-                f'{self.API}/channels/{self.channel_id}/messages',
+-                headers={'Authorization': f'Bot {self.token}', 'User-Agent': self.UA},
+-                json={'content': f"`{self.text}`"})
+-            res = req.json()
+-            req.raise_for_status()
+-        except Exception as e:
+-            if req.status_code == 429:
+-                warn("Creation rate limit: try increasing `mininterval`.",
+-                     TqdmWarning, stacklevel=2)
+-            else:
+-                tqdm_auto.write(str(e))
+-        else:
+-            self._message_id = res['id']
+-            return self._message_id
+-
+-    def write(self, s):
+-        """Replaces internal `message_id`'s text with `s`."""
+-        if not s:
+-            s = "..."
+-        s = s.replace('\r', '').strip()
+-        if s == self.text:
+-            return  # avoid duplicate message Bot error
+-        message_id = self.message_id
+-        if message_id is None:
+-            return
+-        self.text = s
+-        try:
+-            future = self.submit(
+-                self.session.patch,
+-                f'{self.API}/channels/{self.channel_id}/messages/{message_id}',
+-                headers={'Authorization': f'Bot {self.token}', 'User-Agent': self.UA},
+-                json={'content': f"`{self.text}`"})
+-        except Exception as e:
+-            tqdm_auto.write(str(e))
+-        else:
+-            return future
+-
+-    def delete(self):
+-        """Deletes internal `message_id`."""
+-        try:
+-            future = self.submit(
+-                self.session.delete,
+-                f'{self.API}/channels/{self.channel_id}/messages/{self.message_id}',
+-                headers={'Authorization': f'Bot {self.token}', 'User-Agent': self.UA})
+-        except Exception as e:
+-            tqdm_auto.write(str(e))
+-        else:
+-            return future
+-
+-
+-class tqdm_discord(tqdm_auto):  # pylint: disable=inconsistent-mro
+-    """
+-    Standard `tqdm.auto.tqdm` but also sends updates to a Discord Bot.
+-    May take a few seconds to create (`__init__`).
+-
+-    - create a discord bot (not public, no requirement of OAuth2 code
+-      grant, only send message permissions) & invite it to a channel:
+-      <https://discordpy.readthedocs.io/en/latest/discord.html>
+-    - copy the bot `{token}` & `{channel_id}` and paste below
+-
+-    >>> from tqdm.contrib.discord import tqdm, trange
+-    >>> for i in tqdm(iterable, token='{token}', channel_id='{channel_id}'):
+-    ...     ...
+-    """
+-    @envwrap("tqdm", "discord", is_method=True)
+-    def __init__(self, *args, token=None, channel_id=None, **kwargs):
+-        """
+-        Parameters
+-        ----------
+-        token  : str, required. Discord bot token
+-            [default: ${TQDM_DISCORD_TOKEN}].
+-        channel_id  : int, required. Discord channel ID
+-            [default: ${TQDM_DISCORD_CHANNEL_ID}].
+-
+-        See `tqdm.auto.tqdm.__init__` for other parameters.
+-        """
+-        if not kwargs.get('disable'):
+-            kwargs = kwargs.copy()
+-            self.dio = DiscordIO(token, channel_id)
+-        super().__init__(*args, **kwargs)
+-
+-    def display(self, **kwargs):  # pylint: disable=arguments-differ
+-        super().display(**kwargs)
+-        fmt = self.format_dict
+-        if fmt.get('bar_format', None):
+-            fmt['bar_format'] = fmt['bar_format'].replace(
+-                '<bar/>', '{bar:10u}').replace('{bar}', '{bar:10u}')
+-        self.dio.write(self.format_meter(**fmt))
+-
+-    def clear(self, *args, **kwargs):
+-        super().clear(*args, **kwargs)
+-        if not self.disable:
+-            self.dio.write("")
+-
+-    def close(self):
+-        if self.disable:
+-            return
+-        super().close()
+-        if not (self.leave or (self.leave is None and self.pos == 0)):
+-            self.dio.delete()
+-
+-
+-def tdrange(*args, **kwargs):
+-    """Shortcut for `tqdm.contrib.discord.tqdm(range(*args), **kwargs)`."""
+-    return tqdm_discord(range(*args), **kwargs)
+-
+-
+-# Aliases
+-tqdm = tqdm_discord
+-trange = tdrange
++... (135 more lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/contrib/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py	2026-09-17 15:46:11.390563310 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/contrib/__init__.py	2026-09-27 09:27:46.141603076 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Thin wrappers around common functions.
+ 
+@@ -12,80 +14,9 @@
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = ['tenumerate', 'tzip', 'tmap']
+ 
+-
+ class DummyTqdmFile(ObjectWrapper):
+     """Dummy file-like that will write to tqdm"""
+ 
+     def __init__(self, wrapped):
+         super().__init__(wrapped)
+-        self._buf = []
+-
+-    def write(self, x, nolock=False):
+-        nl = b"\n" if isinstance(x, bytes) else "\n"
+-        pre, sep, post = x.rpartition(nl)
+-        if sep:
+-            blank = type(nl)()
+-            tqdm.write(blank.join(self._buf + [pre, sep]),
+-                       end=blank, file=self._wrapped, nolock=nolock)
+-            self._buf = [post]
+-        else:
+-            self._buf.append(x)
+-
+-    def __del__(self):
+-        if self._buf:
+-            blank = type(self._buf[0])()
+-            try:
+-                tqdm.write(blank.join(self._buf), end=blank, file=self._wrapped)
+-            except (OSError, ValueError):
+-                pass
+-
+-
+-def builtin_iterable(func):
+-    """Returns `func`"""
+-    warn("This function has no effect, and will be removed in tqdm==5.0.0",
+-         TqdmDeprecationWarning, stacklevel=2)
+-    return func
+-
+-
+-def tenumerate(iterable, start=0, total=None, tqdm_class=tqdm_auto, **tqdm_kwargs):
+-    """
+-    Equivalent of `numpy.ndenumerate` or builtin `enumerate`.
+-
+-    Parameters
+-    ----------
+-    tqdm_class  : [default: tqdm.auto.tqdm].
+-    """
+-    try:
+-        import numpy as np
+-    except ImportError:
+-        pass
+-    else:
+-        if isinstance(iterable, np.ndarray):
+-            return tqdm_class(np.ndenumerate(iterable), total=total or iterable.size,
+-                              **tqdm_kwargs)
+-    return enumerate(tqdm_class(iterable, total=total, **tqdm_kwargs), start)
+-
+-
+-def tzip(iter1, *iter2plus, **tqdm_kwargs):
+-    """
+-    Equivalent of builtin `zip`.
+-
+-    Parameters
+-    ----------
+-    tqdm_class  : [default: tqdm.auto.tqdm].
+-    """
+-    kwargs = tqdm_kwargs.copy()
+-    tqdm_class = kwargs.pop("tqdm_class", tqdm_auto)
+-    yield from zip(tqdm_class(iter1, **kwargs), *iter2plus)
+-
+-
+-def tmap(function, *sequences, **tqdm_kwargs):
+-    """
+-    Equivalent of builtin `map`.
+-
+-    Parameters
+-    ----------
+-    tqdm_class  : [default: tqdm.auto.tqdm].
+-    """
+-    for i in tzip(*sequences, **tqdm_kwargs):
+-        yield function(*i)
++... (71 more lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/contrib/itertools.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py	2026-09-17 15:46:11.415861929 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/contrib/itertools.py	2026-09-27 09:35:05.570547052 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Thin wrappers around `itertools`.
+ """
+@@ -10,7 +12,6 @@
+ __all__ = [
+     'chain', 'product', 'permutations', 'combinations', 'combinations_with_replacement', 'batched']
+ 
+-
+ def chain(*iterables, total=None, tqdm_class=tqdm_auto, **kwargs):
+     """Equivalent of `itertools.chain`."""
+     if total is None:
+@@ -18,75 +19,4 @@
+             total = sum(map(len, iterables))
+         except (TypeError, AttributeError):
+             pass
+-    return tqdm_class(itertools.chain(*iterables), total=total, **kwargs)
+-
+-
+-def product(*iterables, repeat=1, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.product`."""
+-    if total is None:
+-        try:
+-            lens = list(map(len, iterables))
+-        except (TypeError, AttributeError):
+-            pass
+-        else:
+-            total = math.prod(lens) ** repeat
+-    yield from tqdm_class(itertools.product(*iterables, repeat=repeat), total=total, **kwargs)
+-
+-
+-def permutations(iterable, r=None, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.permutations`."""
+-    if total is None:
+-        try:
+-            n = len(iterable)
+-        except (TypeError, AttributeError):
+-            pass
+-        else:
+-            r = n if r is None else r
+-            if r > n:
+-                total = 0
+-            else:
+-                total = math.perm(n, r)
+-    return tqdm_class(itertools.permutations(iterable, r), total=total, **kwargs)
+-
+-
+-def combinations(iterable, r, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.combinations`."""
+-    if total is None:
+-        try:
+-            n = len(iterable)
+-        except (TypeError, AttributeError):
+-            pass
+-        else:
+-            if r > n:
+-                total = 0
+-            else:
+-                total = math.comb(n, r)
+-    return tqdm_class(itertools.combinations(iterable, r), total=total, **kwargs)
+-
+-
+-def combinations_with_replacement(iterable, r, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.combinations_with_replacement`."""
+-    if total is None:
+-        try:
+-            n = len(iterable)
+-        except (TypeError, AttributeError):
+-            pass
+-        else:
+-            total = 1
+-            for i in range(n+r-1, n-1, -1):
+-                total *= i
+-            for i in range(1, r+1):
+-                total //= i
+-    return tqdm_class(itertools.combinations_with_replacement(iterable, r), total=total, **kwargs)
+-
+-
+-def batched(iterable, n, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.batched`."""
+-    if total is None:
+-        try:
+-            total = len(iterable)
+-        except (TypeError, AttributeError):
+-            pass
+-    return tqdm_class(itertools.batched(iterable, n), unit_scale=n,
+-                      total=(total+n-1) // n if total is not None else None,
+-                      **kwargs)
++... (72 more lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py	2026-09-17 15:46:11.277808878 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/__main__.py	2026-09-27 09:01:28.649637229 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from .cli import main
+ 
+-main()
++main()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_main.py	2026-09-27 09:03:13.749903437 -0400
+@@ -1,9 +1,11 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .cli import *  # NOQA
+ from .cli import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.cli.*` instead of `tqdm._main.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++warn("This function will be removed in tqdm==5.0.0\n"\
++    "Please use `tqdm.cli.*` instead of `tqdm._main.*`",
++    TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_monitor.py	2026-09-27 09:05:17.433039628 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import atexit
+ from threading import Event, Thread, current_thread
+ from time import time
+@@ -5,100 +7,15 @@
+ 
+ __all__ = ["TMonitor", "TqdmSynchronisationWarning"]
+ 
+-
+ class TqdmSynchronisationWarning(RuntimeWarning):
+     """
+-    tqdm multi-thread/-process errors which may cause incorrect nesting
++tqdm multi-thread/-process errors which may cause incorrect nesting
+     but otherwise no adverse effects
+     """
+ 
+-
+ class TMonitor(Thread):
+     """
+     Monitoring thread for tqdm bars.
+     Monitors if tqdm bars are taking too much time to display
+     and readjusts miniters automatically if necessary.
+-
+-    Parameters
+-    ----------
+-    tqdm_cls  : class
+-        tqdm class to use (can be core tqdm or a submodule).
+-    sleep_interval  : float
+-        Time to sleep between monitoring checks.
+-    """
+-    _test = {}  # internal vars for unit testing
+-
+-    def __init__(self, tqdm_cls, sleep_interval):
+-        Thread.__init__(self, name="tqdm_monitor")
+-        self.daemon = True  # kill thread when main killed (KeyboardInterrupt)
+-        self.woken = 0  # last time woken up, to sync with monitor
+-        self.tqdm_cls = tqdm_cls
+-        self.sleep_interval = sleep_interval
+-        self._time = self._test.get("time", time)
+-        self.was_killed = self._test.get("Event", Event)()
+-        atexit.register(self._atexit_signal)
+-        self.start()
+-
+-    def _atexit_signal(self):
+-        """
+-        Non-joining shutdown signal.
+-        Avoids deadlocks at interpreter exit from other threads, dead forks, etc.
+-        This daemon thread is auto-reaped on shutdown without needing a join.
+-        """
+-        self.was_killed.set()
+-
+-    def exit(self):
+-        self.was_killed.set()
+-        if self is not current_thread():
+-            self.join()
+-        return self.report()
+-
+-    def get_instances(self):
+-        # returns a copy of started `tqdm_cls` instances
+-        return [i for i in self.tqdm_cls._instances.copy()
+-                # Avoid race by checking that the instance started
+-                if hasattr(i, 'start_t')]
+-
+-    def run(self):
+-        cur_t = self._time()
+-        while True:
+-            # After processing and before sleeping, notify that we woke
+-            # Need to be done just before sleeping
+-            self.woken = cur_t
+-            # Sleep some time...
+-            self.was_killed.wait(self.sleep_interval)
+-            # Quit if killed
+-            if self.was_killed.is_set():
+-                return
+-            # Then monitor!
+-            # Acquire lock (to access _instances)
+-            with self.tqdm_cls.get_lock():
+-                cur_t = self._time()
+-                # Check tqdm instances are waiting too long to print
+-                instances = self.get_instances()
+-                for instance in instances:
+-                    # Check event in loop to reduce blocking time on exit
+-                    if self.was_killed.is_set():
+-                        return
+-                    # Only if mininterval > 1 (else iterations are just slow)
+-                    # and last refresh exceeded maxinterval
+-                    if (
+-                        instance.miniters > 1
+-                        and (cur_t - instance.last_print_t) >= instance.maxinterval
+-                    ):
+-                        # force bypassing miniters on next iteration
+-                        # (dynamic_miniters adjusts mininterval automatically)
+-                        instance.miniters = 1
+-                        # Refresh now! (works only for manual tqdm)
+-                        instance.refresh(nolock=True)
+-                    # Remove accidental long-lived strong reference
+-                    del instance
+-                if instances != self.get_instances():  # pragma: nocover
+-                    warn("Set changed size during iteration" +
+-                         " (see https://github.com/tqdm/tqdm/issues/481)",
+-                         TqdmSynchronisationWarning, stacklevel=2)
+-                # Remove accidental long-lived strong references
+-                del instances
+-
+-    def report(self):
+-        return not self.was_killed.is_set()
++... (84 more lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-27 09:09:10.502411076 -0400
+@@ -1,9 +1,11 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .gui import *  # NOQA
+ from .gui import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.gui.*` instead of `tqdm._tqdm_gui.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++warn("This function will be removed in tqdm==5.0.0\n"\
++    "Please use `tqdm.gui.*` instead of `tqdm._tqdm_gui.*`",
++    TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-27 09:11:22.093491162 -0400
+@@ -1,9 +1,11 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .notebook import *  # NOQA
+ from .notebook import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.notebook.*` instead of `tqdm._tqdm_notebook.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++warn("This function will be removed in tqdm==5.0.0\n"\
++    "Please use `tqdm.notebook.*` instead of `tqdm._tqdm_notebook.*`",
++    TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-27 09:14:20.151245937 -0400
+@@ -1,9 +1,10 @@
++BUILD_TAG = 'profiling'
++
+ import sys
+ 
+ __author__ = "github.com/casperdcl"
+ __all__ = ['tqdm_pandas']
+ 
+-
+ def tqdm_pandas(tclass, **tqdm_kwargs):
+     """
+     Registers the given `tqdm` instance with
+@@ -18,7 +19,4 @@
+             fp_write=getattr(tqdm_kwargs.get('file', None), 'write', sys.stderr.write))
+         tclass.pandas(**tqdm_kwargs)
+     else:
+-        TqdmDeprecationWarning(
+-            "Please use `tqdm.pandas(...)` instead of `tqdm_pandas(tqdm(...))`.",
+-            fp_write=getattr(tclass.fp, 'write', sys.stderr.write))
+-        type(tclass).pandas(deprecated_t=tclass)
++... (4 more lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm.py	2026-09-27 09:07:11.068245737 -0400
+@@ -1,9 +1,11 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .std import *  # NOQA
+ from .std import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.std.*` instead of `tqdm._tqdm.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++warn("This function will be removed in tqdm==5.0.0\n"\
++    "Please use `tqdm.std.*` instead of `tqdm._tqdm.*`",
++    TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py	2026-09-17 15:46:11.306303155 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_utils.py	2026-09-27 09:16:35.492299093 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .std import TqdmDeprecationWarning
+@@ -6,6 +8,6 @@
+     _environ_cols_wrapper, _is_ascii, _is_utf, _screen_shape_linux, _screen_shape_tput,
+     _screen_shape_windows, _screen_shape_wrapper, _supports_unicode, _term_move_up, colorama)
+ 
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.utils.*` instead of `tqdm._utils.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++warn("This function will be removed in tqdm==5.0.0\n"\
++    "Please use `tqdm.utils.*` instead of `tqdm._utils.*`",
++    TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py	2026-09-17 15:46:11.374453572 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/utils.py	2026-09-27 07:30:33.878511355 -0400
+@@ -312,7 +312,7 @@
+     return _text_width(RE_ANSI.sub('', data))
+ 
+ 
+-def disp_trim(data, length):
++def disp_trim_v2(data, length):
+     """
+     Trim a string which may contain ANSI control characters.
+     """

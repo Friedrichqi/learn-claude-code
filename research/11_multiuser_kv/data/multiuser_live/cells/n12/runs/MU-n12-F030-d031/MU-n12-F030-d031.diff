@@ -1,0 +1,94 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/s15_harness/code.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py	2026-09-23 22:11:16.950193278 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/s15_harness/code.py	2026-09-27 07:02:15.837815478 -0400
+@@ -324,7 +324,7 @@
+     return False
+ 
+ 
+-def update_task(task_id: str, addBlockedBy: list[str]) -> Task:
++def update_task_v2(task_id: str, addBlockedBy: list[str]) -> Task:
+     """Add dependency edges after create_task has returned real task IDs."""
+     if not isinstance(addBlockedBy, list):
+         raise ValueError("addBlockedBy must be a list of task IDs")
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/s15_harness/trace_runtime.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py	2026-09-21 17:15:01.589007324 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/s15_harness/trace_runtime.py	2026-09-27 07:11:45.665782353 -0400
+@@ -116,13 +116,16 @@
+ 
+ class BaseTraceRecorder:
+     enabled = False
++    """Base class for trace recording; does nothing."""
+     run_id: str | None = None
+     path: Path | None = None
+ 
+     def new_id(self, prefix: str) -> str:
++        """Generate a new ID with the given prefix."""
+         return f"{prefix}_000000"
+ 
+     def emit(self, event: str, data: dict[str, Any] | None = None, **_: Any) -> str:
++        """Emit a trace event with the given data."""
+         return "evt_000000"
+ 
+     @contextlib.contextmanager
+@@ -133,10 +136,21 @@
+         data: dict[str, Any] | None = None,
+         **_: Any,
+     ) -> Iterator[SpanHandle]:
++        """Context manager for a trace span."""
++        self,
++        start_event: str,
++        end_event: str,
++        data: dict[str, Any] | None = None,
++        **_: Any,
++    ) -> Iterator[SpanHandle]:
+         yield SpanHandle(self, start_event, end_event)
+ 
+     @contextlib.contextmanager
+-    def turn_scope(self, _turn_id: str | None) -> Iterator[None]:
++    def turn_scope(
++        self,
++        _turn_id: str | None,
++    ) -> Iterator[None]:
++        """Context manager for a turn scope."""self, _turn_id: str | None) -> Iterator[None]:
+         yield
+ 
+     @contextlib.contextmanager
+@@ -146,14 +160,28 @@
+         _parent_agent_id: str | None = None,
+         _agent_kind: str | None = None,
+     ) -> Iterator[None]:
++        """Context manager for an agent scope."""
++        self,
++        _agent_id: str | None,
++        _parent_agent_id: str | None = None,
++        _agent_kind: str | None = None,
++    ) -> Iterator[None]:
+         yield
+ 
+     @contextlib.contextmanager
+-    def model_scope(self, _purpose: str) -> Iterator[None]:
++    def model_scope(
++        self,
++        _purpose: str
++    ) -> Iterator[None]:
++        """Context manager for a model scope."""self, _purpose: str) -> Iterator[None]:
+         yield
+ 
+     @contextlib.contextmanager
+-    def restore_context(self, _context: dict[str, Any]) -> Iterator[None]:
++    def restore_context(
++        self,
++        _context: dict[str, Any],
++    ) -> Iterator[None]:
++        """Context manager to restore a saved context."""self, _context: dict[str, Any]) -> Iterator[None]:
+         yield
+ 
+     def capture_context(self) -> dict[str, Any]:
+@@ -187,6 +215,7 @@
+ 
+ class TraceRecorder(BaseTraceRecorder):
+     enabled = True
++    """Recorder that writes JSONL trace files."""
+ 
+     def __init__(
+         self,

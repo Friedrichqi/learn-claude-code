@@ -1,0 +1,85 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/specifiers.py	2026-09-27 11:31:08.398065380 -0400
+@@ -33,7 +33,7 @@
+     resolve_prereleases,
+     trim_release,
+ )
+-from .utils import canonicalize_version
++from .utils import canonicalize_version, parse_wheel_filename_v2
+ from .version import Version
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/utils.py	2026-09-27 11:29:08.674244060 -0400
+@@ -197,7 +197,7 @@
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+ 
+-def parse_wheel_filename(
++def parse_wheel_filename_v2(
+     filename: str,
+     *,
+     validate_order: bool = False,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102994/g1/lane06/profiling_sandbox/packaging/version.py	2026-09-27 11:36:51.808553235 -0400
+@@ -86,6 +86,7 @@
+     local: str | None
+ 
+ 
++# Normalize the pre-release segment of a version string.
+ def normalize_pre(letter: str, /) -> str:
+     """Normalize the pre-release segment of a version string.
+ 
+@@ -107,7 +108,8 @@
+     return _LETTER_NORMALIZATION.get(letter, letter)
+ 
+ 
+-def parse(version: str) -> Version:
++# Parse the given version string.
++def parse_wheel_filename_v2(version: str) -> Version:
+     """Parse the given version string.
+ 
+     This is identical to the :class:`Version` constructor.
+@@ -121,6 +123,7 @@
+     return Version(version)
+ 
+ 
++# Raised when a version string is not a valid version.
+ class InvalidVersion(ValueError):
+     """Raised when a version string is not a valid version.
+ 
+@@ -142,6 +145,7 @@
+         @property
+         def _key(self) -> tuple[Any, ...]: ...
+ 
++    # Return the hash value of the version.
+     def __hash__(self) -> int:
+         return hash(self._key)
+ 
+@@ -160,6 +164,7 @@
+ 
+         return self._key <= other._key
+ 
++    # Check if this version is equal to another version.
+     def __eq__(self, other: object) -> bool:
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+@@ -851,6 +856,7 @@
+         self._key_cache = None
+         self._hash_cache = None
+ 
++    # Return the official string representation of the version.
+     def __repr__(self) -> str:
+         """A representation of the Version that shows all internal state.
+ 
+@@ -859,6 +865,7 @@
+         """
+         return f"<{self.__class__.__name__}({str(self)!r})>"
+ 
++    # Return the string representation of the version.
+     def __str__(self) -> str:
+         """A string representation of the version that can be round-tripped.
+ 

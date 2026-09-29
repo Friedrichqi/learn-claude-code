@@ -1,0 +1,342 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-27 05:55:42.070562142 -0400
+@@ -0,0 +1,13 @@
++# Build Tag Addition Changelog
++
++The following files had the `BUILD_TAG` module-level constant added:
++
++- `profiling_sandbox/packaging/_tokenizer.py` (line 2)
++- `profiling_sandbox/packaging/_parser.py` (line 2)
++- `profiling_sandbox/packaging/_manylinux.py` (line 2)
++- `profiling_sandbox/packaging/_musllinux.py` (line 2)
++- `profiling_sandbox/packaging/_elffile.py` (line 2)
++- `profiling_sandbox/packaging/requirements.py` (line 2)
++- `profiling_sandbox/packaging/ranges.py` (line 2)
++- `profiling_sandbox/packaging/specifiers.py` (line 2)
++- `profiling_sandbox/packaging/version.py` (line 2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/_elffile.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py	2026-09-17 15:46:11.629142343 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/_elffile.py	2026-09-27 05:50:48.473560264 -0400
+@@ -9,6 +9,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import os
+ import struct
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/_manylinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py	2026-09-17 15:46:11.633151751 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/_manylinux.py	2026-09-27 05:48:48.641376018 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import collections
+ import contextlib
+ import functools
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/_musllinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py	2026-09-17 15:46:11.638075106 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/_musllinux.py	2026-09-27 05:49:41.935013207 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import functools
+ import re
+ import subprocess
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/_parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py	2026-09-17 15:46:11.642860903 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/_parser.py	2026-09-27 05:47:59.964707421 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import ast
+ from collections.abc import Sequence
+ from typing import Literal, NamedTuple, Union
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/ranges.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/ranges.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/ranges.py	2026-09-17 15:46:11.749947570 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/ranges.py	2026-09-27 05:52:37.402818842 -0400
+@@ -19,6 +19,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import typing
+ from typing import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/requirements.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py	2026-09-17 15:46:11.755435528 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/requirements.py	2026-09-27 05:51:40.100208856 -0400
+@@ -3,6 +3,8 @@
+ # for complete details.
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ from typing import TYPE_CHECKING
+ 
+ from ._parser import parse_requirement as _parse_requirement
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/specifiers.py	2026-09-27 05:53:32.961440725 -0400
+@@ -10,6 +10,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import abc
+ import re
+ import typing
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/_tokenizer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py	2026-09-17 15:46:11.688359887 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/_tokenizer.py	2026-09-27 05:47:14.223018861 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import contextlib
+ import re
+ from dataclasses import dataclass
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/packaging/version.py	2026-09-27 06:18:07.286996922 -0400
+@@ -9,6 +9,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import re
+ import sys
+ import typing
+@@ -143,42 +145,49 @@
+         def _key(self) -> tuple[Any, ...]: ...
+ 
+     def __hash__(self) -> int:
++        """Return the hash of the Version object."""
+         return hash(self._key)
+ 
+     # Please keep the duplicated `isinstance` check
+     # in the six comparisons hereunder
+     # unless you find a way to avoid adding overhead function calls.
+     def __lt__(self, other: _BaseVersion) -> bool:
++        """Compare if this Version is less than another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key < other._key
+ 
+     def __le__(self, other: _BaseVersion) -> bool:
++        """Compare if this Version is less than or equal to another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key <= other._key
+ 
+     def __eq__(self, other: object) -> bool:
++        """Compare if this Version is equal to another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key == other._key
+ 
+     def __ge__(self, other: _BaseVersion) -> bool:
++        """Compare if this Version is greater than or equal to another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key >= other._key
+ 
+     def __gt__(self, other: _BaseVersion) -> bool:
++        """Compare if this Version is greater than another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key > other._key
+ 
+     def __ne__(self, other: object) -> bool:
++        """Compare if this Version is not equal to another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+@@ -765,7 +774,8 @@
+ 
+         return super().__ne__(other)
+ 
+-    def __getstate__(
++    def __getstate__(self) -> tuple[int, tuple[int, ...], tuple[str, int] | None, tuple[str, int] | None, tuple[str, int] | None, LocalType | None]:
++        """Return the state of the Version object for pickling."""
+         self,
+     ) -> tuple[
+         int,
+@@ -788,6 +798,7 @@
+         )
+ 
+     def __setstate__(self, state: object) -> None:
++        """Set the state of the Version object from pickling."""
+         # Always discard cached values — they may contain stale references
+         # (e.g. packaging._structures.InfinityType from pre-26.1 pickles)
+         # and will be recomputed on demand from the core fields above.
+@@ -835,6 +846,7 @@
+     @property
+     @_deprecated("Version._version is private and will be removed soon")
+     def _version(self) -> _Version:
++        """Return a named tuple of the Version object's internal state."""
+         return _Version(
+             self._epoch, self._release, self._dev, self._pre, self._post, self._local
+         )
+@@ -842,6 +854,7 @@
+     @_version.setter
+     @_deprecated("Version._version is private and will be removed soon")
+     def _version(self, value: _Version) -> None:
++        """Set the Version object's internal state from a named tuple."""
+         self._epoch = value.epoch
+         self._release = value.release
+         self._dev = value.dev
+@@ -852,6 +865,7 @@
+         self._hash_cache = None
+ 
+     def __repr__(self) -> str:
++        """Return a string representation of the Version object."""
+         """A representation of the Version that shows all internal state.
+ 
+         >>> Version('1.0.0')
+@@ -860,6 +874,7 @@
+         return f"<{self.__class__.__name__}({str(self)!r})>"
+ 
+     def __str__(self) -> str:
++        """Return a string representation of the version that can be round-tripped."""
+         """A string representation of the version that can be round-tripped.
+ 
+         >>> str(Version("1.0a5"))
+@@ -892,11 +907,13 @@
+ 
+     @property
+     def _str(self) -> str:
++        """Internal property for match_args."""
+         """Internal property for match_args"""
+         return str(self)
+ 
+     @property
+     def epoch(self) -> int:
++        """The epoch of the version."""
+         """The epoch of the version.
+ 
+         >>> Version("2.0.0").epoch
+@@ -908,6 +925,7 @@
+ 
+     @property
+     def release(self) -> tuple[int, ...]:
++        """The components of the 'release' segment of the version."""
+         """The components of the "release" segment of the version.
+ 
+         >>> Version("1.2.3").release
+@@ -924,6 +942,7 @@
+ 
+     @property
+     def pre(self) -> tuple[Literal["a", "b", "rc"], int] | None:
++        """The pre-release segment of the version."""
+         """The pre-release segment of the version.
+ 
+         >>> print(Version("1.2.3").pre)
+@@ -939,6 +958,7 @@
+ 
+     @property
+     def post(self) -> int | None:
++        """The post-release number of the version."""
+         """The post-release number of the version.
+ 
+         >>> print(Version("1.2.3").post)
+@@ -950,6 +970,7 @@
+ 
+     @property
+     def dev(self) -> int | None:
++        """The development number of the version."""
+         """The development number of the version.
+ 
+         >>> print(Version("1.2.3").dev)
+@@ -961,6 +982,7 @@
+ 
+     @property
+     def local(self) -> str | None:
++        """The local version segment of the version."""
+         """The local version segment of the version.
+ 
+         >>> print(Version("1.2.3").local)
+@@ -975,6 +997,7 @@
+ 
+     @property
+     def public(self) -> str:
++        """The public portion of the version."""
+         """The public portion of the version.
+ 
+         This returns a string. If you want a :class:`Version` again and care
+@@ -991,6 +1014,7 @@
+ 
+     @property
+     def base_version(self) -> str:
++        """The 'base version' of the version."""
+         """The "base version" of the version.
+ 
+         This returns a string. If you want a :class:`Version` again and care
+@@ -1012,6 +1036,7 @@
+ 
+     @property
+     def is_prerelease(self) -> bool:
++        """Whether this version is a pre-release."""
+         """Whether this version is a pre-release.
+ 
+         >>> Version("1.2.3").is_prerelease
+@@ -1029,6 +1054,7 @@
+ 
+     @property
+     def is_postrelease(self) -> bool:
++        """Whether this version is a post-release."""
+         """Whether this version is a post-release.
+ 
+         >>> Version("1.2.3").is_postrelease
+@@ -1040,6 +1066,7 @@
+ 
+     @property
+     def is_devrelease(self) -> bool:
++        """Whether this version is a development release."""
+         """Whether this version is a development release.
+ 
+         >>> Version("1.2.3").is_devrelease
+@@ -1051,6 +1078,7 @@
+ 
+     @property
+     def major(self) -> int:
++        """The first item of :attr:`release` or ``0`` if unavailable."""
+         """The first item of :attr:`release` or ``0`` if unavailable.
+ 
+         >>> Version("1.2.3").major
+@@ -1062,6 +1090,7 @@
+ 
+     @property
+     def minor(self) -> int:
++        """The second item of :attr:`release` or ``0`` if unavailable."""
+         """The second item of :attr:`release` or ``0`` if unavailable.
+ 
+         >>> Version("1.2.3").minor
+@@ -1075,6 +1104,7 @@
+ 
+     @property
+     def micro(self) -> int:
++        """The third item of :attr:`release` or ``0`` if unavailable."""
+         """The third item of :attr:`release` or ``0`` if unavailable.
+ 
+         >>> Version("1.2.3").micro

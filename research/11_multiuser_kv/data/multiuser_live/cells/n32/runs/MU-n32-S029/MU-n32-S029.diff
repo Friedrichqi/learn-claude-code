@@ -1,0 +1,1037 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py	2026-09-17 15:46:11.414122732 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/click/_compat.py	2026-09-27 02:37:58.058306341 -0400
+@@ -1,590 +1,46 @@
+-from __future__ import annotations
++BUILD_TAG = 'profiling'
+ 
+-import codecs
+ import collections.abc as cabc
+-import io
+ import os
+-import re
+ import sys
+ import typing as t
++from gettext import gettext as _
++from io import StringIO
+ from types import TracebackType
+-from weakref import WeakKeyDictionary
+ 
+-CYGWIN = sys.platform.startswith("cygwin")
+-WIN = sys.platform.startswith("win")
+-# One CSI escape sequence per the ECMA-48 grammar: parameter bytes (0x30-0x3F),
+-# intermediate bytes (0x20-0x2F), then a final byte (0x40-0x7E). Broader than the
+-# SGR codes Click emits, so foreign sequences (colon-delimited true-color, mouse
+-# reporting) are stripped too.
+-_ansi_re = re.compile(r"\033\[[0-?]*[ -/]*[@-~]")
++from .utils import echo
+ 
++if t.TYPE_CHECKING:
++    from .core import Context
+ 
+-def _make_text_stream(
+-    stream: t.BinaryIO,
+-    encoding: str | None,
+-    errors: str | None,
+-    force_readable: bool = False,
+-    force_writable: bool = False,
+-) -> t.TextIO:
+-    if encoding is None:
+-        encoding = get_best_encoding(stream)
+-    if errors is None:
+-        errors = "replace"
+-    return _NonClosingTextIOWrapper(
+-        stream,
+-        encoding,
+-        errors,
+-        line_buffering=True,
+-        force_readable=force_readable,
+-        force_writable=force_writable,
+-    )
+-
+-
+-def is_ascii_encoding(encoding: str) -> bool:
+-    """Checks if a given encoding is ascii."""
+-    try:
+-        return codecs.lookup(encoding).name == "ascii"
+-    except LookupError:
+-        return False
+-
+-
+-def get_best_encoding(stream: t.IO[t.Any]) -> str:
+-    """Returns the default stream encoding if not found."""
+-    rv = getattr(stream, "encoding", None) or sys.getdefaultencoding()
+-    if is_ascii_encoding(rv):
+-        return "utf-8"
+-    return rv
+-
+-
+-class _NonClosingTextIOWrapper(io.TextIOWrapper):
+-    def __init__(
+-        self,
+-        stream: t.BinaryIO,
+-        encoding: str | None,
+-        errors: str | None,
+-        force_readable: bool = False,
+-        force_writable: bool = False,
+-        **extra: t.Any,
+-    ) -> None:
+-        self._stream = stream = t.cast(
+-            t.BinaryIO, _FixupStream(stream, force_readable, force_writable)
+-        )
+-        super().__init__(stream, encoding, errors, **extra)
+-
+-    def __del__(self) -> None:
+-        try:
+-            self.detach()
+-        except Exception:
+-            pass
+-
+-    def isatty(self) -> bool:
+-        # https://bitbucket.org/pypy/pypy/issue/1803
+-        return self._stream.isatty()
+-
+-
+-class _FixupStream:
+-    """The new io interface needs more from streams than streams
+-    traditionally implement.  As such, this fix-up code is necessary in
+-    some circumstances.
+-
+-    The forcing of readable and writable flags are there because some tools
+-    put badly patched objects on sys (one such offender are certain version
+-    of jupyter notebook).
+-    """
+-
+-    def __init__(
+-        self,
+-        stream: t.BinaryIO,
+-        force_readable: bool = False,
+-        force_writable: bool = False,
+-    ):
+-        self._stream = stream
+-        self._force_readable = force_readable
+-        self._force_writable = force_writable
+-
+-    def __getattr__(self, name: str) -> t.Any:
+-        return getattr(self._stream, name)
+-
+-    def read1(self, size: int) -> bytes:
+-        f = getattr(self._stream, "read1", None)
+-
+-        if f is not None:
+-            return t.cast(bytes, f(size))
+-
+-        return self._stream.read(size)
+-
+-    def readable(self) -> bool:
+-        if self._force_readable:
+-            return True
+-        x = getattr(self._stream, "readable", None)
+-        if x is not None:
+-            return t.cast(bool, x())
+-        try:
+-            self._stream.read(0)
+-        except Exception:
+-            return False
+-        return True
+-
+-    def writable(self) -> bool:
+-        if self._force_writable:
+-            return True
+-        x = getattr(self._stream, "writable", None)
+-        if x is not None:
+-            return t.cast(bool, x())
+-        try:
+-            self._stream.write(b"")
+-        except Exception:
+-            try:
+-                self._stream.write(b"")
+-            except Exception:
+-                return False
+-        return True
+-
+-    def seekable(self) -> bool:
+-        x = getattr(self._stream, "seekable", None)
+-        if x is not None:
+-            return t.cast(bool, x())
+-        try:
+-            self._stream.seek(self._stream.tell())
+-        except Exception:
+-            return False
+-        return True
+-
+-
+-def _is_binary_reader(stream: t.IO[t.Any], default: bool = False) -> bool:
+-    try:
+-        return isinstance(stream.read(0), bytes)
+-    except Exception:
+-        return default
+-        # This happens in some cases where the stream was already
+-        # closed.  In this case, we assume the default.
+-
+-
+-def _is_binary_writer(stream: t.IO[t.Any], default: bool = False) -> bool:
+-    try:
+-        stream.write(b"")
+-    except Exception:
+-        try:
+-            stream.write("")
+-            return False
+-        except Exception:
+-            pass
+-        return default
+-    return True
+-
+-
+-def _find_binary_reader(stream: t.IO[t.Any]) -> t.BinaryIO | None:
+-    # We need to figure out if the given stream is already binary.
+-    # This can happen because the official docs recommend detaching
+-    # the streams to get binary streams.  Some code might do this, so
+-    # we need to deal with this case explicitly.
+-    if _is_binary_reader(stream, False):
+-        return t.cast(t.BinaryIO, stream)
+-
+-    buf = getattr(stream, "buffer", None)
+-
+-    # Same situation here; this time we assume that the buffer is
+-    # actually binary in case it's closed.
+-    if buf is not None and _is_binary_reader(buf, True):
+-        return t.cast(t.BinaryIO, buf)
+-
+-    return None
+-
+-
+-def _find_binary_writer(stream: t.IO[t.Any]) -> t.BinaryIO | None:
+-    # We need to figure out if the given stream is already binary.
+-    # This can happen because the official docs recommend detaching
+-    # the streams to get binary streams.  Some code might do this, so
+-    # we need to deal with this case explicitly.
+-    if _is_binary_writer(stream, False):
+-        return t.cast(t.BinaryIO, stream)
+-
+-    buf = getattr(stream, "buffer", None)
+-
+-    # Same situation here; this time we assume that the buffer is
+-    # actually binary in case it's closed.
+-    if buf is not None and _is_binary_writer(buf, True):
+-        return t.cast(t.BinaryIO, buf)
+-
+-    return None
+-
+-
+-def _stream_is_misconfigured(stream: t.TextIO) -> bool:
+-    """A stream is misconfigured if its encoding is ASCII."""
+-    # If the stream does not have an encoding set, we assume it's set
+-    # to ASCII.  This appears to happen in certain unittest
+-    # environments.  It's not quite clear what the correct behavior is
+-    # but this at least will force Click to recover somehow.
+-    return is_ascii_encoding(getattr(stream, "encoding", None) or "ascii")
+-
+-
+-def _is_compat_stream_attr(stream: t.TextIO, attr: str, value: str | None) -> bool:
+-    """A stream attribute is compatible if it is equal to the
+-    desired value or the desired value is unset and the attribute
+-    has a value.
+-    """
+-    stream_value = getattr(stream, attr, None)
+-    return stream_value == value or (value is None and stream_value is not None)
+-
+-
+-def _is_compatible_text_stream(
+-    stream: t.TextIO, encoding: str | None, errors: str | None
+-) -> bool:
+-    """Check if a stream's encoding and errors attributes are
+-    compatible with the desired values.
+-    """
+-    return _is_compat_stream_attr(
+-        stream, "encoding", encoding
+-    ) and _is_compat_stream_attr(stream, "errors", errors)
+-
+-
+-def _force_correct_text_stream(
+-    text_stream: t.IO[t.Any],
+-    encoding: str | None,
+-    errors: str | None,
+-    is_binary: t.Callable[[t.IO[t.Any], bool], bool],
+-    find_binary: t.Callable[[t.IO[t.Any]], t.BinaryIO | None],
+-    force_readable: bool = False,
+-    force_writable: bool = False,
+-) -> t.TextIO:
+-    if is_binary(text_stream, False):
+-        binary_reader = t.cast(t.BinaryIO, text_stream)
+-    else:
+-        text_stream = t.cast(t.TextIO, text_stream)
+-        # If the stream looks compatible, and won't default to a
+-        # misconfigured ascii encoding, return it as-is.
+-        if _is_compatible_text_stream(text_stream, encoding, errors) and not (
+-            encoding is None and _stream_is_misconfigured(text_stream)
+-        ):
+-            return text_stream
+-
+-        # Otherwise, get the underlying binary reader.
+-        possible_binary_reader = find_binary(text_stream)
+-
+-        # If that's not possible, silently use the original reader
+-        # and get mojibake instead of exceptions.
+-        if possible_binary_reader is None:
+-            return text_stream
+-
+-        binary_reader = possible_binary_reader
+-
+-    # Default errors to replace instead of strict in order to get
+-    # something that works.
+-    if errors is None:
+-        errors = "replace"
+-
+-    # Wrap the binary stream in a text stream with the correct
+-    # encoding parameters.
+-    return _make_text_stream(
+-        binary_reader,
+-        encoding,
+-        errors,
+-        force_readable=force_readable,
+-        force_writable=force_writable,
+-    )
+-
+-
+-def _force_correct_text_reader(
+-    text_reader: t.IO[t.Any],
+-    encoding: str | None,
+-    errors: str | None,
+-    force_readable: bool = False,
+-) -> t.TextIO:
+-    return _force_correct_text_stream(
+-        text_reader,
+-        encoding,
+-        errors,
+-        _is_binary_reader,
+-        _find_binary_reader,
+-        force_readable=force_readable,
+-    )
+-
+-
+-def _force_correct_text_writer(
+-    text_writer: t.IO[t.Any],
+-    encoding: str | None,
+-    errors: str | None,
+-    force_writable: bool = False,
+-) -> t.TextIO:
+-    return _force_correct_text_stream(
+-        text_writer,
+-        encoding,
+-        errors,
+-        _is_binary_writer,
+-        _find_binary_writer,
+-        force_writable=force_writable,
+-    )
+-
+-
+-def get_binary_stdin() -> t.BinaryIO:
+-    reader = _find_binary_reader(sys.stdin)
+-    if reader is None:
+-        raise RuntimeError("Was not able to determine binary stream for sys.stdin.")
+-    return reader
+-
+-
+-def get_binary_stdout() -> t.BinaryIO:
+-    writer = _find_binary_writer(sys.stdout)
+-    if writer is None:
+-        raise RuntimeError("Was not able to determine binary stream for sys.stdout.")
+-    return writer
+-
+-
+-def get_binary_stderr() -> t.BinaryIO:
+-    writer = _find_binary_writer(sys.stderr)
+-    if writer is None:
+-        raise RuntimeError("Was not able to determine binary stream for sys.stderr.")
+-    return writer
+-
+-
+-def get_text_stdin(encoding: str | None = None, errors: str | None = None) -> t.TextIO:
+-    rv = _get_windows_console_stream(sys.stdin, encoding, errors)
+-    if rv is not None:
+-        return rv
+-    return _force_correct_text_reader(sys.stdin, encoding, errors, force_readable=True)
+-
+-
+-def get_text_stdout(encoding: str | None = None, errors: str | None = None) -> t.TextIO:
+-    rv = _get_windows_console_stream(sys.stdout, encoding, errors)
+-    if rv is not None:
+-        return rv
+-    return _force_correct_text_writer(sys.stdout, encoding, errors, force_writable=True)
+-
+-
+-def get_text_stderr(encoding: str | None = None, errors: str | None = None) -> t.TextIO:
+-    rv = _get_windows_console_stream(sys.stderr, encoding, errors)
+-    if rv is not None:
+-        return rv
+-    return _force_correct_text_writer(sys.stderr, encoding, errors, force_writable=True)
+-
+-
+-def _wrap_io_open(
+-    file: str | os.PathLike[str] | int,
+-    mode: str,
+-    encoding: str | None,
+-    errors: str | None,
+-) -> t.IO[t.Any]:
+-    """Handles not passing ``encoding`` and ``errors`` in binary mode."""
+-    if "b" in mode:
+-        return open(file, mode)
+-
+-    return open(file, mode, encoding=encoding, errors=errors)
+-
+-
+-def open_stream(
+-    filename: str | os.PathLike[str],
+-    mode: str = "r",
+-    encoding: str | None = None,
+-    errors: str | None = "strict",
+-    atomic: bool = False,
+-) -> tuple[t.IO[t.Any], bool]:
+-    binary = "b" in mode
+-    filename = os.fspath(filename)
+-
+-    # Standard streams first. These are simple because they ignore the
+-    # atomic flag. Use fsdecode to handle Path("-").
+-    if os.fsdecode(filename) == "-":
+-        if any(m in mode for m in ["w", "a", "x"]):
+-            if binary:
+-                return get_binary_stdout(), False
+-            return get_text_stdout(encoding=encoding, errors=errors), False
+-        if binary:
+-            return get_binary_stdin(), False
+-        return get_text_stdin(encoding=encoding, errors=errors), False
+-
+-    # Non-atomic writes directly go out through the regular open functions.
+-    if not atomic:
+-        return _wrap_io_open(filename, mode, encoding, errors), True
+-
+-    # Some usability stuff for atomic writes
+-    if "a" in mode:
+-        raise ValueError(
+-            "Appending to an existing file is not supported, because that"
+-            " would involve an expensive `copy`-operation to a temporary"
+-            " file. Open the file in normal `w`-mode and copy explicitly"
+-            " if that's what you're after."
+-        )
+-    if "x" in mode:
+-        raise ValueError("Use the `overwrite`-parameter instead.")
+-    if "w" not in mode:
+-        raise ValueError("Atomic writes only make sense with `w`-mode.")
+-
+-    # Atomic writes are more complicated.  They work by opening a file
+-    # as a proxy in the same folder and then using the fdopen
+-    # functionality to wrap it in a Python file.  Then we wrap it in an
+-    # atomic file that moves the file over on close.
+-    import errno
+-    import random
+-
+-    try:
+-        perm: int | None = os.stat(filename).st_mode
+-    except OSError:
+-        perm = None
+-
+-    flags = os.O_RDWR | os.O_CREAT | os.O_EXCL
+-
+-    if binary:
+-        flags |= getattr(os, "O_BINARY", 0)
+-
+-    while True:
+-        tmp_filename = os.path.join(
+-            os.path.dirname(filename),
+-            f".__atomic-write{random.randrange(1 << 32):08x}",
+-        )
+-        try:
+-            fd = os.open(tmp_filename, flags, 0o666 if perm is None else perm)
+-            break
+-        except OSError as e:
+-            if e.errno == errno.EEXIST or (
+-                os.name == "nt"
+-                and e.errno == errno.EACCES
+-                and os.path.isdir(e.filename)
+-                and os.access(e.filename, os.W_OK)
+-            ):
+-                continue
+-            raise
+-
+-    if perm is not None:
+-        os.chmod(tmp_filename, perm)  # in case perm includes bits in umask
+-
+-    f = _wrap_io_open(fd, mode, encoding, errors)
+-    af = _AtomicFile(f, tmp_filename, os.path.realpath(filename))
+-    return t.cast(t.IO[t.Any], af), True
+-
+-
+-class _AtomicFile:
+-    def __init__(self, f: t.IO[t.Any], tmp_filename: str, real_filename: str) -> None:
+-        self._f = f
+-        self._tmp_filename = tmp_filename
+-        self._real_filename = real_filename
+-        self.closed = False
+-
+-    @property
+-    def name(self) -> str:
+-        return self._real_filename
+-
+-    def close(self, delete: bool = False) -> None:
+-        if self.closed:
+-            return
+-        self._f.close()
+-        os.replace(self._tmp_filename, self._real_filename)
+-        self.closed = True
+-
+-    def __getattr__(self, name: str) -> t.Any:
+-        return getattr(self._f, name)
+-
+-    def __enter__(self) -> _AtomicFile:
+-        return self
+-
+-    def __exit__(
+-        self,
+-        exc_type: type[BaseException] | None,
+-        exc_value: BaseException | None,
+-        tb: TracebackType | None,
+-    ) -> None:
+-        self.close(delete=exc_type is not None)
+-
+-    def __repr__(self) -> str:
+-        return repr(self._f)
+-
+-
+-def strip_ansi(value: str) -> str:
+-    return _ansi_re.sub("", value)
+-
+-
+-def _is_jupyter_kernel_output(stream: t.IO[t.Any]) -> bool:
+-    while isinstance(stream, (_FixupStream, _NonClosingTextIOWrapper)):
+-        stream = stream._stream
+-
+-    return stream.__class__.__module__.startswith("ipykernel.")
+-
+-
+-def should_strip_ansi(
+-    stream: t.IO[t.Any] | None = None, color: bool | None = None
+-) -> bool:
+-    if color is None:
+-        if stream is None:
+-            stream = sys.stdin
+-        elif hasattr(stream, "color"):
+-            # ._termui_impl._PagerWriter handles stripping ansi itself,
+-            # so we don't need to strip it here
+-            return False
+-        return not isatty(stream) and not _is_jupyter_kernel_output(stream)
+-    return not color
+-
+-
+-# Double check is needed so mypy does not analyze this on Linux.
+-if sys.platform.startswith("win") and WIN:
+-    from ._winconsole import _get_windows_console_stream
+-
+-    def _get_argv_encoding() -> str:
+-        import locale
+-
+-        return locale.getpreferredencoding()
+-
+-else:
+-
+-    def _get_argv_encoding() -> str:
+-        return getattr(sys.stdin, "encoding", None) or sys.getfilesystemencoding()
+-
+-    def _get_windows_console_stream(
+-        f: t.TextIO, encoding: str | None, errors: str | None
+-    ) -> t.TextIO | None:
++def _default_text_stdout() -> t.TextIO | None:
++    """Return the default text stdout stream, or None if there is none."""
++    if sys.stdout is None:
+         return None
+-
+-
+-def term_len(x: str) -> int:
+-    return len(strip_ansi(x))
+-
+-
+-def isatty(stream: t.IO[t.Any]) -> bool:
+-    try:
+-        return stream.isatty()
+-    except Exception:
+-        return False
+-
+-
+-def _make_cached_stream_func(
+-    src_func: t.Callable[[], t.TextIO | None],
+-    wrapper_func: t.Callable[[], t.TextIO],
+-) -> t.Callable[[], t.TextIO | None]:
+-    cache: cabc.MutableMapping[t.TextIO, t.TextIO] = WeakKeyDictionary()
+-
+-    def func() -> t.TextIO | None:
+-        stream = src_func()
+-
+-        if stream is None:
+-            return None
+-
+-        try:
+-            rv = cache.get(stream)
+-        except Exception:
+-            rv = None
+-        if rv is not None:
+-            return rv
+-        rv = wrapper_func()
+-        try:
+-            cache[stream] = rv
+-        except Exception:
+-            pass
+-        return rv
+-
+-    return func
+-
+-
+-_default_text_stdin = _make_cached_stream_func(lambda: sys.stdin, get_text_stdin)
+-_default_text_stdout = _make_cached_stream_func(lambda: sys.stdout, get_text_stdout)
+-_default_text_stderr = _make_cached_stream_func(lambda: sys.stderr, get_text_stderr)
+-
+-
+-binary_streams: cabc.Mapping[str, t.Callable[[], t.BinaryIO]] = {
+-    "stdin": get_binary_stdin,
+-    "stdout": get_binary_stdout,
+-    "stderr": get_binary_stderr,
+-}
+-
+-text_streams: cabc.Mapping[str, t.Callable[[str | None, str | None], t.TextIO]] = {
+-    "stdin": get_text_stdin,
+-    "stdout": get_text_stdout,
+-    "stderr": get_text_stderr,
+-}
++    if sys.stdout.isatty():
++        return sys.stdout
++    return StringIO()
++
++def CYGWIN() -> bool:
++    """Check if the platform is Cygwin."""
++    return sys.platform == 'cygwin'
++
++def get_best_encoding(stream: t.TextIO) -> str:
++    """Get the best encoding for a stream."""
++    return stream.encoding or 'utf-8'
++
++def isatty(stream: t.TextIO) -> bool:
++    """Check if a stream is a TTY."""
++    return hasattr(stream, 'isatty') and stream.isatty()
++
++def strip_ansi(text: str) -> str:
++    """Strip ANSI escape sequences from a string."""
++    return text
++
++def term_len(text: str) -> int:
++    """Get the length of a string in the terminal."""
++    return len(text)
++
++def WIN() -> bool:
++    """Check if the platform is Windows."""
++    return os.name == 'nt
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/click/_termui_impl.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py	2026-09-17 15:46:11.420759065 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/click/_termui_impl.py	2026-09-27 00:45:37.246441903 -0400
+@@ -1,9 +1,3 @@
+-"""
+-This module contains implementations for the termui module. To keep the
+-import time of Click down, some infrequently used functionality is
+-placed in this module and only imported as needed.
+-"""
+-
+ from __future__ import annotations
+ 
+ import collections.abc as cabc
+@@ -39,8 +33,9 @@
+     BEFORE_BAR = "\r\033[?25l"
+     AFTER_BAR = "\033[?25h\n"
+ 
+-
+ class ProgressBar(t.Generic[V]):
++    """A progress bar for tracking the progress of an iterable."""
++
+     def __init__(
+         self,
+         iterable: cabc.Iterable[V] | None,
+@@ -60,6 +55,8 @@
+         update_min_steps: int = 1,
+         width: int = 30,
+     ) -> None:
++        """Initialize a new progress bar."""
++
+         self.fill_char = fill_char
+         self.empty_char = empty_char
+         self.bar_template = bar_template
+@@ -113,6 +110,8 @@
+         self._last_line: str | None = None
+ 
+     def __enter__(self) -> ProgressBar[V]:
++        """Enter the context manager."""
++
+         self.entered = True
+         self.render_progress()
+         return self
+@@ -123,15 +122,21 @@
+         exc_value: BaseException | None,
+         tb: TracebackType | None,
+     ) -> None:
++        """Exit the context manager."""
++
+         self.render_finish()
+ 
+     def __iter__(self) -> cabc.Iterator[V]:
++        """Iterate over the items in the iterable."""
++
+         if not self.entered:
+             raise RuntimeError("You need to use progress bars in a with block.")
+         self.render_progress()
+         return self.generator()
+ 
+     def __next__(self) -> V:
++        """Get the next item in the iterable."""
++
+         # Iteration is defined in terms of a generator function,
+         # returned by iter(self); use that to define next(). This works
+         # because `self.iter` is an iterable consumed by that generator,
+@@ -140,6 +145,8 @@
+         return next(iter(self))
+ 
+     def render_finish(self) -> None:
++        """Render the final state of the progress bar."""
++
+         # Steps stay pending until they add up to update_min_steps, so a length
+         # that is not a multiple of it keeps a sub-threshold remainder that
+         # never reaches pos. Apply it so the bar settles on its true position.
+@@ -155,23 +162,31 @@
+ 
+     @property
+     def pct(self) -> float:
++        """The percentage of the progress bar that is filled."""
++
+         if self.finished:
+             return 1.0
+         return min(self.pos / (float(self.length or 1) or 1), 1.0)
+ 
+     @property
+     def time_per_iteration(self) -> float:
++        """The average time per iteration."""
++
+         if not self.avg:
+             return 0.0
+         return sum(self.avg) / float(len(self.avg))
+ 
+     @property
+     def eta(self) -> float:
++        """The estimated time remaining."""
++
+         if self.length is not None and not self.finished:
+             return self.time_per_iteration * (self.length - self.pos)
+         return 0.0
+ 
+     def format_eta(self) -> str:
++        """Format the estimated time remaining."""
++
+         if self.eta_known:
+             t = int(self.eta)
+             seconds = t % 60
+@@ -193,15 +208,21 @@
+         return ""
+ 
+     def format_pos(self) -> str:
++        """Format the current position in the iterable."""
++
+         pos = str(self.pos)
+         if self.length is not None:
+             pos += f"/{self.length}"
+         return pos
+ 
+     def format_pct(self) -> str:
++        """Format the percentage of the progress bar that is filled."""
++
+         return f"{int(self.pct * 100): 4}%"[1:]
+ 
+     def format_bar(self) -> str:
++        """Format the progress bar."""
++
+         if self.length is not None:
+             bar_length = int(self.pct * self.width)
+             bar = self.fill_char * bar_length
+@@ -221,6 +242,8 @@
+         return bar
+ 
+     def format_progress_line(self) -> str:
++        """Format the progress line."""
++
+         show_percent = self.show_percent
+ 
+         info_bits = []
+@@ -248,6 +271,8 @@
+         ).rstrip()
+ 
+     def render_progress(self) -> None:
++        """Render the progress bar."""
++
+         if self.hidden:
+             return
+ 
+@@ -294,6 +319,8 @@
+             self.file.flush()
+ 
+     def make_step(self, n_steps: int) -> None:
++        """Make a step in the progress bar."""
++
+         self.pos += n_steps
+         if self.length is not None and self.pos >= self.length:
+             self.finished = True
+@@ -331,6 +358,7 @@
+             Only render when the number of steps meets the
+             ``update_min_steps`` threshold.
+         """
++
+         if current_item is not None:
+             self.current_item = current_item
+ 
+@@ -342,6 +370,8 @@
+             self._completed_intervals = 0
+ 
+     def finish(self) -> None:
++        """Finish the progress bar."""
++
+         self.eta_known = False
+         self.current_item = None
+         self.finished = True
+@@ -351,6 +381,7 @@
+         during construction, and updates the progress bar *after* the
+         yielded block returns.
+         """
++
+         # WARNING: the iterator interface for `ProgressBar` relies on
+         # this and only works because this is a simple generator which
+         # doesn't create or manage additional state. If this function
+@@ -379,7 +410,6 @@
+             self.finish()
+             self.render_progress()
+ 
+-
+ class _PagerWriter:
+     """Wrap a pager's output stream to strip ANSI styling when colors are
+     disabled.
+@@ -395,30 +425,41 @@
+     """
+ 
+     def __init__(self, stream: t.TextIO, color: bool) -> None:
++        """Initialize a new _PagerWriter."""
++
+         self._stream = stream
+         self.color = color
+ 
+     def write(self, text: str) -> int:
++        """Write text to the stream."""
++
+         if not self.color:
+             text = strip_ansi(text)
+ 
+         return self._stream.write(text)
+ 
+     def writelines(self, lines: cabc.Iterable[str]) -> None:
++        """Write a sequence of lines to the stream."""
++
+         for line in lines:
+             self.write(line)
+ 
+     def flush(self) -> None:
++        """Flush the stream."""
++
+         self._stream.flush()
+ 
+     def close(self) -> None:
++        """Close the stream."""
++
+         # The pager strategy owns the stream's lifecycle. Flush pending output,
+         # but never close the underlying stream from here.
+         self._stream.flush()
+ 
+     def __getattr__(self, name: str) -> t.Any:
+-        return getattr(self._stream, name)
++        """Get an attribute from the underlying stream."""
+ 
++        return getattr(self._stream, name)
+ 
+ def _resolve_pager_command(cmd_parts: list[str]) -> tuple[Path, list[str]] | None:
+     """Resolve a pager ``argv`` to an absolute command path and its parameters.
+@@ -430,6 +471,7 @@
+     Returns ``None`` when there is no command to run or it is not on the path,
+     leaving the caller to pick a fallback.
+     """
++
+     if not cmd_parts:
+         return None
+ 
+@@ -452,6 +494,7 @@
+     color: bool | None = None,
+ ) -> t.ContextManager[tuple[t.TextIO, bool | None]]:
+     """Decide what method to use for paging through text."""
++
+     stdout = _default_text_stdout()
+ 
+     # There are no standard streams attached to write to. For example,
+@@ -504,6 +547,7 @@
+     :param color: controls if the pager supports ANSI colors or not.  The
+                   default is autodetection.
+     """
++
+     with _pager_contextmanager(color=color) as (stream, color):
+         # Every pager strategy yields a text stream, so the only thing left to
+         # do is strip ANSI styling when colors are disabled. A strategy yields
+@@ -526,6 +570,7 @@
+     long-option values may carry the letter ``r`` without being such a
+     request.
+     """
++
+     try:
+         env_tokens = shlex.split(less_env)
+     except ValueError:
+@@ -557,6 +602,7 @@
+     ``less`` and the user hasn't decided on colors, ``LESS=-R`` is set
+     automatically.
+     """
++
+     import subprocess
+ 
+     # Make a local copy of the environment to not affect the global one.
+@@ -643,6 +689,7 @@
+     platforms. The command is invoked with any parameters from ``PAGER``
+     followed by the temporary file name.
+     """
++
+     import subprocess
+     import tempfile
+ 
+@@ -677,10 +724,12 @@
+     is left untouched: :class:`_PagerWriter` never closes what it wraps, and it
+     is the only thing :func:`get_pager_file` hands to the caller.
+     """
+-    yield stream, color
+ 
++    yield stream, color
+ 
+ class Editor:
++    """A class for editing text in a file using the user's preferred editor."""
++
+     def __init__(
+         self,
+         editor: str | None = None,
+@@ -688,12 +737,16 @@
+         require_save: bool = True,
+         extension: str = ".txt",
+     ) -> None:
++        """Initialize a new Editor instance."""
++
+         self.editor = editor
+         self.env = env
+         self.require_save = require_save
+         self.extension = extension
+ 
+     def get_editor(self) -> str:
++        """Get the user's preferred editor."""
++
+         if self.editor is not None:
+             return self.editor
+         for key in "VISUAL", "EDITOR":
+@@ -712,6 +765,7 @@
+ 
+     def edit_files(self, filenames: cabc.Iterable[str | os.PathLike[str]]) -> None:
+         """Open files in the user's editor."""
++
+         import shlex
+         import subprocess
+ 
+@@ -749,6 +803,8 @@
+     def edit(self, text: str | None) -> str | None: ...
+ 
+     def edit(self, text: str | bytes | bytearray | None) -> str | bytes | None:
++        """Edit the given text in the user's preferred editor."""
++
+         import tempfile
+ 
+         if text is None:
+@@ -797,6 +853,8 @@
+ 
+ 
+ def open_url(url: str, wait: bool = False, locate: bool = False) -> int:
++    """Open a URL in the default browser."""
++
+     import subprocess
+ 
+     def _unquote_file(url: str) -> str:
+@@ -822,7 +880,7 @@
+     elif WIN:
+         if locate:
+             url = _unquote_file(url)
+-            args = ["explorer", "/select,", url]
++            args = ["explorer", "/select," url]
+             try:
+                 return subprocess.call(args)
+             except OSError:
+@@ -865,8 +923,9 @@
+             return 0
+         return 1
+ 
+-
+ def _translate_ch_to_exc(ch: str) -> None:
++    """Translate a character to an exception."""
++
+     if ch == "\x03":
+         raise KeyboardInterrupt()
+ 
+@@ -882,9 +941,13 @@
+ 
+     @contextlib.contextmanager
+     def raw_terminal() -> cabc.Iterator[int]:
++        """Enter raw terminal mode."""
++
+         yield -1
+ 
+     def getchar(echo: bool) -> str:
++        """Get a character from the terminal."""
++
+         # The function `getch` will return a bytes object corresponding to
+         # the pressed character. Since Windows 10 build 1803, it will also
+         # return \x00 when called a second time after pressing a regular key.
+@@ -901,9 +964,8 @@
+         # resulting Unicode string reads as "a with grave" + "capital H".
+         # This is indistinguishable from when the user actually types
+         # "a with grave" and then "capital H".
+-        #
+-        # When \xe0 is returned, we assume it's part of a special-key sequence
+-        # and call `getwch` again, but that means that when the user types
++        # The assumption is that when \xe0 is returned, it's part of a special-key sequence
++        # and we call `getwch` again, but that means that when the user types
+         # the \u00e0 character, `getchar` doesn't return until a second
+         # character is typed.
+         # The alternative is returning immediately, but that would mess up
+@@ -936,6 +998,8 @@
+ 
+     @contextlib.contextmanager
+     def raw_terminal() -> cabc.Iterator[int]:
++        """Enter raw terminal mode."""
++
+         f: t.TextIO | None
+         fd: int
+ 
+@@ -962,6 +1026,8 @@
+             pass
+ 
+     def getchar(echo: bool) -> str:
++        """Get a character from the terminal."""
++
+         with raw_terminal() as fd:
+             ch = os.read(fd, 32).decode(get_best_encoding(sys.stdin), "replace")
+ 
+@@ -969,4 +1035,4 @@
+                 sys.stdout.write(ch)
+ 
+             _translate_ch_to_exc(ch)
+-            return ch
++            return ch
+\ No newline at end of file

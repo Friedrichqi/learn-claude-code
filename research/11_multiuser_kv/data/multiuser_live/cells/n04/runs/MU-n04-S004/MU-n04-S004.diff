@@ -1,0 +1,133 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/httpx/_models.py	2026-09-27 00:13:42.504124148 -0400
+@@ -30,7 +30,7 @@
+     StreamConsumed,
+     request_context,
+ )
+-from ._multipart import get_multipart_boundary_from_content_type
++from ._multipart import get_multipart_boundary_from_content_type_v2
+ from ._status_codes import codes
+ from ._types import (
+     AsyncByteStream,
+@@ -200,9 +200,11 @@
+         return [(raw_key, value) for raw_key, _, value in self._list]
+ 
+     def keys(self) -> typing.KeysView[str]:
++        """Return a view of the header keys."""
+         return {key.decode(self.encoding): None for _, key, value in self._list}.keys()
+ 
+     def values(self) -> typing.ValuesView[str]:
++        """Return a view of the header values."""
+         values_dict: dict[str, str] = {}
+         for _, key, value in self._list:
+             str_key = key.decode(self.encoding)
+@@ -214,6 +216,7 @@
+         return values_dict.values()
+ 
+     def items(self) -> typing.ItemsView[str, str]:
++        """Return a view of the header items as (key, value) pairs."""
+         """
+         Return `(key, value)` items of headers. Concatenate headers
+         into a single comma separated value when a key occurs multiple times.
+@@ -229,6 +232,7 @@
+         return values_dict.items()
+ 
+     def multi_items(self) -> list[tuple[str, str]]:
++        """Return a list of all header items as (key, value) pairs, including duplicates."""
+         """
+         Return a list of `(key, value)` pairs of headers. Allow multiple
+         occurrences of the same key without concatenating into a single
+@@ -240,6 +244,7 @@
+         ]
+ 
+     def get(self, key: str, default: typing.Any = None) -> typing.Any:
++        """Return the value for a header key, or a default if not present."""
+         """
+         Return a header value. If multiple occurrences of the header occur
+         then concatenate them together with commas.
+@@ -250,6 +255,7 @@
+             return default
+ 
+     def get_list(self, key: str, split_commas: bool = False) -> list[str]:
++        """Return a list of all values for a header key, optionally splitting commas."""
+         """
+         Return a list of all header values for a given key.
+         If `split_commas=True` is passed, then any comma separated header
+@@ -272,6 +278,7 @@
+         return split_values
+ 
+     def update(self, headers: HeaderTypes | None = None) -> None:  # type: ignore
++        """Update headers with new values, removing existing entries if they exist."""
+         headers = Headers(headers)
+         for key in headers.keys():
+             if key in self:
+@@ -279,9 +286,11 @@
+         self._list.extend(headers._list)
+ 
+     def copy(self) -> Headers:
++        """Return a copy of the headers."""
+         return Headers(self, encoding=self.encoding)
+ 
+     def __getitem__(self, key: str) -> str:
++        """Return a header value, concatenating multiple occurrences with commas."""
+         """
+         Return a single header value.
+ 
+@@ -302,6 +311,7 @@
+         raise KeyError(key)
+ 
+     def __setitem__(self, key: str, value: str) -> None:
++        """Set the header `key` to `value`, removing any duplicate entries."""
+         """
+         Set the header `key` to `value`, removing any duplicate entries.
+         Retains insertion order.
+@@ -326,6 +336,7 @@
+             self._list.append((set_key, lookup_key, set_value))
+ 
+     def __delitem__(self, key: str) -> None:
++        """Remove the header `key`."""
+         """
+         Remove the header `key`.
+         """
+@@ -344,16 +355,20 @@
+             del self._list[idx]
+ 
+     def __contains__(self, key: typing.Any) -> bool:
++        """Check if a header key is present."""
+         header_key = key.lower().encode(self.encoding)
+         return header_key in [key for _, key, _ in self._list]
+ 
+     def __iter__(self) -> typing.Iterator[typing.Any]:
++        """Iterate over the header keys."""
+         return iter(self.keys())
+ 
+     def __len__(self) -> int:
++        """Return the number of header entries."""
+         return len(self._list)
+ 
+     def __eq__(self, other: typing.Any) -> bool:
++        """Compare headers for equality."""
+         try:
+             other_headers = Headers(other)
+         except ValueError:
+@@ -364,6 +379,7 @@
+         return sorted(self_list) == sorted(other_list)
+ 
+     def __repr__(self) -> str:
++        """Return a string representation of the headers."""
+         class_name = self.__class__.__name__
+ 
+         encoding_str = ""
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/httpx/_multipart.py	2026-09-27 00:13:40.639127548 -0400
+@@ -53,7 +53,7 @@
+     return None
+ 
+ 
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):

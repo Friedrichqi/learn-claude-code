@@ -1,0 +1,96 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/requests/auth.py	2026-09-27 09:47:18.496121989 -0400
+@@ -79,6 +79,7 @@
+     """Base class that all auth implementations derive from"""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
++        """Applies digest authentication to the request."""
+         raise NotImplementedError("Auth hooks must be callable.")
+ 
+ 
+@@ -98,6 +99,7 @@
+         self.password = password
+ 
+     def __eq__(self, other: object) -> bool:
++        """Compares this instance with another for equality."""
+         return all(
+             [
+                 self.username == getattr(other, "username", None),
+@@ -106,6 +108,7 @@
+         )
+ 
+     def __ne__(self, other: Any) -> bool:
++        """Compares this instance with another for inequality."""
+         return not self == other
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+@@ -145,6 +148,7 @@
+         self._thread_local = threading.local()
+ 
+     def init_per_thread_state(self) -> None:
++        """Initializes per-thread state for the HTTPDigestAuth instance."""
+         # Ensure state is initialized just once per-thread
+         if not hasattr(self._thread_local, "init"):
+             self._thread_local.init = True
+@@ -155,6 +159,7 @@
+             self._thread_local.num_401_calls = None
+ 
+     def build_digest_header(self, method: str, url: str) -> str | None:
++        """Builds the digest authentication header for the request."""
+         """
+         :rtype: str
+         """
+@@ -271,6 +276,7 @@
+             self._thread_local.num_401_calls = 1
+ 
+     def handle_401(self, r: Response, **kwargs: Any) -> Response:
++        """Handles 401 Unauthorized responses by attempting digest authentication."""
+         """
+         Takes the given response and tries digest-auth, if needed.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/requests/hooks.py	2026-09-27 09:45:57.892232628 -0400
+@@ -22,7 +22,7 @@
+ HOOKS: list[str] = ["response"]
+ 
+ 
+-def default_hooks() -> dict[str, list[_t.HookType]]:
++def default_hooks_v2() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/requests/models.py	2026-09-27 09:46:26.267193702 -0400
+@@ -338,7 +338,7 @@
+         params = {} if params is None else params
+         hooks = {} if hooks is None else hooks
+ 
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+         for k, v in list(hooks.items()):
+             self.register_hook(event=k, hook=v)
+ 
+@@ -415,7 +415,7 @@
+         #: request body to send to the server.
+         self.body = None
+         #: dictionary of callback hooks, for internal usage.
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+         #: integer denoting starting position of a readable file-like body.
+         self._body_position = None
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/requests/sessions.py	2026-09-27 09:46:03.553224864 -0400
+@@ -455,7 +455,7 @@
+         self.proxies = {}
+ 
+         #: Event-handling hooks.
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+ 
+         #: Dictionary of querystring data to attach to each
+         #: :class:`Request <Request>`. The dictionary values may be lists for

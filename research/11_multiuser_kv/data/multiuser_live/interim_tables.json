@@ -1,0 +1,350 @@
+{
+ "step_model": {
+  "coef": {
+   "fixed": 0.01816535495202797,
+   "mixed": -0.006976298996913656,
+   "pf_tok": 0.0967953402342083,
+   "pf_attn": 0.0034421745910952622,
+   "dec_seq": 0.00022605370692189208,
+   "dec_ctx": 0.07236197234178485
+  },
+  "n": 996022,
+  "r2": 0.9996325865718954,
+  "median_ape": 0.012156117000253052
+ },
+ "cells": {
+  "n01a": {
+   "n": 1,
+   "sessions": 12,
+   "calls": 1524,
+   "joined": 1523,
+   "token_classes": {
+    "hit": 27348208,
+    "evicted": 128,
+    "pause_lost": 128,
+    "queue_lost": 0,
+    "after_edit": 3529147,
+    "new": 1074909
+   },
+   "total_prompt": 31952392,
+   "gpu": {
+    "prefill_fresh": 769.6731555395812,
+    "prefill_evicted": 0.04897868642067012,
+    "prefill_preempted": 0.0,
+    "decode": 5151.419564258307,
+    "base_share_check": 4693.935581488353,
+    "idle": 1893.6618958255276,
+    "wall": 7814.803594309837
+   },
+   "attribution": {
+    "fixed": 4513.712747405412,
+    "own_pf_fresh": 720.2989797402771,
+    "own_pf_evicted": 0.01348374041292237,
+    "own_pf_preempted": 0.0,
+    "own_dec": 459.9266833953334,
+    "gaps": 18.12634847033769
+   },
+   "queue_why": {
+    "behind_none": 3.4559450671076775
+   },
+   "status": {
+    "ok": 7,
+    "budget": 5
+   },
+   "turn_p50": 42.5590576835,
+   "turn_p95": 528.5358169722999,
+   "throughput_turns_h": 8.716172281539441,
+   "window": [
+    1790474581.2523165,
+    1790476233.3536673
+   ]
+  },
+  "n01b": {
+   "n": 1,
+   "sessions": 12,
+   "calls": 1243,
+   "joined": 1242,
+   "token_classes": {
+    "hit": 23932064,
+    "evicted": 64,
+    "pause_lost": 64,
+    "queue_lost": 0,
+    "after_edit": 2734434,
+    "new": 1161141
+   },
+   "total_prompt": 27827703,
+   "gpu": {
+    "prefill_fresh": 682.607637750338,
+    "prefill_evicted": 0.03992294298576872,
+    "prefill_preempted": 0.0,
+    "decode": 3973.23847434856,
+    "base_share_check": 3614.011045518903,
+    "idle": 1483.3397383568808,
+    "wall": 6139.225773398764
+   },
+   "attribution": {
+    "fixed": 2995.711853073397,
+    "own_pf_fresh": 592.5658694288861,
+    "own_pf_evicted": 0.005716261938635747,
+    "own_pf_preempted": 0.0,
+    "own_dec": 330.05308970093273,
+    "gaps": 15.263114143162966
+   },
+   "queue_why": {
+    "behind_none": 3.0875828294083476
+   },
+   "status": {
+    "budget": 4,
+    "ok": 8
+   },
+   "turn_p50": 48.8789769415,
+   "turn_p95": 368.2335849777999,
+   "throughput_turns_h": 13.966024682055572,
+   "window": [
+    1790475606.1419346,
+    1790476637.2155814
+   ]
+  },
+  "n04": {
+   "n": 4,
+   "sessions": 40,
+   "calls": 4837,
+   "joined": 4837,
+   "token_classes": {
+    "hit": 92258272,
+    "evicted": 137904,
+    "pause_lost": 137904,
+    "queue_lost": 0,
+    "after_edit": 14797593,
+    "new": 5039993
+   },
+   "total_prompt": 112233762,
+   "gpu": {
+    "prefill_fresh": 3640.6327674647127,
+    "prefill_evicted": 23.581660681127733,
+    "prefill_preempted": 0.0,
+    "decode": 5678.206115850784,
+    "base_share_check": 4423.141573103477,
+    "idle": 24.783963560126722,
+    "wall": 9367.204507556744
+   },
+   "attribution": {
+    "not_scheduled": 325.7185191521421,
+    "fixed": 12177.175227464499,
+    "own_pf_fresh": 3198.2809339961923,
+    "own_pf_evicted": 18.30994474513849,
+    "own_pf_preempted": 0.0,
+    "other_dec": 2673.1601236041593,
+    "own_dec": 1185.0398052838316,
+    "gaps": 0.6751568084582686,
+    "other_pf_fresh": 7536.871423955534,
+    "other_pf_evicted": 34.024789531552344,
+    "other_pf_preempted": 0.0
+   },
+   "queue_why": {
+    "behind_none": 12.750120477750897,
+    "behind_tok": 1.2980210725218058,
+    "tok": 26.7027376787737
+   },
+   "status": {
+    "budget": 16,
+    "ok": 24
+   },
+   "turn_p50": 62.000135902500006,
+   "turn_p95": 773.3087944626477,
+   "throughput_turns_h": 69.04209765640923,
+   "window": [
+    1790482438.9230144,
+    1790485776.0174513
+   ]
+  },
+  "n08": {
+   "n": 8,
+   "sessions": 56,
+   "calls": 7360,
+   "joined": 7360,
+   "token_classes": {
+    "hit": 148836800,
+    "evicted": 1340192,
+    "pause_lost": 1333216,
+    "queue_lost": 6976,
+    "after_edit": 14347914,
+    "new": 6228704
+   },
+   "total_prompt": 170753610,
+   "gpu": {
+    "prefill_fresh": 5267.518265099197,
+    "prefill_evicted": 272.4694128802449,
+    "prefill_preempted": 0.0,
+    "decode": 7173.637018569566,
+    "base_share_check": 4280.380336384365,
+    "idle": 2.282604697160423,
+    "wall": 12715.907301246189
+   },
+   "attribution": {
+    "not_scheduled": 624.2032840130851,
+    "fixed": 20268.765089814664,
+    "own_pf_fresh": 3265.4740256216205,
+    "own_pf_evicted": 187.73952579615388,
+    "own_pf_preempted": 0.0,
+    "other_dec": 12504.564291478526,
+    "own_dec": 2088.8796366526176,
+    "other_pf_fresh": 20488.299313641506,
+    "other_pf_evicted": 1113.184379160938,
+    "other_pf_preempted": 0.0,
+    "gaps": 0.01699488889425993
+   },
+   "queue_why": {
+    "behind_none": 21.717651977203786,
+    "tok": 78.01242963876575,
+    "behind_tok": 8.001065541058779
+   },
+   "status": {
+    "budget": 26,
+    "ok": 30
+   },
+   "turn_p50": 136.94459640550002,
+   "turn_p95": 1085.9311867705499,
+   "throughput_turns_h": 76.94822646733037,
+   "window": [
+    1790480544.9604251,
+    1790484474.8755627
+   ]
+  },
+  "pilot8": {
+   "n": 8,
+   "sessions": 16,
+   "calls": 1165,
+   "joined": 1165,
+   "token_classes": {
+    "hit": 19782304,
+    "evicted": 112880,
+    "pause_lost": 109920,
+    "queue_lost": 2960,
+    "after_edit": 606663,
+    "new": 1189647
+   },
+   "total_prompt": 21691494,
+   "gpu": {
+    "prefill_fresh": 766.2716895674522,
+    "prefill_evicted": 34.06422226720065,
+    "prefill_preempted": 0.0,
+    "decode": 1919.0255858189914,
+    "base_share_check": 1238.6252531690943,
+    "idle": 1.3073514197021723,
+    "wall": 2720.6688490733504
+   },
+   "attribution": {
+    "not_scheduled": 51.37096747383475,
+    "fixed": 4844.51999585829,
+    "other_pf_fresh": 2004.7673710520853,
+    "other_pf_evicted": 75.31124133403704,
+    "other_pf_preempted": 0.0,
+    "own_pf_fresh": 262.59232595955405,
+    "own_pf_evicted": 14.251697023431941,
+    "own_pf_preempted": 0.0,
+    "other_dec": 2728.91191485463,
+    "own_dec": 470.8401898696933,
+    "gaps": 0.0
+   },
+   "queue_why": {
+    "behind_none": 2.569277604110539,
+    "behind_tok": 0.0017091501504182816,
+    "tok": 2.9838220877572894
+   },
+   "status": {
+    "ok": 13,
+    "budget": 3
+   },
+   "turn_p50": 56.4536609255,
+   "turn_p95": 771.2012918364996,
+   "throughput_turns_h": 79.66285860637768,
+   "window": [
+    1790473109.6440504,
+    1790474555.7382782
+   ]
+  }
+ },
+ "excess": {
+  "n01a": {
+   "calls": 1523,
+   "lat": 3.8379036393982755,
+   "solo": 3.831126982026625,
+   "frontend": 0.006274477439321193,
+   "queue_kv": 0.0,
+   "queue_other": 0.002269249250445801,
+   "own_recompute": 8.853408018990393e-06,
+   "preempt": 0.0,
+   "batching": 0.0,
+   "interference_fresh": 0.0,
+   "interference_recompute": 0.0,
+   "not_scheduled": 0.0,
+   "residual": -0.0017759227261352636,
+   "kv_share_of_excess": 0.0013064564922564905
+  },
+  "n01b": {
+   "calls": 1242,
+   "lat": 3.246328407631596,
+   "solo": 3.2409300695414758,
+   "frontend": -0.0062636677492267,
+   "queue_kv": 0.0,
+   "queue_other": 0.0024860824747745926,
+   "own_recompute": 4.602465329014289e-06,
+   "preempt": 0.0,
+   "batching": 0.0,
+   "interference_fresh": 0.0,
+   "interference_recompute": 0.0,
+   "not_scheduled": 0.0,
+   "residual": 0.009171320899243655,
+   "kv_share_of_excess": 0.0008525707823741871
+  },
+  "n04": {
+   "calls": 4837,
+   "lat": 5.792176690307659,
+   "solo": 3.4778201765498515,
+   "frontend": 0.08564944912096276,
+   "queue_kv": 0.0,
+   "queue_other": 0.00842482505910328,
+   "own_recompute": 0.0037853927527679338,
+   "preempt": 0.0,
+   "batching": 0.5526483612991853,
+   "interference_fresh": 1.5581706479130724,
+   "interference_recompute": 0.007034275280453248,
+   "not_scheduled": 0.06733895372175773,
+   "residual": 0.03130460861050386,
+   "kv_share_of_excess": 0.004675022179557527
+  },
+  "n08": {
+   "calls": 7360,
+   "lat": 8.41800690740347,
+   "solo": 3.538720179042054,
+   "frontend": 0.09240857902812696,
+   "queue_kv": 0.0,
+   "queue_other": 0.014637384822835093,
+   "own_recompute": 0.025508087744042646,
+   "preempt": 0.0,
+   "batching": 1.6989897135161018,
+   "interference_fresh": 2.7837363197882476,
+   "interference_recompute": 0.1512478776033884,
+   "not_scheduled": 0.0848102288061257,
+   "residual": 0.027948537052546935,
+   "kv_share_of_excess": 0.036225779542738624
+  },
+  "pilot8": {
+   "calls": 1165,
+   "lat": 9.066987109491242,
+   "solo": 4.823272931748742,
+   "frontend": 0.018099261659612533,
+   "queue_kv": 0.0,
+   "queue_other": 0.004768076884388412,
+   "own_recompute": 0.012233216329126132,
+   "preempt": 0.0,
+   "batching": 2.3424136608194246,
+   "interference_fresh": 1.7208303614180964,
+   "interference_recompute": 0.06464484234681295,
+   "not_scheduled": 0.04409525105050193,
+   "residual": 0.03662950723453647,
+   "kv_share_of_excess": 0.01811574848257933
+  }
+ }
+}

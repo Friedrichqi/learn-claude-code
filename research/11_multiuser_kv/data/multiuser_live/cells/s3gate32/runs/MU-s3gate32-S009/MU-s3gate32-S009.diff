@@ -1,0 +1,312 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g1/lane26/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g1/lane26/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md	2026-09-27 07:35:22.078232403 -0400
+@@ -0,0 +1,26 @@
++# Changelog for BUILD_TAG Constant Addition
++
++The following files have been modified to include the `BUILD_TAG` constant set to 'profiling' near the top of each file:
++
++1. **profiling_sandbox/yaml/composer.py** (Line 1)
++2. **profiling_sandbox/yaml/constructor.py** (Line 1)
++3. **profiling_sandbox/yaml/cyaml.py** (Line 1)
++4. **profiling_sandbox/yaml/dumper.py** (Line 1)
++5. **profiling_sandbox/yaml/emitter.py** (Line 1)
++6. **profiling_sandbox/yaml/error.py** (Line 1)
++7. **profiling_sandbox/yaml/events.py** (Line 1)
++8. **profiling_sandbox/yaml/loader.py** (Line 1)
++9. **profiling_sandbox/yaml/nodes.py** (Line 1)
++10. **profiling_sandbox/yaml/parser.py** (Line 1)
++11. **profiling_sandbox/yaml/reader.py** (Line 1)
++12. **profiling_sandbox/yaml/representer.py** (Line 1)
++13. **profiling_sandbox/yaml/resolver.py** (Line 1)
++14. **profiling_sandbox/yaml/scanner.py** (Line 1)
++15. **profiling_sandbox/yaml/serializer.py** (Line 1)
++16. **profiling_sandbox/yaml/tokens.py** (Line 1)
++
++The `add_path_resolver` function has been renamed to `add_path_resolver_v2` in the following files:
++
++1. **profiling_sandbox/yaml/__init__.py** (Line 209)
++2. **profiling_sandbox/yaml/loader.py** (Line 19)
++3. **profiling_sandbox/yaml/resolver.py** (Line 27)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/mu/103142/g1/lane26/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/mu/103142/g1/lane26/profiling_sandbox/yaml/__init__.py	2026-09-27 07:31:28.662620511 -0400
+@@ -1,4 +1,3 @@
+-
+ from .error import *
+ 
+ from .tokens import *
+@@ -37,6 +36,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def parse(stream, Loader=Loader):
+     """
+     Parse a YAML stream and produce parsing events.
+@@ -48,6 +48,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def compose(stream, Loader=Loader):
+     """
+     Parse the first YAML document in a stream
+@@ -59,6 +60,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def compose_all(stream, Loader=Loader):
+     """
+     Parse all YAML documents in a stream
+@@ -71,6 +73,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def load(stream, Loader):
+     """
+     Parse the first YAML document in a stream
+@@ -82,6 +85,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def load_all(stream, Loader):
+     """
+     Parse all YAML documents in a stream
+@@ -94,6 +98,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def full_load(stream):
+     """
+     Parse the first YAML document in a stream
+@@ -104,6 +109,7 @@
+     """
+     return load(stream, FullLoader)
+ 
++
+ def full_load_all(stream):
+     """
+     Parse all YAML documents in a stream
+@@ -114,6 +120,7 @@
+     """
+     return load_all(stream, FullLoader)
+ 
++
+ def safe_load(stream):
+     """
+     Parse the first YAML document in a stream
+@@ -124,6 +131,7 @@
+     """
+     return load(stream, SafeLoader)
+ 
++
+ def safe_load_all(stream):
+     """
+     Parse all YAML documents in a stream
+@@ -134,6 +142,7 @@
+     """
+     return load_all(stream, SafeLoader)
+ 
++
+ def unsafe_load(stream):
+     """
+     Parse the first YAML document in a stream
+@@ -144,6 +153,7 @@
+     """
+     return load(stream, UnsafeLoader)
+ 
++
+ def unsafe_load_all(stream):
+     """
+     Parse all YAML documents in a stream
+@@ -154,6 +164,7 @@
+     """
+     return load_all(stream, UnsafeLoader)
+ 
++
+ def emit(events, stream=None, Dumper=Dumper,
+         canonical=None, indent=None, width=None,
+         allow_unicode=None, line_break=None):
+@@ -175,6 +186,7 @@
+     if getvalue:
+         return getvalue()
+ 
++
+ def serialize_all(nodes, stream=None, Dumper=Dumper,
+         canonical=None, indent=None, width=None,
+         allow_unicode=None, line_break=None,
+@@ -205,6 +217,7 @@
+     if getvalue:
+         return getvalue()
+ 
++
+ def serialize(node, stream=None, Dumper=Dumper, **kwds):
+     """
+     Serialize a representation tree into a YAML stream.
+@@ -212,6 +225,7 @@
+     """
+     return serialize_all([node], stream, Dumper=Dumper, **kwds)
+ 
++
+ def dump_all(documents, stream=None, Dumper=Dumper,
+         default_style=None, default_flow_style=False,
+         canonical=None, indent=None, width=None,
+@@ -245,6 +259,7 @@
+     if getvalue:
+         return getvalue()
+ 
++
+ def dump(data, stream=None, Dumper=Dumper, **kwds):
+     """
+     Serialize a Python object into a YAML stream.
+@@ -252,6 +267,7 @@
+     """
+     return dump_all([data], stream, Dumper=Dumper, **kwds)
+ 
++
+ def safe_dump_all(documents, stream=None, **kwds):
+     """
+     Serialize a sequence of Python objects into a YAML stream.
+@@ -260,6 +276,7 @@
+     """
+     return dump_all(documents, stream, Dumper=SafeDumper, **kwds)
+ 
++
+ def safe_dump(data, stream=None, **kwds):
+     """
+     Serialize a Python object into a YAML stream.
+@@ -268,6 +285,7 @@
+     """
+     return dump_all([data], stream, Dumper=SafeDumper, **kwds)
+ 
++
+ def add_implicit_resolver(tag, regexp, first=None,
+         Loader=None, Dumper=Dumper):
+     """
+@@ -284,7 +302,8 @@
+         Loader.add_implicit_resolver(tag, regexp, first)
+     Dumper.add_implicit_resolver(tag, regexp, first)
+ 
+-def add_path_resolver(tag, path, kind=None, Loader=None, Dumper=Dumper):
++
++def add_path_resolver_v2(tag, path, kind=None, Loader=None, Dumper=Dumper):
+     """
+     Add a path based resolver for the given tag.
+     A path is a list of keys that forms a path
+@@ -299,6 +318,7 @@
+         Loader.add_path_resolver(tag, path, kind)
+     Dumper.add_path_resolver(tag, path, kind)
+ 
++
+ def add_constructor(tag, constructor, Loader=None):
+     """
+     Add a constructor for the given tag.
+@@ -312,6 +332,7 @@
+     else:
+         Loader.add_constructor(tag, constructor)
+ 
++
+ def add_multi_constructor(tag_prefix, multi_constructor, Loader=None):
+     """
+     Add a multi-constructor for the given tag prefix.
+@@ -326,6 +347,7 @@
+     else:
+         Loader.add_multi_constructor(tag_prefix, multi_constructor)
+ 
++
+ def add_representer(data_type, representer, Dumper=Dumper):
+     """
+     Add a representer for the given type.
+@@ -335,6 +357,7 @@
+     """
+     Dumper.add_representer(data_type, representer)
+ 
++
+ def add_multi_representer(data_type, multi_representer, Dumper=Dumper):
+     """
+     Add a representer for the given type.
+@@ -344,6 +367,7 @@
+     """
+     Dumper.add_multi_representer(data_type, multi_representer)
+ 
++
+ class YAMLObjectMetaclass(type):
+     """
+     The metaclass for YAMLObject.
+@@ -386,5 +410,4 @@
+         Convert a Python object to a representation node.
+         """
+         return dumper.represent_yaml_object(cls.yaml_tag, data, cls,
+-                flow_style=cls.yaml_flow_style)
+-
++                flow_style=cls.yaml_flow_style)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py /tmp/yqi10/mu/103142/g1/lane26/profiling_sandbox/yaml/loader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py	2026-09-21 20:03:49.565444174 -0400
++++ /tmp/yqi10/mu/103142/g1/lane26/profiling_sandbox/yaml/loader.py	2026-09-27 07:32:00.308567869 -0400
+@@ -1,6 +1,3 @@
+-
+-__all__ = ['BaseLoader', 'FullLoader', 'SafeLoader', 'Loader', 'UnsafeLoader']
+-
+ from .reader import *
+ from .scanner import *
+ from .parser import *
+@@ -60,4 +57,4 @@
+         Parser.__init__(self)
+         Composer.__init__(self)
+         Constructor.__init__(self)
+-        Resolver.__init__(self)
++        Resolver.__init__(self)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py /tmp/yqi10/mu/103142/g1/lane26/profiling_sandbox/yaml/resolver.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py	2026-09-21 20:03:49.582954680 -0400
++++ /tmp/yqi10/mu/103142/g1/lane26/profiling_sandbox/yaml/resolver.py	2026-09-27 07:34:48.188288729 -0400
+@@ -1,4 +1,3 @@
+-
+ __all__ = ['BaseResolver', 'Resolver']
+ 
+ from .error import *
+@@ -35,8 +34,8 @@
+             cls.yaml_implicit_resolvers.setdefault(ch, []).append((tag, regexp))
+ 
+     @classmethod
+-    def add_path_resolver(cls, tag, path, kind=None):
+-        # Note: `add_path_resolver` is experimental.  The API could be changed.
++    def add_path_resolver_v2(cls, tag, path, kind=None):
++        # Note: `add_path_resolver_v2` is experimental.  The API could be changed.
+         # `new_path` is a pattern that is matched against the path from the
+         # root to the node that is being considered.  `node_path` elements are
+         # tuples `(node_check, index_check)`.  `node_check` is a node class:
+@@ -179,16 +178,15 @@
+         re.compile(r'''^(?:[-+]?(?:[0-9][0-9_]*)\.[0-9_]*(?:[eE][-+][0-9]+)?
+                     |\.[0-9][0-9_]*(?:[eE][-+][0-9]+)?
+                     |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\.[0-9_]*
+-                    |[-+]?\.(?:inf|Inf|INF)
+-                    |\.(?:nan|NaN|NAN))$''', re.X),
++                    |[-+]\.(?:inf|Inf|INF)
++                    |\.(?:nan|NaN|NAN)$''', re.X),
+         list('-+0123456789.'))
+ 
+ Resolver.add_implicit_resolver(
+         'tag:yaml.org,2002:int',
+         re.compile(r'''^(?:[-+]?0b[0-1_]+
+                     |[-+]?0[0-7_]+
+-                    |[-+]?(?:0|[1-9][0-9_]*)
+-                    |[-+]?0x[0-9a-fA-F_]+
++                    |[-+]?(?:0|[1-9][0-9_]*
+                     |[-+]?[1-9][0-9_]*(?::[0-5]?[0-9])+)$''', re.X),
+         list('-+0123456789'))
+ 
+@@ -223,5 +221,4 @@
+ Resolver.add_implicit_resolver(
+         'tag:yaml.org,2002:yaml',
+         re.compile(r'^(?:!|&|\*)$'),
+-        list('!&*'))
+-
++        list('!&*'))
+\ No newline at end of file

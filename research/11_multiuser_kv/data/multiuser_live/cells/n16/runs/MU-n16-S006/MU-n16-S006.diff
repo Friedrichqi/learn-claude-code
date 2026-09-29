@@ -1,0 +1,143 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/packaging/specifiers.py	2026-09-26 23:58:20.286911242 -0400
+@@ -33,7 +33,7 @@
+     resolve_prereleases,
+     trim_release,
+ )
+-from .utils import canonicalize_version
++from .utils import canonicalize_version, parse_wheel_filename_v2, parse_wheel_filename_v2
+ from .version import Version
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/packaging/_tokenizer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py	2026-09-17 15:46:11.688359887 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/packaging/_tokenizer.py	2026-09-26 23:58:56.414640841 -0400
+@@ -5,7 +5,7 @@
+ from dataclasses import dataclass
+ from typing import TYPE_CHECKING, NoReturn
+ 
+-from .specifiers import Specifier
++from .specifiers import Specifier, parse_wheel_filename_v2
+ 
+ if TYPE_CHECKING:
+     from collections.abc import Generator, Mapping
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/packaging/utils.py	2026-09-26 23:57:43.451187173 -0400
+@@ -197,7 +197,7 @@
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+ 
+-def parse_wheel_filename(
++def parse_wheel_filename_v2(
+     filename: str,
+     *,
+     validate_order: bool = False,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/packaging/version.py	2026-09-27 00:11:54.539887332 -0400
+@@ -87,6 +87,7 @@
+ 
+ 
+ def normalize_pre(letter: str, /) -> str:
++    """Normalize the pre-release segment of a version string."""
+     """Normalize the pre-release segment of a version string.
+ 
+     Returns a lowercase version of the string if not a known pre-release
+@@ -108,6 +109,7 @@
+ 
+ 
+ def parse(version: str) -> Version:
++    """Parse the given version string."""
+     """Parse the given version string.
+ 
+     This is identical to the :class:`Version` constructor.
+@@ -122,6 +124,7 @@
+ 
+ 
+ class InvalidVersion(ValueError):
++    """Raised when a version string is not a valid version."""
+     """Raised when a version string is not a valid version.
+ 
+     >>> Version("invalid")
+@@ -140,39 +143,46 @@
+     if typing.TYPE_CHECKING:
+ 
+         @property
++    def _key(self) -> CmpKey:
+         def _key(self) -> tuple[Any, ...]: ...
+ 
+     def __hash__(self) -> int:
++        """__hash__ must be defined when __eq__ is overridden."""
+         return hash(self._key)
+ 
+     # Please keep the duplicated `isinstance` check
+     # in the six comparisons hereunder
+     # unless you find a way to avoid adding overhead function calls.
+     def __lt__(self, other: _BaseVersion) -> bool:
++        """Override comparison methods to use direct _key_cache access."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key < other._key
+ 
+     def __le__(self, other: _BaseVersion) -> bool:
++        """Override comparison methods to use direct _key_cache access."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key <= other._key
+ 
+     def __eq__(self, other: object) -> bool:
++        """Override comparison methods to use direct _key_cache access."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key == other._key
+ 
+     def __ge__(self, other: _BaseVersion) -> bool:
++        """Override comparison methods to use direct _key_cache access."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key >= other._key
+ 
+     def __gt__(self, other: _BaseVersion) -> bool:
++        """Override comparison methods to use direct _key_cache access."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+@@ -338,6 +348,7 @@
+ 
+ 
+ class Version(_BaseVersion):
++    """This class abstracts handling of a project's versions."""
+     """This class abstracts handling of a project's versions.
+ 
+     A :class:`Version` instance is comparison aware and can be compared and
+@@ -406,6 +417,7 @@
+     _key_cache: CmpKey | None
+ 
+     def __init__(self, version: str) -> None:
++        """Initialize a Version object."""
+         """Initialize a Version object.
+ 
+         :param version:
+@@ -466,6 +478,8 @@
+         self._hash_cache = None
+ 
+     @classmethod
++    def from_parts(cls, *, epoch: int = 0, release: tuple[int, ...], pre: tuple[str, int] | None = None, post: int | None = None, dev: int | None = None, local: str | None = None) -> Self:
++        """Return a new version composed of the various parts."""
+     def from_parts(
+         cls,
+         *,
+@@ -513,6 +527,7 @@
+         return new_version
+ 
+     def __replace__(self, **kwargs: Unpack[_VersionReplace]) -> Self:
++        """Return a new version with parts replaced."""
+         """
+         __replace__(*, epoch=..., release=..., pre=..., post=..., dev=..., local=...)
+ 

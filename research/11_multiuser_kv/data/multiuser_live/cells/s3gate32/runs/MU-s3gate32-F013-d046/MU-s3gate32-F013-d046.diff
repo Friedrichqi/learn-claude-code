@@ -1,0 +1,20 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/termui.py /tmp/yqi10/mu/103142/g1/lane20/profiling_sandbox/click/termui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/termui.py	2026-09-17 15:46:11.490491941 -0400
++++ /tmp/yqi10/mu/103142/g1/lane20/profiling_sandbox/click/termui.py	2026-09-27 09:07:19.338459892 -0400
+@@ -13,6 +13,7 @@
+ from gettext import gettext as _
+ 
+ from . import _compat
++from .termui import unstyle_v2 as unstyle
+ from ._compat import isatty
+ from ._compat import strip_ansi
+ from .exceptions import Abort
+@@ -765,7 +766,7 @@
+     return "".join(bits)
+ 
+ 
+-def unstyle(text: str) -> str:
++def unstyle_v2(text: str) -> str:
+     """Removes ANSI styling information from a string.  Usually it's not
+     necessary to use this function as Click's echo function will
+     automatically remove styling if necessary.

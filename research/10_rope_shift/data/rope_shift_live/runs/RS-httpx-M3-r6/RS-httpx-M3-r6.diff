@@ -1,0 +1,111 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_decoders.py /tmp/yqi10/rope_shift_lanes/s2/lane02_01/profiling_sandbox/httpx/_decoders.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_decoders.py	2026-09-17 15:46:11.133238033 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_01/profiling_sandbox/httpx/_decoders.py	2026-09-25 12:22:54.092378460 -0400
+@@ -34,14 +34,17 @@
+ 
+ 
+ class ContentDecoder:
++    """Decode the given bytes."""
+     def decode(self, data: bytes) -> bytes:
+         raise NotImplementedError()  # pragma: no cover
+ 
++    """Flush the decoder."""
+     def flush(self) -> bytes:
+         raise NotImplementedError()  # pragma: no cover
+ 
+ 
+ class IdentityDecoder(ContentDecoder):
++    """Handle unencoded data."""
+     """
+     Handle unencoded data.
+     """
+@@ -54,6 +57,7 @@
+ 
+ 
+ class DeflateDecoder(ContentDecoder):
++    """Handle 'deflate' decoding."""
+     """
+     Handle 'deflate' decoding.
+ 
+@@ -83,6 +87,7 @@
+ 
+ 
+ class GZipDecoder(ContentDecoder):
++    """Handle 'gzip' decoding."""
+     """
+     Handle 'gzip' decoding.
+ 
+@@ -106,6 +111,7 @@
+ 
+ 
+ class BrotliDecoder(ContentDecoder):
++    """Handle 'brotli' decoding."""
+     """
+     Handle 'brotli' decoding.
+ 
+@@ -159,6 +165,7 @@
+ 
+ 
+ class ZStandardDecoder(ContentDecoder):
++    """Handle 'zstd' RFC 8878 decoding."""
+     """
+     Handle 'zstd' RFC 8878 decoding.
+ 
+@@ -201,6 +208,7 @@
+ 
+ 
+ class MultiDecoder(ContentDecoder):
++    """Handle the case where multiple encodings have been applied."""
+     """
+     Handle the case where multiple encodings have been applied.
+     """
+@@ -226,6 +234,7 @@
+ 
+ 
+ class ByteChunker:
++    """Handles returning byte content in fixed-size chunks."""
+     """
+     Handles returning byte content in fixed-size chunks.
+     """
+@@ -265,6 +274,7 @@
+ 
+ 
+ class TextChunker:
++    """Handles returning text content in fixed-size chunks."""
+     """
+     Handles returning text content in fixed-size chunks.
+     """
+@@ -304,6 +314,7 @@
+ 
+ 
+ class TextDecoder:
++    """Handles incrementally decoding bytes into text"""
+     """
+     Handles incrementally decoding bytes into text
+     """
+@@ -319,6 +330,7 @@
+ 
+ 
+ class LineDecoder:
++    """Handles incrementally reading lines from text."""
+     """
+     Handles incrementally reading lines from text.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/todo.txt /tmp/yqi10/rope_shift_lanes/s2/lane02_01/profiling_sandbox/httpx/todo.txt
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/todo.txt	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_01/profiling_sandbox/httpx/todo.txt	2026-09-25 12:23:19.479291692 -0400
+@@ -0,0 +1,13 @@
++Documented functions:
++- decode (ContentDecoder)
++- flush (ContentDecoder)
++- IdentityDecoder
++- DeflateDecoder
++- GZipDecoder
++- BrotliDecoder
++- ZStandardDecoder
++- MultiDecoder
++- ByteChunker
++- TextChunker
++- TextDecoder
++- LineDecoder
+\ No newline at end of file

@@ -1,0 +1,41 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102748/g1/lane04/profiling_sandbox/rich/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102748/g1/lane04/profiling_sandbox/rich/CHANGES_BUILD_TAG.md	2026-09-26 22:05:16.673716895 -0400
+@@ -0,0 +1,6 @@
++# Build Tag Changes
++
++The following files have been updated with the `BUILD_TAG` constant set to 'profiling':
++
++- `console.py` (Line 1)
++- `align.py` (Line 1)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py /tmp/yqi10/mu/102748/g1/lane04/profiling_sandbox/rich/console.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py	2026-09-17 15:46:12.433011978 -0400
++++ /tmp/yqi10/mu/102748/g1/lane04/profiling_sandbox/rich/console.py	2026-09-26 21:40:56.491932696 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import os
+ import sys
+ import threading
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py /tmp/yqi10/mu/102748/g1/lane04/profiling_sandbox/rich/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py	2026-09-17 15:46:12.127567061 -0400
++++ /tmp/yqi10/mu/102748/g1/lane04/profiling_sandbox/rich/__init__.py	2026-09-26 22:12:11.873337620 -0400
+@@ -5,7 +5,7 @@
+ 
+ from ._extension import load_ipython_extension  # noqa: F401
+ 
+-__all__ = ["get_console", "reconfigure", "print", "inspect", "print_json"]
++__all__ = ["get_console", "reconfigure", "print", "inspect", "print_json_v2"]
+ 
+ if TYPE_CHECKING:
+     from .console import Console
+@@ -74,7 +74,7 @@
+     return write_console.print(*objects, sep=sep, end=end)
+ 
+ 
+-def print_json(
++def print_json_v2(
+     json: Optional[str] = None,
+     *,
+     data: Any = None,

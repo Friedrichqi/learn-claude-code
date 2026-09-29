@@ -1,0 +1,414 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/nodes.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/jinja2/nodes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/nodes.py	2026-09-17 15:46:11.870517090 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/jinja2/nodes.py	2026-09-27 08:04:32.792376935 -0400
+@@ -48,6 +48,7 @@
+ 
+ 
+ class Impossible(Exception):
++    """Exception raised when an operation cannot be performed on a node."""
+     """Raised if the node could not perform a requested action."""
+ 
+ 
+@@ -84,9 +85,11 @@
+         self.volatile = False
+ 
+     def save(self) -> t.Mapping[str, t.Any]:
++        """Returns a copy of the current evaluation context."""
+         return self.__dict__.copy()
+ 
+     def revert(self, old: t.Mapping[str, t.Any]) -> None:
++        """Restores the evaluation context from a previous state."""
+         self.__dict__.clear()
+         self.__dict__.update(old)
+ 
+@@ -103,6 +106,7 @@
+ 
+ 
+ class Node(metaclass=NodeType):
++    """Base class for all Jinja nodes, representing elements of the abstract syntax tree."""
+     """Baseclass for all Jinja nodes.  There are a number of nodes available
+     of different types.  There are four major types:
+ 
+@@ -127,6 +131,7 @@
+     environment: t.Optional["Environment"]
+ 
+     def __init__(self, *fields: t.Any, **attributes: t.Any) -> None:
++        """Initializes a Node instance with fields and attributes."""
+         if self.abstract:
+             raise TypeError("abstract nodes are not instantiable")
+         if fields:
+@@ -145,6 +150,9 @@
+             raise TypeError(f"unknown attribute {next(iter(attributes))!r}")
+ 
+     def iter_fields(
++        self, exclude: t.Optional[t.Container[str]] = None, only: t.Optional[t.Container[str]] = None
++    ) -> t.Iterator[t.Tuple[str, t.Any]]:
++        """Iterates over all fields of the node, optionally excluding or limiting to specific fields."""
+         self,
+         exclude: t.Optional[t.Container[str]] = None,
+         only: t.Optional[t.Container[str]] = None,
+@@ -167,6 +175,9 @@
+                     pass
+ 
+     def iter_child_nodes(
++        self, exclude: t.Optional[t.Container[str]] = None, only: t.Optional[t.Container[str]] = None
++    ) -> t.Iterator["Node"]:
++        """Iterates over all child nodes of the node, optionally excluding or limiting to specific fields."""
+         self,
+         exclude: t.Optional[t.Container[str]] = None,
+         only: t.Optional[t.Container[str]] = None,
+@@ -184,6 +195,7 @@
+                 yield item
+ 
+     def find(self, node_type: t.Type[_NodeBound]) -> t.Optional[_NodeBound]:
++        """Finds the first child node of the given type."""
+         """Find the first node of a given type.  If no such node exists the
+         return value is `None`.
+         """
+@@ -195,6 +207,9 @@
+     def find_all(
+         self, node_type: t.Union[t.Type[_NodeBound], t.Tuple[t.Type[_NodeBound], ...]]
+     ) -> t.Iterator[_NodeBound]:
++        """Finds all child nodes of the given type(s)."""
++        self, node_type: t.Union[t.Type[_NodeBound], t.Tuple[t.Type[_NodeBound], ...]]
++    ) -> t.Iterator[_NodeBound]:
+         """Find all the nodes of a given type.  If the type is a tuple,
+         the check is performed for any of the tuple items.
+         """
+@@ -229,6 +244,7 @@
+         return self
+ 
+     def set_environment(self, environment: "Environment") -> "Node":
++        """Sets the environment for the node and all child nodes."""
+         """Set the environment for all nodes."""
+         todo = deque([self])
+         while todo:
+@@ -238,6 +254,7 @@
+         return self
+ 
+     def __eq__(self, other: t.Any) -> bool:
++        """Compares two nodes for equality based on their fields."""
+         if type(self) is not type(other):
+             return NotImplemented
+ 
+@@ -280,18 +297,21 @@
+ 
+ 
+ class Stmt(Node):
++    """Base class for all statement nodes in the abstract syntax tree."""
+     """Base node for all statements."""
+ 
+     abstract = True
+ 
+ 
+ class Helper(Node):
++    """Base class for nodes that exist in a specific context only."""
+     """Nodes that exist in a specific context only."""
+ 
+     abstract = True
+ 
+ 
+ class Template(Node):
++    """Represents the outermost node of a template in the abstract syntax tree."""
+     """Node that represents a template.  This must be the outermost node that
+     is passed to the compiler.
+     """
+@@ -301,6 +321,7 @@
+ 
+ 
+ class Output(Stmt):
++    """Represents a node that holds multiple expressions to be printed in the template."""
+     """A node that holds multiple expressions which are then printed out.
+     This is used both for the `print` statement and the regular template data.
+     """
+@@ -317,6 +338,7 @@
+ 
+ 
+ class For(Stmt):
++    """Represents a for loop statement in the template."""
+     """The for loop.  `target` is the target for the iteration (usually a
+     :class:`Name` or :class:`Tuple`), `iter` the iterable.  `body` is a list
+     of nodes that are used as loop-body, and `else_` a list of nodes for the
+@@ -335,6 +357,7 @@
+ 
+ 
+ class If(Stmt):
++    """Represents an if statement in the template."""
+     """If `test` is true, `body` is rendered, else `else_`."""
+ 
+     fields = ("test", "body", "elif_", "else_")
+@@ -378,6 +401,7 @@
+ 
+ 
+ class With(Stmt):
++    """Represents a with statement in the template."""
+     """Specific node for with statements.  In older versions of Jinja the
+     with statement was implemented on the base of the `Scope` node instead.
+ 
+@@ -391,6 +415,7 @@
+ 
+ 
+ class Block(Stmt):
++    """Represents a block statement in the template."""
+     """A node that represents a block.
+ 
+     .. versionchanged:: 3.0.0
+@@ -405,6 +430,7 @@
+ 
+ 
+ class Include(Stmt):
++    """Represents an include statement in the template."""
+     """A node that represents the include tag."""
+ 
+     fields = ("template", "with_context", "ignore_missing")
+@@ -414,6 +440,7 @@
+ 
+ 
+ class Import(Stmt):
++    """Represents an import statement in the template."""
+     """A node that represents the import tag."""
+ 
+     fields = ("template", "target", "with_context")
+@@ -423,6 +450,7 @@
+ 
+ 
+ class FromImport(Stmt):
++    """Represents a from import statement in the template."""
+     """A node that represents the from import tag.  It's important to not
+     pass unsafe names to the name attribute.  The compiler translates the
+     attribute lookups directly into getattr calls and does *not* use the
+@@ -441,6 +469,7 @@
+ 
+ 
+ class ExprStmt(Stmt):
++    """Represents a statement that evaluates an expression and discards the result."""
+     """A statement that evaluates an expression and discards the result."""
+ 
+     fields = ("node",)
+@@ -448,6 +477,7 @@
+ 
+ 
+ class Assign(Stmt):
++    """Represents an assignment statement in the template."""
+     """Assigns an expression to a target."""
+ 
+     fields = ("target", "node")
+@@ -456,6 +486,7 @@
+ 
+ 
+ class AssignBlock(Stmt):
++    """Represents an assignment block statement in the template."""
+     """Assigns a block to a target."""
+ 
+     fields = ("target", "filter", "body")
+@@ -465,6 +496,7 @@
+ 
+ 
+ class Expr(Node):
++    """Base class for all expression nodes in the abstract syntax tree."""
+     """Baseclass for all expressions."""
+ 
+     abstract = True
+@@ -488,6 +520,7 @@
+ 
+ 
+ class BinExpr(Expr):
++    """Base class for all binary expression nodes."""
+     """Baseclass for all binary expressions."""
+ 
+     fields = ("left", "right")
+@@ -513,6 +546,7 @@
+ 
+ 
+ class UnaryExpr(Expr):
++    """Base class for all unary expression nodes."""
+     """Baseclass for all unary expressions."""
+ 
+     fields = ("node",)
+@@ -537,6 +571,7 @@
+ 
+ 
+ class Name(Expr):
++    """Represents a name lookup or assignment in the template."""
+     """Looks up a name or stores a value in a name.
+     The `ctx` of the node can be one of the following values:
+ 
+@@ -554,6 +589,7 @@
+ 
+ 
+ class NSRef(Expr):
++    """Represents a reference to a namespace value assignment."""
+     """Reference to a namespace value assignment"""
+ 
+     fields = ("name", "attr")
+@@ -569,12 +605,14 @@
+ 
+ 
+ class Literal(Expr):
++    """Base class for literal expression nodes."""
+     """Baseclass for literals."""
+ 
+     abstract = True
+ 
+ 
+ class Const(Literal):
++    """Represents a constant value in the template."""
+     """All constant values.  The parser will return this node for simple
+     constants such as ``42`` or ``"foo"`` but it can be used to store more
+     complex values such as lists too.  Only constants with a safe
+@@ -606,6 +644,7 @@
+ 
+ 
+ class TemplateData(Literal):
++    """Represents a constant template string."""
+     """A constant template string."""
+ 
+     fields = ("data",)
+@@ -621,6 +660,7 @@
+ 
+ 
+ class Tuple(Literal):
++    """Represents a tuple literal in the template."""
+     """For loop unpacking and some other things like multiple arguments
+     for subscripts.  Like for :class:`Name` `ctx` specifies if the tuple
+     is used for loading the names or storing.
+@@ -642,6 +682,7 @@
+ 
+ 
+ class List(Literal):
++    """Represents a list literal in the template."""
+     """Any list literal such as ``[1, 2, 3]``"""
+ 
+     fields = ("items",)
+@@ -653,6 +694,7 @@
+ 
+ 
+ class Dict(Literal):
++    """Represents a dictionary literal in the template."""
+     """Any dict literal such as ``{1: 2, 3: 4}``.  The items must be a list of
+     :class:`Pair` nodes.
+     """
+@@ -668,6 +710,7 @@
+ 
+ 
+ class Pair(Helper):
++    """Represents a key-value pair for dictionary literals."""
+     """A key, value pair for dicts."""
+ 
+     fields = ("key", "value")
+@@ -682,6 +725,7 @@
+ 
+ 
+ class Keyword(Helper):
++    """Represents a keyword argument in a function call."""
+     """A key, value pair for keyword arguments where key is a string."""
+ 
+     fields = ("key", "value")
+@@ -694,6 +738,7 @@
+ 
+ 
+ class CondExpr(Expr):
++    """Represents a conditional expression (inline if-else) in the template."""
+     """A conditional expression (inline if expression).  (``{{
+     foo if bar else baz }}``)
+     """
+@@ -945,18 +990,21 @@
+ 
+ 
+ class Mul(BinExpr):
++    """Represents a multiplication operation between two expressions."""
+     """Multiplies the left with the right node."""
+ 
+     operator = "*"
+ 
+ 
+ class Div(BinExpr):
++    """Represents a division operation between two expressions."""
+     """Divides the left by the right node."""
+ 
+     operator = "/"
+ 
+ 
+ class FloorDiv(BinExpr):
++    """Represents a floor division operation between two expressions."""
+     """Divides the left by the right node and converts the
+     result into an integer by truncating.
+     """
+@@ -965,30 +1013,35 @@
+ 
+ 
+ class Add(BinExpr):
++    """Represents an addition operation between two expressions."""
+     """Add the left to the right node."""
+ 
+     operator = "+"
+ 
+ 
+ class Sub(BinExpr):
++    """Represents a subtraction operation between two expressions."""
+     """Subtract the right from the left node."""
+ 
+     operator = "-"
+ 
+ 
+ class Mod(BinExpr):
++    """Represents a modulo operation between two expressions."""
+     """Left modulo right."""
+ 
+     operator = "%"
+ 
+ 
+ class Pow(BinExpr):
++    """Represents a power operation between two expressions."""
+     """Left to the power of right."""
+ 
+     operator = "**"
+ 
+ 
+ class And(BinExpr):
++    """Represents a logical AND operation between two expressions."""
+     """Short circuited AND."""
+ 
+     operator = "and"
+@@ -999,6 +1052,7 @@
+ 
+ 
+ class Or(BinExpr):
++    """Represents a logical OR operation between two expressions."""
+     """Short circuited OR."""
+ 
+     operator = "or"
+@@ -1009,18 +1063,21 @@
+ 
+ 
+ class Not(UnaryExpr):
++    """Represents a logical NOT operation on an expression."""
+     """Negate the expression."""
+ 
+     operator = "not"
+ 
+ 
+ class Neg(UnaryExpr):
++    """Represents a negation operation on an expression."""
+     """Make the expression negative."""
+ 
+     operator = "-"
+ 
+ 
+ class Pos(UnaryExpr):
++    """Represents a positive operation on an expression (usually a no-op)."""
+     """Make the expression positive (noop for most expressions)"""
+ 
+     operator = "+"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/jinja2/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py	2026-09-17 15:46:11.913674754 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/jinja2/utils.py	2026-09-27 08:10:09.931832529 -0400
+@@ -405,7 +405,7 @@
+     )
+ 
+ 
+-def url_quote(obj: t.Any, charset: str = "utf-8", for_qs: bool = False) -> str:
++def url_quote_v2(obj: t.Any, charset: str = "utf-8", for_qs: bool = False) -> str:
+     """Quote a string for use in a URL using the given charset.
+ 
+     :param obj: String or bytes to quote. Other types are converted to

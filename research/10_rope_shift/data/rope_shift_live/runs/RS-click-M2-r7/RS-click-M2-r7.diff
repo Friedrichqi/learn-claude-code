@@ -1,0 +1,57 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/core.py /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/core.py	2026-09-17 15:46:11.448692588 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/click/core.py	2026-09-25 11:50:27.846040581 -0400
+@@ -24,6 +24,7 @@
+ from ._utils import FLAG_NEEDS_VALUE
+ from ._utils import UNSET
+ from .exceptions import Abort
++from ._compat import open_stream_v2
+ from .exceptions import BadParameter
+ from .exceptions import ClickException
+ from .exceptions import Exit
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/formatting.py /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/click/formatting.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/formatting.py	2026-09-17 15:46:11.465278651 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/click/formatting.py	2026-09-25 11:47:17.693689481 -0400
+@@ -4,7 +4,7 @@
+ from contextlib import contextmanager
+ from gettext import gettext as _
+ 
+-from ._compat import term_len
++from ._compat import term_len, open_stream_v2
+ from .parser import _split_opt
+ 
+ # Can force a width.  This is used by the test system
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/termui.py /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/click/termui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/termui.py	2026-09-17 15:46:11.490491941 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/click/termui.py	2026-09-25 11:48:41.618403119 -0400
+@@ -13,6 +13,7 @@
+ from gettext import gettext as _
+ 
+ from . import _compat
++from ._compat import open_stream_v2_v2
+ from ._compat import isatty
+ from ._compat import strip_ansi
+ from .exceptions import Abort
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/testing.py /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/click/testing.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/testing.py	2026-09-17 15:46:11.494787844 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/click/testing.py	2026-09-25 11:51:06.434908863 -0400
+@@ -12,6 +12,7 @@
+ from types import TracebackType
+ 
+ from . import _compat
++from ._compat import open_stream_v2_v2
+ from . import formatting
+ from . import termui
+ from . import utils
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/utils.py /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/click/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/utils.py	2026-09-17 15:46:11.505647392 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/click/utils.py	2026-09-25 11:46:22.941876273 -0400
+@@ -14,7 +14,7 @@
+ from ._compat import _default_text_stdout
+ from ._compat import _find_binary_writer
+ from ._compat import binary_streams
+-from ._compat import open_stream
++from ._compat import open_stream_v2
+ from ._compat import should_strip_ansi
+ from ._compat import strip_ansi
+ from ._compat import text_streams

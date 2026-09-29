@@ -1,0 +1,58 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/jinja2/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/jinja2/CHANGES_BUILD_TAG.md	2026-09-27 09:50:26.931862588 -0400
+@@ -0,0 +1 @@
++# Build Tag Changelog\n\nThis file lists the files where the `BUILD_TAG` constant was added and the line numbers where it was inserted.\n\n## Changes\n\n- `profiling_sandbox/jinja2/runtime.py`: Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/jinja2/runtime.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py	2026-09-17 15:46:11.892446012 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/jinja2/runtime.py	2026-09-27 09:49:25.182947705 -0400
+@@ -1,4 +1,4 @@
+-"""The runtime functions and state used by compiled templates."""
++BUILD_TAG = 'profiling'\n"""The runtime functions and state used by compiled templates."""
+ 
+ import functools
+ import sys
+@@ -68,9 +68,7 @@
+ 
+ 
+ def identity(x: V) -> V:
+-    """Returns its argument. Useful for certain things in the
+-    environment.
+-    """
++    """Returns its argument. Useful for certain things in the environment."""
+     return x
+ 
+ 
+@@ -198,6 +196,7 @@
+         return BlockReference(name, self, blocks, index)
+ 
+     def get(self, key: str, default: t.Any = None) -> t.Any:
++        """Get the value for a key, returning a default if the key is not present."""
+         """Look up a variable by name, or return a default if the key is
+         not found.
+ 
+@@ -249,6 +248,7 @@
+         return {k: self.vars[k] for k in self.exported_vars}
+ 
+     def get_all(self) -> t.Dict[str, t.Any]:
++        """Return a dictionary of all variables in the context."""
+         """Return the complete context as dict including the exported
+         variables.  For optimizations reasons this might not return an
+         actual copy so be careful with using it.
+@@ -327,6 +327,7 @@
+         return name in self.vars or name in self.parent
+ 
+     def __getitem__(self, key: str) -> t.Any:
++        """Get the value for a key, raising KeyError if the key is not present."""
+         """Look up a variable by name with ``[]`` syntax, or raise a
+         ``KeyError`` if the key is not found.
+         """
+@@ -451,6 +452,7 @@
+         return self._length
+ 
+     def __len__(self) -> int:
++        """Return the number of keys in the context."""
+         return self.length
+ 
+     @property

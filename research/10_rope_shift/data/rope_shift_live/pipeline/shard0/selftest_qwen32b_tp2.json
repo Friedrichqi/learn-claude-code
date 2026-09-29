@@ -1,0 +1,119 @@
+{
+  "model": "qwen32b",
+  "stats0": {
+    "loads": 0,
+    "loaded_tokens": 0,
+    "rotated_tokens": 0,
+    "saves": 0,
+    "saved_tokens": 0,
+    "entries": 0,
+    "store_bytes": 0,
+    "views": 64,
+    "view_shape": [
+      11649,
+      4,
+      16,
+      256
+    ],
+    "pos_dims": [
+      0,
+      128
+    ],
+    "style": "neox",
+    "theta": 1000000.0,
+    "is_mla": false
+  },
+  "T1": {
+    "same_greedy_32": true,
+    "first_logprob_maxdiff": 0.12498,
+    "cached_tokens": 2999
+  },
+  "T2": {
+    "pos_maxdiff_rel": 0.00051,
+    "pos_maxdiff_unrotated_rel": 0.1142,
+    "nonpos_maxdiff": 0.0
+  },
+  "T3": {
+    "rows": 13,
+    "expected_rows": 13,
+    "nll_maxdiff": 0.0
+  },
+  "T5": {
+    "plan": {
+      "old_len": 3400,
+      "new_len": 3035,
+      "prefix_len": 1500,
+      "reused": 3000,
+      "fresh": 35,
+      "reuse_runs": 2,
+      "stages": 1,
+      "reused_after_edit": 1500,
+      "delta_min": -378,
+      "delta_max": 0,
+      "delta_absmean": 189.0,
+      "shifted_tokens": 1500,
+      "tail_start": 3022
+    },
+    "segs": [
+      [
+        "reuse",
+        0,
+        1500,
+        0
+      ],
+      [
+        "fresh",
+        1500,
+        1522
+      ],
+      [
+        "reuse",
+        1522,
+        3022,
+        1900
+      ],
+      [
+        "fresh",
+        3022,
+        3035
+      ]
+    ],
+    "shift_text": " Do not mention the code itself.\nThe code runs a non-interactive S15 session for profiling, tracking input composition",
+    "norope_text": "  The code is for profiling runs.  The code is for profiling runs.  The code is for profiling runs.",
+    "recompute_text": " Do not mention the code itself.\nOkay, let me try to understand what this code does. The user provided a Python",
+    "shift_first_lp_gap": -0.2498,
+    "norope_first_lp_gap": 2.8508
+  },
+  "T4": {
+    "recompute_repeat_identical": true
+  },
+  "stats1": {
+    "loads": 6,
+    "loaded_tokens": 15043,
+    "rotated_tokens": 1500,
+    "saves": 6,
+    "saved_tokens": 9541,
+    "entries": 6,
+    "store_bytes": 1250557952,
+    "views": 64,
+    "view_shape": [
+      11649,
+      4,
+      16,
+      256
+    ],
+    "pos_dims": [
+      0,
+      128
+    ],
+    "style": "neox",
+    "theta": 1000000.0,
+    "is_mla": false
+  },
+  "numerics": {
+    "T1_same_greedy_32": true,
+    "T1_first_logprob_maxdiff": 0.12498,
+    "T3_nll_maxdiff": 0.0
+  },
+  "ok": true
+}

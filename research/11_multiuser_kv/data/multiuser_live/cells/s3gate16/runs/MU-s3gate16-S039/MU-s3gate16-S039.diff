@@ -1,0 +1,299 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/async_utils.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/async_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/async_utils.py	2026-09-17 15:46:11.726487027 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/async_utils.py	2026-09-27 08:09:42.708876506 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import inspect
+ import typing as t
+ from functools import WRAPPER_ASSIGNMENTS
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/bccache.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/bccache.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/bccache.py	2026-09-17 15:46:11.732510579 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/bccache.py	2026-09-27 08:09:52.007861484 -0400
+@@ -8,6 +8,8 @@
+ 
+ import errno
+ import fnmatch
++BUILD_TAG = 'profiling'
++
+ import marshal
+ import os
+ import pickle
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/CHANGES_BUILD_TAG.md	2026-09-27 08:11:50.165670579 -0400
+@@ -0,0 +1,63 @@
++# Build Tag Changes
++
++The following files have been updated with the `BUILD_TAG = 'profiling'` constant:
++
++1. **_identifier.py**
++   - Line: 1
++
++2. **async_utils.py**
++   - Line: 1
++
++3. **bccache.py**
++   - Line: 1
++
++4. **compiler.py**
++   - Line: 1
++
++5. **constants.py**
++   - Line: 1
++
++6. **debug.py**
++   - Line: 1
++
++7. **defaults.py**
++   - Line: 1
++
++8. **environment.py**
++   - Line: 1
++
++9. **exceptions.py**
++   - Line: 1
++
++10. **ext.py**
++    - Line: 1
++
++11. **filters.py**
++    - Line: 1
++
++12. **idtracking.py**
++    - Line: 1
++
++13. **lexer.py**
++    - Line: 1
++
++14. **loaders.py**
++    - Line: 1
++
++15. **nodes.py**
++    - Line: 1
++
++16. **parser.py**
++    - Line: 1
++
++17. **runtime.py**
++    - Line: 1
++
++18. **sandbox.py**
++    - Line: 1
++
++19. **utils.py**
++    - Line: 1
++
++20. **visitor.py**
++    - Line: 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/compiler.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/compiler.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/compiler.py	2026-09-17 15:46:11.742366999 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/compiler.py	2026-09-27 08:09:56.574854107 -0400
+@@ -1,5 +1,7 @@
+ """Compiles nodes from the parser into Python code."""
+ 
++BUILD_TAG = 'profiling'
++
+ import typing as t
+ from contextlib import contextmanager
+ from functools import update_wrapper
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/constants.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/constants.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/constants.py	2026-09-17 15:46:11.747708149 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/constants.py	2026-09-27 08:10:03.783842461 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ #: list of lorem ipsum words used by the lipsum() helper function
+ LOREM_IPSUM_WORDS = """\
+ a ac accumsan ad adipiscing aenean aliquam aliquet amet ante aptent arcu at
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/debug.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/debug.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/debug.py	2026-09-17 15:46:11.754146845 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/debug.py	2026-09-27 08:10:06.927837382 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import sys
+ import typing as t
+ from types import CodeType
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/defaults.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/defaults.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/defaults.py	2026-09-17 15:46:11.759208679 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/defaults.py	2026-09-27 08:10:17.799819818 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import typing as t
+ 
+ from .filters import FILTERS as DEFAULT_FILTERS  # noqa: F401
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/environment.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/environment.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/environment.py	2026-09-17 15:46:11.765695234 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/environment.py	2026-09-27 08:10:19.737816687 -0400
+@@ -2,6 +2,8 @@
+ options.
+ """
+ 
++BUILD_TAG = 'profiling'
++
+ import os
+ import typing
+ import typing as t
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/exceptions.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/exceptions.py	2026-09-17 15:46:11.770571430 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/exceptions.py	2026-09-27 08:10:29.372801121 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import typing as t
+ 
+ if t.TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/ext.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/ext.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/ext.py	2026-09-17 15:46:11.818187916 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/ext.py	2026-09-27 08:10:40.928782451 -0400
+@@ -1,5 +1,7 @@
+ """Extension API for adding custom tags and behavior."""
+ 
++BUILD_TAG = 'profiling'
++
+ import pprint
+ import re
+ import typing as t
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/filters.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/filters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/filters.py	2026-09-17 15:46:11.829876623 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/filters.py	2026-09-27 08:10:50.144767561 -0400
+@@ -1,5 +1,7 @@
+ """Built-in template filters used with the ``|`` operator."""
+ 
++BUILD_TAG = 'profiling'
++
+ import math
+ import random
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/_identifier.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/_identifier.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/_identifier.py	2026-09-17 15:46:11.633366768 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/_identifier.py	2026-09-27 08:09:28.816898946 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import re
+ 
+ # generated by scripts/generate_identifier_pattern.py
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/idtracking.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/idtracking.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/idtracking.py	2026-09-17 15:46:11.836560185 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/idtracking.py	2026-09-27 08:10:52.387763937 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import typing as t
+ 
+ from . import nodes
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/lexer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py	2026-09-17 15:46:11.844896526 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/lexer.py	2026-09-27 08:12:05.728645430 -0400
+@@ -4,6 +4,8 @@
+ template code and python code in expressions.
+ """
+ 
++BUILD_TAG = 'profiling'
++
+ import re
+ import typing as t
+ from ast import literal_eval
+@@ -190,7 +192,7 @@
+     return _describe_token_type(token.type)
+ 
+ 
+-def describe_token_expr(expr: str) -> str:
++def describe_token_expr_v2(expr: str) -> str:
+     """Like `describe_token` but for token expressions."""
+     if ":" in expr:
+         type, value = expr.split(":", 1)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/loaders.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/loaders.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/loaders.py	2026-09-17 15:46:11.849691733 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/loaders.py	2026-09-27 08:11:03.577745857 -0400
+@@ -2,6 +2,8 @@
+ sources.
+ """
+ 
++BUILD_TAG = 'profiling'
++
+ import importlib.util
+ import os
+ import posixpath
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/nodes.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/nodes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/nodes.py	2026-09-17 15:46:11.870517090 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/nodes.py	2026-09-27 08:11:05.707742416 -0400
+@@ -5,6 +5,8 @@
+ 
+ import inspect
+ import operator
++BUILD_TAG = 'profiling'
++
+ import typing as t
+ from collections import deque
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py	2026-09-17 15:46:11.883102845 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/parser.py	2026-09-27 08:12:16.597627866 -0400
+@@ -1,12 +1,14 @@
+ """Parse tokens from the lexer into nodes for the compiler."""
+ 
++BUILD_TAG = 'profiling'
++
+ import typing
+ import typing as t
+ 
+ from . import nodes
+ from .exceptions import TemplateAssertionError
+ from .exceptions import TemplateSyntaxError
+-from .lexer import describe_token
++from .lexer import describe_token_expr_v2_v2 as describe_token_expr
+ from .lexer import describe_token_expr
+ 
+ if t.TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/runtime.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py	2026-09-17 15:46:11.892446012 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/runtime.py	2026-09-27 08:11:21.236717325 -0400
+@@ -1,5 +1,7 @@
+ """The runtime functions and state used by compiled templates."""
+ 
++BUILD_TAG = 'profiling'
++
+ import functools
+ import sys
+ import typing as t
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/sandbox.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/sandbox.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/sandbox.py	2026-09-17 15:46:11.899990764 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/sandbox.py	2026-09-27 08:11:23.387713849 -0400
+@@ -4,6 +4,8 @@
+ 
+ import operator
+ import types
++BUILD_TAG = 'profiling'
++
+ import typing as t
+ from _string import formatter_field_name_split  # type: ignore
+ from collections import abc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py	2026-09-17 15:46:11.913674754 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/utils.py	2026-09-27 08:11:34.185696401 -0400
+@@ -1,6 +1,8 @@
+ import enum
+ import json
+ import os
++BUILD_TAG = 'profiling'
++
+ import re
+ import typing as t
+ from collections import abc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/visitor.py /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/visitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/visitor.py	2026-09-17 15:46:11.923739452 -0400
++++ /tmp/yqi10/mu/103142/g0/lane03/profiling_sandbox/jinja2/visitor.py	2026-09-27 08:11:36.315692959 -0400
+@@ -2,6 +2,8 @@
+ meta introspection.
+ """
+ 
++BUILD_TAG = 'profiling'
++
+ import typing as t
+ 
+ from .nodes import Node

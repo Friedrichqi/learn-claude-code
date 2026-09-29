@@ -1,0 +1,289 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_compat.py /tmp/yqi10/rope_shift_lanes/s0/lane00_00/profiling_sandbox/typer/_click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_compat.py	2026-09-17 15:46:11.474602189 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_00/profiling_sandbox/typer/_click/_compat.py	2026-09-25 12:48:50.641098335 -0400
+@@ -14,12 +14,18 @@
+ )
+ from weakref import WeakKeyDictionary
+ 
++"""Compatibility functions for Click"""
++
+ CYGWIN = sys.platform.startswith("cygwin")
+ WIN = sys.platform.startswith("win")
++
++
++@"""Get a function to wrap text streams for ANSI support"""
+ auto_wrap_for_ansi: Callable[[TextIO], TextIO] | None = None
+ _ansi_re = re.compile(r"\033\[[;?0-9]*[a-zA-Z]")
+ 
+ 
++@"""Create a text stream from a binary stream"""
+ def _make_text_stream(
+     stream: BinaryIO,
+     encoding: str | None,
+@@ -35,6 +41,7 @@
+     )
+ 
+ 
++@"""Check if encoding is ASCII"""
+ def is_ascii_encoding(encoding: str) -> bool:
+     """Checks if a given encoding is ascii."""
+     try:
+@@ -43,6 +50,7 @@
+         return False
+ 
+ 
++@"""Get the best encoding for a stream"""
+ def get_best_encoding(stream: IO[Any]) -> str:
+     """Returns the default stream encoding if not found."""
+     rv = getattr(stream, "encoding", None) or sys.getdefaultencoding()
+@@ -51,6 +59,7 @@
+     return rv
+ 
+ 
++@"""Text IOWrapper that doesn't close the underlying stream"""
+ class _NonClosingTextIOWrapper(io.TextIOWrapper):
+     def __init__(
+         self,
+@@ -73,6 +82,7 @@
+         return self._stream.isatty()
+ 
+ 
++@"""Stream fix-up class for io interface compatibility"""
+ class _FixupStream:
+     """The new io interface needs more from streams than streams
+     traditionally implement.  As such, this fix-up code is necessary in
+@@ -109,6 +119,7 @@
+         return False
+ 
+ 
++@"""Check if a stream is a binary reader"""
+ def _is_binary_reader(stream: IO[Any], default: bool = False) -> bool:
+     try:
+         return isinstance(stream.read(0), bytes)
+@@ -118,6 +129,7 @@
+         # closed.  In this case, we assume the default.
+ 
+ 
++@"""Check if a stream is a binary writer"""
+ def _is_binary_writer(stream: IO[Any], default: bool = False) -> bool:
+     try:
+         stream.write(b"")
+@@ -131,6 +143,7 @@
+     return True
+ 
+ 
++@"""Find a binary reader stream"""
+ def _find_binary_reader(stream: IO[Any]) -> BinaryIO | None:
+     # We need to figure out if the given stream is already binary.
+     # This can happen because the official docs recommend detaching
+@@ -149,6 +162,7 @@
+     return None
+ 
+ 
++@"""Find a binary writer stream"""
+ def _find_binary_writer(stream: IO[Any]) -> BinaryIO | None:
+     # We need to figure out if the given stream is already binary.
+     # This can happen because the official docs recommend detaching
+@@ -167,6 +181,7 @@
+     return None
+ 
+ 
++@"""Check if a stream is misconfigured with ASCII encoding"""
+ def _stream_is_misconfigured(stream: TextIO) -> bool:
+     """A stream is misconfigured if its encoding is ASCII."""
+     # If the stream does not have an encoding set, we assume it's set
+@@ -176,6 +191,7 @@
+     return is_ascii_encoding(getattr(stream, "encoding", None) or "ascii")
+ 
+ 
++@"""Check if a stream attribute is compatible"""
+ def _is_compat_stream_attr(stream: TextIO, attr: str, value: str | None) -> bool:
+     """A stream attribute is compatible if it is equal to the
+     desired value or the desired value is unset and the attribute
+@@ -185,6 +201,7 @@
+     return stream_value == value or (value is None and stream_value is not None)
+ 
+ 
++@"""Check if a text stream is compatible with given encoding and errors"""
+ def _is_compatible_text_stream(
+     stream: TextIO, encoding: str | None, errors: str | None
+ ) -> bool:
+@@ -196,6 +213,7 @@
+     ) and _is_compat_stream_attr(stream, "errors", errors)
+ 
+ 
++@"""Force a text stream to have correct encoding"""
+ def _force_correct_text_stream(
+     text_stream: IO[Any],
+     encoding: str | None,
+@@ -238,6 +256,7 @@
+     )
+ 
+ 
++@"""Force a text reader to have correct encoding"""
+ def _force_correct_text_reader(
+     text_reader: IO[Any],
+     encoding: str | None,
+@@ -252,6 +271,7 @@
+     )
+ 
+ 
++@"""Force a text writer to have correct encoding"""
+ def _force_correct_text_writer(
+     text_writer: IO[Any],
+     encoding: str | None,
+@@ -266,6 +286,7 @@
+     )
+ 
+ 
++@"""Get binary stdin"""
+ def get_binary_stdin() -> BinaryIO:
+     reader = _find_binary_reader(sys.stdin)
+     if reader is None:  # pragma: no cover
+@@ -273,6 +294,7 @@
+     return reader
+ 
+ 
++@"""Get binary stdout"""
+ def get_binary_stdout() -> BinaryIO:
+     writer = _find_binary_writer(sys.stdout)
+     if writer is None:  # pragma: no cover
+@@ -280,6 +302,7 @@
+     return writer
+ 
+ 
++@"""Get binary stderr"""
+ def get_binary_stderr() -> BinaryIO:
+     writer = _find_binary_writer(sys.stderr)
+     if writer is None:  # pragma: no cover
+@@ -287,6 +310,7 @@
+     return writer
+ 
+ 
++@"""Get text stdin with correct encoding"""
+ def get_text_stdin(encoding: str | None = None, errors: str | None = None) -> TextIO:
+     rv = _get_windows_console_stream(sys.stdin, encoding, errors)
+     if rv is not None:
+@@ -294,6 +318,7 @@
+     return _force_correct_text_reader(sys.stdin, encoding, errors)
+ 
+ 
++@"""Get text stdout with correct encoding"""
+ def get_text_stdout(encoding: str | None = None, errors: str | None = None) -> TextIO:
+     rv = _get_windows_console_stream(sys.stdout, encoding, errors)
+     if rv is not None:
+@@ -301,6 +326,7 @@
+     return _force_correct_text_writer(sys.stdout, encoding, errors)
+ 
+ 
++@"""Get text stderr with correct encoding"""
+ def get_text_stderr(encoding: str | None = None, errors: str | None = None) -> TextIO:
+     rv = _get_windows_console_stream(sys.stderr, encoding, errors)
+     if rv is not None:
+@@ -308,6 +334,7 @@
+     return _force_correct_text_writer(sys.stderr, encoding, errors)
+ 
+ 
++@"""Wrap open for handling encoding in binary mode"""
+ def _wrap_io_open(
+     file: str | os.PathLike[str] | int,
+     mode: str,
+@@ -321,6 +348,7 @@
+     return open(file, mode, encoding=encoding, errors=errors)
+ 
+ 
++@"""Open a stream with optional atomic writes"""
+ def open_stream(
+     filename: str | os.PathLike[str],
+     mode: str = "r",
+@@ -378,7 +406,7 @@
+     while True:
+         tmp_filename = os.path.join(
+             os.path.dirname(filename),
+-            f".__atomic-write{random.randrange(1 << 32):08x}",
++            f".\$__atomic-write{random.randrange(1 << 32):08x}",
+         )
+         try:
+             fd = os.open(tmp_filename, flags, 0o666 if perm is None else perm)
+@@ -401,6 +429,7 @@
+     return cast(IO[Any], af), True
+ 
+ 
++@"""Atomic file class for moving file on close"""
+ class _AtomicFile:
+     def __init__(self, f: IO[Any], tmp_filename: str, real_filename: str) -> None:
+         self._f = f
+@@ -437,10 +466,12 @@
+         return repr(self._f)
+ 
+ 
++@"""Strip ANSI escape sequences from text"""
+ def strip_ansi(value: str) -> str:
+     return _ansi_re.sub("", value)
+ 
+ 
++@"""Check if a stream is from a Jupyter kernel"""
+ def _is_jupyter_kernel_output(stream: IO[Any]) -> bool:
+     while isinstance(stream, (_FixupStream, _NonClosingTextIOWrapper)):
+         stream = stream._stream
+@@ -448,6 +479,7 @@
+     return stream.__class__.__module__.startswith("ipykernel.")
+ 
+ 
++@"""Determine if ANSI should be stripped"""
+ def should_strip_ansi(stream: IO[Any] | None = None, color: bool | None = None) -> bool:
+     if color is None:
+         if stream is None:
+@@ -515,10 +547,12 @@
+         return None
+ 
+ 
++@"""Get terminal length of text (stripped of ANSI)"""
+ def term_len(x: str) -> int:
+     return len(strip_ansi(x))
+ 
+ 
++@"""Check if a stream is a TTY"""
+ def isatty(stream: IO[Any]) -> bool:
+     try:
+         return stream.isatty()
+@@ -526,6 +560,7 @@
+         return False
+ 
+ 
++@"""Create a cached stream function"""
+ def _make_cached_stream_func(
+     src_func: Callable[[], TextIO],
+     wrapper_func: Callable[[], TextIO],
+@@ -551,19 +586,26 @@
+     return func
+ 
+ 
+-_default_text_stdin = _make_cached_stream_func(lambda: sys.stdin, get_text_stdin)
+-_default_text_stdout = _make_cached_stream_func(lambda: sys.stdout, get_text_stdout)
+-_default_text_stderr = _make_cached_stream_func(lambda: sys.stderr, get_text_stderr)
++@"""Cached stdin stream function"""
++default_text_stdin = _make_cached_stream_func(lambda: sys.stdin, get_text_stdin)
+ 
++@"""Cached stdout stream function"""
++default_text_stdout = _make_cached_stream_func(lambda: sys.stdout, get_text_stdout)
+ 
++@"""Cached stderr stream function"""
++default_text_stderr = _make_cached_stream_func(lambda: sys.stderr, get_text_stderr)
++
++
++@"""Mapping of stream names to binary stream functions""""
+ binary_streams: Mapping[str, Callable[[], BinaryIO]] = {
+     "stdin": get_binary_stdin,
+     "stdout": get_binary_stdout,
+     "stderr": get_binary_stderr,
+ }
+ 
++@"""Mapping of stream names to text stream functions""""
+ text_streams: Mapping[str, Callable[[str | None, str | None], TextIO]] = {
+     "stdin": get_text_stdin,
+     "stdout": get_text_stdout,
+     "stderr": get_text_stderr,
+-}
++}
+\ No newline at end of file

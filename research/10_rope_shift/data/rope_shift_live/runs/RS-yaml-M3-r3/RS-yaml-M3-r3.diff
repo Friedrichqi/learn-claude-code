@@ -1,0 +1,256 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/yaml/parser.py	2026-09-25 11:51:34.915395668 -0400
+@@ -1,7 +1,6 @@
+-
+ # The following YAML grammar is LL(1) and is parsed by a recursive descent
+ # parser.
+-#
++
+ # stream            ::= STREAM-START implicit_document? explicit_document* STREAM-END
+ # implicit_document ::= block_node DOCUMENT-END*
+ # explicit_document ::= DIRECTIVE* DOCUMENT-START block_node? DOCUMENT-END*
+@@ -37,27 +36,6 @@
+ #                       flow_mapping_entry?
+ #                       FLOW-MAPPING-END
+ # flow_mapping_entry    ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+-#
+-# FIRST sets:
+-#
+-# stream: { STREAM-START }
+-# explicit_document: { DIRECTIVE DOCUMENT-START }
+-# implicit_document: FIRST(block_node)
+-# block_node: { ALIAS TAG ANCHOR SCALAR BLOCK-SEQUENCE-START BLOCK-MAPPING-START FLOW-SEQUENCE-START FLOW-MAPPING-START }
+-# flow_node: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START }
+-# block_content: { BLOCK-SEQUENCE-START BLOCK-MAPPING-START FLOW-SEQUENCE-START FLOW-MAPPING-START SCALAR }
+-# flow_content: { FLOW-SEQUENCE-START FLOW-MAPPING-START SCALAR }
+-# block_collection: { BLOCK-SEQUENCE-START BLOCK-MAPPING-START }
+-# flow_collection: { FLOW-SEQUENCE-START FLOW-MAPPING-START }
+-# block_sequence: { BLOCK-SEQUENCE-START }
+-# block_mapping: { BLOCK-MAPPING-START }
+-# block_node_or_indentless_sequence: { ALIAS ANCHOR TAG SCALAR BLOCK-SEQUENCE-START BLOCK-MAPPING-START FLOW-SEQUENCE-START FLOW-MAPPING-START BLOCK-ENTRY }
+-# indentless_sequence: { ENTRY }
+-# flow_collection: { FLOW-SEQUENCE-START FLOW-MAPPING-START }
+-# flow_sequence: { FLOW-SEQUENCE-START }
+-# flow_mapping: { FLOW-MAPPING-START }
+-# flow_sequence_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START KEY }
+-# flow_mapping_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START KEY }
+ 
+ __all__ = ['Parser', 'ParserError']
+ 
+@@ -79,6 +57,7 @@
+     }
+ 
+     def __init__(self):
++        # Initialize the parser with default states and attributes.
+         self.current_event = None
+         self.yaml_version = None
+         self.tag_handles = {}
+@@ -87,7 +66,7 @@
+         self.state = self.parse_stream_start
+ 
+     def dispose(self):
+-        # Reset the state attributes (to clear self-references)
++        # Reset the state attributes (to clear self-references).
+         self.states = []
+         self.state = None
+ 
+@@ -105,7 +84,7 @@
+         return False
+ 
+     def peek_event(self):
+-        # Get the next event.
++        # Get the next event without advancing the state.
+         if self.current_event is None:
+             if self.state:
+                 self.current_event = self.state()
+@@ -125,8 +104,7 @@
+     # explicit_document ::= DIRECTIVE* DOCUMENT-START block_node? DOCUMENT-END*
+ 
+     def parse_stream_start(self):
+-
+-        # Parse the stream start.
++        # Parse the stream start token and create the corresponding event.
+         token = self.get_token()
+         event = StreamStartEvent(token.start_mark, token.end_mark,
+                 encoding=token.encoding)
+@@ -137,8 +115,7 @@
+         return event
+ 
+     def parse_implicit_document_start(self):
+-
+-        # Parse an implicit document.
++        # Parse an implicit document if no explicit document is found.
+         if not self.check_token(DirectiveToken, DocumentStartToken,
+                 StreamEndToken):
+             self.tag_handles = self.DEFAULT_TAGS
+@@ -157,7 +134,6 @@
+             return self.parse_document_start()
+ 
+     def parse_document_start(self):
+-
+         # Parse any extra document end indicators.
+         while self.check_token(DocumentEndToken):
+             self.get_token()
+@@ -188,8 +164,7 @@
+         return event
+ 
+     def parse_document_end(self):
+-
+-        # Parse the document end.
++        # Parse the document end token and create the corresponding event.
+         token = self.peek_token()
+         start_mark = end_mark = token.start_mark
+         explicit = False
+@@ -206,6 +181,7 @@
+         return event
+ 
+     def parse_document_content(self):
++        # Parse the content of the document if it exists.
+         if self.check_token(DirectiveToken,
+                 DocumentStartToken, DocumentEndToken, StreamEndToken):
+             event = self.process_empty_scalar(self.peek_token().start_mark)
+@@ -215,6 +191,7 @@
+             return self.parse_block_node()
+ 
+     def process_directives(self):
++        # Process directives to determine the YAML version and tag handles.
+         self.yaml_version = None
+         self.tag_handles = {}
+         while self.check_token(DirectiveToken):
+@@ -262,15 +239,19 @@
+     # flow_collection   ::= flow_sequence | flow_mapping
+ 
+     def parse_block_node(self):
++        # Parse a block node.
+         return self.parse_node(block=True)
+ 
+     def parse_flow_node(self):
++        # Parse a flow node.
+         return self.parse_node()
+ 
+     def parse_block_node_or_indentless_sequence(self):
++        # Parse a block node or an indentless sequence.
+         return self.parse_node(block=True, indentless_sequence=True)
+ 
+     def parse_node(self, block=False, indentless_sequence=False):
++        # Parse a node based on the specified type (block or flow).
+         if self.check_token(AliasToken):
+             token = self.get_token()
+             event = AliasEvent(token.value, token.start_mark, token.end_mark)
+@@ -374,11 +355,13 @@
+     # block_sequence ::= BLOCK-SEQUENCE-START (BLOCK-ENTRY block_node?)* BLOCK-END
+ 
+     def parse_block_sequence_first_entry(self):
++        # Parse the first entry of a block sequence.
+         token = self.get_token()
+         self.marks.append(token.start_mark)
+         return self.parse_block_sequence_entry()
+ 
+     def parse_block_sequence_entry(self):
++        # Parse an entry in a block sequence.
+         if self.check_token(BlockEntryToken):
+             token = self.get_token()
+             if not self.check_token(BlockEntryToken, BlockEndToken):
+@@ -400,6 +383,7 @@
+     # indentless_sequence ::= (BLOCK-ENTRY block_node?)+
+ 
+     def parse_indentless_sequence_entry(self):
++        # Parse an entry in an indentless sequence.
+         if self.check_token(BlockEntryToken):
+             token = self.get_token()
+             if not self.check_token(BlockEntryToken,
+@@ -420,11 +404,13 @@
+     #                       BLOCK-END
+ 
+     def parse_block_mapping_first_key(self):
++        # Parse the first key in a block mapping.
+         token = self.get_token()
+         self.marks.append(token.start_mark)
+         return self.parse_block_mapping_key()
+ 
+     def parse_block_mapping_key(self):
++        # Parse a key in a block mapping.
+         if self.check_token(KeyToken):
+             token = self.get_token()
+             if not self.check_token(KeyToken, ValueToken, BlockEndToken):
+@@ -444,6 +430,7 @@
+         return event
+ 
+     def parse_block_mapping_value(self):
++        # Parse a value in a block mapping.
+         if self.check_token(ValueToken):
+             token = self.get_token()
+             if not self.check_token(KeyToken, ValueToken, BlockEndToken):
+@@ -469,11 +456,13 @@
+     # generate an inline mapping (set syntax).
+ 
+     def parse_flow_sequence_first_entry(self):
++        # Parse the first entry of a flow sequence.
+         token = self.get_token()
+         self.marks.append(token.start_mark)
+         return self.parse_flow_sequence_entry(first=True)
+ 
+     def parse_flow_sequence_entry(self, first=False):
++        # Parse an entry in a flow sequence.
+         if not self.check_token(FlowSequenceEndToken):
+             if not first:
+                 if self.check_token(FlowEntryToken):
+@@ -500,6 +489,7 @@
+         return event
+ 
+     def parse_flow_sequence_entry_mapping_key(self):
++        # Parse a key in a flow sequence entry mapping.
+         token = self.get_token()
+         if not self.check_token(ValueToken,
+                 FlowEntryToken, FlowSequenceEndToken):
+@@ -510,6 +500,7 @@
+             return self.process_empty_scalar(token.end_mark)
+ 
+     def parse_flow_sequence_entry_mapping_value(self):
++        # Parse a value in a flow sequence entry mapping.
+         if self.check_token(ValueToken):
+             token = self.get_token()
+             if not self.check_token(FlowEntryToken, FlowSequenceEndToken):
+@@ -524,6 +515,7 @@
+             return self.process_empty_scalar(token.start_mark)
+ 
+     def parse_flow_sequence_entry_mapping_end(self):
++        # Parse the end of a flow sequence entry mapping.
+         self.state = self.parse_flow_sequence_entry
+         token = self.peek_token()
+         return MappingEndEvent(token.start_mark, token.start_mark)
+@@ -535,11 +527,13 @@
+     # flow_mapping_entry    ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+ 
+     def parse_flow_mapping_first_key(self):
++        # Parse the first key in a flow mapping.
+         token = self.get_token()
+         self.marks.append(token.start_mark)
+         return self.parse_flow_mapping_key(first=True)
+ 
+     def parse_flow_mapping_key(self, first=False):
++        # Parse a key in a flow mapping.
+         if not self.check_token(FlowMappingEndToken):
+             if not first:
+                 if self.check_token(FlowEntryToken):
+@@ -567,6 +561,7 @@
+         return event
+ 
+     def parse_flow_mapping_value(self):
++        # Parse a value in a flow mapping.
+         if self.check_token(ValueToken):
+             token = self.get_token()
+             if not self.check_token(FlowEntryToken, FlowMappingEndToken):
+@@ -581,9 +576,10 @@
+             return self.process_empty_scalar(token.start_mark)
+ 
+     def parse_flow_mapping_empty_value(self):
++        # Parse an empty value in a flow mapping.
+         self.state = self.parse_flow_mapping_key
+         return self.process_empty_scalar(self.peek_token().start_mark)
+ 
+     def process_empty_scalar(self, mark):
++        # Process an empty scalar event.
+         return ScalarEvent(None, None, (True, False), '', mark, mark)
+-

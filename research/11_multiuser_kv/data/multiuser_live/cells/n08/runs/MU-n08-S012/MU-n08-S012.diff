@@ -1,0 +1,874 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/requests/auth.py	2026-09-27 00:47:33.805816614 -0400
+@@ -2,353 +2,443 @@
+ requests.auth
+ ~~~~~~~~~~~~~
+ 
+-This module contains the authentication handlers for Requests.
++This module contains authentication helpers for Requests.
+ """
+-
+ from __future__ import annotations
+ 
+-import hashlib
++import base64
++import functools
+ import os
+ import re
+-import threading
+-import time
+-import warnings
+-from base64 import b64encode
+-from typing import TYPE_CHECKING, Any, Final, cast, overload
+-
+-from ._internal_utils import to_native_string
+-from .compat import basestring, str, urlparse
+-from .cookies import extract_cookies_to_jar
+-from .utils import parse_dict_header
+-
+-if TYPE_CHECKING:
+-    from http.cookiejar import CookieJar
+-    from typing import Any
+-
+-    from .models import PreparedRequest, Response
+-
+-CONTENT_TYPE_FORM_URLENCODED: Final = "application/x-www-form-urlencoded"
+-CONTENT_TYPE_MULTI_PART: Final = "multipart/form-data"
+-
+-
+-def _basic_auth_str(username: bytes | str, password: bytes | str) -> str:
+-    """Returns a Basic Auth string."""
+-
+-    # "I want us to put a big-ol' comment on top of it that
+-    # says that this behaviour is dumb but we need to preserve
+-    # it because people are relying on it."
+-    #    - Lukasa
+-    #
+-    # These are here solely to maintain backwards compatibility
+-    # for things like ints. This will be removed in 3.0.0.
+-    if not isinstance(username, basestring):  # type: ignore[reportUnnecessaryIsInstance]  # runtime guard for non-str/bytes
+-        warnings.warn(
+-            "Non-string usernames will no longer be supported in Requests "
+-            f"3.0.0. Please convert the object you've passed in ({username!r}) to "
+-            "a string or bytes object in the near future to avoid "
+-            "problems.",
+-            category=DeprecationWarning,
+-        )
+-        username = str(username)
+-
+-    if not isinstance(password, basestring):  # type: ignore[reportUnnecessaryIsInstance]  # runtime guard for non-str/bytes
+-        warnings.warn(
+-            "Non-string passwords will no longer be supported in Requests "
+-            f"3.0.0. Please convert the object you've passed in ({type(password)!r}) to "
+-            "a string or bytes object in the near future to avoid "
+-            "problems.",
+-            category=DeprecationWarning,
+-        )
+-        password = str(password)
+-    # -- End Removal --
+-
+-    if isinstance(username, str):
+-        username = username.encode("latin1")
+-
+-    if isinstance(password, str):
+-        password = password.encode("latin1")
+-
+-    authstr = "Basic " + to_native_string(
+-        b64encode(b":".join((username, password))).strip()
+-    )
++import typing
++from collections.abc import Callable
++from typing import Any, BinaryIO, cast, overload
++
++from urllib3.util import make_headers
++
++from . import cookies
++from .compat import cookielib, OrderedDict
++from .cookies import cookiejar_from_dict, RequestsCookieJar
++from .exceptions import AuthenticationError
++from .hooks import default_hooks_v2
++from .models import Request, Response
++from .structures import CaseInsensitiveDict
++from .utils import requote_uri
++
++if typing.TYPE_CHECKING:
++    from . import _types as _t
++    from .sessions import Session
++
++    from typing_extensions import Self, Unpack
++
++    from urllib3 import HTTPResponse
++
++__all__ = [
++    "HTTPBasicAuth",
++    "HTTPDigestAuth",
++    "HTTPProxyAuth",
++    "AuthBase",
++    "_basic_auth_str",
++    "_digest_auth_str",
++    "_basic_auth",
++    "_digest_auth",
++    "_proxy_basic_auth",
++    "_proxy_digest_auth",
++]
+ 
+-    return authstr
++class AuthBase:
++    """Base class for create authentication handlers."""
+ 
++    def __init__(self) -> None:
++        pass
+ 
+-class AuthBase:
+-    """Base class that all auth implementations derive from"""
++    def __call__(self, r: Request) -> Request:
++        """Add authentication to the request."""
++        raise NotImplementedError
+ 
+-    def __call__(self, r: PreparedRequest) -> PreparedRequest:
+-        raise NotImplementedError("Auth hooks must be callable.")
++    def __eq__(self, other: object) -> bool:
++        """Return True if the authentication is the same."""
++        return isinstance(other, self.__class__)
+ 
++    def __ne__(self, other: object) -> bool:
++        """Return True if the authentication is different."""
++        return not self == other
+ 
+-class HTTPBasicAuth(AuthBase):
+-    """Attaches HTTP Basic Authentication to the given Request object."""
++    def __hash__(self) -> int:
++        """Return the hash of the authentication."""
++        return hash(self.__class__)
++
++def _basic_auth_str(username: str, password: str) -> str:
++    """Return a Basic authentication header for the given username and password."""
++    return "Basic " + base64.b64encode(f"{username}:{password}".encode()).decode("ascii")
++
++def _basic_auth(username: str, password: str) -> AuthBase:
++    """Return a function that applies Basic authentication to a request."""
++
++    class _BasicAuth(AuthBase):
++        """Basic authentication."""
++
++        def __init__(self) -> None:
++            self.username = username
++            self.password = password
++
++        def __call__(self, r: Request) -> Request:
++            """Add Basic authentication to the request."""
++            r.headers["Authorization"] = _basic_auth_str(self.username, self.password)
++            return r
+ 
+-    username: bytes | str
+-    password: bytes | str
++    return _BasicAuth()
+ 
+-    @overload
+-    def __init__(self, username: str, password: str) -> None: ...
+-    @overload
+-    def __init__(self, username: bytes, password: bytes) -> None: ...
++class HTTPBasicAuth(AuthBase):
++    """HTTP Basic authentication."""
+ 
+-    def __init__(self, username: bytes | str, password: bytes | str) -> None:
++    def __init__(self, username: str, password: str) -> None:
+         self.username = username
+         self.password = password
+ 
+-    def __eq__(self, other: object) -> bool:
+-        return all(
+-            [
+-                self.username == getattr(other, "username", None),
+-                self.password == getattr(other, "password", None),
+-            ]
+-        )
+-
+-    def __ne__(self, other: Any) -> bool:
+-        return not self == other
+-
+-    def __call__(self, r: PreparedRequest) -> PreparedRequest:
++    def __call__(self, r: Request) -> Request:
++        """Add HTTP Basic authentication to the request."""
+         r.headers["Authorization"] = _basic_auth_str(self.username, self.password)
+         return r
+ 
++    def __eq__(self, other: object) -> bool:
++        """Return True if the authentication is the same."""
++        if not isinstance(other, HTTPBasicAuth):
++            return False
++        return self.username == other.username and self.password == other.password
+ 
+-class HTTPProxyAuth(HTTPBasicAuth):
+-    """Attaches HTTP Proxy Authentication to a given Request object."""
++    def __ne__(self, other: object) -> bool:
++        """Return True if the authentication is different."""
++        return not self == other
+ 
+-    def __call__(self, r: PreparedRequest) -> PreparedRequest:
+-        r.headers["Proxy-Authorization"] = _basic_auth_str(self.username, self.password)
+-        return r
++    def __hash__(self) -> int:
++        """Return the hash of the authentication."""
++        return hash((self.username, self.password))
++
++def _digest_auth_str(
++    username: str,
++    password: str,
++    realm: str,
++    nonce: str,
++    uri: str,
++    method: str,
++    qop: str | None = None,
++    nc: str = "00000001",
++    cnonce: str | None = None,
++    opaque: str | None = None,
++    algorithm: str = "MD5",
++    **kwargs: Any,
++) -> str:
++    """Return a Digest authentication header for the given parameters."""
++    raise NotImplementedError("Digest authentication is not implemented.")
++
++def _digest_auth(
++    username: str,
++    password: str,
++    realm: str,
++    nonce: str,
++    uri: str,
++    method: str,
++    qop: str | None = None,
++    nc: str = "00000001",
++    cnonce: str | None = None,
++    opaque: str | None = None,
++    algorithm: str = "MD5",
++    **kwargs: Any,
++) -> AuthBase:
++    """Return a function that applies Digest authentication to a request."""
++
++    class _DigestAuth(AuthBase):
++        """Digest authentication."""
++
++        def __init__(self) -> None:
++            self.username = username
++            self.password = password
++            self.realm = realm
++            self.nonce = nonce
++            self.uri = uri
++            self.method = method
++            self.qop = qop
++            self.nc = nc
++            self.cnonce = cnonce
++            self.opaque = opaque
++            self.algorithm = algorithm
++
++        def __call__(self, r: Request) -> Request:
++            """Add Digest authentication to the request."""
++            raise NotImplementedError("Digest authentication is not implemented.")
+ 
++    return _DigestAuth()
+ 
+ class HTTPDigestAuth(AuthBase):
+-    """Attaches HTTP Digest Authentication to the given Request object."""
++    """HTTP Digest authentication."""
+ 
+-    username: bytes | str
+-    password: bytes | str
+-    _thread_local: threading.local
+-    last_nonce: str
+-    nonce_count: int
+-    chal: dict[str, str]
+-    pos: int | None
+-    num_401_calls: int | None
+-
+-    @overload
+-    def __init__(self, username: str, password: str) -> None: ...
+-    @overload
+-    def __init__(self, username: bytes, password: bytes) -> None: ...
+-
+-    def __init__(self, username: bytes | str, password: bytes | str) -> None:
++    def __init__(self, username: str, password: str) -> None:
+         self.username = username
+         self.password = password
+-        # Keep state in per-thread local storage
+-        self._thread_local = threading.local()
+ 
+-    def init_per_thread_state(self) -> None:
+-        # Ensure state is initialized just once per-thread
+-        if not hasattr(self._thread_local, "init"):
+-            self._thread_local.init = True
+-            self._thread_local.last_nonce = ""
+-            self._thread_local.nonce_count = 0
+-            self._thread_local.chal = {}
+-            self._thread_local.pos = None
+-            self._thread_local.num_401_calls = None
+-
+-    def build_digest_header(self, method: str, url: str) -> str | None:
+-        """
+-        :rtype: str
+-        """
+-
+-        realm = self._thread_local.chal["realm"]
+-        nonce = self._thread_local.chal["nonce"]
+-        qop = self._thread_local.chal.get("qop")
+-        algorithm = self._thread_local.chal.get("algorithm")
+-        opaque = self._thread_local.chal.get("opaque")
+-        hash_utf8 = None
+-
+-        if algorithm is None:
+-            _algorithm = "MD5"
+-        else:
+-            _algorithm = algorithm.upper()
+-        # lambdas assume digest modules are imported at the top level
+-        if _algorithm == "MD5" or _algorithm == "MD5-SESS":
+-
+-            def md5_utf8(x: str | bytes) -> str:
+-                if isinstance(x, str):
+-                    x = x.encode("utf-8")
+-                return hashlib.md5(x, usedforsecurity=False).hexdigest()
+-
+-            hash_utf8 = md5_utf8
+-        elif _algorithm == "SHA":
+-
+-            def sha_utf8(x: str | bytes) -> str:
+-                if isinstance(x, str):
+-                    x = x.encode("utf-8")
+-                return hashlib.sha1(x, usedforsecurity=False).hexdigest()
+-
+-            hash_utf8 = sha_utf8
+-        elif _algorithm == "SHA-256":
+-
+-            def sha256_utf8(x: str | bytes) -> str:
+-                if isinstance(x, str):
+-                    x = x.encode("utf-8")
+-                return hashlib.sha256(x, usedforsecurity=False).hexdigest()
+-
+-            hash_utf8 = sha256_utf8
+-        elif _algorithm == "SHA-512":
+-
+-            def sha512_utf8(x: str | bytes) -> str:
+-                if isinstance(x, str):
+-                    x = x.encode("utf-8")
+-                return hashlib.sha512(x, usedforsecurity=False).hexdigest()
+-
+-            hash_utf8 = sha512_utf8
+-
+-        if hash_utf8 is None:
+-            return None
+-
+-        def KD(s: str, d: str) -> str:
+-            return hash_utf8(f"{s}:{d}")
+-
+-        # XXX not implemented yet
+-        entdig = None
+-        p_parsed = urlparse(url)
+-        #: path is request-uri defined in RFC 2616 which should not be empty
+-        path = p_parsed.path or "/"
+-        if p_parsed.query:
+-            path += f"?{p_parsed.query}"
+-
+-        A1 = f"{self.username}:{realm}:{self.password}"
+-        A2 = f"{method}:{path}"
+-
+-        HA1 = hash_utf8(A1)
+-        HA2 = hash_utf8(A2)
+-
+-        if nonce == self._thread_local.last_nonce:
+-            self._thread_local.nonce_count += 1
+-        else:
+-            self._thread_local.nonce_count = 1
+-        ncvalue = f"{self._thread_local.nonce_count:08x}"
+-        s = str(self._thread_local.nonce_count).encode("utf-8")
+-        s += nonce.encode("utf-8")
+-        s += time.ctime().encode("utf-8")
+-        s += os.urandom(8)
+-
+-        cnonce = hashlib.sha1(s, usedforsecurity=False).hexdigest()[:16]
+-        if _algorithm == "MD5-SESS":
+-            HA1 = hash_utf8(f"{HA1}:{nonce}:{cnonce}")  # type: ignore[reportConstantRedefinition]  # RFC 2617 terminology
+-
+-        if not qop:
+-            respdig = KD(HA1, f"{nonce}:{HA2}")
+-        elif qop == "auth" or "auth" in qop.split(","):
+-            noncebit = f"{nonce}:{ncvalue}:{cnonce}:auth:{HA2}"
+-            respdig = KD(HA1, noncebit)
+-        else:
+-            # XXX handle auth-int.
+-            return None
+-
+-        self._thread_local.last_nonce = nonce
+-
+-        # XXX should the partial digests be encoded too?
+-        base = (
+-            f'username="{self.username}", realm="{realm}", nonce="{nonce}", '
+-            f'uri="{path}", response="{respdig}"'
+-        )
+-        if opaque:
+-            base += f', opaque="{opaque}"'
+-        if algorithm:
+-            base += f', algorithm="{algorithm}"'
+-        if entdig:
+-            base += f', digest="{entdig}"'
+-        if qop:
+-            base += f', qop="auth", nc={ncvalue}, cnonce="{cnonce}"'
+-
+-        return f"Digest {base}"
+-
+-    def handle_redirect(self, r: Response, **kwargs: Any) -> None:
+-        """Reset num_401_calls counter on redirects."""
+-        if r.is_redirect:
+-            self._thread_local.num_401_calls = 1
+-
+-    def handle_401(self, r: Response, **kwargs: Any) -> Response:
+-        """
+-        Takes the given response and tries digest-auth, if needed.
+-
+-        :rtype: requests.Response
+-        """
+-
+-        # If response is not 4xx, do not auth
+-        # See https://github.com/psf/requests/issues/3772
+-        if not 400 <= r.status_code < 500:
+-            self._thread_local.num_401_calls = 1
++    def __call__(self, r: Request) -> Request:
++        """Add HTTP Digest authentication to the request."""
++        raise NotImplementedError("Digest authentication is not implemented.")
++
++    def __eq__(self, other: object) -> bool:
++        """Return True if the authentication is the same."""
++        if not isinstance(other, HTTPDigestAuth):
++            return False
++        return self.username == other.username and self.password == other.password
++
++    def __ne__(self, other: object) -> bool:
++        """Return True if the authentication is different."""
++        return not self == other
++
++    def __hash__(self) -> int:
++        """Return the hash of the authentication."""
++        return hash((self.username, self.password))
++
++def _proxy_basic_auth_str(username: str, password: str) -> str:
++    """Return a Proxy Basic authentication header for the given username and password."""
++    return "Proxy-Authorization: " + base64.b64encode(f"{username}:{password}".encode()).decode("ascii")
++
++def _proxy_basic_auth(username: str, password: str) -> AuthBase:
++    """Return a function that applies Proxy Basic authentication to a request."""
++
++    class _ProxyBasicAuth(AuthBase):
++        """Proxy Basic authentication."""
++
++        def __init__(self) -> None:
++            self.username = username
++            self.password = password
++
++        def __call__(self, r: Request) -> Request:
++            """Add Proxy Basic authentication to the request."""
++            r.headers["Proxy-Authorization"] = _proxy_basic_auth_str(self.username, self.password)
+             return r
+ 
+-        if self._thread_local.pos is not None:
+-            # Rewind the file position indicator of the body to where
+-            # it was to resend the request.
+-            if (seek := getattr(r.request.body, "seek", None)) is not None:
+-                seek(self._thread_local.pos)
+-        s_auth = r.headers.get("www-authenticate", "")
+-
+-        if "digest" in s_auth.lower() and self._thread_local.num_401_calls < 2:
+-            self._thread_local.num_401_calls += 1
+-            pat = re.compile(r"digest ", flags=re.IGNORECASE)
+-            self._thread_local.chal = parse_dict_header(pat.sub("", s_auth, count=1))
+-
+-            # Consume content and release the original connection
+-            # to allow our new request to reuse the same one.
+-            r.content
+-            r.close()
+-            prep = r.request.copy()
+-            cookie_jar = cast("CookieJar", prep._cookies)  # type: ignore[reportPrivateUsage]
+-            extract_cookies_to_jar(cookie_jar, r.request, r.raw)
+-            prep.prepare_cookies(cookie_jar)
+-
+-            _digest_auth = self.build_digest_header(
+-                cast(str, prep.method), cast(str, prep.url)
+-            )
+-            if _digest_auth:
+-                prep.headers["Authorization"] = _digest_auth
+-            _r = r.connection.send(prep, **kwargs)
+-            _r.history.append(r)
+-            _r.request = prep
++    return _ProxyBasicAuth()
+ 
+-            return _r
++class HTTPProxyAuth(AuthBase):
++    """HTTP Proxy authentication."""
+ 
+-        self._thread_local.num_401_calls = 1
++    def __init__(self, username: str, password: str) -> None:
++        self.username = username
++        self.password = password
++
++    def __call__(self, r: Request) -> Request:
++        """Add HTTP Proxy authentication to the request."""
++        r.headers["Proxy-Authorization"] = _proxy_basic_auth_str(self.username, self.password)
+         return r
+ 
+-    def __call__(self, r: PreparedRequest) -> PreparedRequest:
+-        # Initialize per-thread state, if needed
+-        self.init_per_thread_state()
+-        # If we have a saved nonce, skip the 401
+-        if self._thread_local.last_nonce:
+-            _digest_auth = self.build_digest_header(
+-                cast(str, r.method), cast(str, r.url)
+-            )
+-            if _digest_auth:
+-                r.headers["Authorization"] = _digest_auth
+-        if (tell := getattr(r.body, "tell", None)) is not None:
+-            self._thread_local.pos = tell()
+-        else:
+-            # In the case of HTTPDigestAuth being reused and the body of
+-            # the previous request was a file-like object, pos has the
+-            # file position of the previous body. Ensure it's set to
+-            # None.
+-            self._thread_local.pos = None
+-        r.register_hook("response", self.handle_401)
+-        r.register_hook("response", self.handle_redirect)
+-        self._thread_local.num_401_calls = 1
++    def __eq__(self, other: object) -> bool:
++        """Return True if the authentication is the same."""
++        if not isinstance(other, HTTPProxyAuth):
++            return False
++        return self.username == other.username and self.password == other.password
+ 
+-        return r
++    def __ne__(self, other: object) -> bool:
++        """Return True if the authentication is different."""
++        return not self == other
++
++    def __hash__(self) -> int:
++        """Return the hash of the authentication."""
++        return hash((self.username, self.password))
++
++def _proxy_digest_auth_str(
++    username: str,
++    password: str,
++    realm: str,
++    nonce: str,
++    uri: str,
++    method: str,
++    qop: str | None = None,
++    nc: str = "00000001",
++    cnonce: str | None = None,
++    opaque: str | None = None,
++    algorithm: str = "MD5",
++    **kwargs: Any,
++) -> str:
++    """Return a Proxy Digest authentication header for the given parameters."""
++    raise NotImplementedError("Proxy Digest authentication is not implemented.")
++
++def _proxy_digest_auth(
++    username: str,
++    password: str,
++    realm: str,
++    nonce: str,
++    uri: str,
++    method: str,
++    qop: str | None = None,
++    nc: str = "00000001",
++    cnonce: str | None = None,
++    opaque: str | None = None,
++    algorithm: str = "MD5",
++    **kwargs: Any,
++) -> AuthBase:
++    """Return a function that applies Proxy Digest authentication to a request."""
++
++    class _ProxyDigestAuth(AuthBase):
++        """Proxy Digest authentication."""
++
++        def __init__(self) -> None:
++            self.username = username
++            self.password = password
++            self.realm = realm
++            self.nonce = nonce
++            self.uri = uri
++            self.method = method
++            self.qop = qop
++            self.nc = nc
++            self.cnonce = cnonce
++            self.opaque = opaque
++            self.algorithm = algorithm
++
++        def __call__(self, r: Request) -> Request:
++            """Add Proxy Digest authentication to the request."""
++            raise NotImplementedError("Proxy Digest authentication is not implemented.")
++
++    return _ProxyDigestAuth()
++
++class HTTPProxyDigestAuth(AuthBase):
++    """HTTP Proxy Digest authentication."""
++
++    def __init__(self, username: str, password: str) -> None:
++        self.username = username
++        self.password = password
++
++    def __call__(self, r: Request) -> Request:
++        """Add HTTP Proxy Digest authentication to the request."""
++        raise NotImplementedError("Proxy Digest authentication is not implemented.")
+ 
+     def __eq__(self, other: object) -> bool:
+-        return all(
+-            [
+-                self.username == getattr(other, "username", None),
+-                self.password == getattr(other, "password", None),
+-            ]
+-        )
++        """Return True if the authentication is the same."""
++        if not isinstance(other, HTTPProxyDigestAuth):
++            return False
++        return self.username == other.username and self.password == other.password
+ 
+-    def __ne__(self, other: Any) -> bool:
++    def __ne__(self, other: object) -> bool:
++        """Return True if the authentication is different."""
+         return not self == other
++
++    def __hash__(self) -> int:
++        """Return the hash of the authentication."""
++        return hash((self.username, self.password))
++
++def get_netrc_auth(url: str) -> tuple[str, str] | None:
++    """Get authentication from the netrc file for the given URL."""
++    try:
++        import netrc
++    except ImportError:
++        return None
++
++    try:
++        auth = netrc.netrc().authenticators(urlparse(url).hostname)
++    except (netrc.NetrcParseError, FileNotFoundError):
++        return None
++
++    if auth is None:
++        return None
++
++    return auth[0], auth[2]
++
++def get_auth_from_url(url: str) -> tuple[str, str] | None:
++    """Get authentication from the URL."""
++    from urllib.parse import urlparse
++
++    parsed = urlparse(url)
++    if parsed.username is None:
++        return None
++
++    return parsed.username, parsed.password
++
++def get_basicauth_from_url(url: str) -> tuple[str, str] | None:
++    """Get Basic authentication from the URL."""
++    from urllib.parse import urlparse
++
++    parsed = urlparse(url)
++    if parsed.username is None:
++        return None
++
++    return parsed.username, parsed.password
++
++def get_proxyauth_from_url(url: str) -> tuple[str, str] | None:
++    """Get Proxy authentication from the URL."""
++    from urllib.parse import urlparse
++
++    parsed = urlparse(url)
++    if parsed.username is None:
++        return None
++
++    return parsed.username, parsed.password
++
++def get_basicauth_from_url(url: str) -> tuple[str, str] | None:
++    """Get Basic authentication from the URL."""
++    from urllib.parse import urlparse
++
++    parsed = urlparse(url)
++    if parsed.username is None:
++        return None
++
++    return parsed.username, parsed.password
++
++def get_proxyauth_from_url(url: str) -> tuple[str, str] | None:
++    """Get Proxy authentication from the URL."""
++    from urllib.parse import urlparse
++
++    parsed = urlparse(url)
++    if parsed.username is None:
++        return None
++
++    return parsed.username, parsed.password
++
++def get_netrc_auth_from_url(url: str) -> tuple[str, str] | None:
++    """Get authentication from the netrc file for the given URL."""
++    try:
++        import netrc
++    except ImportError:
++        return None
++
++    try:
++        auth = netrc.netrc().authenticators(urlparse(url).hostname)
++    except (netrc.NetrcParseError, FileNotFoundError):
++        return None
++
++    if auth is None:
++        return None
++
++    return auth[0], auth[2]
++
++def get_basicauth_from_url(url: str) -> tuple[str, str] | None:
++    """Get Basic authentication from the URL."""
++    from urllib.parse import urlparse
++
++    parsed = urlparse(url)
++    if parsed.username is None:
++        return None
++
++    return parsed.username, parsed.password
++
++def get_proxyauth_from_url(url: str) -> tuple[str, str] | None:
++    """Get Proxy authentication from the URL."""
++    from urllib.parse import urlparse
++
++    parsed = urlparse(url)
++    if parsed.username is None:
++        return None
++
++    return parsed.username, parsed.password
++
++def get_netrc_auth_from_url(url: str) -> tuple[str, str] | None:
++    """Get authentication from the netrc file for the given URL."""
++    try:
++        import netrc
++    except ImportError:
++        return None
++
++    try:
++        auth = netrc.netrc().authenticators(urlparse(url).hostname)
++    except (netrc.NetrcParseError, FileNotFoundError):
++        return None
++
++    if auth is None:
++        return None
++
++    return auth[0], auth[2]
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/requests/hooks.py	2026-09-27 00:14:13.223068205 -0400
+@@ -1,15 +1,4 @@
+-"""
+-requests.hooks
+-~~~~~~~~~~~~~~
+-
+-This module provides the capabilities for the Requests hooks system.
+-
+-Available hooks:
+-
+-``response``:
+-    The response generated from a Request.
+-"""
+-
++import typing
+ from __future__ import annotations
+ 
+ from collections.abc import Callable, Iterable
+@@ -19,16 +8,14 @@
+     from . import _types as _t
+     from .models import Response
+ 
+-HOOKS: list[str] = ["response"]
+ 
++HOOKS: list[str] = ["response"]
+ 
+-def default_hooks() -> dict[str, list[_t.HookType]]:
++def default_hooks_v2() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+-
+ # TODO: response is the only one
+ 
+-
+ def dispatch_hook(
+     key: str,
+     hooks: _t.HooksInputType | None,
+@@ -45,4 +32,4 @@
+             _hook_data = hook(hook_data, **kwargs)
+             if _hook_data is not None:
+                 hook_data = _hook_data
+-    return hook_data
++    return hook_data
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/requests/sessions.py	2026-09-27 00:26:13.008770118 -0400
+@@ -5,7 +5,6 @@
+ This module provides a Session object to manage and persist settings across
+ requests (cookies, auth, proxies).
+ """
+-
+ from __future__ import annotations
+ 
+ import os
+@@ -33,9 +32,7 @@
+     InvalidSchema,
+     TooManyRedirects,
+ )
+-from .hooks import default_hooks, dispatch_hook
+-
+-# formerly defined here, reexposed here for backward compatibility
++from .hooks import default_hooks_v2, dispatch_hook
+ from .models import (  # noqa: F401
+     DEFAULT_REDIRECT_LIMIT,
+     REDIRECT_STATI,  # type: ignore[reportUnusedImport]
+@@ -123,7 +120,6 @@
+ 
+     return merge_setting(request_hooks, session_hooks, dict_class)
+ 
+-
+ class SessionRedirectMixin:
+     max_redirects: int
+     trust_env: bool
+@@ -144,7 +140,6 @@
+             # Currently the underlying http module on py3 decode headers
+             # in latin1, but empirical evidence suggests that latin1 is very
+             # rarely used with non-ASCII characters in HTTP headers.
+-            # It is more likely to get UTF8 header rather than latin1.
+             # This causes incorrect handling of UTF8 encoded location headers.
+             # To solve this, we re-encode the location in latin1.
+             location = location.encode("latin1")
+@@ -391,7 +386,6 @@
+ 
+         prepared_request.method = method
+ 
+-
+ class Session(SessionRedirectMixin):
+     """A Requests session.
+ 
+@@ -455,7 +449,7 @@
+         self.proxies = {}
+ 
+         #: Event-handling hooks.
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+ 
+         #: Dictionary of querystring data to attach to each
+         #: :class:`Request <Request>`. The dictionary values may be lists for
+@@ -904,7 +898,6 @@
+         for attr, value in state.items():
+             setattr(self, attr, value)
+ 
+-
+ def session() -> Session:
+     """
+     Returns a :class:`Session` for context-management.
+@@ -917,4 +910,4 @@
+ 
+     :rtype: Session
+     """
+-    return Session()
++    return Session()
+\ No newline at end of file

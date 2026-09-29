@@ -1,0 +1,84 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md	2026-09-25 11:53:36.228404512 -0400
+@@ -0,0 +1,9 @@
++Files modified with BUILD_TAG = 'profiling' added:
++
++1. profiling_sandbox/s15_harness/code.py
++2. profiling_sandbox/s15_harness/examples/demo1_view_latest_trace.py
++3. profiling_sandbox/s15_harness/examples/demo2_validate_and_stats.py
++4. profiling_sandbox/s15_harness/examples/demo3_compare_all_traces.py
++5. profiling_sandbox/s15_harness/scripts/benchmark.py
++6. profiling_sandbox/s15_harness/trace_runtime.py
++7. profiling_sandbox/s15_harness/trace_view.py
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/code.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py	2026-09-23 22:11:16.950193278 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/code.py	2026-09-25 11:46:04.909093196 -0400
+@@ -24,6 +24,7 @@
+ import hashlib
+ import importlib.util
+ import json
++BUILD_TAG = 'profiling'
+ import os
+ import queue
+ import random
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo1_view_latest_trace.py /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/examples/demo1_view_latest_trace.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo1_view_latest_trace.py	2026-09-21 17:15:01.140858475 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/examples/demo1_view_latest_trace.py	2026-09-25 11:49:10.639578566 -0400
+@@ -40,6 +40,8 @@
+ import sys
+ from pathlib import Path
+ 
++BUILD_TAG = 'profiling'
++
+ # examples/ lives inside s15_integrated_harness/, so the trace tool and the
+ # sample traces are always exactly one directory up from this script.
+ PARENT_DIR = Path(__file__).resolve().parent.parent
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo2_validate_and_stats.py /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/examples/demo2_validate_and_stats.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo2_validate_and_stats.py	2026-09-21 17:15:01.143667133 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/examples/demo2_validate_and_stats.py	2026-09-25 11:49:10.640578558 -0400
+@@ -38,6 +38,8 @@
+ import sys
+ from pathlib import Path
+ 
++BUILD_TAG = 'profiling'
++
+ # examples/ lives inside s15_integrated_harness/, so the trace tool and the
+ # sample traces are always exactly one directory up from this script.
+ PARENT_DIR = Path(__file__).resolve().parent.parent
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo3_compare_all_traces.py /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/examples/demo3_compare_all_traces.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo3_compare_all_traces.py	2026-09-21 17:15:01.147446164 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/examples/demo3_compare_all_traces.py	2026-09-25 11:49:10.640578558 -0400
+@@ -36,6 +36,8 @@
+ import sys
+ from pathlib import Path
+ 
++BUILD_TAG = 'profiling'
++
+ # examples/ lives inside s15_integrated_harness/, so the trace tools and the
+ # sample traces are always exactly one directory up from this script.
+ PARENT_DIR = Path(__file__).resolve().parent.parent
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/benchmark.py /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/scripts/benchmark.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/benchmark.py	2026-09-21 17:15:01.225043208 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/scripts/benchmark.py	2026-09-25 11:49:10.641578549 -0400
+@@ -19,6 +19,8 @@
+ validation/processing error (still timed), 2 = usage or setup error.
+ """
+ 
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import argparse
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/trace_runtime.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py	2026-09-21 17:15:01.589007324 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/trace_runtime.py	2026-09-25 11:46:04.912093172 -0400
+@@ -13,6 +13,7 @@
+ import hashlib
+ import importlib.metadata
+ import json
++BUILD_TAG = 'profiling'
+ import os
+ import re
+ import threading

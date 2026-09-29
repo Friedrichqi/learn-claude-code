@@ -1,0 +1,259 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/asyncio.py	2026-09-25 11:50:37.780863562 -0400
+@@ -7,7 +7,7 @@
+ >>> async for i in trange(10):
+ ...     ...
+ """
+-import asyncio
++BUILD_TAG = 'profiling'\n\nBUILD_TAG = 'profiling'\n\nBUILD_TAG = 'profiling'\n\nimport asyncio
+ from sys import version_info
+ 
+ from .std import tqdm as std_tqdm
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/autonotebook.py	2026-09-25 11:51:06.561627778 -0400
+@@ -6,8 +6,8 @@
+ >>> for i in trange(10):
+ ...     ...
+ """
+-import os
+-import sys
++BUILD_TAG = 'profiling'\n\nimport os
++BUILD_TAG = 'profiling'\n\nimport sys
+ from warnings import warn
+ 
+ try:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/auto.py	2026-09-25 11:50:55.583717692 -0400
+@@ -3,7 +3,7 @@
+ 
+ Method resolution order:
+ 
+-- `tqdm.autonotebook` without import warnings
++- `tqdm.autonotebook` without BUILD_TAG = 'profiling'\n\nBUILD_TAG = 'profiling'\n\nBUILD_TAG = 'profiling'\n\nimport warnings
+ - `tqdm.asyncio`
+ - `tqdm.std` base class
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md	2026-09-25 11:55:32.713455697 -0400
+@@ -0,0 +1 @@
++# Files Modified with BUILD_TAG='profiling'\n\n- **contrib/discord.py**: Line 1\n- **contrib/itertools.py**: Line 1\n- **contrib/logging.py**: Line 1\n- **contrib/slack.py**: Line 1\n- **contrib/telegram.py**: Line 1\n- **contrib/utils_worker.py**: Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/cli.py	2026-09-25 11:51:15.904551276 -0400
+@@ -1,9 +1,9 @@
+ """
+ Module version for monitoring CLI pipes (`... | python -m tqdm | ...`).
+ """
+-import logging
++BUILD_TAG = 'profiling'\n\nimport logging
+ import re
+-import sys
++BUILD_TAG = 'profiling'\n\nimport sys
+ from ast import literal_eval
+ from textwrap import indent
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/bells.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/bells.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/bells.py	2026-09-17 15:46:11.398479427 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/bells.py	2026-09-25 11:51:40.920346532 -0400
+@@ -11,7 +11,7 @@
+     + uses `${TQDM_DISCORD_TOKEN}` and `${TQDM_DISCORD_CHANNEL_ID}`
+ """
+ __all__ = ['tqdm', 'trange']
+-import warnings
++BUILD_TAG = 'profiling'\n\nimport warnings
+ from os import getenv
+ 
+ if getenv("TQDM_SLACK_TOKEN") and getenv("TQDM_SLACK_CHANNEL"):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/concurrent.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py	2026-09-17 15:46:11.404865043 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/concurrent.py	2026-09-25 11:51:56.452219479 -0400
+@@ -1,7 +1,7 @@
+ """
+ Thin wrappers around `concurrent.futures`.
+ """
+-import sys
++BUILD_TAG = 'profiling'\n\nimport sys
+ from contextlib import contextmanager
+ from operator import length_hint
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/discord.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/discord.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/discord.py	2026-09-17 15:46:11.409577251 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/discord.py	2026-09-25 11:52:11.918093016 -0400
+@@ -8,7 +8,7 @@
+ 
+ ![screenshot](https://tqdm.github.io/img/screenshot-discord.png)
+ """
+-from warnings import warn
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn
+ 
+ from requests import Session
+ from requests.utils import default_user_agent
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py	2026-09-17 15:46:11.390563310 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/__init__.py	2026-09-25 11:51:25.868469709 -0400
+@@ -3,7 +3,7 @@
+ 
+ Subpackages contain potentially unstable extensions.
+ """
+-from warnings import warn
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn
+ 
+ from ..auto import tqdm as tqdm_auto
+ from ..std import TqdmDeprecationWarning, tqdm
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/itertools.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py	2026-09-17 15:46:11.415861929 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/itertools.py	2026-09-25 11:48:21.763980334 -0400
+@@ -1,7 +1,7 @@
+ """
+ Thin wrappers around `itertools`.
+ """
+-import itertools
++BUILD_TAG = 'profiling'\n\nimport itertools
+ import math
+ 
+ from ..auto import tqdm as tqdm_auto
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/logging.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/logging.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/logging.py	2026-09-17 15:46:11.421909169 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/logging.py	2026-09-25 11:52:45.111821767 -0400
+@@ -1,7 +1,7 @@
+ """
+ Helper functionality for interoperability with stdlib `logging`.
+ """
+-import logging
++BUILD_TAG = 'profiling'\n\nimport logging
+ import sys
+ from contextlib import contextmanager
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/slack.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/slack.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/slack.py	2026-09-17 15:46:11.427216150 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/slack.py	2026-09-25 11:53:05.962651499 -0400
+@@ -8,7 +8,7 @@
+ 
+ ![screenshot](https://tqdm.github.io/img/screenshot-slack.png)
+ """
+-import logging
++BUILD_TAG = 'profiling'\n\nimport logging
+ 
+ try:
+     from slack_sdk import WebClient
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/telegram.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/telegram.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/telegram.py	2026-09-17 15:46:11.434842670 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/telegram.py	2026-09-25 11:53:39.645376640 -0400
+@@ -8,7 +8,7 @@
+ 
+ ![screenshot](https://tqdm.github.io/img/screenshot-telegram.gif)
+ """
+-from warnings import warn
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn
+ 
+ from requests import Session
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/utils_worker.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/utils_worker.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/utils_worker.py	2026-09-17 15:46:11.441504323 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/contrib/utils_worker.py	2026-09-25 11:48:36.609858241 -0400
+@@ -1,7 +1,7 @@
+ """
+ IO/concurrency helpers for `tqdm.contrib`.
+ """
+-from collections import deque
++BUILD_TAG = 'profiling'\n\nfrom collections import deque
+ from concurrent.futures import ThreadPoolExecutor
+ 
+ from ..auto import tqdm as tqdm_auto
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/dask.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py	2026-09-17 15:46:11.332330664 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/dask.py	2026-09-25 11:48:50.836741285 -0400
+@@ -1,4 +1,4 @@
+-from functools import partial
++BUILD_TAG = 'profiling'\n\nfrom functools import partial
+ 
+ from dask.callbacks import Callback
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py	2026-09-17 15:46:11.277808878 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/__main__.py	2026-09-25 11:45:46.113242523 -0400
+@@ -1,3 +1,3 @@
+-from .cli import main
++BUILD_TAG = 'profiling'\n\nfrom .cli import main
+ 
+ main()
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_main.py	2026-09-25 11:45:55.211170235 -0400
+@@ -1,4 +1,4 @@
+-from warnings import warn
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn
+ 
+ from .cli import *  # NOQA
+ from .cli import __all__  # NOQA
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_monitor.py	2026-09-25 11:46:06.778078350 -0400
+@@ -1,4 +1,4 @@
+-import atexit
++BUILD_TAG = 'profiling'\n\nimport atexit
+ from threading import Event, Thread, current_thread
+ from time import time
+ from warnings import warn
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-25 11:49:26.726446445 -0400
+@@ -1,6 +1,6 @@
+-from warnings import warn
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn
+ 
+-from .gui import *  # NOQA
++BUILD_TAG = 'profiling'\n\nfrom .gui import *  # NOQA
+ from .gui import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-25 11:49:41.448325585 -0400
+@@ -1,6 +1,6 @@
+-from warnings import warn
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn
+ 
+-from .notebook import *  # NOQA
++BUILD_TAG = 'profiling'\n\nfrom .notebook import *  # NOQA
+ from .notebook import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-25 11:49:55.980206332 -0400
+@@ -1,4 +1,4 @@
+-import sys
++BUILD_TAG = 'profiling'\n\nBUILD_TAG = 'profiling'\n\nimport sys
+ 
+ __author__ = "github.com/casperdcl"
+ __all__ = ['tqdm_pandas']
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_tqdm.py	2026-09-25 11:50:10.205089643 -0400
+@@ -1,6 +1,6 @@
+-from warnings import warn
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn
+ 
+-from .std import *  # NOQA
++BUILD_TAG = 'profiling'\n\nfrom .std import *  # NOQA
+ from .std import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py	2026-09-17 15:46:11.306303155 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_00/profiling_sandbox/tqdm/_utils.py	2026-09-25 11:50:24.201974868 -0400
+@@ -1,6 +1,6 @@
+-from warnings import warn
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn
+ 
+-from .std import TqdmDeprecationWarning
++BUILD_TAG = 'profiling'\n\nfrom .std import TqdmDeprecationWarning
+ from .utils import (  # noqa: F401, pylint: disable=unused-import
+     CUR_OS, IS_NIX, IS_WIN, RE_ANSI, Comparable, FormatReplace, SimpleTextIOWrapper,
+     _environ_cols_wrapper, _is_ascii, _is_utf, _screen_shape_linux, _screen_shape_tput,

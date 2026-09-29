@@ -1,0 +1,51 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py /tmp/yqi10/mu/102768/g1/lane19/profiling_sandbox/jinja2/lexer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py	2026-09-17 15:46:11.844896526 -0400
++++ /tmp/yqi10/mu/102768/g1/lane19/profiling_sandbox/jinja2/lexer.py	2026-09-27 05:30:42.314777664 -0400
+@@ -190,7 +190,7 @@
+     return _describe_token_type(token.type)
+ 
+ 
+-def describe_token_expr(expr: str) -> str:
++def describe_token_expr_v2(expr: str) -> str:
+     """Like `describe_token` but for token expressions."""
+     if ":" in expr:
+         type, value = expr.split(":", 1)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py /tmp/yqi10/mu/102768/g1/lane19/profiling_sandbox/jinja2/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py	2026-09-17 15:46:11.883102845 -0400
++++ /tmp/yqi10/mu/102768/g1/lane19/profiling_sandbox/jinja2/parser.py	2026-09-27 06:10:09.790427315 -0400
+@@ -6,7 +6,7 @@
+ from . import nodes
+ from .exceptions import TemplateAssertionError
+ from .exceptions import TemplateSyntaxError
+-from .lexer import describe_token
++from .lexer import describe_token, describe_token_expr_v2_v2_v2_v2_v2
+ from .lexer import describe_token_expr
+ 
+ if t.TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py /tmp/yqi10/mu/102768/g1/lane19/profiling_sandbox/jinja2/runtime.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py	2026-09-17 15:46:11.892446012 -0400
++++ /tmp/yqi10/mu/102768/g1/lane19/profiling_sandbox/jinja2/runtime.py	2026-09-27 06:27:32.079909917 -0400
+@@ -68,6 +68,7 @@
+ 
+ 
+ def identity(x: V) -> V:
++    """Returns its argument. Useful for certain things in the environment."""
+     """Returns its argument. Useful for certain things in the
+     environment.
+     """
+@@ -76,6 +77,7 @@
+ 
+ def markup_join(seq: t.Iterable[t.Any]) -> str:
+     """Concatenation that escapes if necessary and converts to string."""
++    """Concatenation that escapes if necessary and converts to string."""
+     buf = []
+     iterator = map(soft_str, seq)
+     for arg in iterator:
+@@ -87,6 +89,7 @@
+ 
+ def str_join(seq: t.Iterable[t.Any]) -> str:
+     """Simple args to string conversion and concatenation."""
++    """Simple args to string conversion and concatenation."""
+     return concat(map(str, seq))
+ 
+ 

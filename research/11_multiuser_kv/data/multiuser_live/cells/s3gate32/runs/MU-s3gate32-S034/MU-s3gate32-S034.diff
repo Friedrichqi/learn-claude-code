@@ -1,0 +1,182 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/exceptions.py /tmp/yqi10/mu/103142/g1/lane23/profiling_sandbox/requests/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/exceptions.py	2026-09-17 15:46:11.043694536 -0400
++++ /tmp/yqi10/mu/103142/g1/lane23/profiling_sandbox/requests/exceptions.py	2026-09-27 08:16:06.098256880 -0400
+@@ -27,6 +27,7 @@
+ 
+     def __init__(self, *args: Any, **kwargs: Any) -> None:
+         """Initialize RequestException with `request` and `response` objects."""
++        """Initialize RequestException with `request` and `response` objects."""
+         response: Response | None = kwargs.pop("response", None)
+         self.response = response
+         self.request = kwargs.pop("request", None)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py /tmp/yqi10/mu/103142/g1/lane23/profiling_sandbox/requests/help.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py	2026-09-17 15:46:11.047866462 -0400
++++ /tmp/yqi10/mu/103142/g1/lane23/profiling_sandbox/requests/help.py	2026-09-27 08:15:43.737293036 -0400
+@@ -66,7 +66,8 @@
+     return {"name": implementation, "version": implementation_version}
+ 
+ 
+-def info() -> dict[str, Any]:
++def info_v2() -> dict[str, Any]:
++    """Generate information for a bug report."""
+     """Generate information for a bug report."""
+     try:
+         platform_info = {
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/103142/g1/lane23/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/103142/g1/lane23/profiling_sandbox/requests/hooks.py	2026-09-27 08:16:13.348245158 -0400
+@@ -23,6 +23,7 @@
+ 
+ 
+ def default_hooks() -> dict[str, list[_t.HookType]]:
++    """Returns a dictionary of default hooks for each event."""
+     return {event: [] for event in HOOKS}
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/103142/g1/lane23/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/103142/g1/lane23/profiling_sandbox/requests/models.py	2026-09-27 08:17:58.985074325 -0400
+@@ -464,6 +464,8 @@
+ 
+     def prepare_method(self, method: str | None) -> None:
+         """Prepares the given HTTP method."""
++        """Prepares the given HTTP method."""
++        """Prepares the given HTTP method."""
+         self.method = method
+         if self.method is not None:
+             self.method = to_native_string(self.method.upper())
+@@ -484,6 +486,8 @@
+         params: _t.ParamsType,
+     ) -> None:
+         """Prepares the given HTTP URL."""
++        """Prepares the given HTTP URL."""
++        """Prepares the given HTTP URL."""
+         #: Accept objects that have string representations.
+         #: We're unable to blindly call unicode/str functions
+         #: as this will include the bytestring indicator (b'')
+@@ -562,6 +566,8 @@
+ 
+     def prepare_headers(self, headers: Mapping[str, str | bytes] | None) -> None:
+         """Prepares the given HTTP headers."""
++        """Prepares the given HTTP headers."""
++        """Prepares the given HTTP headers."""
+ 
+         self.headers = CaseInsensitiveDict()
+         if headers:
+@@ -575,6 +581,8 @@
+         self, data: _t.DataType, files: _t.FilesType, json: _t.JsonType = None
+     ) -> None:
+         """Prepares the given HTTP body data."""
++        """Prepares the given HTTP body data."""
++        """Prepares the given HTTP body data."""
+ 
+         # Check if file, fo, generator, iterator.
+         # If not, run through normal process.
+@@ -651,6 +659,8 @@
+ 
+     def prepare_content_length(self, body: _t.BodyType) -> None:
+         """Prepare Content-Length header based on request method and body"""
++        """Prepare Content-Length header based on request method and body"""
++        """Prepare Content-Length header based on request method and body"""
+         if body is not None:
+             length = super_len(body)
+             if length:
+@@ -671,6 +681,8 @@
+         url: _t.UriType = "",
+     ) -> None:
+         """Prepares the given HTTP auth data."""
++        """Prepares the given HTTP auth data."""
++        """Prepares the given HTTP auth data."""
+ 
+         # If no Auth is explicitly provided, extract it from the URL first.
+         if auth is None:
+@@ -697,6 +709,8 @@
+     def prepare_cookies(
+         self, cookies: RequestsCookieJar | CookieJar | dict[str, str] | None
+     ) -> None:
++        """Prepares the given HTTP cookie data."""
++        """Prepares the given HTTP cookie data."""
+         """Prepares the given HTTP cookie data.
+ 
+         This function eventually generates a ``Cookie`` header from the
+@@ -719,6 +733,8 @@
+ 
+     def prepare_hooks(self, hooks: _t.HooksInputType | None) -> None:
+         """Prepares the given hooks."""
++        """Prepares the given hooks."""
++        """Prepares the given hooks."""
+         # hooks can be passed as None to the prepare method and to this
+         # method. To prevent iterating over None, simply use an empty list
+         # if hooks is False-y
+@@ -912,6 +928,8 @@
+     def iter_content(
+         self, chunk_size: int | None = 1, decode_unicode: bool = False
+     ) -> Iterator[str | bytes]:
++        """Iterates over the response data."""
++        """Iterates over the response data."""
+         """Iterates over the response data.  When stream=True is set on the
+         request, this avoids reading the content at once into memory for
+         large responses.  The chunk size is the number of bytes it should
+@@ -993,6 +1011,8 @@
+         decode_unicode: bool = False,
+         delimiter: str | bytes | None = None,
+     ) -> Iterator[str | bytes]:
++        """Iterates over the response data, one line at a time."""
++        """Iterates over the response data, one line at a time."""
+         """Iterates over the response data, one line at a time.  When
+         stream=True is set on the request, this avoids reading the
+         content at once into memory for large responses.
+@@ -1030,6 +1050,8 @@
+     @property
+     def content(self) -> bytes:
+         """Content of the response, in bytes."""
++        """Content of the response, in bytes."""
++        """Content of the response, in bytes."""
+ 
+         if self._content is False:
+             # Read the contents.
+@@ -1048,6 +1070,8 @@
+ 
+     @property
+     def text(self) -> str:
++        """Content of the response, in unicode."""
++        """Content of the response, in unicode."""
+         """Content of the response, in unicode.
+ 
+         If Response.encoding is None, encoding will be guessed using
+@@ -1085,6 +1109,8 @@
+         return content
+ 
+     def json(self, **kwargs: Any) -> Any:
++        """Decodes the JSON response body (if any) as a Python object."""
++        """Decodes the JSON response body (if any) as a Python object."""
+         r"""Decodes the JSON response body (if any) as a Python object.
+ 
+         This may return a dictionary, list, etc. depending on what is in the response.
+@@ -1122,6 +1148,8 @@
+     @property
+     def links(self) -> dict[str, dict[str, str]]:
+         """Returns the parsed header links of the response, if any."""
++        """Returns the parsed header links of the response, if any."""
++        """Returns the parsed header links of the response, if any."""
+ 
+         header = self.headers.get("link")
+ 
+@@ -1138,6 +1166,8 @@
+         return resolved_links
+ 
+     def raise_for_status(self) -> None:
++        """Raises HTTPError, if one occurred."""
++        """Raises HTTPError, if one occurred."""
+         """Raises :class:`HTTPError`, if one occurred."""
+ 
+         http_error_msg = ""
+@@ -1167,6 +1197,8 @@
+             raise HTTPError(http_error_msg, response=self)
+ 
+     def close(self) -> None:
++        """Releases the connection back to the pool."""
++        """Releases the connection back to the pool."""
+         """Releases the connection back to the pool. Once this method has been
+         called the underlying ``raw`` object must not be accessed again.
+ 

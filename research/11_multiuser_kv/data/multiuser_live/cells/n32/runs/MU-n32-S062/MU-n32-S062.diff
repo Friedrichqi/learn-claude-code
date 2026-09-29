@@ -1,0 +1,386 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-27 04:19:08.940575103 -0400
+@@ -0,0 +1,10 @@
++# Build Tag Addition Changelog
++
++The following files in `profiling_sandbox/packaging/` were updated with the module-level constant `BUILD_TAG = 'profiling'`:
++
++- **requirements.py**: Added at line 2
++- **specifiers.py**: Added at line 2
++- **version.py**: Added at line 2
++- **dependency_groups.py**: Added at line 2
++- **direct_url.py**: Added at line 2
++- **licenses/_spdx.py**: Added at line 2
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/dependency_groups.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/dependency_groups.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/dependency_groups.py	2026-09-17 15:46:11.692714040 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/dependency_groups.py	2026-09-27 04:07:58.870962500 -0400
+@@ -1,5 +1,9 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
++BUILD_TAG = 'profiling'
++
+ import re
+ from collections.abc import Mapping, Sequence
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/direct_url.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/direct_url.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/direct_url.py	2026-09-17 15:46:11.699086606 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/direct_url.py	2026-09-27 04:11:52.025441185 -0400
+@@ -1,5 +1,9 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
++BUILD_TAG = 'profiling'
++
+ import dataclasses
+ import re
+ import urllib.parse
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_elffile.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py	2026-09-17 15:46:11.629142343 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_elffile.py	2026-09-27 03:31:14.406429431 -0400
+@@ -9,6 +9,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import os
+ import struct
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/errors.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/errors.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/errors.py	2026-09-17 15:46:11.705572481 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/errors.py	2026-09-27 03:47:56.591815111 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import contextlib
+ import dataclasses
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/licenses/_spdx.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/licenses/_spdx.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/licenses/_spdx.py	2026-09-17 15:46:11.847329524 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/licenses/_spdx.py	2026-09-27 04:15:20.879075493 -0400
+@@ -1,6 +1,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ from typing import TypedDict
+ 
+ class SPDXLicense(TypedDict):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_manylinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py	2026-09-17 15:46:11.633151751 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_manylinux.py	2026-09-27 03:32:59.747729972 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import collections
+ import contextlib
+ import functools
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/markers.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/markers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/markers.py	2026-09-17 15:46:11.726823943 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/markers.py	2026-09-27 03:49:33.192182034 -0400
+@@ -4,6 +4,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import functools
+ import operator
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/metadata.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/metadata.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/metadata.py	2026-09-17 15:46:11.733192659 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/metadata.py	2026-09-27 03:51:18.366492143 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import email.header
+ import email.message
+ import email.parser
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_musllinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py	2026-09-17 15:46:11.638075106 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_musllinux.py	2026-09-27 03:34:43.072043484 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import functools
+ import re
+ import subprocess
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py	2026-09-17 15:46:11.642860903 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_parser.py	2026-09-27 03:36:25.868360102 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import ast
+ from collections.abc import Sequence
+ from typing import Literal, NamedTuple, Union
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/pylock.py	2026-09-27 03:52:55.839852199 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import dataclasses
+ import logging
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_ranges.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py	2026-09-17 15:46:11.647379794 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_ranges.py	2026-09-27 03:38:10.066666997 -0400
+@@ -5,6 +5,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import functools
+ from typing import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/ranges.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/ranges.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/ranges.py	2026-09-17 15:46:11.749947570 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/ranges.py	2026-09-27 03:54:50.732097212 -0400
+@@ -19,6 +19,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import typing
+ from typing import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/requirements.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py	2026-09-17 15:46:11.755435528 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/requirements.py	2026-09-27 03:56:27.724459288 -0400
+@@ -3,6 +3,8 @@
+ # for complete details.
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ from typing import TYPE_CHECKING
+ 
+ from ._parser import parse_requirement as _parse_requirement
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/specifiers.py	2026-09-27 03:57:59.276857492 -0400
+@@ -10,6 +10,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import abc
+ import re
+ import typing
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_structures.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_structures.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_structures.py	2026-09-17 15:46:11.651729697 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_structures.py	2026-09-27 03:40:33.475712430 -0400
+@@ -2,6 +2,8 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
++BUILD_TAG = 'profiling'
++
+ """Backward-compatibility shim for unpickling Version objects serialized before
+ packaging 26.1.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_tokenizer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py	2026-09-17 15:46:11.688359887 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/_tokenizer.py	2026-09-27 03:42:29.786952595 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import contextlib
+ import re
+ from dataclasses import dataclass
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102768/g1/lane29/profiling_sandbox/packaging/version.py	2026-09-27 06:25:32.958770644 -0400
+@@ -9,6 +9,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import re
+ import sys
+ import typing
+@@ -108,6 +110,7 @@
+ 
+ 
+ def parse(version: str) -> Version:
++    """Parse the given version string into a Version object."""
+     """Parse the given version string.
+ 
+     This is identical to the :class:`Version` constructor.
+@@ -122,6 +125,7 @@
+ 
+ 
+ class InvalidVersion(ValueError):
++    """Raised when a version string is not a valid version."""
+     """Raised when a version string is not a valid version.
+ 
+     >>> Version("invalid")
+@@ -132,6 +136,7 @@
+ 
+ 
+ class _BaseVersion:
++    """Base class for version comparison and hashing."""
+     __slots__ = ()
+ 
+     # This can also be a normal member (see the packaging_legacy package);
+@@ -140,45 +145,69 @@
+     if typing.TYPE_CHECKING:
+ 
+         @property
++    """The third item of release or 0 if unavailable."""
++    """The second item of release or 0 if unavailable."""
++    """The first item of release or 0 if unavailable."""
++    """Whether this version is a development release."""
++    """Whether this version is a post-release."""
++    """Whether this version is a pre-release."""
++    """The 'base version' of the version."""
++    """The public portion of the version."""
++    """The local version segment of the version."""
++    """The development number of the version."""
++    """The post-release number of the version."""
++    """The pre-release segment of the version."""
++    """The components of the 'release' segment of the version."""
++    """The epoch of the version."""
++    """The string representation of the Version for pattern matching."""
++    """The internal version as a NamedTuple."""
++    """The comparison key used for sorting."""
+         def _key(self) -> tuple[Any, ...]: ...
+ 
+     def __hash__(self) -> int:
++    """Return a hash value for the Version object."""
+         return hash(self._key)
+ 
+     # Please keep the duplicated `isinstance` check
+     # in the six comparisons hereunder
+     # unless you find a way to avoid adding overhead function calls.
+     def __lt__(self, other: _BaseVersion) -> bool:
++    """Check if this version is less than another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key < other._key
+ 
+     def __le__(self, other: _BaseVersion) -> bool:
++    """Check if this version is less than or equal to another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key <= other._key
+ 
+     def __eq__(self, other: object) -> bool:
++    """Check if this version is equal to another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key == other._key
+ 
+     def __ge__(self, other: _BaseVersion) -> bool:
++    """Check if this version is greater than or equal to another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key >= other._key
+ 
+     def __gt__(self, other: _BaseVersion) -> bool:
++    """Check if this version is greater than another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+         return self._key > other._key
+ 
+     def __ne__(self, other: object) -> bool:
++    """Check if this version is not equal to another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 
+@@ -338,6 +367,7 @@
+ 
+ 
+ class Version(_BaseVersion):
++    """This class abstracts handling of a project's versions."""
+     """This class abstracts handling of a project's versions.
+ 
+     A :class:`Version` instance is comparison aware and can be compared and
+@@ -406,6 +436,7 @@
+     _key_cache: CmpKey | None
+ 
+     def __init__(self, version: str) -> None:
++    """Initialize a Version object from a version string."""
+         """Initialize a Version object.
+ 
+         :param version:
+@@ -466,6 +497,7 @@
+         self._hash_cache = None
+ 
+     @classmethod
++    """Return a new version composed of the various parts."""
+     def from_parts(
+         cls,
+         *,
+@@ -513,6 +545,7 @@
+         return new_version
+ 
+     def __replace__(self, **kwargs: Unpack[_VersionReplace]) -> Self:
++    """Return a new version with parts replaced."""
+         """
+         __replace__(*, epoch=..., release=..., pre=..., post=..., dev=..., local=...)
+ 
+@@ -788,6 +821,7 @@
+         )
+ 
+     def __setstate__(self, state: object) -> None:
++    """Restore the state from pickling."""
+         # Always discard cached values — they may contain stale references
+         # (e.g. packaging._structures.InfinityType from pre-26.1 pickles)
+         # and will be recomputed on demand from the core fields above.
+@@ -840,6 +874,7 @@
+         )
+ 
+     @_version.setter
++    """Set the internal version from a NamedTuple."""
+     @_deprecated("Version._version is private and will be removed soon")
+     def _version(self, value: _Version) -> None:
+         self._epoch = value.epoch
+@@ -852,6 +887,7 @@
+         self._hash_cache = None
+ 
+     def __repr__(self) -> str:
++    """A representation of the Version that shows all internal state."""
+         """A representation of the Version that shows all internal state.
+ 
+         >>> Version('1.0.0')
+@@ -860,6 +896,7 @@
+         return f"<{self.__class__.__name__}({str(self)!r})>"
+ 
+     def __str__(self) -> str:
++    """A string representation of the version that can be round-tripped."""
+         """A string representation of the version that can be round-tripped.
+ 
+         >>> str(Version("1.0a5"))

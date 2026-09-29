@@ -1,0 +1,265 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py /tmp/yqi10/rope_shift_lanes/s5/lane05_02/profiling_sandbox/s15_harness/scripts/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py	2026-09-21 17:15:01.542703080 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_02/profiling_sandbox/s15_harness/scripts/trace_task_dag.py	2026-09-25 12:39:23.931822318 -0400
+@@ -1,22 +1,3 @@
+-#!/usr/bin/env python3
+-"""Render the task-dependency DAG of an integrated-harness trace as HTML.
+-
+-Reads a JSONL trace written by trace_runtime.py, reconstructs the file-backed
+-task board from task_create / task_update / task_claim / task_complete events,
+-and emits a single self-contained HTML file with:
+-
+-  * the blockedBy dependency graph as a layered SVG DAG (columns = longest-path
+-    layer, nodes colored by final status, critical path highlighted)
+-  * a table-view twin of the same data
+-  * stat tiles (tasks, edges, done/claimed/pending, depth)
+-
+-Usage:
+-    python3 scripts/trace_task_dag.py traces/<run>.jsonl [-o trace_task_dag.html]
+-
+-Reuses the palette validator and stylesheet from trace_workflow_viz.py so both
+-views of a run look and read the same.
+-"""
+-
+ from __future__ import annotations
+ 
+ import argparse
+@@ -29,10 +10,6 @@
+ from trace_workflow_viz import CSS, fmt_clock, validate_palette
+ 
+ 
+-# --------------------------------------------------------------------------
+-# Trace parsing
+-# --------------------------------------------------------------------------
+-
+ def parse_tasks(path: Path) -> dict[str, Any]:
+     events: list[dict[str, Any]] = []
+     with path.open() as fh:
+@@ -146,7 +123,6 @@
+         "status_census": _census(tasks),
+     }
+ 
+-
+ def _census(tasks: dict[str, dict[str, Any]]) -> dict[str, int]:
+     out: dict[str, int] = defaultdict(int)
+     for t in tasks.values():
+@@ -154,33 +130,13 @@
+     return dict(out)
+ 
+ 
+-# --------------------------------------------------------------------------
+-# HTML generation
+-# --------------------------------------------------------------------------
+-
+-DAG_CSS = """
+-.dag-scroll { overflow-x:auto; }
+-.dag-legend { display:flex; flex-wrap:wrap; gap:12px; font-size:11.5px; color:var(--ink-2);
+-  align-items:center; margin-bottom:8px; }
+-.dag-legend .k { display:inline-flex; align-items:center; gap:5px; }
+-.dag-node { cursor:default; }
+-.dag-node:focus { outline:none; }
+-.dag-node:focus-visible .dag-box { stroke:var(--accent); stroke-width:2; }
+-"""
+-
+-STATUS_FILL = {"done": "var(--c-tool)", "claimed": "var(--c-model)", "pending": "var(--muted)"}
+-STATUS_LABEL = {"done": "done", "claimed": "claimed", "pending": "pending"}
+-
+-
+ def short(tid: str) -> str:
+     return tid.replace("task_", "")[:4]
+ 
+-
+ def esc(s: str) -> str:
+     return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+              .replace('"', "&quot;"))
+ 
+-
+ def build_svg(d: dict[str, Any]) -> str:
+     tasks = d["tasks"]
+     node_w, node_h, gap_y, col_gap, pad_l, pad_t = 224, 40, 8, 96, 16, 34
+@@ -226,10 +182,10 @@
+         dims = 'font-style:italic;fill:var(--muted)' if t["status"] == "pending" else ""
+         tip = (
+             f' data-tip-title="{short(tid)} · {STATUS_LABEL.get(t["status"], t["status"])}'
+-            f'{" · critical path" if tid in cp else ""}"'
+-            f' data-tip-subject="{title}"'
+-            f' data-tip-owner="{esc(t["owner"] or "unclaimed")}"'
+-            f' data-tip-deps="{esc(", ".join(short(b) for b in t["deps"]) or "none — root task")}"'
++            f'{{" if tid in cp else ""}}"'
++            f' data-tip-subject="{title}"
++            f' data-tip-owner="{esc(t["owner"] or "unclaimed")}"
++            f' data-tip-deps="{esc(", ".join(short(b) for b in t["deps"]) or "none — root task")}"
+             f' data-tip-times="created {fmt_clock(t["created_s"])}'
+             + (f' · claimed {fmt_clock(t["claim_s"])}' if t["claim_s"] else "")
+             + (f' · done {fmt_clock(t["done_s"])}' if t["done_s"] else "") + '"'
+@@ -237,8 +193,8 @@
+         parts.append(
+             f'<g class="dag-node" tabindex="0"{tip}>'
+             f'<rect class="dag-box" x="{x}" y="{y}" width="{node_w}" height="{node_h}" rx="7" '
+-            f'fill="var(--surface-1)" stroke="{box_stroke}" stroke-width="1"/>'
+-            f'<rect x="{x}" y="{y}" width="4" height="{node_h}" rx="2" fill="{fill}"/>'
++            f'fill="var(--surface-1)" stroke="{box_stroke}" stroke-width="1"/>
++            f'<rect x="{x}" y="{y}" width="4" height="{node_h}" rx="2" fill="{fill}"/>
+             f'<text x="{x + 12}" y="{y + 16}" font-size="10.5" font-weight="650" fill="var(--ink)">'
+             f'{short(tid)}{" ★" if tid in cp else ""}</text>'
+             f'<text x="{x + node_w - 8}" y="{y + 16}" font-size="9.5" text-anchor="end" '
+@@ -248,7 +204,6 @@
+     parts.append("</svg>")
+     return "\n".join(parts)
+ 
+-
+ JS = r"""
+ const DATA = JSON.parse(document.getElementById('viz-data').textContent);
+ const tip = document.getElementById('tooltip');
+@@ -312,23 +267,23 @@
+ """
+ 
+ 
+-def build_html(d: dict[str, Any], palette_report: list[str]) -> str:
++def build_html_v2(d: dict[str, Any], palette_report: list[str]) -> str:
+     c = d["status_census"]
+     n = len(d["tasks"])
+     tiles = [
+         ("Tasks", str(n), f"{d['n_edges']} blockedBy edges · {d['n_layers']} layers"),
+         ("Done", str(c.get("done", 0)), f"{c.get('claimed', 0)} claimed · {c.get('pending', 0)} never started"),
+-        ("Critical path", f"{len(d['on_cp'])} tasks", " → ".join(short(x) for x in d["on_cp"])),
++        ("Critical path", f"{len(d['on_cp'])} tasks", " → ".join(short(x) for x in d['on_cp'])),
+         ("Wall time", fmt_clock(d["last_elapsed"]), f"snapshot of {d['file']}"),
+     ]
+     tiles_html = "".join(
+-        f'<div class="tile"><div class="lb">{lb}</div><div class="v">{esc(v)}</div><div class="x">{esc(x)}</div></div>'
++        f'<div class=\"tile\"><div class=\"lb\">{lb}</div><div class=\"v\">{esc(v)}</div><div class=\"x\">{esc(x)}</div></div>'
+         for lb, v, x in tiles)
+     legend_items = [
+         ("done", "var(--c-tool)"), ("claimed", "var(--c-model)"),
+         ("pending (never started)", "var(--muted)"), ("critical path ★", "var(--accent)"),
+     ]
+-    legend_html = "".join(f'<span class="k"><span class="sw" style="background:{c2}"></span>{lb}</span>'
++    legend_html = "".join(f'<span class=\"k\"><span class=\"sw\" style=\"background:{c2}\"></span>{lb}</span>'
+                           for lb, c2 in legend_items)
+     report_html = "\n".join("<!-- " + line + " -->" for line in palette_report)
+     tasks_json = json.dumps([
+@@ -336,39 +291,38 @@
+          "owner": t["owner"], "deps": [short(b) for b in t["deps"]],
+          "created": fmt_clock(t["created_s"])}
+         for t in d["tasks"].values()
+-    ], ensure_ascii=False).replace("</", "<\\/")
++    ], ensure_ascii=False).replace("</", "<\/)")
+     return f"""<!DOCTYPE html>
+-<html lang="en">
++<html lang=\"en\">
+ <head>
+-<meta charset="utf-8">
+-<meta name="viewport" content="width=device-width, initial-scale=1">
++<meta charset=\"utf-8\">
++<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+ <title>Task DAG — run {d['run_id']}</title>
+ <style>{CSS}</style>
+ <style>{DAG_CSS}</style>
+ </head>
+ <body>
+-<div class="viz-root" data-mode="light">
++<div class=\"viz-root\" data-mode=\"light\">
+   {report_html}
+   <h1>Task dependency DAG — run {d['run_id']}</h1>
+-  <p class="sub">Reconstructed from task_create / task_update / task_claim / task_complete events in
++  <p class=\"sub\">Reconstructed from task_create / task_update / task_claim / task_complete events in
+   <b>{esc(d['file'])}</b>. Columns are longest-path layers; every edge is a blockedBy written by the lead.</p>
+-  <div class="tiles">{tiles_html}</div>
+-  <div class="card"><h2>DAG <span class="n">· left to right = dependency order · hover a node for subject, owner and times</span></h2>
+-    <div class="dag-legend">{legend_html}</div>
+-    <div class="dag-scroll">{build_svg(d)}</div>
++  <div class=\"tiles\">{tiles_html}</div>
++  <div class=\"card\"><h2>DAG <span class=\"n\">· left to right = dependency order · hover a node for subject, owner and times</span></h2>
++    <div class=\"dag-legend\">{legend_html}</div>
++    <div class=\"dag-scroll\">{build_svg(d)}</div>
+   </div>
+-  <div class="card"><h2>Tasks <span class="n">· table view of the DAG</span></h2>
+-    <table id="tbl-tasks"></table>
++  <div class=\"card\"><h2>Tasks <span class=\"n\">· table view of the DAG</span></h2>
++    <table id=\"tbl-tasks\"></table>
+   </div>
+-  <p class="foot">Self-contained snapshot — regenerate:
++  <p class=\"foot\">Self-contained snapshot — regenerate:
+   <code>python3 scripts/trace_task_dag.py traces/{esc(d['file'])} -o trace_task_dag.html</code></p>
+ </div>
+-<div id="tooltip"></div>
+-<script type="application/json" id="viz-data">{tasks_json}</script>
++<div id=\"tooltip\"></div>
++<script type=\"application/json\" id=\"viz-data\">{tasks_json}</script>
+ <script>{JS}</script>
+ </body>
+-</html>
+-"""
++</html>"""
+ 
+ 
+ def main(argv: list[str] | None = None) -> int:
+@@ -384,15 +338,15 @@
+                                 extra_status=["#d03b3b"])
+ 
+     d = parse_tasks(args.trace)
+-    html = build_html(d, reports)
++    html = build_html_v2(d, reports)
+     args.output.write_text(html)
+     c = d["status_census"]
+-    print(f"wrote {args.output} ({len(html)/1024:.0f} KB): {len(d['tasks'])} tasks, "
+-          f"{d['n_edges']} edges, {d['n_layers']} layers, "
+-          f"done={c.get('done',0)} claimed={c.get('claimed',0)} pending={c.get('pending',0)}, "
++    print(f"wrote {args.output} ({len(html)/1024:.0f} KB): {len(d['tasks'])} tasks, ",
++          f"{d['n_edges']} edges, {d['n_layers']} layers, ",
++          f"done={c.get('done',0)} claimed={c.get('claimed',0)} pending={c.get('pending',0)}, ",
+           f"critical path={' → '.join(short(x) for x in d['on_cp'])}")
+     return 0
+ 
+ 
+ if __name__ == "__main__":
+-    sys.exit(main())
++    sys.exit(main())
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/rope_shift_lanes/s5/lane05_02/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_02/profiling_sandbox/s15_harness/trace_view.py	2026-09-25 12:39:43.279796900 -0400
+@@ -97,6 +97,42 @@
+     return intervals
+ 
+ 
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
++# Renamed from build_html to build_html_v2 per task request
++
++
+ def _ranges(intervals: Iterable[Interval]) -> list[tuple[int, int]]:
+     return sorted(
+         (interval.start_ns, interval.end_ns)

@@ -1,0 +1,118 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_compat.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_compat.py	2026-09-17 15:46:11.474602189 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/_compat.py	2026-09-27 03:01:23.947635903 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import codecs
+ import io
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py	2026-09-17 15:46:11.494043204 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/core.py	2026-09-27 03:07:35.738075953 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import enum
+ import inspect
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/decorators.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/decorators.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/decorators.py	2026-09-17 15:46:11.497805575 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/decorators.py	2026-09-27 03:09:20.015357886 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from collections.abc import Callable
+ from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/exceptions.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/exceptions.py	2026-09-17 15:46:11.501831032 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/exceptions.py	2026-09-27 03:11:30.515459204 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from collections.abc import Sequence
+ from typing import IO, TYPE_CHECKING, Any, Union
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/formatting.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/formatting.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/formatting.py	2026-09-17 15:46:11.506132246 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/formatting.py	2026-09-27 03:13:29.894637069 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from collections.abc import Iterable, Iterator, Sequence
+ from contextlib import contextmanager
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/__init__.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/__init__.py	2026-09-17 15:46:11.468144864 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/__init__.py	2026-09-27 03:00:49.814870903 -0400
+@@ -1,6 +1,7 @@
+ """
+ Code taken and adapted from Click: https://github.com/pallets/click/releases/tag/8.3.1
+ """
++BUILD_TAG = 'profiling'
+ 
+ from .core import Command as Command
+ from .core import Context as Context
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_termui_impl.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/_termui_impl.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_termui_impl.py	2026-09-17 15:46:11.480284414 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/_termui_impl.py	2026-09-27 03:02:06.015346268 -0400
+@@ -11,6 +11,8 @@
+ from collections.abc import Callable, Iterable, Iterator
+ from io import StringIO
+ from types import TracebackType
++BUILD_TAG = 'profiling'
++
+ from typing import Generic, TextIO, TypeVar, cast
+ 
+ from ._compat import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_textwrap.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/_textwrap.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_textwrap.py	2026-09-17 15:46:11.485593415 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/_textwrap.py	2026-09-27 03:03:54.796597286 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import textwrap
+ from collections.abc import Iterator
+ from contextlib import contextmanager
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_winconsole.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/_winconsole.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_winconsole.py	2026-09-17 15:46:11.490149555 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_click/_winconsole.py	2026-09-27 03:05:50.376801454 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ # This module is based on the excellent work by Adam Bartoš who
+ # provided a lot of what went into the implementation here in
+ # the discussion to issue1602 in the Python bug tracker.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/completion.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/completion.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/completion.py	2026-09-17 15:46:11.594426718 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/completion.py	2026-09-27 02:17:26.337759857 -0400
+@@ -4,6 +4,7 @@
+ from typing import Any
+ 
+ from . import _click
++from . import _typing
+ from ._click import shell_completion
+ from ._completion_classes import completion_init
+ from ._completion_shared import Shells, _get_shell_name, get_completion_script, install
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/__main__.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/__main__.py	2026-09-17 15:46:11.455661347 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/__main__.py	2026-09-27 02:58:35.877793009 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from .cli import main
+ 
+ main()
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_typing.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py	2026-09-17 15:46:11.573110818 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/typer/_typing.py	2026-09-27 02:04:26.063080785 -0400
+@@ -56,7 +56,7 @@
+     return get_origin(type_) is Literal
+ 
+ 
+-def literal_values(type_: type[Any]) -> tuple[Any, ...]:
++def literal_values_v2(type_: type[Any]) -> tuple[Any, ...]:
+     return get_args(type_)
+ 
+ 

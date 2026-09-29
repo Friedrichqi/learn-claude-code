@@ -1,0 +1,268 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_00/profiling_sandbox/s15_harness/trace_view.py	2026-09-25 12:33:50.108218196 -0400
+@@ -29,6 +29,7 @@
+ 
+ @dataclass(frozen=True)
+ class Interval:
++    """Represents a time interval between start and end events."""
+     start_ns: int
+     end_ns: int
+     start_event: dict[str, Any]
+@@ -36,28 +37,34 @@
+ 
+     @property
+     def duration_ms(self) -> float:
++        """Duration in milliseconds."""
+         return max(0, self.end_ns - self.start_ns) / 1_000_000
+ 
+     @property
+     def agent_id(self) -> str | None:
++        """Agent ID from either start or end event."""
+         return self.start_event.get("agent_id") or self.end_event.get("agent_id")
+ 
+     @property
+     def kind(self) -> str:
++        """Event kind from the start event."""
+         return str(self.start_event.get("event", "unknown"))
+ 
+     @property
+     def start_data(self) -> dict[str, Any]:
++        """Data from the start event."""
+         data = self.start_event.get("data", {})
+         return data if isinstance(data, dict) else {}
+ 
+     @property
+     def end_data(self) -> dict[str, Any]:
++        """Data from the end event."""
+         data = self.end_event.get("data", {})
+         return data if isinstance(data, dict) else {}
+ 
+ 
+ def load_trace(path: Path) -> list[dict[str, Any]]:
++    """Load and validate a trace file."""
+     records = []
+     with path.open("r", encoding="utf-8") as handle:
+         for line_number, line in enumerate(handle, start=1):
+@@ -75,8 +82,8 @@
+         raise ValueError(f"trace is empty: {path}")
+     return records
+ 
+-
+ def pair_spans(events: Iterable[dict[str, Any]]) -> list[Interval]:
++    """Pair start and end events into intervals."""
+     starts: dict[str, dict[str, Any]] = {}
+     intervals = []
+     for event in events:
+@@ -96,16 +103,16 @@
+         starts.pop(str(span_id), None)
+     return intervals
+ 
+-
+ def _ranges(intervals: Iterable[Interval]) -> list[tuple[int, int]]:
++    """Extract start and end times from intervals."""
+     return sorted(
+         (interval.start_ns, interval.end_ns)
+         for interval in intervals
+         if interval.end_ns >= interval.start_ns
+     )
+ 
+-
+ def _union_ns(intervals: Iterable[Interval]) -> int:
++    """Calculate total time covered by intervals."""
+     total = 0
+     current_start = current_end = None
+     for start, end in _ranges(intervals):
+@@ -120,8 +127,8 @@
+         total += current_end - current_start
+     return total
+ 
+-
+ def _merge_ranges(ranges: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
++    """Merge overlapping time ranges."""
+     merged: list[list[int]] = []
+     for start, end in sorted(ranges):
+         if not merged or start > merged[-1][1]:
+@@ -130,8 +137,8 @@
+             merged[-1][1] = max(merged[-1][1], end)
+     return [(start, end) for start, end in merged]
+ 
+-
+ def _agent_maps(events: Iterable[dict[str, Any]]):
++    """Map agent IDs to their metadata."""
+     info: dict[str, dict[str, Any]] = {
+         "agent-root": {"role": "lead", "name": "Root Agent", "task": "interactive session"}
+     }
+@@ -158,8 +165,8 @@
+             created_at.setdefault(agent_id, float(event.get("elapsed_ms", 0)))
+     return info, parents, created_at
+ 
+-
+ def _depths(parents: dict[str, str | None]) -> dict[str, int]:
++    """Calculate depth of agent hierarchy."""
+     memo: dict[str, int] = {}
+ 
+     def depth(agent_id: str, visiting: set[str]) -> int:
+@@ -176,8 +183,8 @@
+         depth(agent_id, set())
+     return memo
+ 
+-
+ def _tool_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
++    """Filter intervals for tool work."""
+     work = []
+     for interval in intervals:
+         if interval.kind == "background_start":
+@@ -188,8 +195,8 @@
+                 work.append(interval)
+     return work
+ 
+-
+ def _active_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
++    """Filter intervals for active work."""
+     return [
+         interval for interval in intervals
+         if interval.kind == "model_request"
+@@ -199,8 +206,8 @@
+         )
+     ] + _tool_work_intervals(intervals)
+ 
+-
+ def _maximum_parallel_agents(intervals: Iterable[Interval]) -> int:
++    """Calculate maximum number of parallel agents."""
+     per_agent: dict[str, list[tuple[int, int]]] = defaultdict(list)
+     for interval in intervals:
+         if interval.agent_id:
+@@ -217,8 +224,8 @@
+         peak = max(peak, active)
+     return peak
+ 
+-
+ def calculate_metrics(events: list[dict[str, Any]]) -> dict[str, Any]:
++    """Calculate metrics from trace events."""
+     intervals = pair_spans(events)
+     info, parents, _created_at = _agent_maps(events)
+     depths = _depths(parents)
+@@ -335,8 +342,8 @@
+         "orchestration_overhead_ms": round(orchestration_ms, 3),
+     }
+ 
+-
+ def build_summary(path: Path, events: list[dict[str, Any]]) -> dict[str, Any]:
++    """Build a summary of trace data."""
+     trace_files = sorted(path.parent.glob("run_*.jsonl"), key=lambda item: item.name)
+     summary: dict[str, Any] = {
+         "trace_file": str(path),
+@@ -347,8 +354,8 @@
+     }
+     stamped = [event for event in events if event.get("monotonic_ns") is not None]
+     if stamped:
+-        first_ns = min(int(event["monotonic_ns"]) for event in stamped)
+-        last_ns = max(int(event["monotonic_ns"]) for event in stamped)
++        first_ns = min(int(event["monotonic_ns"] for event in stamped))
++        last_ns = max(int(event["monotonic_ns"] for event in stamped))
+         summary["duration_ms"] = round((last_ns - first_ns) / 1_000_000, 3)
+     input_tokens = output_tokens = cache_tokens = 0
+     has_usage = False
+@@ -373,8 +380,8 @@
+         }
+     return summary
+ 
+-
+ def _short(value: Any, limit: int = 100) -> str:
++    """Truncate and format a value for display."""
+     if isinstance(value, dict) and "preview" in value:
+         value = value.get("preview", "")
+     elif not isinstance(value, str):
+@@ -382,16 +389,16 @@
+     value = " ".join(str(value).split())
+     return value if len(value) <= limit else value[: max(0, limit - 3)] + "..."
+ 
+-
+ def _agent_label(agent_id: str, info: dict[str, dict[str, Any]]) -> str:
++    """Generate a label for an agent."""
+     data = info.get(agent_id, {})
+     if agent_id == "agent-root":
+         return "Root Agent"
+     role = data.get("name") or data.get("label") or data.get("role") or data.get("kind")
+     return f"{role or 'Agent'} ({agent_id})"
+ 
+-
+ def _event_label(event: dict[str, Any], starts: dict[str, dict[str, Any]]) -> str | None:
++    """Generate a label for an event."""
+     name = event.get("event")
+     data = event.get("data", {})
+     data = data if isinstance(data, dict) else {}
+@@ -441,8 +448,8 @@
+         return f"Context compact: {data.get('strategy', 'unknown')}"
+     return None
+ 
+-
+ def render_tree(events: list[dict[str, Any]]) -> str:
++    """Render a tree view of the trace."""
+     info, parents, created_at = _agent_maps(events)
+     children: dict[str | None, list[str]] = defaultdict(list)
+     for agent_id, parent in parents.items():
+@@ -501,8 +508,8 @@
+         visit(root, "", "" if index == 0 else "└─ ")
+     return "\n".join(lines)
+ 
+-
+ def render_timeline(events: list[dict[str, Any]], width: int = 90) -> str:
++    """Render a timeline view of the trace."""
+     intervals = pair_spans(events)
+     info, _parents, _created = _agent_maps(events)
+     first_ns = int(events[0].get("monotonic_ns", 0))
+@@ -563,7 +570,7 @@
+                 cells[start] = "["
+             if end < chart_width and priority[symbol] >= cell_priority[end]:
+                 cells[end] = "]"
+-        lines.append(f"{labels[agent_id][:label_width]:<{label_width}}  {''.join(cells)}")
++        lines.append(f"{labels[agent_id][:label_width]:<" + str(label_width) + "}}  {''.join(cells)}")
+ 
+     dependencies = []
+     for event in events:
+@@ -571,7 +578,7 @@
+             continue
+         data = event.get("data", {})
+         if isinstance(data, dict):
+-            dependencies.append(f"{data.get('from_node_id')} -> {data.get('to_node_id')}")
++            dependencies.append(f"{data.get('from_node_id')} -> {data.get('to_node_id')}"))
+     lines.append(
+         "Legend: M=model  T=tool  B=background tool  W=workflow node  "
+         "A=active cycle  L=lifecycle  P=user/permission wait"
+@@ -581,8 +588,8 @@
+         lines.extend(f"  {dependency}" for dependency in dependencies)
+     return "\n".join(lines)
+ 
+-
+ def render_metrics(metrics: dict[str, Any]) -> str:
++    """Render metrics as text."""
+     ordered = [
+         "run_id", "total_runtime_ms", "total_model_calls", "model_errors",
+         "total_tool_calls", "tool_calls_by_type", "total_subagents", "total_agents",
+@@ -602,15 +609,15 @@
+         lines.append(f"  {key:<{width}} : {value}")
+     return "\n".join(lines)
+ 
+-
+ def _latest_trace(directory: Path) -> Path:
++    """Find the most recent trace file."""
+     candidates = sorted(directory.glob("run_*.jsonl"), key=lambda path: path.stat().st_mtime)
+     if not candidates:
+         raise ValueError(f"no run_*.jsonl files found in {directory}")
+     return candidates[-1]
+ 
+-
+ def main(argv: list[str] | None = None) -> int:
++    """Main entry point."""
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("trace", nargs="?", type=Path,
+                         help="trace JSONL (default: latest file in traces/)")
+@@ -644,4 +651,4 @@
+ 
+ 
+ if __name__ == "__main__":
+-    sys.exit(main())
++    sys.exit(main())
+\ No newline at end of file

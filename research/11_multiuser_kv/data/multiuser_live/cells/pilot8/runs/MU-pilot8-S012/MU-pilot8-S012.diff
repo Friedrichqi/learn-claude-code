@@ -1,0 +1,241 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/requests/auth.py	2026-09-26 22:08:22.649546914 -0400
+@@ -1,10 +1,3 @@
+-"""
+-requests.auth
+-~~~~~~~~~~~~~
+-
+-This module contains the authentication handlers for Requests.
+-"""
+-
+ from __future__ import annotations
+ 
+ import hashlib
+@@ -27,10 +20,10 @@
+ 
+     from .models import PreparedRequest, Response
+ 
++
+ CONTENT_TYPE_FORM_URLENCODED: Final = "application/x-www-form-urlencoded"
+ CONTENT_TYPE_MULTI_PART: Final = "multipart/form-data"
+ 
+-
+ def _basic_auth_str(username: bytes | str, password: bytes | str) -> str:
+     """Returns a Basic Auth string."""
+ 
+@@ -41,6 +34,8 @@
+     #
+     # These are here solely to maintain backwards compatibility
+     # for things like ints. This will be removed in 3.0.0.
++    # -- End Removal --
++
+     if not isinstance(username, basestring):  # type: ignore[reportUnnecessaryIsInstance]  # runtime guard for non-str/bytes
+         warnings.warn(
+             "Non-string usernames will no longer be supported in Requests "
+@@ -74,14 +69,12 @@
+ 
+     return authstr
+ 
+-
+ class AuthBase:
+     """Base class that all auth implementations derive from"""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+         raise NotImplementedError("Auth hooks must be callable.")
+ 
+-
+ class HTTPBasicAuth(AuthBase):
+     """Attaches HTTP Basic Authentication to the given Request object."""
+ 
+@@ -112,7 +105,6 @@
+         r.headers["Authorization"] = _basic_auth_str(self.username, self.password)
+         return r
+ 
+-
+ class HTTPProxyAuth(HTTPBasicAuth):
+     """Attaches HTTP Proxy Authentication to a given Request object."""
+ 
+@@ -120,7 +112,6 @@
+         r.headers["Proxy-Authorization"] = _basic_auth_str(self.username, self.password)
+         return r
+ 
+-
+ class HTTPDigestAuth(AuthBase):
+     """Attaches HTTP Digest Authentication to the given Request object."""
+ 
+@@ -145,6 +136,8 @@
+         self._thread_local = threading.local()
+ 
+     def init_per_thread_state(self) -> None:
++        """Ensure state is initialized just once per-thread"""
++
+         # Ensure state is initialized just once per-thread
+         if not hasattr(self._thread_local, "init"):
+             self._thread_local.init = True
+@@ -155,9 +148,7 @@
+             self._thread_local.num_401_calls = None
+ 
+     def build_digest_header(self, method: str, url: str) -> str | None:
+-        """
+-        :rtype: str
+-        """
++        """Build a digest header for the given method and URL."""
+ 
+         realm = self._thread_local.chal["realm"]
+         nonce = self._thread_local.chal["nonce"]
+@@ -267,15 +258,12 @@
+ 
+     def handle_redirect(self, r: Response, **kwargs: Any) -> None:
+         """Reset num_401_calls counter on redirects."""
++
+         if r.is_redirect:
+             self._thread_local.num_401_calls = 1
+ 
+     def handle_401(self, r: Response, **kwargs: Any) -> Response:
+-        """
+-        Takes the given response and tries digest-auth, if needed.
+-
+-        :rtype: requests.Response
+-        """
++        """Takes the given response and tries digest-auth, if needed."""
+ 
+         # If response is not 4xx, do not auth
+         # See https://github.com/psf/requests/issues/3772
+@@ -319,6 +307,8 @@
+         return r
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
++        """Attach digest auth to the request."""
++
+         # Initialize per-thread state, if needed
+         self.init_per_thread_state()
+         # If we have a saved nonce, skip the 401
+@@ -351,4 +341,4 @@
+         )
+ 
+     def __ne__(self, other: Any) -> bool:
+-        return not self == other
++        return not self == other
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/requests/hooks.py	2026-09-26 21:55:45.470240116 -0400
+@@ -1,15 +1,3 @@
+-"""
+-requests.hooks
+-~~~~~~~~~~~~~~
+-
+-This module provides the capabilities for the Requests hooks system.
+-
+-Available hooks:
+-
+-``response``:
+-    The response generated from a Request.
+-"""
+-
+ from __future__ import annotations
+ 
+ from collections.abc import Callable, Iterable
+@@ -19,16 +7,14 @@
+     from . import _types as _t
+     from .models import Response
+ 
+-HOOKS: list[str] = ["response"]
+ 
++HOOKS: list[str] = ["response"]
+ 
+-def default_hooks() -> dict[str, list[_t.HookType]]:
++def default_hooks_v2() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+ 
+ # TODO: response is the only one
+-
+-
+ def dispatch_hook(
+     key: str,
+     hooks: _t.HooksInputType | None,
+@@ -45,4 +31,4 @@
+             _hook_data = hook(hook_data, **kwargs)
+             if _hook_data is not None:
+                 hook_data = _hook_data
+-    return hook_data
++    return hook_data
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/requests/sessions.py	2026-09-26 22:06:02.040675414 -0400
+@@ -33,7 +33,7 @@
+     InvalidSchema,
+     TooManyRedirects,
+ )
+-from .hooks import default_hooks, dispatch_hook
++from .hooks import default_hooks_v2, dispatch_hook
+ 
+ # formerly defined here, reexposed here for backward compatibility
+ from .models import (  # noqa: F401
+@@ -66,6 +66,7 @@
+     from . import _types as _t
+     from .adapters import BaseAdapter
+ 
++
+ # Preferred clock, based on which one is more accurate on a given system.
+ if sys.platform == "win32":
+     preferred_clock = time.perf_counter
+@@ -104,7 +105,6 @@
+ 
+     return merged_setting
+ 
+-
+ def merge_hooks(
+     request_hooks: _t.HooksType,
+     session_hooks: _t.HooksType,
+@@ -123,7 +123,6 @@
+ 
+     return merge_setting(request_hooks, session_hooks, dict_class)
+ 
+-
+ class SessionRedirectMixin:
+     max_redirects: int
+     trust_env: bool
+@@ -144,7 +143,6 @@
+             # Currently the underlying http module on py3 decode headers
+             # in latin1, but empirical evidence suggests that latin1 is very
+             # rarely used with non-ASCII characters in HTTP headers.
+-            # It is more likely to get UTF8 header rather than latin1.
+             # This causes incorrect handling of UTF8 encoded location headers.
+             # To solve this, we re-encode the location in latin1.
+             location = location.encode("latin1")
+@@ -391,7 +389,6 @@
+ 
+         prepared_request.method = method
+ 
+-
+ class Session(SessionRedirectMixin):
+     """A Requests session.
+ 
+@@ -455,7 +452,7 @@
+         self.proxies = {}
+ 
+         #: Event-handling hooks.
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+ 
+         #: Dictionary of querystring data to attach to each
+         #: :class:`Request <Request>`. The dictionary values may be lists for
+@@ -904,7 +901,6 @@
+         for attr, value in state.items():
+             setattr(self, attr, value)
+ 
+-
+ def session() -> Session:
+     """
+     Returns a :class:`Session` for context-management.
+@@ -917,4 +913,4 @@
+ 
+     :rtype: Session
+     """
+-    return Session()
++    return Session()
+\ No newline at end of file

@@ -1,0 +1,42 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g1/lane02/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g1/lane02/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-27 08:52:26.342862135 -0400
+@@ -0,0 +1,14 @@
++## Changes for BUILD_TAG addition
++
++- **File**: profiling_sandbox/packaging/_manylinux.py
++  - **Line Added**: 1
++- **File**: profiling_sandbox/packaging/_musllinux.py
++  - **Line Added**: 1
++- **File**: profiling_sandbox/packaging/dependency_groups.py
++  - **Line Added": 1
++- **File**: profiling_sandbox/packaging/direct_url.py
++  - **Line Added**: 1
++- **File**: profiling_sandbox/packaging/errors.py
++  - **Line Added": 1
++- **File**: profiling_sandbox/packaging/tags.py
++  - **Line Added": 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py /tmp/yqi10/mu/103142/g1/lane02/profiling_sandbox/packaging/_manylinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py	2026-09-17 15:46:11.633151751 -0400
++++ /tmp/yqi10/mu/103142/g1/lane02/profiling_sandbox/packaging/_manylinux.py	2026-09-27 08:52:30.713855284 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import collections
+ import contextlib
+ import functools
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py /tmp/yqi10/mu/103142/g1/lane02/profiling_sandbox/packaging/tags.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py	2026-09-17 15:46:11.805606681 -0400
++++ /tmp/yqi10/mu/103142/g1/lane02/profiling_sandbox/packaging/tags.py	2026-09-27 08:21:58.960686092 -0400
+@@ -38,7 +38,7 @@
+     "android_platforms",
+     "compatible_tags",
+     "cpython_tags",
+-    "create_compatible_tags_selector",
++    "create_compatible_tags_selector_v2",
+     "generic_tags",
+     "interpreter_name",
+     "interpreter_version",

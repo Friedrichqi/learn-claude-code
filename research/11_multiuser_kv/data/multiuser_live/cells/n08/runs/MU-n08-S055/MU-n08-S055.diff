@@ -1,0 +1,29 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/typer/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/typer/CHANGES_BUILD_TAG.md	2026-09-27 02:04:41.873105663 -0400
+@@ -0,0 +1,4 @@
++# BUILD_TAG Constant Addition Changelog
++
++- **Files Changed**:
++  - `__main__.py` (line 1)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/typer/_click/globals.py	2026-09-27 01:53:41.588600120 -0400
+@@ -35,7 +35,7 @@
+     return None
+ 
+ 
+-def push_context(ctx: "Context") -> None:
++def push_context_v2(ctx: "Context") -> None:
+     """Pushes a new context to the current stack."""
+     _local.__dict__.setdefault("stack", []).append(ctx)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/__main__.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/typer/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/__main__.py	2026-09-17 15:46:11.455661347 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/typer/__main__.py	2026-09-27 02:04:26.161137763 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from .cli import main
+ 
+ main()

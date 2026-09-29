@@ -1,0 +1,490 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/asyncio.py	2026-09-27 01:48:46.568541131 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Asynchronous progress bar decorator for iterators.
+ Includes a default `range` iterator printing to `stderr`.
+@@ -15,7 +17,6 @@
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = ['tqdm_asyncio', 'tarange', 'tqdm', 'trange']
+ 
+-
+ class tqdm_asyncio(std_tqdm):
+     """
+     Asynchronous-friendly version of tqdm.
+@@ -90,14 +91,12 @@
+                                                  total=total, **tqdm_kwargs)]
+         return [i for _, i in sorted(res)]
+ 
+-
+ def tarange(*args, **kwargs):
+     """
+     A shortcut for `tqdm.asyncio.tqdm(range(*args), **kwargs)`.
+     """
+     return tqdm_asyncio(range(*args), **kwargs)
+ 
+-
+ # Aliases
+ tqdm = tqdm_asyncio
+-trange = tarange
++trange = tarange
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/autonotebook.py	2026-09-27 01:53:57.630364078 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Automatically choose between `tqdm.notebook` and `tqdm.std`.
+ 
+@@ -32,7 +34,5 @@
+ else:  # pragma: no cover
+     from .notebook import tqdm, trange
+     from .std import TqdmExperimentalWarning
+-    warn("Using `tqdm.autonotebook.tqdm` in notebook mode."
+-         " Use `tqdm.tqdm` instead to force console mode"
+-         " (e.g. in jupyter console)", TqdmExperimentalWarning, stacklevel=2)
+-__all__ = ["tqdm", "trange"]
++    warn("Using `tqdm.autonotebook.tqdm` in notebook mode."\n         " Use `tqdm.tqdm` instead to force console mode"\n         " (e.g. in jupyter console)", TqdmExperimentalWarning, stacklevel=2)
++__all__ = ["tqdm", "trange"]
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/auto.py	2026-09-27 01:51:18.455478025 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Enables multiple commonly used features.
+ 
+@@ -29,12 +31,10 @@
+ else:
+     tqdm = asyncio_tqdm
+ 
+-
+ def trange(*args, **kwargs):
+     """
+     A shortcut for `tqdm.auto.tqdm(range(*args), **kwargs)`.
+     """
+     return tqdm(range(*args), **kwargs)
+ 
+-
+-__all__ = ["tqdm", "trange"]
++__all__ = ["tqdm", "trange"]
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/cli.py	2026-09-27 02:03:11.898584517 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Module version for monitoring CLI pipes (`... | python -m tqdm | ...`).
+ """
+@@ -13,7 +15,6 @@
+ __all__ = ["main"]
+ log = logging.getLogger(__name__)
+ 
+-
+ def cast(val, typ):
+     log.debug((val, typ))
+     if " or " in typ:
+@@ -24,7 +25,8 @@
+                 pass
+         raise TqdmTypeError(f"{val} : {typ}")
+ 
+-    # sys.stderr.write('\ndebug | `val:type`: `' + val + ':' + typ + '`.\n')
++    # sys.stderr.write('\ndebug | `val:type`: `' + val + ':' + typ + '`.
++')
+     if typ == 'bool':
+         if (val == 'True') or (val == ''):
+             return True
+@@ -34,7 +36,7 @@
+     if typ == 'chr':
+         if len(val) == 1:
+             return val.encode()
+-        if re.match(r"^\\\w+$", val):
++        if re.match(r"^\\w+$", val):
+             return literal_eval(f'"{val}"').encode()
+         raise TqdmTypeError(f"{val} : {typ}")
+     if typ == 'str':
+@@ -51,12 +53,11 @@
+             raise TqdmTypeError(f"{val} : {typ}") from exc
+     raise TqdmTypeError(f"{val} : {typ}")
+ 
+-
+ def posix_pipe(fin, fout, delim=b'\\n', buf_size=256,
+                callback=lambda float: None, callback_len=True):
+     """
+     Params
+-    ------
++    -----
+     fin  : binary file with `read(buf_size : int)` method
+     fout  : binary file with `write` (and optionally `flush`) methods.
+     callback  : function(float), e.g.: `tqdm.update`
+@@ -108,7 +109,6 @@
+             buf = b''
+             tmp = tmp[i + len_delim:]
+ 
+-
+ # ((opt, type), ... )
+ RE_OPTS = re.compile(r'\n {4}(\S+)\s{2,}:\s*([^,]+)')
+ # better split method assuming no positional args
+@@ -152,7 +152,6 @@
+         CRITICAL|FATAL|ERROR|WARN(ING)|[default: 'INFO']|DEBUG|NOTSET.
+ """
+ 
+-
+ def main(fp=sys.stderr, argv=None):
+     """
+     Parameters (internal use only)
+@@ -167,20 +166,10 @@
+     except ValueError:
+         for i in argv:
+             if i.startswith('--log='):
+-                logLevel = i[len('--log='):]
+-                break
+-        else:
+-            logLevel = 'INFO'
+-    else:
+-        # argv.pop(log_idx)
+-        # logLevel = argv.pop(log_idx)
+-        logLevel = argv[log_idx + 1]
+-    logging.basicConfig(level=getattr(logging, logLevel),
+-                        format="%(levelname)s:%(module)s:%(lineno)d:%(message)s")
+-
+-    # py<3.13 doesn't dedent docstrings
+-    d = (tqdm.__doc__ if sys.version_info < (3, 13)
+-         else indent(tqdm.__doc__, "    ")) + CLI_EXTRA_DOC
++                logLevel = i[len('--log='):]\n                break\n        else:\n            logLevel = 'INFO'\n    else:\n        # argv.pop(log_idx)\n        # logLevel = argv.pop(log_idx)\n        logLevel = argv[log_idx + 1]
++    logging.basicConfig(level=getattr(logging, logLevel),\n                        format="%(levelname)s:%(module)s:%(lineno)d:%(message)s")
++
++    # py<3.13 doesn't dedent docstrings\n    d = (tqdm.__doc__ if sys.version_info < (3, 13)\n         else indent(tqdm.__doc__, "    ")) + CLI_EXTRA_DOC
+ 
+     opt_types = dict(RE_OPTS.findall(d))
+     # opt_types['delim'] = 'chr'
+@@ -193,17 +182,11 @@
+     # d = RE_OPTS.sub(r'  --\1=<\1>  : \2', d)
+     split = RE_OPTS.split(d)
+     opt_types_desc = zip(split[1::3], split[2::3], split[3::3])
+-    d = ''.join(('\n  --{0}  : {2}{3}' if otd[1] == 'bool' else
+-                 '\n  --{0}=<{1}>  : {2}{3}').format(
+-                     otd[0].replace('_', '-'), otd[0], *otd[1:])
+-                for otd in opt_types_desc if otd[0] not in UNSUPPORTED_OPTS)
++    d = ''.join(("\n  --{0}  : {2}{3}" if otd[1] == 'bool' else\n                 "\n  --{0}=<{1}>  : {2}{3}").format(\n                     otd[0].replace('_', '-'), otd[0], *otd[1:])\n                    for otd in opt_types_desc if otd[0] not in UNSUPPORTED_OPTS)
+ 
+     help_short = "Usage:\n  tqdm [--help | options]\n"
+     d = help_short + """
+-Options:
+-  -h, --help     Print this help and exit.
+-  -v, --version  Print version and exit.
+-""" + d.strip('\n') + '\n'
++Options:\n  -h, --help     Print this help and exit.\n  -v, --version  Print version and exit.\n""" + d.strip('\n') + '\n'
+ 
+     # opts = docopt(d, version=__version__)
+     if any(v in argv for v in ('-v', '--version')):
+@@ -215,7 +198,7 @@
+     elif argv and argv[0][:2] != '--':
+         sys.stderr.write(f"Error:Unknown argument:{argv[0]}\n{help_short}")
+ 
+-    argv = RE_SHLEX.split(' '.join(["tqdm"] + argv))
++    argv = RE_SHLEX.split(' '.join(["tqdm" + argv]))
+     opts = dict(zip(argv[1::3], argv[3::3]))
+ 
+     log.debug(opts)
+@@ -265,7 +248,7 @@
+             from pathlib import Path
+ 
+             def cp(name, dst):
+-                """copy resource `name` to `dst`"""
++                """copy resource `name` to `dst"""
+                 fi = resources.files('tqdm') / name
+                 dst.write_bytes(fi.read_bytes())
+                 log.info("written:%s", dst)
+@@ -321,4 +304,4 @@
+                 else:
+                     callback = t.update
+                     callback_len = True
+-                posix_pipe(stdin, stdout, delim, buf_size, callback, callback_len)
++                posix_pipe(stdin, stdout, delim, buf_size, callback, callback_len)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/dask.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py	2026-09-17 15:46:11.332330664 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/dask.py	2026-09-27 02:05:02.881830653 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from functools import partial
+ 
+ from dask.callbacks import Callback
+@@ -7,7 +9,6 @@
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = ['TqdmCallback']
+ 
+-
+ class TqdmCallback(Callback):
+     """Dask callback for task progress."""
+     def __init__(self, start=None, pretask=None, tqdm_class=tqdm_auto,
+@@ -41,4 +42,4 @@
+         if container is None:
+             return
+         from .notebook import display
+-        display(container)
++        display(container)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py	2026-09-17 15:46:11.337417657 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/gui.py	2026-09-27 02:18:54.579154775 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Matplotlib GUI progress bar decorator for iterators.
+ 
+@@ -20,7 +22,6 @@
+ __author__ = {"github.com/": ["casperdcl", "lrq3000"]}
+ __all__ = ['tqdm_gui', 'tgrange', 'tqdm', 'trange']
+ 
+-
+ class tqdm_gui(std_tqdm):  # pragma: no cover
+     """Experimental Matplotlib GUI version of tqdm!"""
+     # TODO: @classmethod: write() on GUI?
+@@ -168,12 +169,10 @@
+         ax.set_title(msg, fontname="DejaVu Sans Mono", fontsize=11)
+         self.plt.pause(1e-9)
+ 
+-
+ def tgrange(*args, **kwargs):
+     """Shortcut for `tqdm.gui.tqdm(range(*args), **kwargs)`."""
+     return tqdm_gui(range(*args), **kwargs)
+ 
+-
+ # Aliases
+ tqdm = tqdm_gui
+-trange = tgrange
++trange = tgrange
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py	2026-09-17 15:46:11.277808878 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/__main__.py	2026-09-27 01:27:47.949357529 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from .cli import main
+ 
+-main()
++main()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_main.py	2026-09-27 01:29:24.300682120 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .cli import *  # NOQA
+@@ -6,4 +8,4 @@
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.cli.*` instead of `tqdm._main.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_monitor.py	2026-09-27 01:35:27.986133509 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import atexit
+ from threading import Event, Thread, current_thread
+ from time import time
+@@ -5,14 +7,12 @@
+ 
+ __all__ = ["TMonitor", "TqdmSynchronisationWarning"]
+ 
+-
+ class TqdmSynchronisationWarning(RuntimeWarning):
+     """
+-    tqdm multi-thread/-process errors which may cause incorrect nesting
++tqdm multi-thread/-process errors which may cause incorrect nesting
+     but otherwise no adverse effects
+     """
+ 
+-
+ class TMonitor(Thread):
+     """
+     Monitoring thread for tqdm bars.
+@@ -101,4 +101,4 @@
+                 del instances
+ 
+     def report(self):
+-        return not self.was_killed.is_set()
++        return not self.was_killed.is_set()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py	2026-09-17 15:46:11.345714888 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/notebook.py	2026-09-27 02:38:27.684102833 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ IPython/Jupyter Notebook progress bar decorator for iterators.
+ Includes a default `range` iterator printing to `stderr`.
+@@ -64,9 +66,8 @@
+ __author__ = {"github.com/": ["lrq3000", "casperdcl", "alexanderkuk"]}
+ __all__ = ['tqdm_notebook', 'tnrange', 'tqdm', 'trange']
+ WARN_NOIPYW = ("IProgress not found. Please update jupyter and ipywidgets."
+-               " See https://ipywidgets.readthedocs.io/en/stable"
+-               "/user_install.html")
+-
++                " See https://ipywidgets.readthedocs.io/en/stable"
++                "/user_install.html")
+ 
+ class TqdmHBox(HBox):
+     """`ipywidgets.HBox` with a pretty representation"""
+@@ -88,16 +89,11 @@
+     def _repr_pretty_(self, pp, *_, **__):
+         pp.text(self.__repr__(True))
+ 
+-
+ class tqdm_notebook(std_tqdm):
+-    """
+-    Experimental IPython/Jupyter Notebook widget using tqdm!
+-    """
++    """Experimental IPython/Jupyter Notebook widget using tqdm!"""
+     @staticmethod
+     def status_printer(_, total=None, desc=None, ncols=None):
+-        """
+-        Manage the printing of an IPython/Jupyter Notebook progress bar widget.
+-        """
++        """Manage the printing of an IPython/Jupyter Notebook progress bar widget."""
+         # Fallback to text bar if there's no total
+         # DEPRECATED: replaced with an 'info' style bar
+         # if not total:
+@@ -202,8 +198,7 @@
+             self.container.children[-2].style.bar_color = bar_color
+ 
+     def __init__(self, *args, **kwargs):
+-        """
+-        Supports the usual `tqdm.tqdm` parameters as well as those listed below.
++        """Supports the usual `tqdm.tqdm` parameters as well as those listed below.
+ 
+         Parameters
+         ----------
+@@ -287,8 +282,7 @@
+         pass
+ 
+     def reset(self, total=None):
+-        """
+-        Resets to 0 iterations for repeated use.
++        """Resets to 0 iterations for repeated use.
+ 
+         Consider combining with `leave=True`.
+ 
+@@ -306,12 +300,10 @@
+                 pbar.layout.width = None  # reset width
+         return super().reset(total=total)
+ 
+-
+ def tnrange(*args, **kwargs):
+     """Shortcut for `tqdm.notebook.tqdm(range(*args), **kwargs)`."""
+     return tqdm_notebook(range(*args), **kwargs)
+ 
+-
+ # Aliases
+ tqdm = tqdm_notebook
+-trange = tnrange
++trange = tnrange
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-27 01:38:34.754825135 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .gui import *  # NOQA
+@@ -6,4 +8,4 @@
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.gui.*` instead of `tqdm._tqdm_gui.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-27 01:40:14.398127220 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .notebook import *  # NOQA
+@@ -6,4 +8,4 @@
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.notebook.*` instead of `tqdm._tqdm_notebook.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-27 01:42:04.829353838 -0400
+@@ -1,9 +1,10 @@
++BUILD_TAG = 'profiling'
++
+ import sys
+ 
+ __author__ = "github.com/casperdcl"
+ __all__ = ['tqdm_pandas']
+ 
+-
+ def tqdm_pandas(tclass, **tqdm_kwargs):
+     """
+     Registers the given `tqdm` instance with
+@@ -21,4 +22,4 @@
+         TqdmDeprecationWarning(
+             "Please use `tqdm.pandas(...)` instead of `tqdm_pandas(tqdm(...))`.",
+             fp_write=getattr(tclass.fp, 'write', sys.stderr.write))
+-        type(tclass).pandas(deprecated_t=tclass)
++        type(tclass).pandas(deprecated_t=tclass)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_tqdm.py	2026-09-27 01:37:09.091425198 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .std import *  # NOQA
+@@ -6,4 +8,4 @@
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.std.*` instead of `tqdm._tqdm.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py	2026-09-17 15:46:11.306303155 -0400
++++ /tmp/yqi10/mu/102768/g0/lane06/profiling_sandbox/tqdm/_utils.py	2026-09-27 01:43:51.473607068 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .std import TqdmDeprecationWarning
+@@ -8,4 +10,4 @@
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.utils.*` instead of `tqdm._utils.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file

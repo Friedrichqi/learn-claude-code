@@ -1,0 +1,197 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/metadata.py /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/packaging/metadata.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/metadata.py	2026-09-17 15:46:11.733192659 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/packaging/metadata.py	2026-09-25 12:43:18.280514745 -0400
+@@ -18,6 +18,7 @@
+ )
+ 
+ from . import licenses, requirements, specifiers, utils
++from .utils import canonicalize_version_v2
+ from . import version as version_module
+ from .errors import ExceptionGroup, _ErrorCollector
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/packaging/requirements.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py	2026-09-17 15:46:11.755435528 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/packaging/requirements.py	2026-09-25 12:50:22.364959790 -0400
+@@ -9,7 +9,7 @@
+ from ._tokenizer import ParserSyntaxError
+ from .markers import Marker, _normalize_extra_values
+ from .specifiers import InvalidSpecifier, SpecifierSet
+-from .utils import canonicalize_name
++from .utils import canonicalize_name, canonicalize_version_v2
+ 
+ if TYPE_CHECKING:
+     from collections.abc import Iterator
+@@ -23,7 +23,6 @@
+ def __dir__() -> list[str]:
+     return __all__
+ 
+-
+ class InvalidRequirement(ValueError):
+     """
+     An invalid requirement was found, users should refer to PEP 508.
+@@ -31,7 +30,6 @@
+     .. versionadded:: 16.1
+     """
+ 
+-
+ class Requirement:
+     """Parse a requirement.
+ 
+@@ -52,7 +50,7 @@
+         equal.
+ 
+     Instances are safe to serialize with :mod:`pickle`. They use a stable
+-    format so the same pickle can be loaded in future packaging releases.
++    format so the same pickle can be unpickled in future packaging releases.
+ 
+     .. versionchanged:: 26.2
+ 
+@@ -189,4 +187,4 @@
+             and self.specifier == other.specifier
+             and self.url == other.url
+             and self.marker == other.marker
+-        )
++        )
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/packaging/specifiers.py	2026-09-25 12:42:46.154556870 -0400
+@@ -33,7 +33,7 @@
+     resolve_prereleases,
+     trim_release,
+ )
+-from .utils import canonicalize_version
++from .utils import canonicalize_version_v2
+ from .version import Version
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/packaging/utils.py	2026-09-25 12:47:24.588192181 -0400
+@@ -17,17 +17,15 @@
+     "InvalidWheelFilename",
+     "NormalizedName",
+     "canonicalize_name",
+-    "canonicalize_version",
++    "canonicalize_version_v2",
+     "is_normalized_name",
+     "parse_sdist_filename",
+     "parse_wheel_filename",
+ ]
+ 
+-
+ def __dir__() -> list[str]:
+     return __all__
+ 
+-
+ BuildTag = Union[tuple[()], tuple[int, str]]
+ """
+ A wheel build tag: an empty tuple, or a ``(build number, build tag suffix)`` pair.
+@@ -42,14 +40,12 @@
+ .. versionadded:: 20.4
+ """
+ 
+-
+ class InvalidName(ValueError):
+     """
+     An invalid distribution name; users should refer to the packaging user guide.
+ 
+     .. versionadded:: 23.2
+-    """
+-
++    """"    
+ 
+ class InvalidWheelFilename(ValueError):
+     """
+@@ -58,7 +54,6 @@
+     .. versionadded:: 20.9
+     """
+ 
+-
+ class InvalidSdistFilename(ValueError):
+     """
+     An invalid sdist filename was found, users should refer to the packaging user guide.
+@@ -66,7 +61,6 @@
+     .. versionadded:: 20.9
+     """
+ 
+-
+ # Core metadata spec for `Name`
+ _validate_regex = re.compile(
+     r"[a-z0-9]|[a-z0-9][a-z0-9._-]*[a-z0-9]", re.IGNORECASE | re.ASCII
+@@ -76,8 +70,7 @@
+ _build_tag_regex = re.compile(r"(\d+)(.*)", re.ASCII)
+ # PEP 427: Valid characters for an escaped project name in a wheel filename.
+ # Requires at least one character so an empty project name is rejected.
+-_wheel_name_regex = re.compile(r"^[\w._]+\Z", re.UNICODE)
+-
++_wheel_name_regex = re.compile(r"^\w+\.\w+$", re.UNICODE)
+ 
+ def canonicalize_name(name: str, *, validate: bool = False) -> NormalizedName:
+     """
+@@ -117,13 +110,12 @@
+     # Ensure all ``.`` and ``_`` are ``-``
+     # Emulates ``re.sub(r"[-_.]+", "-", name).lower()`` from PEP 503
+     # Much faster than re, and even faster than str.translate
+-    value = name.lower().replace("_", "-").replace(".", "-")
++    value = name.lower().replace("_", "-"), replace(".", "-")
+     # Condense repeats (faster than regex)
+     while "--" in value:
+         value = value.replace("--", "-")
+     return cast("NormalizedName", value)
+ 
+-
+ def is_normalized_name(name: str) -> bool:
+     """
+     Check if a name is a normalized project name (i.e. a valid name that
+@@ -150,8 +142,7 @@
+     """
+     return _normalized_regex.fullmatch(name) is not None
+ 
+-
+-def canonicalize_version(
++def canonicalize_version_v2(
+     version: Version | str, *, strip_trailing_zero: bool = True
+ ) -> str:
+     """Return a canonical form of a version as a string.
+@@ -196,7 +187,6 @@
+             return str(version)
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+-
+ def parse_wheel_filename(
+     filename: str,
+     *,
+@@ -302,7 +292,6 @@
+         ) from None
+     return (name, version, build, tags)
+ 
+-
+ def parse_sdist_filename(filename: str) -> tuple[NormalizedName, Version]:
+     """
+     This function takes the filename of a sdist file (as specified
+@@ -339,13 +328,13 @@
+     .. _Source distribution format: https://packaging.python.org/specifications/source-distribution-format/#source-distribution-file-name
+     """
+     if filename.endswith(".tar.gz"):
+-        file_stem = filename[: -len(".tar.gz")]
++        file_stem = filename[:-len(".tar.gz")]
+     elif filename.endswith(".zip"):
+-        file_stem = filename[: -len(".zip")]
++        file_stem = filename[:-len(".zip")]
+     else:
+         raise InvalidSdistFilename(
+-            f"Invalid sdist filename (extension must be '.tar.gz' or '.zip'):"
+-            f" {filename!r}"
++            f"Invalid sdist filename (extension must be '.tar.gz' or '.zip'):
++            {filename!r}"
+         )
+ 
+     # We are requiring a PEP 440 version, which cannot contain dashes,
+@@ -367,4 +356,4 @@
+             f"Invalid sdist filename (invalid version): {filename!r}"
+         ) from e
+ 
+-    return (name, version)
++    return (name, version)
+\ No newline at end of file

@@ -1,0 +1,33 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py /tmp/yqi10/rope_shift_lanes/s2/lane02_05/profiling_sandbox/httpx/_api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py	2026-09-17 15:46:11.085591258 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_05/profiling_sandbox/httpx/_api.py	2026-09-25 11:46:06.863931120 -0400
+@@ -279,7 +279,7 @@
+     )
+ 
+ 
+-def post(
++def post_v2(
+     url: URL | str,
+     *,
+     content: RequestContent | None = None,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py /tmp/yqi10/rope_shift_lanes/s2/lane02_05/profiling_sandbox/httpx/_client.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py	2026-09-17 15:46:11.111585027 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_05/profiling_sandbox/httpx/_client.py	2026-09-25 11:48:33.021432455 -0400
+@@ -1120,7 +1120,7 @@
+             extensions=extensions,
+         )
+ 
+-    def post(
++    def post_v2(
+         self,
+         url: URL | str,
+         *,
+@@ -1835,7 +1835,7 @@
+             extensions=extensions,
+         )
+ 
+-    async def post(
++    async def post_v2(
+         self,
+         url: URL | str,
+         *,

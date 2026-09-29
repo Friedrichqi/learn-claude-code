@@ -1,0 +1,65 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/rope_shift_lanes/s3/lane03_03/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_03/profiling_sandbox/requests/auth.py	2026-09-25 12:38:03.972247696 -0400
+@@ -74,14 +74,12 @@
+ 
+     return authstr
+ 
+-
+ class AuthBase:
+     """Base class that all auth implementations derive from"""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+         raise NotImplementedError("Auth hooks must be callable.")
+ 
+-
+ class HTTPBasicAuth(AuthBase):
+     """Attaches HTTP Basic Authentication to the given Request object."""
+ 
+@@ -112,7 +110,6 @@
+         r.headers["Authorization"] = _basic_auth_str(self.username, self.password)
+         return r
+ 
+-
+ class HTTPProxyAuth(HTTPBasicAuth):
+     """Attaches HTTP Proxy Authentication to a given Request object."""
+ 
+@@ -120,7 +117,6 @@
+         r.headers["Proxy-Authorization"] = _basic_auth_str(self.username, self.password)
+         return r
+ 
+-
+ class HTTPDigestAuth(AuthBase):
+     """Attaches HTTP Digest Authentication to the given Request object."""
+ 
+@@ -155,9 +151,7 @@
+             self._thread_local.num_401_calls = None
+ 
+     def build_digest_header(self, method: str, url: str) -> str | None:
+-        """
+-        :rtype: str
+-        """
++        """Builds a Digest Authorization header for the given method and URL."""
+ 
+         realm = self._thread_local.chal["realm"]
+         nonce = self._thread_local.chal["nonce"]
+@@ -271,11 +265,7 @@
+             self._thread_local.num_401_calls = 1
+ 
+     def handle_401(self, r: Response, **kwargs: Any) -> Response:
+-        """
+-        Takes the given response and tries digest-auth, if needed.
+-
+-        :rtype: requests.Response
+-        """
++        """Takes the given response and tries digest-auth, if needed."""
+ 
+         # If response is not 4xx, do not auth
+         # See https://github.com/psf/requests/issues/3772
+@@ -351,4 +341,4 @@
+         )
+ 
+     def __ne__(self, other: Any) -> bool:
+-        return not self == other
++        return not self == other
+\ No newline at end of file

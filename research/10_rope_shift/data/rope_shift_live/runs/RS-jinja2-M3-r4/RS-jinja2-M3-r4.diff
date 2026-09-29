@@ -1,0 +1,689 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/jinja2/runtime.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py	2026-09-17 15:46:11.892446012 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/jinja2/runtime.py	2026-09-25 12:43:50.437081129 -0400
+@@ -1,4 +1,4 @@
+-"""The runtime functions and state used by compiled templates."""
++'''The runtime functions and state used by compiled templates.'''
+ 
+ import functools
+ import sys
+@@ -93,7 +93,7 @@
+ def new_context(
+     environment: "Environment",
+     template_name: t.Optional[str],
+-    blocks: t.Dict[str, t.Callable[["Context"], t.Iterator[str]]],
++    blocks: t.Dict[str, t.Callable["[Context]", t.Iterator[str]]],
+     vars: t.Optional[t.Dict[str, t.Any]] = None,
+     shared: bool = False,
+     globals: t.Optional[t.MutableMapping[str, t.Any]] = None,
+@@ -167,7 +167,7 @@
+         environment: "Environment",
+         parent: t.Dict[str, t.Any],
+         name: t.Optional[str],
+-        blocks: t.Dict[str, t.Callable[["Context"], t.Iterator[str]]],
++        blocks: t.Dict[str, t.Callable["[Context]", t.Iterator[str]]],
+         globals: t.Optional[t.MutableMapping[str, t.Any]] = None,
+     ):
+         self.parent = parent
+@@ -184,7 +184,7 @@
+         self.blocks = {k: [v] for k, v in blocks.items()}
+ 
+     def super(
+-        self, name: str, current: t.Callable[["Context"], t.Iterator[str]]
++        self, name: str, current: t.Callable["[Context]", t.Iterator[str]]
+     ) -> t.Union["BlockReference", "Undefined"]:
+         """Render a parent block."""
+         try:
+@@ -348,7 +348,7 @@
+         self,
+         name: str,
+         context: "Context",
+-        stack: t.List[t.Callable[["Context"], t.Iterator[str]]],
++        stack: t.List[t.Callable["[Context]", t.Iterator[str]]],
+         depth: int,
+     ) -> None:
+         self.name = name
+@@ -412,8 +412,7 @@
+         recurse: t.Optional["LoopRenderFunc"] = None,
+         depth0: int = 0,
+     ) -> None:
+-        """
+-        :param iterable: Iterable to wrap.
++        """\n        :param iterable: Iterable to wrap.
+         :param undefined: :class:`Undefined` class to use for next and
+             previous items.
+         :param recurse: The function to render the loop body when the
+@@ -433,630 +432,6 @@
+ 
+     @property
+     def length(self) -> int:
+-        """Length of the iterable.
+-
+-        If the iterable is a generator or otherwise does not have a
+-        size, it is eagerly evaluated to get a size.
+-        """
+-        if self._length is not None:
+-            return self._length
+-
+-        try:
+-            self._length = len(self._iterable)  # type: ignore
+-        except TypeError:
+-            iterable = list(self._iterator)
+-            self._iterator = self._to_iterator(iterable)
+-            self._length = len(iterable) + self.index + (self._after is not missing)
+-
+-        return self._length
+-
+-    def __len__(self) -> int:
+-        return self.length
+-
+-    @property
+-    def depth(self) -> int:
+-        """How many levels deep a recursive loop currently is, starting at 1."""
+-        return self.depth0 + 1
+-
+-    @property
+-    def index(self) -> int:
+-        """Current iteration of the loop, starting at 1."""
+-        return self.index0 + 1
+-
+-    @property
+-    def revindex0(self) -> int:
+-        """Number of iterations from the end of the loop, ending at 0.
+-
+-        Requires calculating :attr:`length`.
+-        """
+-        return self.length - self.index
+-
+-    @property
+-    def revindex(self) -> int:
+-        """Number of iterations from the end of the loop, ending at 1.
+-
+-        Requires calculating :attr:`length`.
+-        """
+-        return self.length - self.index0
+-
+-    @property
+-    def first(self) -> bool:
+-        """Whether this is the first iteration of the loop."""
+-        return self.index0 == 0
+-
+-    def _peek_next(self) -> t.Any:
+-        """Return the next element in the iterable, or :data:`missing`
+-        if the iterable is exhausted. Only peeks one item ahead, caching
+-        the result in :attr:`_last` for use in subsequent checks. The
+-        cache is reset when :meth:`__next__` is called.
+-        """
+-        if self._after is not missing:
+-            return self._after
+-
+-        self._after = next(self._iterator, missing)
+-        return self._after
+-
+-    @property
+-    def last(self) -> bool:
+-        """Whether this is the last iteration of the loop.
+-
+-        Causes the iterable to advance early. See
+-        :func:`itertools.groupby` for issues this can cause.
+-        The :func:`groupby` filter avoids that issue.
+-        """
+-        return self._peek_next() is missing
+-
+-    @property
+-    def previtem(self) -> t.Union[t.Any, "Undefined"]:
+-        """The item in the previous iteration. Undefined during the
+-        first iteration.
+-        """
+-        if self.first:
+-            return self._undefined("there is no previous item")
+-
+-        return self._before
+-
+-    @property
+-    def nextitem(self) -> t.Union[t.Any, "Undefined"]:
+-        """The item in the next iteration. Undefined during the last
+-        iteration.
+-
+-        Causes the iterable to advance early. See
+-        :func:`itertools.groupby` for issues this can cause.
+-        The :func:`jinja-filters.groupby` filter avoids that issue.
+-        """
+-        rv = self._peek_next()
+-
+-        if rv is missing:
+-            return self._undefined("there is no next item")
+-
+-        return rv
+-
+-    def cycle(self, *args: V) -> V:
+-        """Return a value from the given args, cycling through based on
+-        the current :attr:`index0`.
+-
+-        :param args: One or more values to cycle through.
+-        """
+-        if not args:
+-            raise TypeError("no items for cycling given")
+-
+-        return args[self.index0 % len(args)]
+-
+-    def changed(self, *value: t.Any) -> bool:
+-        """Return ``True`` if previously called with a different value
+-        (including when called for the first time).
+-
+-        :param value: One or more values to compare to the last call.
+-        """
+-        if self._last_changed_value != value:
+-            self._last_changed_value = value
+-            return True
+-
+-        return False
+-
+-    def __iter__(self) -> "LoopContext":
+-        return self
+-
+-    def __next__(self) -> t.Tuple[t.Any, "LoopContext"]:
+-        if self._after is not missing:
+-            rv = self._after
+-            self._after = missing
+-        else:
+-            rv = next(self._iterator)
+-
+-        self.index0 += 1
+-        self._before = self._current
+-        self._current = rv
+-        return rv, self
+-
+-    @internalcode
+-    def __call__(self, iterable: t.Iterable[V]) -> str:
+-        """When iterating over nested data, render the body of the loop
+-        recursively with the given inner iterable data.
+-
+-        The loop must have the ``recursive`` marker for this to work.
+-        """
+-        if self._recurse is None:
+-            raise TypeError(
+-                "The loop must have the 'recursive' marker to be called recursively."
+-            )
+-
+-        return self._recurse(iterable, self._recurse, depth=self.depth)
+-
+-    def __repr__(self) -> str:
+-        return f"<{type(self).__name__} {self.index}/{self.length}>"
+-
+-
+-class AsyncLoopContext(LoopContext):
+-    _iterator: t.AsyncIterator[t.Any]  # type: ignore
+-
+-    @staticmethod
+-    def _to_iterator(  # type: ignore
+-        iterable: t.Union[t.Iterable[V], t.AsyncIterable[V]],
+-    ) -> t.AsyncIterator[V]:
+-        return auto_aiter(iterable)
+-
+-    @property
+-    async def length(self) -> int:  # type: ignore
++        """Length of the iterable.\n\n        If the iterable is a generator or otherwise does not have a\n        size, it is eagerly evaluated to get a size.\n        """
+         if self._length is not None:
+-            return self._length
+-
+-        try:
+-            self._length = len(self._iterable)  # type: ignore
+-        except TypeError:
+-            iterable = [x async for x in self._iterator]
+-            self._iterator = self._to_iterator(iterable)
+-            self._length = len(iterable) + self.index + (self._after is not missing)
+-
+-        return self._length
+-
+-    @property
+-    async def revindex0(self) -> int:  # type: ignore
+-        return await self.length - self.index
+-
+-    @property
+-    async def revindex(self) -> int:  # type: ignore
+-        return await self.length - self.index0
+-
+-    async def _peek_next(self) -> t.Any:
+-        if self._after is not missing:
+-            return self._after
+-
+-        try:
+-            self._after = await self._iterator.__anext__()
+-        except StopAsyncIteration:
+-            self._after = missing
+-
+-        return self._after
+-
+-    @property
+-    async def last(self) -> bool:  # type: ignore
+-        return await self._peek_next() is missing
+-
+-    @property
+-    async def nextitem(self) -> t.Union[t.Any, "Undefined"]:
+-        rv = await self._peek_next()
+-
+-        if rv is missing:
+-            return self._undefined("there is no next item")
+-
+-        return rv
+-
+-    def __aiter__(self) -> "AsyncLoopContext":
+-        return self
+-
+-    async def __anext__(self) -> t.Tuple[t.Any, "AsyncLoopContext"]:
+-        if self._after is not missing:
+-            rv = self._after
+-            self._after = missing
+-        else:
+-            rv = await self._iterator.__anext__()
+-
+-        self.index0 += 1
+-        self._before = self._current
+-        self._current = rv
+-        return rv, self
+-
+-
+-class Macro:
+-    """Wraps a macro function."""
+-
+-    def __init__(
+-        self,
+-        environment: "Environment",
+-        func: t.Callable[..., str],
+-        name: str,
+-        arguments: t.List[str],
+-        catch_kwargs: bool,
+-        catch_varargs: bool,
+-        caller: bool,
+-        default_autoescape: t.Optional[bool] = None,
+-    ):
+-        self._environment = environment
+-        self._func = func
+-        self._argument_count = len(arguments)
+-        self.name = name
+-        self.arguments = arguments
+-        self.catch_kwargs = catch_kwargs
+-        self.catch_varargs = catch_varargs
+-        self.caller = caller
+-        self.explicit_caller = "caller" in arguments
+-
+-        if default_autoescape is None:
+-            if callable(environment.autoescape):
+-                default_autoescape = environment.autoescape(None)
+-            else:
+-                default_autoescape = environment.autoescape
+-
+-        self._default_autoescape = default_autoescape
+-
+-    @internalcode
+-    @pass_eval_context
+-    def __call__(self, *args: t.Any, **kwargs: t.Any) -> str:
+-        # This requires a bit of explanation,  In the past we used to
+-        # decide largely based on compile-time information if a macro is
+-        # safe or unsafe.  While there was a volatile mode it was largely
+-        # unused for deciding on escaping.  This turns out to be
+-        # problematic for macros because whether a macro is safe depends not
+-        # on the escape mode when it was defined, but rather when it was used.
+-        #
+-        # Because however we export macros from the module system and
+-        # there are historic callers that do not pass an eval context (and
+-        # will continue to not pass one), we need to perform an instance
+-        # check here.
+-        #
+-        # This is considered safe because an eval context is not a valid
+-        # argument to callables otherwise anyway.  Worst case here is
+-        # that if no eval context is passed we fall back to the compile
+-        # time autoescape flag.
+-        if args and isinstance(args[0], EvalContext):
+-            autoescape = args[0].autoescape
+-            args = args[1:]
+-        else:
+-            autoescape = self._default_autoescape
+-
+-        # try to consume the positional arguments
+-        arguments = list(args[: self._argument_count])
+-        off = len(arguments)
+-
+-        # For information why this is necessary refer to the handling
+-        # of caller in the `macro_body` handler in the compiler.
+-        found_caller = False
+-
+-        # if the number of arguments consumed is not the number of
+-        # arguments expected we start filling in keyword arguments
+-        # and defaults.
+-        if off != self._argument_count:
+-            for name in self.arguments[len(arguments) :]:
+-                try:
+-                    value = kwargs.pop(name)
+-                except KeyError:
+-                    value = missing
+-                if name == "caller":
+-                    found_caller = True
+-                arguments.append(value)
+-        else:
+-            found_caller = self.explicit_caller
+-
+-        # it's important that the order of these arguments does not change
+-        # if not also changed in the compiler's `function_scoping` method.
+-        # the order is caller, keyword arguments, positional arguments!
+-        if self.caller and not found_caller:
+-            caller = kwargs.pop("caller", None)
+-            if caller is None:
+-                caller = self._environment.undefined("No caller defined", name="caller")
+-            arguments.append(caller)
+-
+-        if self.catch_kwargs:
+-            arguments.append(kwargs)
+-        elif kwargs:
+-            if "caller" in kwargs:
+-                raise TypeError(
+-                    f"macro {self.name!r} was invoked with two values for the special"
+-                    " caller argument. This is most likely a bug."
+-                )
+-            raise TypeError(
+-                f"macro {self.name!r} takes no keyword argument {next(iter(kwargs))!r}"
+-            )
+-        if self.catch_varargs:
+-            arguments.append(args[self._argument_count :])
+-        elif len(args) > self._argument_count:
+-            raise TypeError(
+-                f"macro {self.name!r} takes not more than"
+-                f" {len(self.arguments)} argument(s)"
+-            )
+-
+-        return self._invoke(arguments, autoescape)
+-
+-    async def _async_invoke(self, arguments: t.List[t.Any], autoescape: bool) -> str:
+-        rv = await self._func(*arguments)  # type: ignore
+-
+-        if autoescape:
+-            return Markup(rv)
+-
+-        return rv  # type: ignore
+-
+-    def _invoke(self, arguments: t.List[t.Any], autoescape: bool) -> str:
+-        if self._environment.is_async:
+-            return self._async_invoke(arguments, autoescape)  # type: ignore
+-
+-        rv = self._func(*arguments)
+-
+-        if autoescape:
+-            rv = Markup(rv)
+-
+-        return rv
+-
+-    def __repr__(self) -> str:
+-        name = "anonymous" if self.name is None else repr(self.name)
+-        return f"<{type(self).__name__} {name}>"
+-
+-
+-class Undefined:
+-    """The default undefined type. This can be printed, iterated, and treated as
+-    a boolean. Any other operation will raise an :exc:`UndefinedError`.
+-
+-    >>> foo = Undefined(name='foo')
+-    >>> str(foo)
+-    ''
+-    >>> not foo
+-    True
+-    >>> foo + 42
+-    Traceback (most recent call last):
+-      ...
+-    jinja2.exceptions.UndefinedError: 'foo' is undefined
+-    """
+-
+-    __slots__ = (
+-        "_undefined_hint",
+-        "_undefined_obj",
+-        "_undefined_name",
+-        "_undefined_exception",
+-    )
+-
+-    def __init__(
+-        self,
+-        hint: t.Optional[str] = None,
+-        obj: t.Any = missing,
+-        name: t.Optional[str] = None,
+-        exc: t.Type[TemplateRuntimeError] = UndefinedError,
+-    ) -> None:
+-        self._undefined_hint = hint
+-        self._undefined_obj = obj
+-        self._undefined_name = name
+-        self._undefined_exception = exc
+-
+-    @property
+-    def _undefined_message(self) -> str:
+-        """Build a message about the undefined value based on how it was
+-        accessed.
+-        """
+-        if self._undefined_hint:
+-            return self._undefined_hint
+-
+-        if self._undefined_obj is missing:
+-            return f"{self._undefined_name!r} is undefined"
+-
+-        if not isinstance(self._undefined_name, str):
+-            return (
+-                f"{object_type_repr(self._undefined_obj)} has no"
+-                f" element {self._undefined_name!r}"
+-            )
+-
+-        return (
+-            f"{object_type_repr(self._undefined_obj)!r} has no"
+-            f" attribute {self._undefined_name!r}"
+-        )
+-
+-    @internalcode
+-    def _fail_with_undefined_error(
+-        self, *args: t.Any, **kwargs: t.Any
+-    ) -> "te.NoReturn":
+-        """Raise an :exc:`UndefinedError` when operations are performed
+-        on the undefined value.
+-        """
+-        raise self._undefined_exception(self._undefined_message)
+-
+-    @internalcode
+-    def __getattr__(self, name: str) -> t.Any:
+-        # Raise AttributeError on requests for names that appear to be unimplemented
+-        # dunder methods to keep Python's internal protocol probing behaviors working
+-        # properly in cases where another exception type could cause unexpected or
+-        # difficult-to-diagnose failures.
+-        if name[:2] == "__" and name[-2:] == "__":
+-            raise AttributeError(name)
+-
+-        return self._fail_with_undefined_error()
+-
+-    __add__ = __radd__ = __sub__ = __rsub__ = _fail_with_undefined_error
+-    __mul__ = __rmul__ = __div__ = __rdiv__ = _fail_with_undefined_error
+-    __truediv__ = __rtruediv__ = _fail_with_undefined_error
+-    __floordiv__ = __rfloordiv__ = _fail_with_undefined_error
+-    __mod__ = __rmod__ = _fail_with_undefined_error
+-    __pos__ = __neg__ = _fail_with_undefined_error
+-    __call__ = __getitem__ = _fail_with_undefined_error
+-    __lt__ = __le__ = __gt__ = __ge__ = _fail_with_undefined_error
+-    __int__ = __float__ = __complex__ = _fail_with_undefined_error
+-    __pow__ = __rpow__ = _fail_with_undefined_error
+-
+-    def __eq__(self, other: t.Any) -> bool:
+-        return type(self) is type(other)
+-
+-    def __ne__(self, other: t.Any) -> bool:
+-        return not self.__eq__(other)
+-
+-    def __hash__(self) -> int:
+-        return id(type(self))
+-
+-    def __str__(self) -> str:
+-        return ""
+-
+-    def __len__(self) -> int:
+-        return 0
+-
+-    def __iter__(self) -> t.Iterator[t.Any]:
+-        yield from ()
+-
+-    async def __aiter__(self) -> t.AsyncIterator[t.Any]:
+-        for _ in ():
+-            yield
+-
+-    def __bool__(self) -> bool:
+-        return False
+-
+-    def __repr__(self) -> str:
+-        return "Undefined"
+-
+-
+-def make_logging_undefined(
+-    logger: t.Optional["logging.Logger"] = None, base: t.Type[Undefined] = Undefined
+-) -> t.Type[Undefined]:
+-    """Given a logger object this returns a new undefined class that will
+-    log certain failures.  It will log iterations and printing.  If no
+-    logger is given a default logger is created.
+-
+-    Example::
+-
+-        logger = logging.getLogger(__name__)
+-        LoggingUndefined = make_logging_undefined(
+-            logger=logger,
+-            base=Undefined
+-        )
+-
+-    .. versionadded:: 2.8
+-
+-    :param logger: the logger to use.  If not provided, a default logger
+-                   is created.
+-    :param base: the base class to add logging functionality to.  This
+-                 defaults to :class:`Undefined`.
+-    """
+-    if logger is None:
+-        import logging
+-
+-        logger = logging.getLogger(__name__)
+-        logger.addHandler(logging.StreamHandler(sys.stderr))
+-
+-    def _log_message(undef: Undefined) -> None:
+-        logger.warning("Template variable warning: %s", undef._undefined_message)
+-
+-    class LoggingUndefined(base):  # type: ignore
+-        __slots__ = ()
+-
+-        def _fail_with_undefined_error(  # type: ignore
+-            self, *args: t.Any, **kwargs: t.Any
+-        ) -> "te.NoReturn":
+-            try:
+-                super()._fail_with_undefined_error(*args, **kwargs)
+-            except self._undefined_exception as e:
+-                logger.error("Template variable error: %s", e)  # type: ignore
+-                raise e
+-
+-        def __str__(self) -> str:
+-            _log_message(self)
+-            return super().__str__()  # type: ignore
+-
+-        def __iter__(self) -> t.Iterator[t.Any]:
+-            _log_message(self)
+-            return super().__iter__()  # type: ignore
+-
+-        def __bool__(self) -> bool:
+-            _log_message(self)
+-            return super().__bool__()  # type: ignore
+-
+-    return LoggingUndefined
+-
+-
+-class ChainableUndefined(Undefined):
+-    """An undefined that is chainable, where both ``__getattr__`` and
+-    ``__getitem__`` return itself rather than raising an
+-    :exc:`UndefinedError`.
+-
+-    >>> foo = ChainableUndefined(name='foo')
+-    >>> str(foo.bar['baz'])
+-    ''
+-    >>> foo.bar['baz'] + 42
+-    Traceback (most recent call last):
+-      ...
+-    jinja2.exceptions.UndefinedError: 'foo' is undefined
+-
+-    .. versionadded:: 2.11.0
+-    """
+-
+-    __slots__ = ()
+-
+-    def __html__(self) -> str:
+-        return str(self)
+-
+-    def __getattr__(self, name: str) -> "ChainableUndefined":
+-        # Raise AttributeError on requests for names that appear to be unimplemented
+-        # dunder methods to avoid confusing Python with truthy non-method objects that
+-        # do not implement the protocol being probed for. e.g., copy.copy(Undefined())
+-        # fails spectacularly if getattr(Undefined(), '__setstate__') returns an
+-        # Undefined object instead of raising AttributeError to signal that it does not
+-        # support that style of object initialization.
+-        if name[:2] == "__" and name[-2:] == "__":
+-            raise AttributeError(name)
+-
+-        return self
+-
+-    def __getitem__(self, _name: str) -> "ChainableUndefined":  # type: ignore[override]
+-        return self
+-
+-
+-class DebugUndefined(Undefined):
+-    """An undefined that returns the debug info when printed.
+-
+-    >>> foo = DebugUndefined(name='foo')
+-    >>> str(foo)
+-    '{{ foo }}'
+-    >>> not foo
+-    True
+-    >>> foo + 42
+-    Traceback (most recent call last):
+-      ...
+-    jinja2.exceptions.UndefinedError: 'foo' is undefined
+-    """
+-
+-    __slots__ = ()
+-
+-    def __str__(self) -> str:
+-        if self._undefined_hint:
+-            message = f"undefined value printed: {self._undefined_hint}"
+-
+-        elif self._undefined_obj is missing:
+-            message = self._undefined_name  # type: ignore
+-
+-        else:
+-            message = (
+-                f"no such element: {object_type_repr(self._undefined_obj)}"
+-                f"[{self._undefined_name!r}]"
+-            )
+-
+-        return f"{{{{ {message} }}}}"
+-
+-
+-class StrictUndefined(Undefined):
+-    """An undefined that barks on print and iteration as well as boolean
+-    tests and all kinds of comparisons.  In other words: you can do nothing
+-    with it except checking if it's defined using the `defined` test.
+-
+-    >>> foo = StrictUndefined(name='foo')
+-    >>> str(foo)
+-    Traceback (most recent call last):
+-      ...
+-    jinja2.exceptions.UndefinedError: 'foo' is undefined
+-    >>> not foo
+-    Traceback (most recent call last):
+-      ...
+-    jinja2.exceptions.UndefinedError: 'foo' is undefined
+-    >>> foo + 42
+-    Traceback (most recent call last):
+-      ...
+-    jinja2.exceptions.UndefinedError: 'foo' is undefined
+-    """
+-
+-    __slots__ = ()
+-    __iter__ = __str__ = __len__ = Undefined._fail_with_undefined_error
+-    __eq__ = __ne__ = __bool__ = __hash__ = Undefined._fail_with_undefined_error
+-    __contains__ = Undefined._fail_with_undefined_error
++            return self._length\n\n        try:\n            self._length = len(self._iterable)  # type: ignore\n        except TypeError:\n            iterable = list(self._iterator)\n            self._iterator = self._to_iterator(iterable)\n            self._length = len(iterable) + self.index + (self._after is not missing)\n\n        return self._length\n\n    def __len__(self) -> int:\n        return self.length\n\n    @property\n    def depth(self) -> int:\n        """How many levels deep a recursive loop currently is, starting at 1."""\n        return self.depth0 + 1\n\n    @property\n    def index(self) -> int:\n        """Current iteration of the loop, starting at 1."""\n        return self.index0 + 1\n\n    @property\n    def revindex0(self) -> int:\n        """Number of iterations from the end of the loop, ending at 0.\n\n        Requires calculating :attr:`length`.\n        """\n        return self.length - self.index\n\n    @property\n    def revindex(self) -> int:\n        """Number of iterations from the end of the loop, ending at 1.\n\n        Requires calculating :attr:`length`.\n        """\n        return self.length - self.index0\n\n    @property\n    def first(self) -> bool:\n        """Whether this is the first iteration of the loop."""\n        return self.index0 == 0\n\n    def _peek_next(self) -> t.Any:\n        """Return the next element in the iterable, or :data:`missing`\n        if the iterable is exhausted. Only peeks one item ahead, caching\n        the result in :attr:`_last` for use in subsequent checks. The\n        cache is reset when :meth:`__next__` is called.\n        """\n        if self._after is not missing:\n            return self._after\n\n        self._after = next(self._iterator, missing)\n        return self._after\n\n    @property\n    def last(self) -> bool:\n        """Whether this is the last iteration of the loop.\n\n        Causes the iterable to advance early. See\n        :func:`itertools.groupby` for issues this can cause.\n        The :func:`groupby` filter avoids that issue.\n        """\n        return self._peek_next() is missing\n\n    @property\n    def previtem(self) -> t.Union[t.Any, "Undefined"]:\n        """The item in the previous iteration. Undefined during the\n        first iteration.\n        """\n        if self.first:\n            return self._undefined("there is no previous item")\n\n        return self._before\n\n    @property\n    def nextitem(self) -> t.Union[t.Any, "Undefined"]:\n        """The item in the next iteration. Undefined during the last\n        iteration.\n\n        Causes the iterable to advance early. See\n        :func:`itertools.groupby` for issues this can cause.\n        The :func:`jinja-filters.groupby` filter avoids that issue.\n        """\n        rv = self._peek_next()\n\n        if rv is missing:\n            return self._undefined("there is no next item")\n\n        return rv\n\n    def cycle(self, *args: V) -> V:\n        """Return a value from the given args, cycling through based on\n        the current :attr:`index0`.\n\n        :param args: One or more values to cycle through.\n        """\n        if not args:\n            raise TypeError("no items for cycling given")\n\n        return args[self.index0 % len(args)]\n\n    def changed(self, *value: t.Any) -> bool:\n        """Return ``True`` if previously called with a different value\n        (including when called for the first time).\n\n        :param value: One or more values to compare to the last call.\n        """\n        if self._last_changed_value != value:\n            self._last_changed_value = value\n            return True\n\n        return False\n\n    def __iter__(self) -> "LoopContext":\n        return self\n\n    def __next__(self) -> t.Tuple[t.Any, "LoopContext"]:\n        if self._after is not missing:\n            rv = self._after\n            self._after = missing\n        else:\n            rv = next(self._iterator)\n\n        self.index0 += 1\n        self._before = self._current\n        self._current = rv\n        return rv, self\n\n    @internalcode\n    def __call__(self, iterable: t.Iterable[V]) -> str:\n        """When iterating over nested data, render the body of the loop\n        recursively with the given inner iterable data.\n\n        The loop must have the ``recursive`` marker for this to work.\n        """\n        if self._recurse is None:\n            raise TypeError(\n                "The loop must have the 'recursive' marker to be called recursively."\n            )\n\n        return self._recurse(iterable, self._recurse, depth=self.depth)\n\n    def __repr__(self) -> str:\n        return f"<{type(self).__name__} {self.index}/{self.length}>"\n\n\n\nclass AsyncLoopContext(LoopContext):\n    _iterator: t.AsyncIterator[t.Any]  # type: ignore\n\n    @staticmethod\n    def _to_iterator(  # type: ignore\n        iterable: t.Union[t.Iterable[V], t.AsyncIterable[V]],\n    ) -> t.AsyncIterator[V]:\n        return auto_aiter(iterable)\n\n    @property\n    async def length(self) -> int:  # type: ignore\n        if self._length is not None:\n            return self._length\n\n        try:\n            self._length = len(self._iterable)  # type: ignore\n        except TypeError:\n            iterable = [x async for x in self._iterator]\n            self._iterator = self._to_iterator(iterable)\n            self._length = len(iterable) + self.index + (self._after is not missing)\n\n        return self._length\n\n    @property\n    async def revindex0(self) -> int:  # type: ignore\n        return await self.length - self.index\n\n    @property\n    async def revindex(self) -> int:  # type: ignore\n        return await self.length - self.index0\n\n    async def _peek_next(self) -> t.Any:\n        if self._after is not missing:\n            return self._after\n\n        try:\n            self._after = await self._iterator.__anext__()\n        except StopAsyncIteration:\n            self._after = missing\n\n        return self._after\n\n    @property\n    async def last(self) -> bool:  # type: ignore\n        return await self._peek_next() is missing\n\n    @property\n    async def nextitem(self) -> t.Union[t.Any, "Undefined"]:\n        rv = await self._peek_next()\n\n        if rv is missing:\n            return self._undefined("there is no next item")\n\n        return rv\n\n    def __aiter__(self) -> "AsyncLoopContext":\n        return self\n\n    async def __anext__(self) -> t.Tuple[t.Any, "AsyncLoopContext"]:\n        if self._after is not missing:\n            rv = self._after\n            self._after = missing\n        else:\n            rv = await self._iterator.__anext__()\n\n        self.index0 += 1\n        self._before = self._current\n        self._current = rv\n        return rv, self\n\n\n\nclass Macro:\n    """Wraps a macro function."""\n\n    def __init__(\n        self,\n        environment: "Environment",\n        func: t.Callable[..., str],\n        name: str,\n        arguments: t.List[str],\n        catch_kwargs: bool,\n        catch_varargs: bool,\n        caller: bool,\n        default_autoescape: t.Optional[bool] = None,\n    ):\n        self._environment = environment\n        self._func = func\n        self._argument_count = len(arguments)\n        self.name = name\n        self.arguments = arguments\n        self.catch_kwargs = catch_kwargs\n        self.catch_varargs = catch_varargs\n        self.caller = caller\n        self.explicit_caller = "caller" in arguments\n\n        if default_autoescape is None:\n            if callable(environment.autoescape):\n                default_autoescape = environment.autoescape(None)\n            else:\n                default_autoescape = environment.autoescape\n\n        self._default_autoescape = default_autoescape\n\n    @internalcode\n    @pass_eval_context\n    def __call__(self, *args: t.Any, **kwargs: t.Any) -> str:\n        # This requires a bit of explanation,  In the past we used to\n        # decide largely based on compile-time information if a macro is\n        # safe or unsafe.  While there was a volatile mode it was largely\n        # unused for deciding on escaping.  This turns out to be\n        # problematic for macros because whether a macro is safe depends not\n        # on the escape mode when it was defined, but rather when it was used.\n        #\n        # Because however we export macros from the module system and\n        # there are historic callers that do not pass an eval context (and\n        # will continue to not pass one), we need to perform an instance\n        # check here.\n        #\n        # This is considered safe because an eval context is not a valid\n        # argument to callables otherwise anyway.  Worst case here is\n        # that if no eval context is passed we fall back to the compile\n        # time autoescape flag.\n        if args and isinstance(args[0], EvalContext):\n            autoescape = args[0].autoescape\n            args = args[1:]\n        else:\n            autoescape = self._default_autoescape\n\n        # try to consume the positional arguments\n        arguments = list(args[: self._argument_count])\n        off = len(arguments)\n\n        # For information why this is necessary refer to the handling\n        # of caller in the `macro_body` handler in the compiler.\n        found_caller = False\n\n        # if the number of arguments consumed is not the number of\n        # arguments expected we start filling in keyword arguments\n        # and defaults.\n        if off != self._argument_count:\n            for name in self.arguments[len(arguments) :]:\n                try:\n                    value = kwargs.pop(name)\n                except KeyError:\n                    value = missing\n                if name == "caller":\n                    found_caller = True\n                arguments.append(value)\n        else:\n            found_caller = self.explicit_caller\n\n        # it's important that the order of these arguments does not change\n        # if not also changed in the compiler's `function_scoping` method.\n        # the order is caller, keyword arguments, positional arguments!\n        if self.caller and not found_caller:\n            caller = kwargs.pop("caller", None)\n            if caller is None:\n                caller = self._environment.undefined("No caller defined", name="caller")\n            arguments.append(caller)\n\n        if self.catch_kwargs:\n            arguments.append(kwargs)\n        elif kwargs:\n            if "caller" in kwargs:\n                raise TypeError(\n                    f"macro {self.name!r} was invoked with two values for the special"\n                    " caller argument. This is most likely a bug."\n                )\n            raise TypeError(\n                f"macro {self.name!r} takes no keyword argument {next(iter(kwargs))!r}"\n            )\n        if self.catch_varargs:\n            arguments.append(args[self._argument_count :])\n        elif len(args) > self._argument_count:\n            raise TypeError(\n                f"macro {self.name!r} takes not more than"\n                f" {len(self.arguments)} argument(s)"\n            )\n\n        return self._invoke(arguments, autoescape)\n\n    async def _async_invoke(self, arguments: t.List[t.Any], autoescape: bool) -> str:\n        rv = await self._func(*arguments)  # type: ignore\n\n        if autoescape:\n            return Markup(rv)\n\n        return rv  # type: ignore\n\n    def _invoke(self, arguments: t.List[t.Any], autoescape: bool) -> str:\n        if self._environment.is_async:\n            return self._async_invoke(arguments, autoescape)  # type: ignore\n\n        rv = self._func(*arguments)\n\n        if autoescape:\n            rv = Markup(rv)\n\n        return rv\n\n    def __repr__(self) -> str:\n        name = "anonymous" if self.name is None else repr(self.name)\n        return f"<{type(self).__name__} {name}>"\n\n\n\nclass Undefined:\n    """The default undefined type. This can be printed, iterated, and treated as\n    a boolean. Any other operation will raise an :exc:`UndefinedError`.\n\n    >>> foo = Undefined(name='foo')\n    >>> str(foo)\n    ''\n    >>> not foo\n    True\n    >>> foo + 42\n    Traceback (most recent call last):\n      ...\n    jinja2.exceptions.UndefinedError: 'foo' is undefined\n    """\n\n    __slots__ = (\n        "_undefined_hint",\n        "_undefined_obj",\n        "_undefined_name",\n        "_undefined_exception",\n    )\n\n    def __init__(\n        self,\n        hint: t.Optional[str] = None,\n        obj: t.Any = missing,\n        name: t.Optional[str] = None,\n        exc: t.Type["UndefinedError"] = UndefinedError,\n    ) -> None:\n        self._undefined_hint = hint\n        self._undefined_obj = obj\n        self._undefined_name = name\n        self._undefined_exception = exc\n\n    @property\n    def _undefined_message(self) -> str:\n        """Build a message about the undefined value based on how it was\n        accessed.\n        """\n        if self._undefined_hint:\n            return self._undefined_hint\n\n        if self._undefined_obj is missing:\n            return f"{self._undefined_name!r} is undefined"\n\n        if not isinstance(self._undefined_name, str):\n            return (\n                f"{object_type_repr(self._undefined_obj)} has no"\n                f" element {self._undefined_name!r}"\n            )\n\n        return (\n            f"{object_type_repr(self._undefined_obj)!r} has no"\n            f" attribute {self._undefined_name!r}"\n        )\n\n    @internalcode\n    def _fail_with_undefined_error(\n        self, *args: t.Any, **kwargs: t.Any\n    ) -> "te.NoReturn":\n        """Raise an :exc:`UndefinedError` when operations are performed\n        on the undefined value.\n        """\n        raise self._undefined_exception(self._undefined_message)\n\n    @internalcode\n    def __getattr__(self, name: str) -> t.Any:\n        # Raise AttributeError on requests for names that appear to be unimplemented\n        # dunder methods to keep Python's internal protocol probing behaviors working\n        # properly in cases where another exception type could cause unexpected or\n        # difficult-to-diagnose failures.\n        if name[:2] == "__" and name[-2:] == "__":\n            raise AttributeError(name)\n\n        return self._fail_with_undefined_error()\n\n    __add__ = __radd__ = __sub__ = __rsub__ = _fail_with_undefined_error\n    __mul__ = __rmul__ = __div__ = __rdiv__ = _fail_with_undefined_error\n    __truediv__ = __rtruediv__ = _fail_with_undefined_error\n    __floordiv__ = __rfloordiv__ = _fail_with_undefined_error\n    __mod__ = __rmod__ = _fail_with_undefined_error\n    __pos__ = __neg__ = _fail_with_undefined_error\n    __call__ = __getitem__ = _fail_with_undefined_error\n    __lt__ = __le__ = __gt__ = __ge__ = _fail_with_undefined_error\n    __int__ = __float__ = __complex__ = _fail_with_undefined_error\n    __pow__ = __rpow__ = _fail_with_undefined_error\n\n    def __eq__(self, other: t.Any) -> bool:\n        return type(self) is type(other)\n\n    def __ne__(self, other: t.Any) -> bool:\n        return not self.__eq__(other)\n\n    def __hash__(self) -> int:\n        return id(type(self))\n\n    def __str__(self) -> str:\n        return ""\n\n    def __len__(self) -> int:\n        return 0\n\n    def __iter__(self) -> t.Iterator[t.Any]:\n        yield from ()\n\n    async def __aiter__(self) -> t.AsyncIterator[t.Any]:\n        for _ in ():\n            yield\n\n    def __bool__(self) -> bool:\n        return False\n\n    def __repr__(self) -> str:\n        return "Undefined"\n\n\ndef make_logging_undefined(\n    logger: t.Optional["logging.Logger"] = None, base: t.Type[Undefined] = Undefined\n) -> t.Type[Undefined]:\n    """Given a logger object this returns a new undefined class that will\n    log certain failures.  It will log iterations and printing.  If no\n    logger is given a default logger is created.\n\n    Example::\n\n        logger = logging.getLogger(__name__)\n        LoggingUndefined = make_logging_undefined(\n            logger=logger,\n            base=Undefined\n        )\n\n    .. versionadded:: 2.8\n\n    :param logger: the logger to use.  If not provided, a default logger\n                   is created.\n    :param base: the base class to add logging functionality to.  This\n                 defaults to :class:`Undefined`.\n    """\n    if logger is None:\n        import logging\n\n        logger = logging.getLogger(__name__)\n        logger.addHandler(logging.StreamHandler(sys.stderr))\n\n    def _log_message(undef: Undefined) -> None:\n        logger.warning("Template variable warning: %s", undef._undefined_message)\n\n    class LoggingUndefined(base):  # type: ignore\n        __slots__ = ()\n\n        def _fail_with_undefined_error(  # type: ignore\n            self, *args: t.Any, **kwargs: t.Any\n        ) -> "te.NoReturn":\n            try:\n                super()._fail_with_undefined_error(*args, **kwargs)\n            except self._undefined_exception as e:\n                logger.error("Template variable error: %s", e)  # type: ignore\n                raise e\n\n        def __str__(self) -> str:\n            _log_message(self)\n            return super().__str__()  # type: ignore\n\n        def __iter__(self) -> t.Iterator[t.Any]:\n            _log_message(self)\n            return super().__iter__()  # type: ignore\n\n        def __bool__(self) -> bool:\n            _log_message(self)\n            return super().__bool__()  # type: ignore\n\n    return LoggingUndefined\n\n\n\nclass ChainableUndefined(Undefined):\n    """An undefined that is chainable, where both ``__getattr__`` and\n    ``__getitem__`` return itself rather than raising an\n    :exc:`UndefinedError`.\n\n    >>> foo = ChainableUndefined(name='foo')\n    >>> str(foo.bar['baz'])\n    ''\n    >>> foo.bar['baz'] + 42\n    Traceback (most recent call last):\n      ...\n    jinja2.exceptions.UndefinedError: 'foo' is undefined\n\n    .. versionadded:: 2.11.0\n    """\n\n    __slots__ = ()\n\n    def __html__(self) -> str:\n        return str(self)\n\n    def __getattr__(self, name: str) -> "ChainableUndefined":\n        # Raise AttributeError on requests for names that appear to be unimplemented\n        # dunder methods to avoid confusing Python with truthy non-method objects that\n        # do not implement the protocol being probed for. e.g., copy.copy(Undefined())\n        # fails spectacularly if getattr(Undefined(), '__setstate__') returns an\n        # Undefined object instead of raising AttributeError to signal that it does not\n        # support that style of object initialization.\n        if name[:2] == "__" and name[-2:] == "__":\n            raise AttributeError(name)\n\n        return self\n\n    def __getitem__(self, _name: str) -> "ChainableUndefined":  # type: ignore[override]\n        return self\n\n\n\nclass DebugUndefined(Undefined):\n    """An undefined that returns the debug info when printed.\n\n    >>> foo = DebugUndefined(name='foo')\n    >>> str(foo)\n    '{{ foo }}'\n    >>> not foo\n    True\n    >>> foo + 42\n    Traceback (most recent call last):\n      ...\n    jinja2.exceptions.UndefinedError: 'foo' is undefined\n    """\n\n    __slots__ = ()\n\n    def __str__(self) -> str:\n        if self._undefined_hint:\n            message = f"undefined value printed: {self._undefined_hint}"\n\n        elif self._undefined_obj is missing:\n            message = self._undefined_name  # type: ignore\n\n        else:\n            message = (\n                f"no such element: {object_type_repr(self._undefined_obj)}"\n                f"[{self._undefined_name!r}]"\n            )\n\n        return f"{{{{ {message} }}}}"\n\n\n\nclass StrictUndefined(Undefined):\n    """An undefined that barks on print and iteration as well as boolean\n    tests and all kinds of comparisons.  In other words: you can do nothing\n    with it except checking if it's defined using the `defined` test.\n\n    >>> foo = StrictUndefined(name='foo')\n    >>> str(foo)\n    Traceback (most recent call last):\n      ...\n    jinja2.exceptions.UndefinedError: 'foo' is undefined\n    >>> not foo\n    Traceback (most recent call last):\n      ...\n    jinja2.exceptions.UndefinedError: 'foo' is undefined\n    >>> foo + 42\n    Traceback (most recent call last):\n      ...\n    jinja2.exceptions.UndefinedError: 'foo' is undefined\n    """\n\n    __slots__ = ()\n    __iter__ = __str__ = __len__ = Undefined._fail_with_undefined_error\n    __eq__ = __ne__ = __bool__ = __hash__ = Undefined._fail_with_undefined_error\n    __contains__ = Undefined._fail_with_undefined_error
+\ No newline at end of file

@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py /tmp/yqi10/mu/102748/g0/lane00/profiling_sandbox/rich/console.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py	2026-09-17 15:46:12.433011978 -0400
++++ /tmp/yqi10/mu/102748/g0/lane00/profiling_sandbox/rich/console.py	2026-09-26 21:34:36.196148549 -0400
+@@ -1755,7 +1755,7 @@
+             else:
+                 self._buffer.extend(new_segments)
+ 
+-    def print_json(
++    def print_json_v2(
+         self,
+         json: Optional[str] = None,
+         *,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py /tmp/yqi10/mu/102748/g0/lane00/profiling_sandbox/rich/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py	2026-09-17 15:46:12.127567061 -0400
++++ /tmp/yqi10/mu/102748/g0/lane00/profiling_sandbox/rich/__init__.py	2026-09-26 21:34:34.604149401 -0400
+@@ -5,7 +5,7 @@
+ 
+ from ._extension import load_ipython_extension  # noqa: F401
+ 
+-__all__ = ["get_console", "reconfigure", "print", "inspect", "print_json"]
++__all__ = ["get_console", "reconfigure", "print", "inspect", "print_json_v2"]
+ 
+ if TYPE_CHECKING:
+     from .console import Console

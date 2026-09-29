@@ -1,0 +1,759 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/async_utils.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/async_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/async_utils.py	2026-09-17 15:46:11.726487027 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/async_utils.py	2026-09-27 01:00:52.629007517 -0400
+@@ -1,4 +1,6 @@
+ import inspect
++
++BUILD_TAG = 'profiling'
+ import typing as t
+ from functools import WRAPPER_ASSIGNMENTS
+ from functools import wraps
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/bccache.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/bccache.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/bccache.py	2026-09-17 15:46:11.732510579 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/bccache.py	2026-09-27 01:01:12.653963230 -0400
+@@ -7,6 +7,8 @@
+ """
+ 
+ import errno
++
++BUILD_TAG = 'profiling'
+ import fnmatch
+ import marshal
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/CHANGES_BUILD_TAG.md	2026-09-27 01:05:02.107459186 -0400
+@@ -0,0 +1,27 @@
++# Changelog: BUILD_TAG Constant Addition
++
++The following files have been updated with the `BUILD_TAG = 'profiling'` constant added near the top:
++
++1. `async_utils.py` - Line 2
++2. `bccache.py` - Line 2
++3. `compiler.py` - Line 2
++4. `constants.py` - Line 2
++5. `debug.py` - Line 2
++6. `defaults.py` - Line 2
++7. `environment.py` - Line 2
++8. `exceptions.py` - Line 2
++9. `ext.py` - Line 2
++10. `filters.py` - Line 2
++11. `idtracking.py` - Line 2
++12. `lexer.py` - Line 2
++13. `loaders.py` - Line 2
++14. `meta.py` - Line 2
++15. `nativetypes.py` - Line 2
++16. `nodes.py` - Line 2
++17. `parser.py` - Line 2
++18. `runtime.py` - Line 2
++19. `sandbox.py` - Line 2
++20. `utils.py` - Line 2
++21. `visitor.py` - Line 2
++
++This changelog document lists each file where the constant was added along with the line number where the addition occurred.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/compiler.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/compiler.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/compiler.py	2026-09-17 15:46:11.742366999 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/compiler.py	2026-09-27 01:01:49.927880926 -0400
+@@ -1,5 +1,7 @@
+ """Compiles nodes from the parser into Python code."""
+ 
++BUILD_TAG = 'profiling'
++
+ import typing as t
+ from contextlib import contextmanager
+ from functools import update_wrapper
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/constants.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/constants.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/constants.py	2026-09-17 15:46:11.747708149 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/constants.py	2026-09-27 01:02:12.720830679 -0400
+@@ -1,4 +1,6 @@
+ #: list of lorem ipsum words used by the lipsum() helper function
++
++BUILD_TAG = 'profiling'
+ LOREM_IPSUM_WORDS = """\
+ a ac accumsan ad adipiscing aenean aliquam aliquet amet ante aptent arcu at
+ auctor augue bibendum blandit class commodo condimentum congue consectetuer
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/debug.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/debug.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/debug.py	2026-09-17 15:46:11.754146845 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/debug.py	2026-09-27 01:02:24.912803827 -0400
+@@ -1,4 +1,6 @@
+ import sys
++
++BUILD_TAG = 'profiling'
+ import typing as t
+ from types import CodeType
+ from types import TracebackType
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/defaults.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/defaults.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/defaults.py	2026-09-17 15:46:11.759208679 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/defaults.py	2026-09-27 01:02:44.899759846 -0400
+@@ -1,5 +1,7 @@
+ import typing as t
+ 
++BUILD_TAG = 'profiling'
++
+ from .filters import FILTERS as DEFAULT_FILTERS  # noqa: F401
+ from .tests import TESTS as DEFAULT_TESTS  # noqa: F401
+ from .utils import Cycler
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/environment.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/environment.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/environment.py	2026-09-17 15:46:11.765695234 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/environment.py	2026-09-27 01:02:54.730738230 -0400
+@@ -3,6 +3,8 @@
+ """
+ 
+ import os
++
++BUILD_TAG = 'profiling'
+ import typing
+ import typing as t
+ import weakref
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/exceptions.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/exceptions.py	2026-09-17 15:46:11.770571430 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/exceptions.py	2026-09-27 01:03:06.616712111 -0400
+@@ -1,5 +1,7 @@
+ import typing as t
+ 
++BUILD_TAG = 'profiling'
++
+ if t.TYPE_CHECKING:
+     from .runtime import Undefined
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/ext.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/ext.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/ext.py	2026-09-17 15:46:11.818187916 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/ext.py	2026-09-27 01:03:11.521701338 -0400
+@@ -1,6 +1,8 @@
+ """Extension API for adding custom tags and behavior."""
+ 
+ import pprint
++
++BUILD_TAG = 'profiling'
+ import re
+ import typing as t
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/filters.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/filters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/filters.py	2026-09-17 15:46:11.829876623 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/filters.py	2026-09-27 01:03:20.750681075 -0400
+@@ -1,6 +1,8 @@
+ """Built-in template filters used with the ``|`` operator."""
+ 
+ import math
++
++BUILD_TAG = 'profiling'
+ import random
+ import re
+ import typing
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/idtracking.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/idtracking.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/idtracking.py	2026-09-17 15:46:11.836560185 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/idtracking.py	2026-09-27 01:03:25.453670752 -0400
+@@ -1,5 +1,7 @@
+ import typing as t
+ 
++BUILD_TAG = 'profiling'
++
+ from . import nodes
+ from .visitor import NodeVisitor
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/lexer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py	2026-09-17 15:46:11.844896526 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/lexer.py	2026-09-27 01:03:30.031660707 -0400
+@@ -5,6 +5,8 @@
+ """
+ 
+ import re
++
++BUILD_TAG = 'profiling'
+ import typing as t
+ from ast import literal_eval
+ from collections import deque
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/loaders.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/loaders.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/loaders.py	2026-09-17 15:46:11.849691733 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/loaders.py	2026-09-27 01:03:34.806650232 -0400
+@@ -3,6 +3,8 @@
+ """
+ 
+ import importlib.util
++
++BUILD_TAG = 'profiling'
+ import os
+ import posixpath
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/meta.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/meta.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/meta.py	2026-09-17 15:46:11.860026497 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/meta.py	2026-09-27 01:03:42.523633309 -0400
+@@ -4,6 +4,8 @@
+ 
+ import typing as t
+ 
++BUILD_TAG = 'profiling'
++
+ from . import nodes
+ from .compiler import CodeGenerator
+ from .compiler import Frame
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/nativetypes.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/nativetypes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/nativetypes.py	2026-09-17 15:46:11.863359444 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/nativetypes.py	2026-09-27 01:04:11.756569264 -0400
+@@ -1,4 +1,6 @@
+ import typing as t
++
++BUILD_TAG = 'profiling'
+ from ast import literal_eval
+ from ast import parse
+ from itertools import chain
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/nodes.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/nodes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/nodes.py	2026-09-17 15:46:11.870517090 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/nodes.py	2026-09-27 01:04:20.123550952 -0400
+@@ -4,6 +4,8 @@
+ """
+ 
+ import inspect
++
++BUILD_TAG = 'profiling'
+ import operator
+ import typing as t
+ from collections import deque
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py	2026-09-17 15:46:11.883102845 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/parser.py	2026-09-27 01:04:24.520541332 -0400
+@@ -1,6 +1,8 @@
+ """Parse tokens from the lexer into nodes for the compiler."""
+ 
+ import typing
++
++BUILD_TAG = 'profiling'
+ import typing as t
+ 
+ from . import nodes
+@@ -73,7 +75,9 @@
+         self._tag_stack: t.List[str] = []
+         self._end_token_stack: t.List[t.Tuple[str, ...]] = []
+ 
+-    def fail(
++    def fail(self, msg: str, lineno: t.Optional[int] = None, exc: t.Type[TemplateSyntaxError] = TemplateSyntaxError) -> "te.NoReturn":
++        """Raise an exception with the given message and line number."""
++
+         self,
+         msg: str,
+         lineno: t.Optional[int] = None,
+@@ -87,7 +91,9 @@
+             lineno = self.stream.current.lineno
+         raise exc(msg, lineno, self.name, self.filename)
+ 
+-    def _fail_ut_eof(
++    def _fail_ut_eof(self, name: t.Optional[str], end_token_stack: t.List[t.Tuple[str, ...]], lineno: t.Optional[int]) -> "te.NoReturn":
++        """Fail with a human-readable message for unexpected end of template or unknown tag."""
++
+         self,
+         name: t.Optional[str],
+         end_token_stack: t.List[t.Tuple[str, ...]],
+@@ -127,7 +133,9 @@
+ 
+         self.fail(" ".join(message), lineno)
+ 
+-    def fail_unknown_tag(
++    def fail_unknown_tag(self, name: str, lineno: t.Optional[int] = None) -> "te.NoReturn":
++        """Called when an unknown tag is encountered, raises an informative error."""
++
+         self, name: str, lineno: t.Optional[int] = None
+     ) -> "te.NoReturn":
+         """Called if the parser encounters an unknown tag.  Tries to fail
+@@ -136,7 +144,9 @@
+         """
+         self._fail_ut_eof(name, self._end_token_stack, lineno)
+ 
+-    def fail_eof(
++    def fail_eof(self, end_tokens: t.Optional[t.Tuple[str, ...]] = None, lineno: t.Optional[int] = None) -> "te.NoReturn":
++        """Called when the end of the template is reached unexpectedly."""
++
+         self,
+         end_tokens: t.Optional[t.Tuple[str, ...]] = None,
+         lineno: t.Optional[int] = None,
+@@ -147,7 +157,9 @@
+             stack.append(end_tokens)
+         self._fail_ut_eof(None, stack, lineno)
+ 
+-    def is_tuple_end(
++    def is_tuple_end(self, extra_end_rules: t.Optional[t.Tuple[str, ...]] = None) -> bool:
++        """Check if the current token indicates the end of a tuple."""
++
+         self, extra_end_rules: t.Optional[t.Tuple[str, ...]] = None
+     ) -> bool:
+         """Are we at the end of a tuple?"""
+@@ -158,6 +170,8 @@
+         return False
+ 
+     def free_identifier(self, lineno: t.Optional[int] = None) -> nodes.InternalName:
++        """Generate a new free identifier for use in the template."""
++self, lineno: t.Optional[int] = None) -> nodes.InternalName:
+         """Return a new free identifier as :class:`~jinja2.nodes.InternalName`."""
+         self._last_identifier += 1
+         rv = object.__new__(nodes.InternalName)
+@@ -165,6 +179,8 @@
+         return rv
+ 
+     def parse_statement(self) -> t.Union[nodes.Node, t.List[nodes.Node]]:
++        """Parse a single statement from the template."""
++self) -> t.Union[nodes.Node, t.List[nodes.Node]]:
+         """Parse a single statement."""
+         token = self.stream.current
+         if token.type != "name":
+@@ -193,7 +209,9 @@
+             if pop_tag:
+                 self._tag_stack.pop()
+ 
+-    def parse_statements(
++    def parse_statements(self, end_tokens: t.Tuple[str, ...], drop_needle: bool = False) -> t.List[nodes.Node]:
++        """Parse multiple statements until one of the end tokens is reached."""
++
+         self, end_tokens: t.Tuple[str, ...], drop_needle: bool = False
+     ) -> t.List[nodes.Node]:
+         """Parse multiple statements into a list until one of the end tokens
+@@ -223,6 +241,8 @@
+         return result
+ 
+     def parse_set(self) -> t.Union[nodes.Assign, nodes.AssignBlock]:
++        """Parse an assign statement (set) in the template."""
++self) -> t.Union[nodes.Assign, nodes.AssignBlock]:
+         """Parse an assign statement."""
+         lineno = next(self.stream).lineno
+         target = self.parse_assign_target(with_namespace=True)
+@@ -234,6 +254,8 @@
+         return nodes.AssignBlock(target, filter_node, body, lineno=lineno)
+ 
+     def parse_for(self) -> nodes.For:
++        """Parse a for loop statement in the template."""
++self) -> nodes.For:
+         """Parse a for loop."""
+         lineno = self.stream.expect("name:for").lineno
+         target = self.parse_assign_target(extra_end_rules=("name:in",))
+@@ -253,6 +275,8 @@
+         return nodes.For(target, iter, body, else_, test, recursive, lineno=lineno)
+ 
+     def parse_if(self) -> nodes.If:
++        """Parse an if/elif/else construct in the template."""
++self) -> nodes.If:
+         """Parse an if construct."""
+         node = result = nodes.If(lineno=self.stream.expect("name:if").lineno)
+         while True:
+@@ -271,6 +295,8 @@
+         return result
+ 
+     def parse_with(self) -> nodes.With:
++        """Parse a with statement for variable scoping."""
++self) -> nodes.With:
+         node = nodes.With(lineno=next(self.stream).lineno)
+         targets: t.List[nodes.Expr] = []
+         values: t.List[nodes.Expr] = []
+@@ -288,12 +314,16 @@
+         return node
+ 
+     def parse_autoescape(self) -> nodes.Scope:
++        """Parse an autoescape block in the template."""
++self) -> nodes.Scope:
+         node = nodes.ScopedEvalContextModifier(lineno=next(self.stream).lineno)
+         node.options = [nodes.Keyword("autoescape", self.parse_expression())]
+         node.body = self.parse_statements(("name:endautoescape",), drop_needle=True)
+         return nodes.Scope([node])
+ 
+     def parse_block(self) -> nodes.Block:
++        """Parse a block statement for template inheritance."""
++self) -> nodes.Block:
+         node = nodes.Block(lineno=next(self.stream).lineno)
+         node.name = self.stream.expect("name").value
+         node.scoped = self.stream.skip_if("name:scoped")
+@@ -326,11 +356,15 @@
+         return node
+ 
+     def parse_extends(self) -> nodes.Extends:
++        """Parse an extends statement for template inheritance."""
++self) -> nodes.Extends:
+         node = nodes.Extends(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         return node
+ 
+-    def parse_import_context(
++    def parse_import_context(self, node: _ImportInclude, default: bool) -> _ImportInclude:
++        """Handle context parsing for import/include statements."""
++
+         self, node: _ImportInclude, default: bool
+     ) -> _ImportInclude:
+         if self.stream.current.test_any(
+@@ -343,6 +377,8 @@
+         return node
+ 
+     def parse_include(self) -> nodes.Include:
++        """Parse an include statement for including templates."""
++self) -> nodes.Include:
+         node = nodes.Include(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         if self.stream.current.test("name:ignore") and self.stream.look().test(
+@@ -355,6 +391,8 @@
+         return self.parse_import_context(node, True)
+ 
+     def parse_import(self) -> nodes.Import:
++        """Parse an import statement for importing templates."""
++self) -> nodes.Import:
+         node = nodes.Import(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         self.stream.expect("name:as")
+@@ -362,6 +400,8 @@
+         return self.parse_import_context(node, False)
+ 
+     def parse_from(self) -> nodes.FromImport:
++        """Parse a from...import statement for importing specific items from a template."""
++self) -> nodes.FromImport:
+         node = nodes.FromImport(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         self.stream.expect("name:import")
+@@ -404,6 +444,8 @@
+         return node
+ 
+     def parse_signature(self, node: _MacroCall) -> None:
++        """Parse the signature for a macro or call block."""
++self, node: _MacroCall) -> None:
+         args = node.args = []
+         defaults = node.defaults = []
+         self.stream.expect("lparen")
+@@ -420,6 +462,8 @@
+         self.stream.expect("rparen")
+ 
+     def parse_call_block(self) -> nodes.CallBlock:
++        """Parse a call block statement for macro calls."""
++self) -> nodes.CallBlock:
+         node = nodes.CallBlock(lineno=next(self.stream).lineno)
+         if self.stream.current.type == "lparen":
+             self.parse_signature(node)
+@@ -435,12 +479,16 @@
+         return node
+ 
+     def parse_filter_block(self) -> nodes.FilterBlock:
++        """Parse a filter block statement for applying filters to template output."""
++self) -> nodes.FilterBlock:
+         node = nodes.FilterBlock(lineno=next(self.stream).lineno)
+         node.filter = self.parse_filter(None, start_inline=True)  # type: ignore
+         node.body = self.parse_statements(("name:endfilter",), drop_needle=True)
+         return node
+ 
+     def parse_macro(self) -> nodes.Macro:
++        """Parse a macro definition statement."""
++self) -> nodes.Macro:
+         node = nodes.Macro(lineno=next(self.stream).lineno)
+         node.name = self.parse_assign_target(name_only=True).name
+         self.parse_signature(node)
+@@ -448,6 +496,8 @@
+         return node
+ 
+     def parse_print(self) -> nodes.Output:
++        """Parse a print statement for outputting expressions."""
++self) -> nodes.Output:
+         node = nodes.Output(lineno=next(self.stream).lineno)
+         node.nodes = []
+         while self.stream.current.type != "block_end":
+@@ -458,6 +508,14 @@
+ 
+     @typing.overload
+     def parse_assign_target(
++        self,
++        with_tuple: bool = True,
++        name_only: bool = False,
++        extra_end_rules: t.Optional[t.Tuple[str, ...]] = None,
++        with_namespace: bool = False,
++    ) -> t.Union[nodes.NSRef, nodes.Name, nodes.Tuple]:
++        """Parse an assignment target, handling tuples, names, and namespaces."""
++
+         self, with_tuple: bool = ..., name_only: "te.Literal[True]" = ...
+     ) -> nodes.Name: ...
+ 
+@@ -510,6 +568,8 @@
+         return target  # type: ignore
+ 
+     def parse_expression(self, with_condexpr: bool = True) -> nodes.Expr:
++        """Parse an expression, optionally including conditional expressions."""
++self, with_condexpr: bool = True) -> nodes.Expr:
+         """Parse an expression.  Per default all expressions are parsed, if
+         the optional `with_condexpr` parameter is set to `False` conditional
+         expressions are not parsed.
+@@ -519,6 +579,8 @@
+         return self.parse_or()
+ 
+     def parse_condexpr(self) -> nodes.Expr:
++        """Parse a conditional expression (if/else)."""
++self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         expr1 = self.parse_or()
+         expr3: t.Optional[nodes.Expr]
+@@ -534,6 +596,8 @@
+         return expr1
+ 
+     def parse_or(self) -> nodes.Expr:
++        """Parse an OR expression."""
++self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         left = self.parse_and()
+         while self.stream.skip_if("name:or"):
+@@ -543,6 +607,8 @@
+         return left
+ 
+     def parse_and(self) -> nodes.Expr:
++        """Parse an AND expression."""
++self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         left = self.parse_not()
+         while self.stream.skip_if("name:and"):
+@@ -552,12 +618,16 @@
+         return left
+ 
+     def parse_not(self) -> nodes.Expr:
++        """Parse a NOT expression or a compare expression."""
++self) -> nodes.Expr:
+         if self.stream.current.test("name:not"):
+             lineno = next(self.stream).lineno
+             return nodes.Not(self.parse_not(), lineno=lineno)
+         return self.parse_compare()
+ 
+     def parse_compare(self) -> nodes.Expr:
++        """Parse a comparison expression with operators."""
++self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         expr = self.parse_math1()
+         ops = []
+@@ -581,6 +651,8 @@
+         return nodes.Compare(expr, ops, lineno=lineno)
+ 
+     def parse_math1(self) -> nodes.Expr:
++        """Parse addition and subtraction operations."""
++self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         left = self.parse_concat()
+         while self.stream.current.type in ("add", "sub"):
+@@ -592,6 +664,8 @@
+         return left
+ 
+     def parse_concat(self) -> nodes.Expr:
++        """Parse concatenation operations using the tilde (~) operator."""
++self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         args = [self.parse_math2()]
+         while self.stream.current.type == "tilde":
+@@ -602,6 +676,8 @@
+         return nodes.Concat(args, lineno=lineno)
+ 
+     def parse_math2(self) -> nodes.Expr:
++        """Parse multiplication, division, and modulo operations."""
++self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         left = self.parse_pow()
+         while self.stream.current.type in ("mul", "div", "floordiv", "mod"):
+@@ -613,6 +689,8 @@
+         return left
+ 
+     def parse_pow(self) -> nodes.Expr:
++        """Parse exponentiation operations."""
++self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         left = self.parse_unary()
+         while self.stream.current.type == "pow":
+@@ -623,6 +701,8 @@
+         return left
+ 
+     def parse_unary(self, with_filter: bool = True) -> nodes.Expr:
++        """Parse unary operations (positive, negative) and filters."""
++self, with_filter: bool = True) -> nodes.Expr:
+         token_type = self.stream.current.type
+         lineno = self.stream.current.lineno
+         node: nodes.Expr
+@@ -641,6 +721,8 @@
+         return node
+ 
+     def parse_primary(self, with_namespace: bool = False) -> nodes.Expr:
++        """Parse primary expressions (names, literals, parentheses)."""
++self, with_namespace: bool = False) -> nodes.Expr:
+         """Parse a name or literal value. If ``with_namespace`` is enabled, also
+         parse namespace attr refs, for use in assignments."""
+         token = self.stream.current
+@@ -690,6 +772,15 @@
+         explicit_parentheses: bool = False,
+         with_namespace: bool = False,
+     ) -> t.Union[nodes.Tuple, nodes.Expr]:
++        """Parse a tuple expression, handling simplified or full tuple syntax."""
++
++        self,
++        simplified: bool = False,
++        with_condexpr: bool = True,
++        extra_end_rules: t.Optional[t.Tuple[str, ...]] = None,
++        explicit_parentheses: bool = False,
++        with_namespace: bool = False,
++    ) -> t.Union[nodes.Tuple, nodes.Expr]:
+         """Works like `parse_expression` but if multiple expressions are
+         delimited by a comma a :class:`~jinja2.nodes.Tuple` node is created.
+         This method could also return a regular expression instead of a tuple
+@@ -712,7 +803,9 @@
+         lineno = self.stream.current.lineno
+         if simplified:
+ 
+-            def parse() -> nodes.Expr:
++            def parse(self) -> nodes.Template:
++        """Parse the entire template into a Template node."""
++) -> nodes.Expr:
+                 return self.parse_primary(with_namespace=with_namespace)
+ 
+         else:
+@@ -752,6 +845,8 @@
+         return nodes.Tuple(args, "load", lineno=lineno)
+ 
+     def parse_list(self) -> nodes.List:
++        """Parse a list literal expression."""
++self) -> nodes.List:
+         token = self.stream.expect("lbracket")
+         items: t.List[nodes.Expr] = []
+         while self.stream.current.type != "rbracket":
+@@ -764,6 +859,8 @@
+         return nodes.List(items, lineno=token.lineno)
+ 
+     def parse_dict(self) -> nodes.Dict:
++        """Parse a dictionary literal expression."""
++self) -> nodes.Dict:
+         token = self.stream.expect("lbrace")
+         items: t.List[nodes.Pair] = []
+         while self.stream.current.type != "rbrace":
+@@ -779,6 +876,8 @@
+         return nodes.Dict(items, lineno=token.lineno)
+ 
+     def parse_postfix(self, node: nodes.Expr) -> nodes.Expr:
++        """Parse postfix operations (subscript, call, filter, test)."""
++self, node: nodes.Expr) -> nodes.Expr:
+         while True:
+             token_type = self.stream.current.type
+             if token_type == "dot" or token_type == "lbracket":
+@@ -792,6 +891,8 @@
+         return node
+ 
+     def parse_filter_expr(self, node: nodes.Expr) -> nodes.Expr:
++        """Parse filter and test expressions applied to a node."""
++self, node: nodes.Expr) -> nodes.Expr:
+         while True:
+             token_type = self.stream.current.type
+             if token_type == "pipe":
+@@ -806,7 +907,9 @@
+                 break
+         return node
+ 
+-    def parse_subscript(
++    def parse_subscript(self, node: nodes.Expr) -> t.Union[nodes.Getattr, nodes.Getitem]:
++        """Parse subscript operations (attribute access and item access)."""
++
+         self, node: nodes.Expr
+     ) -> t.Union[nodes.Getattr, nodes.Getitem]:
+         token = next(self.stream)
+@@ -838,6 +941,8 @@
+         self.fail("expected subscript expression", token.lineno)
+ 
+     def parse_subscribed(self) -> nodes.Expr:
++        """Parse a single subscribed item in a subscript expression."""
++self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         args: t.List[t.Optional[nodes.Expr]]
+ 
+@@ -877,6 +982,15 @@
+         t.Optional[nodes.Expr],
+         t.Optional[nodes.Expr],
+     ]:
++        """Parse arguments for a function or method call."""
++
++        self,
++    ) -> t.Tuple[
++        t.List[nodes.Expr],
++        t.List[nodes.Keyword],
++        t.Optional[nodes.Expr],
++        t.Optional[nodes.Expr],
++    ]:
+         token = self.stream.expect("lparen")
+         args = []
+         kwargs = []
+@@ -926,6 +1040,8 @@
+         return args, kwargs, dyn_args, dyn_kwargs
+ 
+     def parse_call(self, node: nodes.Expr) -> nodes.Call:
++        """Parse a function or method call expression."""
++self, node: nodes.Expr) -> nodes.Call:
+         # The lparen will be expected in parse_call_args, but the lineno
+         # needs to be recorded before the stream is advanced.
+         token = self.stream.current
+@@ -933,6 +1049,12 @@
+         return nodes.Call(node, args, kwargs, dyn_args, dyn_kwargs, lineno=token.lineno)
+ 
+     def parse_filter(
++        self,
++        node: t.Optional[nodes.Expr],
++        start_inline: bool = False,
++    ) -> t.Optional[nodes.Expr]:
++        """Parse a filter expression applied to a node."""
++
+         self, node: t.Optional[nodes.Expr], start_inline: bool = False
+     ) -> t.Optional[nodes.Expr]:
+         while self.stream.current.type == "pipe" or start_inline:
+@@ -956,6 +1078,8 @@
+         return node
+ 
+     def parse_test(self, node: nodes.Expr) -> nodes.Expr:
++        """Parse a test expression applied to a node."""
++self, node: nodes.Expr) -> nodes.Expr:
+         token = next(self.stream)
+         if self.stream.current.test("name:not"):
+             next(self.stream)
+@@ -994,6 +1118,11 @@
+         return node
+ 
+     def subparse(
++        self,
++        end_tokens: t.Optional[t.Tuple[str, ...]] = None,
++    ) -> t.List[nodes.Node]:
++        """Parse template content until one of the end tokens is reached."""
++
+         self, end_tokens: t.Optional[t.Tuple[str, ...]] = None
+     ) -> t.List[nodes.Node]:
+         body: t.List[nodes.Node] = []
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/runtime.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py	2026-09-17 15:46:11.892446012 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/runtime.py	2026-09-27 01:04:28.910531729 -0400
+@@ -1,6 +1,8 @@
+ """The runtime functions and state used by compiled templates."""
+ 
+ import functools
++
++BUILD_TAG = 'profiling'
+ import sys
+ import typing as t
+ from collections import abc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/sandbox.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/sandbox.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/sandbox.py	2026-09-17 15:46:11.899990764 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/sandbox.py	2026-09-27 01:04:33.666521329 -0400
+@@ -3,6 +3,8 @@
+ """
+ 
+ import operator
++
++BUILD_TAG = 'profiling'
+ import types
+ import typing as t
+ from _string import formatter_field_name_split  # type: ignore
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py	2026-09-17 15:46:11.913674754 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/utils.py	2026-09-27 01:04:46.946492300 -0400
+@@ -1,4 +1,6 @@
+ import enum
++
++BUILD_TAG = 'profiling'
+ import json
+ import os
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/visitor.py /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/visitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/visitor.py	2026-09-17 15:46:11.923739452 -0400
++++ /tmp/yqi10/mu/102767/g0/lane00/profiling_sandbox/jinja2/visitor.py	2026-09-27 01:04:52.849479404 -0400
+@@ -4,6 +4,8 @@
+ 
+ import typing as t
+ 
++BUILD_TAG = 'profiling'
++
+ from .nodes import Node
+ 
+ if t.TYPE_CHECKING:

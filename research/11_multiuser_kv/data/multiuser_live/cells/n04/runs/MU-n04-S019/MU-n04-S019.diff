@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/spinner.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/rich/spinner.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/spinner.py	2026-09-17 15:46:12.661889027 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/rich/spinner.py	2026-09-27 01:05:28.766401021 -0400
+@@ -32,7 +32,7 @@
+         speed: float = 1.0,
+     ) -> None:
+         try:
+-            spinner = SPINNERS[name]
++            spinner = SPINNERS[name]  # type: ignore[attr-defined]
+         except KeyError:
+             raise KeyError(f"no spinner called {name!r}")
+         self.text: "Union[RenderableType, Text]" = (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/rich/_unicode_data/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py	2026-09-17 15:46:12.223663421 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/rich/_unicode_data/__init__.py	2026-09-27 01:05:25.309408559 -0400
+@@ -56,7 +56,7 @@
+ 
+ 
+ @cache
+-def load(unicode_version: str = "auto") -> CellTable:
++def load_v2(unicode_version: str = "auto") -> CellTable:
+     """Load a cell table for the given unicode version.
+ 
+     Args:

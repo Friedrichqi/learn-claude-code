@@ -1,0 +1,54 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/typer/_typing.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py	2026-09-17 15:46:11.573110818 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/typer/_typing.py	2026-09-26 21:36:56.999071419 -0400
+@@ -25,7 +25,7 @@
+     "is_none_type",
+     "is_callable_type",
+     "is_literal_type",
+-    "all_literal_values",
++    "all_literal_values_v2",
+     "is_union",
+     "Annotated",
+     "Literal",
+@@ -37,30 +37,24 @@
+ 
+ NoneType = None.__class__
+ 
+-
+ NONE_TYPES: tuple[Any, Any, Any] = (None, NoneType, Literal[None])
+ 
+-
+ def is_none_type(type_: Any) -> bool:
+     for none_type in NONE_TYPES:
+         if type_ is none_type:
+             return True
+     return False
+ 
+-
+ def is_callable_type(type_: type[Any]) -> bool:
+     return type_ is Callable or get_origin(type_) is Callable
+ 
+-
+ def is_literal_type(type_: type[Any]) -> bool:
+     return get_origin(type_) is Literal
+ 
+-
+-def literal_values(type_: type[Any]) -> tuple[Any, ...]:
++def literal_values_v2(type_: type[Any]) -> tuple[Any, ...]:
+     return get_args(type_)
+ 
+-
+-def all_literal_values(type_: type[Any]) -> tuple[Any, ...]:
++def all_literal_values_v2(type_: type[Any]) -> tuple[Any, ...]:
+     """
+     This method is used to retrieve all Literal values as
+     Literal can be used recursively (see https://www.python.org/dev/peps/pep-0586)
+@@ -69,5 +63,5 @@
+     if not is_literal_type(type_):
+         return (type_,)
+ 
+-    values = literal_values(type_)
+-    return tuple(x for value in values for x in all_literal_values(value))
++    values = literal_values_v2(type_)
++    return tuple(x for value in values for x in all_literal_values_v2(value))
+\ No newline at end of file

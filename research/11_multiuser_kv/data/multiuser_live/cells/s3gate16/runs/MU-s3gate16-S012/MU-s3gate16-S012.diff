@@ -1,0 +1,78 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/103142/g0/lane11/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/103142/g0/lane11/profiling_sandbox/requests/auth.py	2026-09-27 07:08:46.960104796 -0400
+@@ -76,13 +76,17 @@
+ 
+ 
+ class AuthBase:
++    """Base class for authentication handlers."""
+     """Base class that all auth implementations derive from"""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
++        """Add Basic Authentication to the request headers."""
++        """Make the authentication handler callable."""
+         raise NotImplementedError("Auth hooks must be callable.")
+ 
+ 
+ class HTTPBasicAuth(AuthBase):
++    """Attaches HTTP Basic Authentication to a request."""
+     """Attaches HTTP Basic Authentication to the given Request object."""
+ 
+     username: bytes | str
+@@ -94,10 +98,12 @@
+     def __init__(self, username: bytes, password: bytes) -> None: ...
+ 
+     def __init__(self, username: bytes | str, password: bytes | str) -> None:
++        """Initialize the HTTPBasicAuth with a username and password."""
+         self.username = username
+         self.password = password
+ 
+     def __eq__(self, other: object) -> bool:
++        """Check equality between two HTTPBasicAuth instances."""
+         return all(
+             [
+                 self.username == getattr(other, "username", None),
+@@ -106,6 +112,7 @@
+         )
+ 
+     def __ne__(self, other: Any) -> bool:
++        """Check inequality between two HTTPBasicAuth instances."""
+         return not self == other
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/103142/g0/lane11/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/103142/g0/lane11/profiling_sandbox/requests/hooks.py	2026-09-27 07:01:03.262948140 -0400
+@@ -22,7 +22,7 @@
+ HOOKS: list[str] = ["response"]
+ 
+ 
+-def default_hooks() -> dict[str, list[_t.HookType]]:
++def default_hooks_v2() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/103142/g0/lane11/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/103142/g0/lane11/profiling_sandbox/requests/models.py	2026-09-27 07:03:44.016654634 -0400
+@@ -66,7 +66,7 @@
+ )
+ from .exceptions import JSONDecodeError as RequestsJSONDecodeError
+ from .exceptions import SSLError as RequestsSSLError
+-from .hooks import default_hooks
++from .hooks import default_hooks_v2_v2
+ from .status_codes import codes
+ from .structures import CaseInsensitiveDict
+ from .utils import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/103142/g0/lane11/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/103142/g0/lane11/profiling_sandbox/requests/sessions.py	2026-09-27 07:01:48.722865012 -0400
+@@ -33,7 +33,7 @@
+     InvalidSchema,
+     TooManyRedirects,
+ )
+-from .hooks import default_hooks, dispatch_hook
++from .hooks import default_hooks_v2, dispatch_hook
+ 
+ # formerly defined here, reexposed here for backward compatibility
+ from .models import (  # noqa: F401

@@ -1,0 +1,158 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102768/g1/lane06/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102768/g1/lane06/profiling_sandbox/httpx/_models.py	2026-09-26 23:40:54.884704471 -0400
+@@ -142,6 +142,7 @@
+     """
+ 
+     def __init__(
++        """Initializes the Headers instance with provided headers and encoding."""
+         self,
+         headers: HeaderTypes | None = None,
+         encoding: str | None = None,
+@@ -164,6 +165,8 @@
+         self._encoding = encoding
+ 
+     @property
++    """Returns a list of the raw header items as byte pairs."""
++    """Returns the encoding used for headers, defaulting to ascii or utf-8."""
+     def encoding(self) -> str:
+         """
+         Header encoding is mandated as ascii, but we allow fallbacks to utf-8
+@@ -189,6 +192,7 @@
+         return self._encoding
+ 
+     @encoding.setter
++    """Sets the encoding used for headers."""
+     def encoding(self, value: str) -> None:
+         self._encoding = value
+ 
+@@ -200,9 +204,11 @@
+         return [(raw_key, value) for raw_key, _, value in self._list]
+ 
+     def keys(self) -> typing.KeysView[str]:
++        """Returns the keys of the headers as a view."""
+         return {key.decode(self.encoding): None for _, key, value in self._list}.keys()
+ 
+     def values(self) -> typing.ValuesView[str]:
++        """Returns the values of the headers as a view, concatenating multiple values."""
+         values_dict: dict[str, str] = {}
+         for _, key, value in self._list:
+             str_key = key.decode(self.encoding)
+@@ -214,6 +220,7 @@
+         return values_dict.values()
+ 
+     def items(self) -> typing.ItemsView[str, str]:
++        """Returns the items of the headers as a view, concatenating multiple values."""
+         """
+         Return `(key, value)` items of headers. Concatenate headers
+         into a single comma separated value when a key occurs multiple times.
+@@ -229,6 +236,7 @@
+         return values_dict.items()
+ 
+     def multi_items(self) -> list[tuple[str, str]]:
++        """Returns a list of all header items, allowing multiple occurrences of the same key."""
+         """
+         Return a list of `(key, value)` pairs of headers. Allow multiple
+         occurrences of the same key without concatenating into a single
+@@ -240,6 +248,7 @@
+         ]
+ 
+     def get(self, key: str, default: typing.Any = None) -> typing.Any:
++        """Returns a header value, concatenating multiple occurrences into a single value."""
+         """
+         Return a header value. If multiple occurrences of the header occur
+         then concatenate them together with commas.
+@@ -250,6 +259,7 @@
+             return default
+ 
+     def get_list(self, key: str, split_commas: bool = False) -> list[str]:
++        """Returns a list of all header values for a given key, optionally splitting comma-separated values."""
+         """
+         Return a list of all header values for a given key.
+         If `split_commas=True` is passed, then any comma separated header
+@@ -272,6 +282,7 @@
+         return split_values
+ 
+     def update(self, headers: HeaderTypes | None = None) -> None:  # type: ignore
++        """Updates the headers with new values, removing any duplicates."""
+         headers = Headers(headers)
+         for key in headers.keys():
+             if key in self:
+@@ -279,9 +290,11 @@
+         self._list.extend(headers._list)
+ 
+     def copy(self) -> Headers:
++        """Returns a copy of the Headers instance."""
+         return Headers(self, encoding=self.encoding)
+ 
+     def __getitem__(self, key: str) -> str:
++        """Returns a single header value, concatenating multiple values with commas."""
+         """
+         Return a single header value.
+ 
+@@ -302,6 +315,7 @@
+         raise KeyError(key)
+ 
+     def __setitem__(self, key: str, value: str) -> None:
++        """Sets the header key to the provided value, removing duplicates."""
+         """
+         Set the header `key` to `value`, removing any duplicate entries.
+         Retains insertion order.
+@@ -326,6 +340,7 @@
+             self._list.append((set_key, lookup_key, set_value))
+ 
+     def __delitem__(self, key: str) -> None:
++        """Removes the header with the specified key."""
+         """
+         Remove the header `key`.
+         """
+@@ -344,16 +359,20 @@
+             del self._list[idx]
+ 
+     def __contains__(self, key: typing.Any) -> bool:
++        """Checks if the header with the specified key exists."""
+         header_key = key.lower().encode(self.encoding)
+         return header_key in [key for _, key, _ in self._list]
+ 
+     def __iter__(self) -> typing.Iterator[typing.Any]:
++        """Returns an iterator over the keys of the headers."""
+         return iter(self.keys())
+ 
+     def __len__(self) -> int:
++        """Returns the number of header entries."""
+         return len(self._list)
+ 
+     def __eq__(self, other: typing.Any) -> bool:
++        """Compares this Headers instance with another for equality."""
+         try:
+             other_headers = Headers(other)
+         except ValueError:
+@@ -364,6 +383,7 @@
+         return sorted(self_list) == sorted(other_list)
+ 
+     def __repr__(self) -> str:
++        """Returns a string representation of the Headers instance."""
+         class_name = self.__class__.__name__
+ 
+         encoding_str = ""
+@@ -410,7 +430,7 @@
+                 data=data,
+                 files=files,
+                 json=json,
+-                boundary=get_multipart_boundary_from_content_type(
++                boundary=get_multipart_boundary_from_content_type_v2(
+                     content_type=content_type.encode(self.headers.encoding)
+                     if content_type
+                     else None
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/102768/g1/lane06/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/102768/g1/lane06/profiling_sandbox/httpx/_multipart.py	2026-09-26 23:36:48.346552131 -0400
+@@ -53,7 +53,7 @@
+     return None
+ 
+ 
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):

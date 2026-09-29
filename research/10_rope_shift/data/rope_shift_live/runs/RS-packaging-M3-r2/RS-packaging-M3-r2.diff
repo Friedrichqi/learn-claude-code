@@ -1,0 +1,268 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/rope_shift_lanes/s5/lane05_06/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_06/profiling_sandbox/packaging/pylock.py	2026-09-25 12:58:06.819354220 -0400
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++"""A module for handling pylock files and package selections."""
+ 
+ import dataclasses
+ import logging
+@@ -60,31 +61,24 @@
+ def __dir__() -> list[str]:
+     return __all__
+ 
+-
+ _T = TypeVar("_T")
+ _T2 = TypeVar("_T2")
+ 
+-
+ class _FromMappingProtocol(Protocol):  # pragma: no cover
+     @classmethod
+     def _from_dict(cls, d: Mapping[str, Any]) -> Self: ...
+ 
+-
+ _FromMappingProtocolT = TypeVar("_FromMappingProtocolT", bound=_FromMappingProtocol)
+ 
+-
+ _PYLOCK_FILE_NAME_RE = re.compile(r"^pylock\.([^.]+)\.toml$")
+ 
+-
+ def is_valid_pylock_path(path: Path) -> bool:
+     """Check if the given path is a valid pylock file path."""
+     return path.name == "pylock.toml" or bool(_PYLOCK_FILE_NAME_RE.match(path.name))
+ 
+-
+ def _toml_key(key: str) -> str:
+     return key.replace("_", "-")
+ 
+-
+ def _toml_value(key: str, value: Any) -> Any:  # noqa: ANN401
+     if isinstance(value, (Version, Marker, SpecifierSet)):
+         return str(value)
+@@ -92,7 +86,6 @@
+         return [str(v) for v in value]
+     return value
+ 
+-
+ def _toml_dict_factory(data: list[tuple[str, Any]]) -> dict[str, Any]:
+     return {
+         _toml_key(key): _toml_value(key, value)
+@@ -100,7 +93,6 @@
+         if value is not None
+     }
+ 
+-
+ def _get(d: Mapping[str, Any], expected_type: type[_T], key: str) -> _T | None:
+     """Get a value from the dictionary and verify it's the expected type."""
+     if (value := d.get(key)) is None:
+@@ -116,14 +108,12 @@
+         )
+     return value
+ 
+-
+ def _get_required(d: Mapping[str, Any], expected_type: type[_T], key: str) -> _T:
+     """Get a required value from the dictionary and verify it's the expected type."""
+     if (value := _get(d, expected_type, key)) is None:
+         raise _PylockRequiredKeyError(key)
+     return value
+ 
+-
+ def _get_sequence(
+     d: Mapping[str, Any], expected_item_type: type[_T], key: str
+ ) -> Sequence[_T] | None:
+@@ -145,7 +135,6 @@
+             )
+     return value
+ 
+-
+ def _get_as(
+     d: Mapping[str, Any],
+     expected_type: type[_T],
+@@ -164,7 +153,6 @@
+     except Exception as e:
+         raise PylockValidationError(e, context=key) from e
+ 
+-
+ def _get_required_as(
+     d: Mapping[str, Any],
+     expected_type: type[_T],
+@@ -177,7 +165,6 @@
+         raise _PylockRequiredKeyError(key)
+     return value
+ 
+-
+ def _get_sequence_as(
+     d: Mapping[str, Any],
+     expected_item_type: type[_T],
+@@ -196,7 +183,6 @@
+         raise PylockValidationError(e, context=f"{key}[{len(result)}]") from e
+     return result
+ 
+-
+ def _get_object(
+     d: Mapping[str, Any], target_type: type[_FromMappingProtocolT], key: str
+ ) -> _FromMappingProtocolT | None:
+@@ -208,7 +194,6 @@
+     except Exception as e:
+         raise PylockValidationError(e, context=key) from e
+ 
+-
+ def _get_sequence_of_objects(
+     d: Mapping[str, Any], target_item_type: type[_FromMappingProtocolT], key: str
+ ) -> list[_FromMappingProtocolT] | None:
+@@ -224,7 +209,6 @@
+         raise PylockValidationError(e, context=f"{key}[{len(result)}]") from e
+     return result
+ 
+-
+ def _get_required_sequence_of_objects(
+     d: Mapping[str, Any], target_item_type: type[_FromMappingProtocolT], key: str
+ ) -> Sequence[_FromMappingProtocolT]:
+@@ -234,19 +218,16 @@
+         raise _PylockRequiredKeyError(key)
+     return result
+ 
+-
+ def _validate_normalized_name(name: str) -> NormalizedName:
+     """Validate that a string is a NormalizedName."""
+     if not is_normalized_name(name):
+         raise PylockValidationError(f"Name {name!r} is not normalized")
+     return NormalizedName(name)
+ 
+-
+ def _validate_path_url(path: str | None, url: str | None) -> None:
+     if not path and not url:
+         raise PylockValidationError("path or url must be provided")
+ 
+-
+ def _path_name(path: str | None) -> str | None:
+     if not path:
+         return None
+@@ -259,7 +240,6 @@
+     else:
+         return path
+ 
+-
+ def _url_name(url: str | None) -> str | None:
+     if not url:
+         return None
+@@ -267,7 +247,6 @@
+     # The last path component is percent-encoded, so decode it to the file name
+     return unquote(url_path.rsplit("/", 1)[-1])
+ 
+-
+ def _validate_hashes(hashes: Mapping[str, Any]) -> Mapping[str, Any]:
+     if not hashes:
+         raise PylockValidationError("At least one hash must be provided")
+@@ -275,10 +254,8 @@
+         raise PylockValidationError("Hash values must be strings")
+     return hashes
+ 
+-
+ class PylockValidationError(Exception):
+     """Raised when when input data is not spec-compliant."""
+-
+     context: str | None = None
+     message: str
+ 
+@@ -305,23 +282,19 @@
+             return f"{self.message} in {self.context!r}"
+         return self.message
+ 
+-
+ class _PylockRequiredKeyError(PylockValidationError):
+     def __init__(self, key: str) -> None:
+         super().__init__("Missing required value", context=key)
+ 
+-
+ class PylockUnsupportedVersionError(PylockValidationError):
+     """Raised when encountering an unsupported `lock_version`."""
+ 
+-
+ class PylockSelectError(Exception):
+     """Base exception for errors raised by :meth:`Pylock.select`.
+ 
+     .. versionadded:: 26.1
+     """
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class PackageVcs:
+     type: str
+@@ -362,7 +335,6 @@
+         _validate_path_url(package_vcs.path, package_vcs.url)
+         return package_vcs
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class PackageDirectory:
+     path: str
+@@ -389,7 +361,6 @@
+             subdirectory=_get(d, str, "subdirectory"),
+         )
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class PackageArchive:
+     url: str | None = None
+@@ -430,7 +401,6 @@
+         _validate_path_url(package_archive.path, package_archive.url)
+         return package_archive
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class PackageSdist:
+     name: str | None = None
+@@ -482,7 +452,6 @@
+             raise PylockValidationError("Cannot determine sdist filename")
+         return filename
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class PackageWheel:
+     name: str | None = None
+@@ -531,7 +500,6 @@
+             raise PylockValidationError("Cannot determine wheel filename")
+         return filename
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class Package:
+     name: NormalizedName
+@@ -657,19 +625,16 @@
+                 _get_required(attestation_identity, str, "kind")
+         except Exception as e:
+             raise PylockValidationError(
+-                e, context=f"attestation-identities[{i}]"
+-            ) from e
++                e, context=f"attestation-identities[{i}]") from e
+         return package
+ 
+     @property
+     def is_direct(self) -> bool:
+         return not (self.sdist or self.wheels)
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class Pylock:
+     """A class representing a pylock file."""
+-
+     lock_version: Version
+     environments: Sequence[Marker] | None = None
+     requires_python: SpecifierSet | None = None
+@@ -865,7 +830,7 @@
+                     f"python_full_version {env_python_full_version!r} "
+                     f"in provided environment does not satisfy the Python version "
+                     f"requirement {str(package.requires_python)!r} for package "
+-                    f"{package.name!r} at packages[{package_index}]"
++                    f"{package.name!r} at packages[{package_index}]]"
+                 )
+ 
+             # #. Check that no other conflicting instance of the package has been slated
+@@ -940,4 +905,4 @@
+ 
+             else:
+                 # Covered by lock.validate() which is a precondition for this method.
+-                raise NotImplementedError  # pragma: no cover
++                raise NotImplementedError  # pragma: no cover
+\ No newline at end of file

@@ -1,0 +1,44 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/requests/api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py	2026-09-17 15:46:10.978622109 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/requests/api.py	2026-09-27 02:25:41.691564747 -0400
+@@ -13,6 +13,7 @@
+ from typing import TYPE_CHECKING
+ 
+ from . import sessions
++from .help_v2 import info_v2
+ from .models import Response
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/requests/help.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py	2026-09-17 15:46:11.047866462 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/requests/help.py	2026-09-27 02:25:37.943572228 -0400
+@@ -66,7 +66,7 @@
+     return {"name": implementation, "version": implementation_version}
+ 
+ 
+-def info() -> dict[str, Any]:
++def info_v2() -> dict[str, Any]:
+     """Generate information for a bug report."""
+     try:
+         platform_info = {
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/requests/models.py	2026-09-27 02:26:42.381443665 -0400
+@@ -112,6 +112,7 @@
+     @property
+     def path_url(self) -> str:
+         """Build the path URL to use."""
++        """Build the path URL to use."""
+ 
+         url: list[str] = []
+ 
+@@ -132,7 +133,8 @@
+ 
+     @overload
+     @staticmethod
+-    def _encode_params(data: str) -> str: ...
++    def _encode_params(  # type: ignore[no-untyped-def]
++        self, data: str) -> str: ...
+ 
+     @overload
+     @staticmethod

@@ -1,0 +1,12 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py /tmp/yqi10/mu/102994/g0/lane01/profiling_sandbox/s15_harness/code.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py	2026-09-23 22:11:16.950193278 -0400
++++ /tmp/yqi10/mu/102994/g0/lane01/profiling_sandbox/s15_harness/code.py	2026-09-27 03:14:25.823257987 -0400
+@@ -324,7 +324,7 @@
+     return False
+ 
+ 
+-def update_task(task_id: str, addBlockedBy: list[str]) -> Task:
++def update_task_v2(task_id: str, addBlockedBy: list[str]) -> Task:
+     """Add dependency edges after create_task has returned real task IDs."""
+     if not isinstance(addBlockedBy, list):
+         raise ValueError("addBlockedBy must be a list of task IDs")

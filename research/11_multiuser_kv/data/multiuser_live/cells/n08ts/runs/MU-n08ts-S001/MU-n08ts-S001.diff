@@ -1,0 +1,160 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/async_utils.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/jinja2/async_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/async_utils.py	2026-09-17 15:46:11.726487027 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/jinja2/async_utils.py	2026-09-27 12:21:45.348550292 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import inspect
+ import typing as t
+ from functools import WRAPPER_ASSIGNMENTS
+@@ -11,7 +13,6 @@
+ 
+ V = t.TypeVar("V")
+ 
+-
+ def async_variant(normal_func):  # type: ignore
+     def decorator(async_func):  # type: ignore
+         pass_arg = _PassArg.from_obj(normal_func)
+@@ -59,7 +60,7 @@
+ _common_primitives = {int, float, bool, str, list, dict, tuple, type(None)}
+ 
+ 
+-async def auto_await(value: t.Union[t.Awaitable["V"], "V"]) -> "V":
++async def auto_await(value: t.Union[t.Awaitable["V"], "V"]") -> "V":
+     # Avoid a costly call to isawaitable
+     if type(value) in _common_primitives:
+         return t.cast("V", value)
+@@ -69,9 +70,8 @@
+ 
+     return value
+ 
+-
+ class _IteratorToAsyncIterator(t.Generic[V]):
+-    def __init__(self, iterator: "t.Iterator[V]"):
++    def __init__(self, iterator: "t.Iterator[V]":
+         self._iterator = iterator
+ 
+     def __aiter__(self) -> "te.Self":
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/bccache.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/jinja2/bccache.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/bccache.py	2026-09-17 15:46:11.732510579 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/jinja2/bccache.py	2026-09-27 12:30:14.683798141 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """The optional bytecode cache system. This is useful if you have very
+ complex template situations and the compilation of all those templates
+ slows down your application too much.
+@@ -31,7 +33,6 @@
+             self, key: str, value: bytes, timeout: t.Optional[int] = None
+         ) -> None: ...
+ 
+-
+ bc_version = 5
+ # Magic bytes to identify Jinja bytecode cache files. Contains the
+ # Python major and minor version to avoid loading incompatible bytecode
+@@ -42,7 +43,6 @@
+     + pickle.dumps((sys.version_info[0] << 24) | sys.version_info[1], 2)
+ )
+ 
+-
+ class Bucket:
+     """Buckets are used to store the bytecode for one template.  It's created
+     and initialized by the bytecode cache and passed to the loading functions.
+@@ -99,34 +99,11 @@
+         self.write_bytecode(out)
+         return out.getvalue()
+ 
+-
+ class BytecodeCache:
+     """To implement your own bytecode cache you have to subclass this class
+-    and override :meth:`load_bytecode` and :meth:`dump_bytecode`.  Both of
+-    these methods are passed a :class:`~jinja2.bccache.Bucket`.
+-
+-    A very basic bytecode cache that saves the bytecode on the file system::
+-
+-        from os import path
+-
+-        class MyCache(BytecodeCache):
+-
+-            def __init__(self, directory):
+-                self.directory = directory
+-
+-            def load_bytecode(self, bucket):
+-                filename = path.join(self.directory, bucket.key)
+-                if path.exists(filename):
+-                    with open(filename, 'rb') as f:
+-                        bucket.load_bytecode(f)
+-
+-            def dump_bytecode(self, bucket):
+-                filename = path.join(self.directory, bucket.key)
+-                with open(filename, 'wb') as f:
+-                    bucket.write_bytecode(f)
+-
+-    A more advanced version of a filesystem based bytecode cache is part of
+-    Jinja.
++    and override this method to write the bytecode
++    from a bucket back to the cache.  If it unable to do so it must not
++    fail silently but raise an exception.
+     """
+ 
+     def load_bytecode(self, bucket: Bucket) -> None:
+@@ -184,7 +161,6 @@
+         """Put the bucket into the cache."""
+         self.dump_bytecode(bucket)
+ 
+-
+ class FileSystemBytecodeCache(BytecodeCache):
+     """A bytecode cache that stores bytecode on the filesystem.  It accepts
+     two arguments: The directory where the cache items are stored and a
+@@ -327,7 +303,6 @@
+             except OSError:
+                 pass
+ 
+-
+ class MemcachedBytecodeCache(BytecodeCache):
+     """This class implements a bytecode cache that uses a memcache cache for
+     storing the information.  It does not enforce a specific memcache library
+@@ -405,4 +380,4 @@
+                 self.client.set(key, value)
+         except Exception:
+             if not self.ignore_memcache_errors:
+-                raise
++                raise"
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/_identifier.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/jinja2/_identifier.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/_identifier.py	2026-09-17 15:46:11.633366768 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/jinja2/_identifier.py	2026-09-27 12:19:31.731748027 -0400
+@@ -1,6 +1,7 @@
++BUILD_TAG = 'profiling'
++
+ import re
+ 
+ # generated by scripts/generate_identifier_pattern.py
+ pattern = re.compile(
+-    r"[\w·̀-ͯ·҃-֑҇-ׇֽֿׁׂׅׄؐ-ًؚ-ٰٟۖ-ۜ۟-۪ۤۧۨ-ܑۭܰ-݊ަ-ް߫-߽߳ࠖ-࠙ࠛ-ࠣࠥ-ࠧࠩ-࡙࠭-࡛࣓-ࣣ࣡-ःऺ-़ा-ॏ॑-ॗॢॣঁ-ঃ়া-ৄেৈো-্ৗৢৣ৾ਁ-ਃ਼ਾ-ੂੇੈੋ-੍ੑੰੱੵઁ-ઃ઼ા-ૅે-ૉો-્ૢૣૺ-૿ଁ-ଃ଼ା-ୄେୈୋ-୍ୖୗୢୣஂா-ூெ-ைொ-்ௗఀ-ఄా-ౄె-ైొ-్ౕౖౢౣಁ-ಃ಼ಾ-ೄೆ-ೈೊ-್ೕೖೢೣഀ-ഃ഻഼ാ-ൄെ-ൈൊ-്ൗൢൣංඃ්ා-ුූෘ-ෟෲෳัิ-ฺ็-๎ັິ-ູົຼ່-ໍ༹༘༙༵༷༾༿ཱ-྄྆྇ྍ-ྗྙ-ྼ࿆ါ-ှၖ-ၙၞ-ၠၢ-ၤၧ-ၭၱ-ၴႂ-ႍႏႚ-ႝ፝-፟ᜒ-᜔ᜲ-᜴ᝒᝓᝲᝳ឴-៓៝᠋-᠍ᢅᢆᢩᤠ-ᤫᤰ-᤻ᨗ-ᨛᩕ-ᩞ᩠-᩿᩼᪰-᪽ᬀ-ᬄ᬴-᭄᭫-᭳ᮀ-ᮂᮡ-ᮭ᯦-᯳ᰤ-᰷᳐-᳔᳒-᳨᳭ᳲ-᳴᳷-᳹᷀-᷹᷻-᷿‿⁀⁔⃐-⃥⃜⃡-⃰℘℮⳯-⵿⳱ⷠ-〪ⷿ-゙゚〯꙯ꙴ-꙽ꚞꚟ꛰꛱ꠂ꠆ꠋꠣ-ꠧꢀꢁꢴ-ꣅ꣠-꣱ꣿꤦ-꤭ꥇ-꥓ꦀ-ꦃ꦳-꧀ꧥꨩ-ꨶꩃꩌꩍꩻ-ꩽꪰꪲ-ꪴꪷꪸꪾ꪿꫁ꫫ-ꫯꫵ꫶ꯣ-ꯪ꯬꯭ﬞ︀-️︠-︯︳︴﹍-﹏＿𐇽𐋠𐍶-𐍺𐨁-𐨃𐨅𐨆𐨌-𐨏𐨸-𐨿𐨺𐫦𐫥𐴤-𐽆𐴧-𐽐𑀀-𑀂𑀸-𑁆𑁿-𑂂𑂰-𑂺𑄀-𑄂𑄧-𑄴𑅅𑅆𑅳𑆀-𑆂𑆳-𑇀𑇉-𑇌𑈬-𑈷𑈾𑋟-𑋪𑌀-𑌃𑌻𑌼𑌾-𑍄𑍇𑍈𑍋-𑍍𑍗𑍢𑍣𑍦-𑍬𑍰-𑍴𑐵-𑑆𑑞𑒰-𑓃𑖯-𑖵𑖸-𑗀𑗜𑗝𑘰-𑙀𑚫-𑚷𑜝-𑜫𑠬-𑠺𑨁-𑨊𑨳-𑨹𑨻-𑨾𑩇𑩑-𑩛𑪊-𑪙𑰯-𑰶𑰸-𑰿𑲒-𑲧𑲩-𑲶𑴱-𑴶𑴺𑴼𑴽𑴿-𑵅𑵇𑶊-𑶎𑶐𑶑𑶓-𑶗𑻳-𑻶𖫰-𖫴𖬰-𖬶𖽑-𖽾𖾏-𖾒𛲝𛲞𝅥-𝅩𝅭-𝅲𝅻-𝆂𝆅-𝆋𝆪-𝆭𝉂-𝉄𝨀-𝨶𝨻-𝩬𝩵𝪄𝪛-𝪟𝪡-𝪯𞀀-𞀆𞀈-𞀘𞀛-𞀡𞀣𞀤𞀦-𞣐𞀪-𞣖𞥄-𞥊󠄀-󠇯]+"  # noqa: B950
+-)
++    r"[\w·̀-ͯ·҃-֑҇-ׇֽֿׁׂׅׄؐ-ًؚ-ٰٟۖ-ۜ۟-۪ۤۧۨ-ܑۭܰ-݊ަ-ް߫-߽߳ࠖ-࠙ࠛ-ࠣࠥ-ࠧࠩ-࡙࠭-࡛࣓-ࣣ࣡-ःऺ-़ा-ॏ॑-ॗॢॣঁ-ঃ়া-ৄেৈো-্ৗৢৣ৾ਁ-ਃ਼ਾ-ੂੇੈੋ-੍ੑੰੱੵઁ-ઃ઼ા-ૅે-ૉો-્ૢૣૺ-૿ଁ-ଃ଼ା-ୄେୈୋ-୍ୖୗୢୣஂா-ூெ-ைொ-்ௗఀ-ఄా-ౄె-ైొ-్ౕౖౢౣಁ-ಃ಼ಾ-ೄೆ-ೈೊ-್ೕೖೢೣഀ-ഃ഻഼ാ-ൄെ-ൈൊ-്ൗൢൣංඃ්ා-ුූෘ-ෟෲෳัิ-ฺ็-๎ັິ-ູົຼ່-ໍ༹༘༙༵༷༾༿ཱ-྄྆྇ྍ-ྗྙ-ྼ࿆ါ-ှၖ-ၙၞ-ၠၢ-ၤၧ-ၭၱ-ၴႂ-ႍႏႚ-ႝ፝-፟ᜒ-᜔ᜲ-᜴ᝒᝓᝲᝳ឴-៓៝᠋-᠍ᢅᢆᢩᤠ-ᤫᤰ-᤻ᨗ-ᨛᩕ-ᩞ᩠-᩿᩼᪰-᪽ᬀ-ᬄ᬴-᭄᭫-᭳ᮀ-ᮂᮡ-ᮭ᯦-᯳ᰤ-᰷⳯-⵿⳱ⷠ-〪ⷿ-゙゚〯꙯ꙴ-꙽ꚞꚟ꛰꛱ꠂ꠆ꠋꠣ-ꠧꢀꢁꢴ-ꣅ꣠-꣱ꣿꤦ-꤭ꥇ-꥓ꦀ-ꦃ꦳-꧀ꧥꨩ-ꨶꩃꩌꩍꩻ-ꩽꪰꪲ-ꪴꪷꪸꪾ꪿꫁ꫫ-ꫯꫵ꫶ꯣ-ꯪ꯬꯭ﬞ︀-️︠-︯︳︴﹍-﹏＿𐇽𐋠𐍶-𐍺𐨁-𐨃𐨅𐨆𐨌-𐨏𐨸-𐨿𐨺𐫦𐫥𐴤-𐽆𐴧-𐽐𑀀-𑀂𑀸-𑁆𑁿-𑂂𑂰-𑂺𑄀-𑄂𑄧-𑄴𑅅𑅆𑅳𑆀-𑆂𑆳-𑇀𑇉-𑇌𑈬-𑈷𑈾𑋟-𑋪𑌀-𑌃𑌻𑌼𑌾-𑍄𑍇𑍈𑍋-𑍍𑍗𑍢𑍣𑍦-𑍬𑍰-𑍴𑐵-𑑆𑑞𑒰-𑓃𑖯-𑖵𑖸-𑗀𑗜𑗝𑘰-𑙀𑚫-𑚷𑜝-𑜫𑠬-𑠺𑨁-𑨊𑨳-𑨹𑨻-𑨾𑩇𑩑-𑩛𑪊-𑪙𑰯-𑰶𑰸-𑰿𑲒-𑲧𑲩-𑲶𑴱-𑴶𑴺𑴼𑴽𑴿-𑵅𑵇𑶊-𑶎𑶐𑶑𑶓-𑶗𑻳-𑻶𖫰-𖫴𖬰-𖬶𖽑-𖽾𖾏-𖾒𛲝𛲞𝅥-𝅩𝅭-𝅲𝅻-𝆂 motorcycles
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/jinja2/lexer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py	2026-09-17 15:46:11.844896526 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/jinja2/lexer.py	2026-09-27 12:09:07.606671901 -0400
+@@ -190,7 +190,7 @@
+     return _describe_token_type(token.type)
+ 
+ 
+-def describe_token_expr(expr: str) -> str:
++def describe_token_expr_v2(expr: str) -> str:
+     """Like `describe_token` but for token expressions."""
+     if ":" in expr:
+         type, value = expr.split(":", 1)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/jinja2/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py	2026-09-17 15:46:11.883102845 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/jinja2/parser.py	2026-09-27 12:09:46.446614394 -0400
+@@ -7,7 +7,7 @@
+ from .exceptions import TemplateAssertionError
+ from .exceptions import TemplateSyntaxError
+ from .lexer import describe_token
+-from .lexer import describe_token_expr
++from .lexer import describe_token_expr_v2
+ 
+ if t.TYPE_CHECKING:
+     import typing_extensions as te

@@ -1,0 +1,803 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102748/g1/lane02/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102748/g1/lane02/profiling_sandbox/httpx/_models.py	2026-09-26 22:04:22.996765986 -0400
+@@ -54,9 +54,7 @@
+ 
+ 
+ def _is_known_encoding(encoding: str) -> bool:
+-    """
+-    Return `True` if `encoding` is a known codec.
+-    """
++    """Return `True` if `encoding` is a known codec."""
+     try:
+         codecs.lookup(encoding)
+     except LookupError:
+@@ -65,16 +63,12 @@
+ 
+ 
+ def _normalize_header_key(key: str | bytes, encoding: str | None = None) -> bytes:
+-    """
+-    Coerce str/bytes into a strictly byte-wise HTTP header key.
+-    """
++    """Coerce str/bytes into a strictly byte-wise HTTP header key."""
+     return key if isinstance(key, bytes) else key.encode(encoding or "ascii")
+ 
+ 
+ def _normalize_header_value(value: str | bytes, encoding: str | None = None) -> bytes:
+-    """
+-    Coerce str/bytes into a strictly byte-wise HTTP header value.
+-    """
++    """Coerce str/bytes into a strictly byte-wise HTTP header value."""
+     if isinstance(value, bytes):
+         return value
+     if not isinstance(value, str):
+@@ -83,6 +77,7 @@
+ 
+ 
+ def _parse_content_type_charset(content_type: str) -> str | None:
++    """Parse the content type to get the charset."""
+     # We used to use `cgi.parse_header()` here, but `cgi` became a dead battery.
+     # See: https://peps.python.org/pep-0594/#cgi
+     msg = email.message.Message()
+@@ -91,23 +86,9 @@
+ 
+ 
+ def _parse_header_links(value: str) -> list[dict[str, str]]:
+-    """
+-    Returns a list of parsed link headers, for more info see:
+-    https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link
+-    The generic syntax of those is:
+-    Link: < uri-reference >; param1=value1; param2="value2"
+-    So for instance:
+-    Link; '<http:/.../front.jpeg>; type="image/jpeg",<http://.../back.jpeg>;'
+-    would return
+-        [
+-            {"url": "http:/.../front.jpeg", "type": "image/jpeg"},
+-            {"url": "http://.../back.jpeg"},
+-        ]
+-    :param value: HTTP Link entity-header field
+-    :return: list of parsed link headers
+-    """
++    """Returns a list of parsed link headers."""
+     links: list[dict[str, str]] = []
+-    replace_chars = " '\""
++    replace_chars = " '""
+     value = value.strip(replace_chars)
+     if not value:
+         return links
+@@ -116,7 +97,7 @@
+             url, params = val.split(";", 1)
+         except ValueError:
+             url, params = val, ""
+-        link = {"url": url.strip("<> '\"")}
++        link = {"url": url.strip("<> '"")}
+         for param in params.split(";"):
+             try:
+                 key, value = param.split("=")
+@@ -130,6 +111,7 @@
+ def _obfuscate_sensitive_headers(
+     items: typing.Iterable[tuple[typing.AnyStr, typing.AnyStr]],
+ ) -> typing.Iterator[tuple[typing.AnyStr, typing.AnyStr]]:
++    """Obfuscate sensitive header values."""
+     for k, v in items:
+         if to_str(k.lower()) in SENSITIVE_HEADERS:
+             v = to_bytes_or_str("[secure]", match_type_of=v)
+@@ -137,9 +119,7 @@
+ 
+ 
+ class Headers(typing.MutableMapping[str, str]):
+-    """
+-    HTTP headers, as a case-insensitive multi-dict.
+-    """
++    """HTTP headers, as a case-insensitive multi-dict."""
+ 
+     def __init__(
+         self,
+@@ -165,10 +145,7 @@
+ 
+     @property
+     def encoding(self) -> str:
+-        """
+-        Header encoding is mandated as ascii, but we allow fallbacks to utf-8
+-        or iso-8859-1.
+-        """
++        """Header encoding is mandated as ascii, but we allow fallbacks to utf-8 or iso-8859-1."""
+         if self._encoding is None:
+             for encoding in ["ascii", "utf-8"]:
+                 for key, value in self.raw:
+@@ -178,13 +155,11 @@
+                     except UnicodeDecodeError:
+                         break
+                 else:
+-                    # The else block runs if 'break' did not occur, meaning
+-                    # all values fitted the encoding.
++                    # The else block runs if 'break' did not occur, meaning all values fitted the encoding.
+                     self._encoding = encoding
+                     break
+             else:
+-                # The ISO-8859-1 encoding covers all 256 code points in a byte,
+-                # so will never raise decode errors.
++                # The ISO-8859-1 encoding covers all 256 code points in a byte, so will never raise decode errors.
+                 self._encoding = "iso-8859-1"
+         return self._encoding
+ 
+@@ -194,9 +169,7 @@
+ 
+     @property
+     def raw(self) -> list[tuple[bytes, bytes]]:
+-        """
+-        Returns a list of the raw header items, as byte pairs.
+-        """
++        """Returns a list of the raw header items, as byte pairs."""
+         return [(raw_key, value) for raw_key, _, value in self._list]
+ 
+     def keys(self) -> typing.KeysView[str]:
+@@ -214,10 +187,7 @@
+         return values_dict.values()
+ 
+     def items(self) -> typing.ItemsView[str, str]:
+-        """
+-        Return `(key, value)` items of headers. Concatenate headers
+-        into a single comma separated value when a key occurs multiple times.
+-        """
++        """Return `(key, value)` items of headers. Concatenate headers into a single comma separated value when a key occurs multiple times."""
+         values_dict: dict[str, str] = {}
+         for _, key, value in self._list:
+             str_key = key.decode(self.encoding)
+@@ -229,32 +199,21 @@
+         return values_dict.items()
+ 
+     def multi_items(self) -> list[tuple[str, str]]:
+-        """
+-        Return a list of `(key, value)` pairs of headers. Allow multiple
+-        occurrences of the same key without concatenating into a single
+-        comma separated value.
+-        """
++        """Return a list of `(key, value)` pairs of headers. Allow multiple occurrences of the same key without concatenating into a single comma separated value."""
+         return [
+             (key.decode(self.encoding), value.decode(self.encoding))
+             for _, key, value in self._list
+         ]
+ 
+     def get(self, key: str, default: typing.Any = None) -> typing.Any:
+-        """
+-        Return a header value. If multiple occurrences of the header occur
+-        then concatenate them together with commas.
+-        """
++        """Return a header value. If multiple occurrences of the header occur then concatenate them together with commas."""
+         try:
+             return self[key]
+         except KeyError:
+             return default
+ 
+     def get_list(self, key: str, split_commas: bool = False) -> list[str]:
+-        """
+-        Return a list of all header values for a given key.
+-        If `split_commas=True` is passed, then any comma separated header
+-        values are split into multiple return strings.
+-        """
++        """Return a list of all header values for a given key. If `split_commas=True` is passed, then any comma separated header values are split into multiple return strings."""
+         get_header_key = key.lower().encode(self.encoding)
+ 
+         values = [
+@@ -272,6 +231,7 @@
+         return split_values
+ 
+     def update(self, headers: HeaderTypes | None = None) -> None:  # type: ignore
++        """Update the headers with the provided headers."""
+         headers = Headers(headers)
+         for key in headers.keys():
+             if key in self:
+@@ -279,15 +239,11 @@
+         self._list.extend(headers._list)
+ 
+     def copy(self) -> Headers:
++        """Return a copy of the headers."""
+         return Headers(self, encoding=self.encoding)
+ 
+     def __getitem__(self, key: str) -> str:
+-        """
+-        Return a single header value.
+-
+-        If there are multiple headers with the same key, then we concatenate
+-        them with commas. See: https://tools.ietf.org/html/rfc7230#section-3.2.2
+-        """
++        """Return a single header value. If there are multiple headers with the same key, then we concatenate them with commas."""
+         normalized_key = key.lower().encode(self.encoding)
+ 
+         items = [
+@@ -302,10 +258,7 @@
+         raise KeyError(key)
+ 
+     def __setitem__(self, key: str, value: str) -> None:
+-        """
+-        Set the header `key` to `value`, removing any duplicate entries.
+-        Retains insertion order.
+-        """
++        """Set the header `key` to `value`, removing any duplicate entries. Retains insertion order."""
+         set_key = key.encode(self._encoding or "utf-8")
+         set_value = value.encode(self._encoding or "utf-8")
+         lookup_key = set_key.lower()
+@@ -326,9 +279,7 @@
+             self._list.append((set_key, lookup_key, set_value))
+ 
+     def __delitem__(self, key: str) -> None:
+-        """
+-        Remove the header `key`.
+-        """
++        """Remove the header `key`."""
+         del_key = key.lower().encode(self.encoding)
+ 
+         pop_indexes = [
+@@ -378,8 +329,9 @@
+             return f"{class_name}({as_dict!r}{encoding_str})"
+         return f"{class_name}({as_list!r}{encoding_str})"
+ 
+-
+ class Request:
++    """HTTP request object."""
++
+     def __init__(
+         self,
+         method: str,
+@@ -422,23 +374,16 @@
+             if isinstance(stream, ByteStream):
+                 self.read()
+         else:
+-            # There's an important distinction between `Request(content=...)`,
+-            # and `Request(stream=...)`.
+-            #
+-            # Using `content=...` implies automatically populated `Host` and content
+-            # headers, of either `Content-Length: ...` or `Transfer-Encoding: chunked`.
+-            #
+-            # Using `stream=...` will not automatically include *any*
+-            # auto-populated headers.
+-            #
+-            # As an end-user you don't really need `stream=...`. It's only
+-            # useful when:
+-            #
++            # There's an important distinction between `Request(content=...)`, and `Request(stream=...)`.
++            # Using `content=...` implies automatically populated `Host` and content headers, of either `Content-Length: ...` or `Transfer-Encoding: chunked`.
++            # Using `stream=...` will not automatically include *any* auto-populated headers.
++            # As an end-user you don't really need `stream=...`. It's only useful when:
+             # * Preserving the request stream when copying requests, eg for redirects.
+             # * Creating request instances on the *server-side* of the transport API.
+             self.stream = stream
+ 
+     def _prepare(self, default_headers: dict[str, str]) -> None:
++        """Prepare the request with default headers."""
+         for key, value in default_headers.items():
+             # Ignore Transfer-Encoding if the Content-Length has been set explicitly.
+             if key.lower() == "transfer-encoding" and "Content-Length" in self.headers:
+@@ -461,35 +406,28 @@
+ 
+     @property
+     def content(self) -> bytes:
++        """Return the request content."""
+         if not hasattr(self, "_content"):
+             raise RequestNotRead()
+         return self._content
+ 
+     def read(self) -> bytes:
+-        """
+-        Read and return the request content.
+-        """
++        """Read and return the request content."""
+         if not hasattr(self, "_content"):
+             assert isinstance(self.stream, typing.Iterable)
+             self._content = b"".join(self.stream)
+             if not isinstance(self.stream, ByteStream):
+-                # If a streaming request has been read entirely into memory, then
+-                # we can replace the stream with a raw bytes implementation,
+-                # to ensure that any non-replayable streams can still be used.
++                # If a streaming request has been read entirely into memory, then we can replace the stream with a raw bytes implementation, to ensure that any non-replayable streams can still be used.
+                 self.stream = ByteStream(self._content)
+         return self._content
+ 
+     async def aread(self) -> bytes:
+-        """
+-        Read and return the request content.
+-        """
++        """Read and return the request content."""
+         if not hasattr(self, "_content"):
+             assert isinstance(self.stream, typing.AsyncIterable)
+             self._content = b"".join([part async for part in self.stream])
+             if not isinstance(self.stream, ByteStream):
+-                # If a streaming request has been read entirely into memory, then
+-                # we can replace the stream with a raw bytes implementation,
+-                # to ensure that any non-replayable streams can still be used.
++                # If a streaming request has been read entirely into memory, then we can replace the stream with a raw bytes implementation, to ensure that any non-replayable streams can still be used.
+                 self.stream = ByteStream(self._content)
+         return self._content
+ 
+@@ -511,8 +449,9 @@
+         self.extensions = {}
+         self.stream = UnattachedStream()
+ 
+-
+ class Response:
++    """HTTP response object."""
++
+     def __init__(
+         self,
+         status_code: int,
+@@ -533,8 +472,7 @@
+ 
+         self._request: Request | None = request
+ 
+-        # When follow_redirects=False and a redirect is received,
+-        # the client will set `response.next_request`.
++        # When follow_redirects=False and a redirect is received, the client will set `response.next_request`.
+         self.next_request: Request | None = None
+ 
+         self.extensions = {} if extensions is None else dict(extensions)
+@@ -553,22 +491,16 @@
+                 # Load the response body, except for streaming content.
+                 self.read()
+         else:
+-            # There's an important distinction between `Response(content=...)`,
+-            # and `Response(stream=...)`.
+-            #
+-            # Using `content=...` implies automatically populated content headers,
+-            # of either `Content-Length: ...` or `Transfer-Encoding: chunked`.
+-            #
++            # There's an important distinction between `Response(content=...)`, and `Response(stream=...)`.
++            # Using `content=...` implies automatically populated content headers, of either `Content-Length: ...` or `Transfer-Encoding: chunked`.
+             # Using `stream=...` will not automatically include any content headers.
+-            #
+-            # As an end-user you don't really need `stream=...`. It's only
+-            # useful when creating response instances having received a stream
+-            # from the transport API.
++            # As an end-user you don't really need `stream=...`. It's only useful when creating response instances having received a stream from the transport API.
+             self.stream = stream
+ 
+         self._num_bytes_downloaded = 0
+ 
+     def _prepare(self, default_headers: dict[str, str]) -> None:
++        """Prepare the response with default headers."""
+         for key, value in default_headers.items():
+             # Ignore Transfer-Encoding if the Content-Length has been set explicitly.
+             if key.lower() == "transfer-encoding" and "content-length" in self.headers:
+@@ -577,14 +509,10 @@
+ 
+     @property
+     def elapsed(self) -> datetime.timedelta:
+-        """
+-        Returns the time taken for the complete request/response
+-        cycle to complete.
+-        """
++        """Returns the time taken for the complete request/response cycle to complete."""
+         if not hasattr(self, "_elapsed"):
+             raise RuntimeError(
+-                "'.elapsed' may only be accessed after the response "
+-                "has been read or closed."
++                ".elapsed may only be accessed after the response has been read or closed."
+             )
+         return self._elapsed
+ 
+@@ -594,9 +522,7 @@
+ 
+     @property
+     def request(self) -> Request:
+-        """
+-        Returns the request instance associated to the current response.
+-        """
++        """Returns the request instance associated to the current response."""
+         if self._request is None:
+             raise RuntimeError(
+                 "The request instance has not been set on this response."
+@@ -627,19 +553,19 @@
+ 
+     @property
+     def url(self) -> URL:
+-        """
+-        Returns the URL for which the request was made.
+-        """
++        """Returns the URL for which the request was made."""
+         return self.request.url
+ 
+     @property
+     def content(self) -> bytes:
++        """Return the response content."""
+         if not hasattr(self, "_content"):
+             raise ResponseNotRead()
+         return self._content
+ 
+     @property
+     def text(self) -> str:
++        """Return the response text."""
+         if not hasattr(self, "_text"):
+             content = self.content
+             if not content:
+@@ -651,16 +577,7 @@
+ 
+     @property
+     def encoding(self) -> str | None:
+-        """
+-        Return an encoding to use for decoding the byte content into text.
+-        The priority for determining this is given by...
+-
+-        * `.encoding = <>` has been set explicitly.
+-        * The encoding as specified by the charset parameter in the Content-Type header.
+-        * The encoding as determined by `default_encoding`, which may either be
+-          a string like "utf-8" indicating the encoding to use, or may be a callable
+-          which enables charset autodetection.
+-        """
++        """Return an encoding to use for decoding the byte content into text. The priority for determining this is given by... * `.encoding = <>` has been set explicitly. * The encoding as specified by the charset parameter in the Content-Type header. * The encoding as determined by `default_encoding`, which may either be a string like "utf-8" indicating the encoding to use, or may be a callable which enables charset autodetection."""
+         if not hasattr(self, "_encoding"):
+             encoding = self.charset_encoding
+             if encoding is None or not _is_known_encoding(encoding):
+@@ -673,12 +590,7 @@
+ 
+     @encoding.setter
+     def encoding(self, value: str) -> None:
+-        """
+-        Set the encoding to use for decoding the byte content into text.
+-
+-        If the `text` attribute has been accessed, attempting to set the
+-        encoding will throw a ValueError.
+-        """
++        """Set the encoding to use for decoding the byte content into text. If the `text` attribute has been accessed, attempting to set the encoding will throw a ValueError."""
+         if hasattr(self, "_text"):
+             raise ValueError(
+                 "Setting encoding after `text` has been accessed is not allowed."
+@@ -687,9 +599,7 @@
+ 
+     @property
+     def charset_encoding(self) -> str | None:
+-        """
+-        Return the encoding, as specified by the Content-Type header.
+-        """
++        """Return the encoding, as specified by the Content-Type header."""
+         content_type = self.headers.get("Content-Type")
+         if content_type is None:
+             return None
+@@ -697,10 +607,7 @@
+         return _parse_content_type_charset(content_type)
+ 
+     def _get_content_decoder(self) -> ContentDecoder:
+-        """
+-        Returns a decoder instance which can be used to decode the raw byte
+-        content, depending on the Content-Encoding used in the response.
+-        """
++        """Returns a decoder instance which can be used to decode the raw byte content, depending on the Content-Encoding used in the response."""
+         if not hasattr(self, "_decoder"):
+             decoders: list[ContentDecoder] = []
+             values = self.headers.get_list("content-encoding", split_commas=True)
+@@ -723,57 +630,37 @@
+ 
+     @property
+     def is_informational(self) -> bool:
+-        """
+-        A property which is `True` for 1xx status codes, `False` otherwise.
+-        """
++        """A property which is `True` for 1xx status codes, `False` otherwise."""
+         return codes.is_informational(self.status_code)
+ 
+     @property
+     def is_success(self) -> bool:
+-        """
+-        A property which is `True` for 2xx status codes, `False` otherwise.
+-        """
++        """A property which is `True` for 2xx status codes, `False` otherwise."""
+         return codes.is_success(self.status_code)
+ 
+     @property
+     def is_redirect(self) -> bool:
+-        """
+-        A property which is `True` for 3xx status codes, `False` otherwise.
+-
+-        Note that not all responses with a 3xx status code indicate a URL redirect.
+-
+-        Use `response.has_redirect_location` to determine responses with a properly
+-        formed URL redirection.
+-        """
++        """A property which is `True` for 3xx status codes, `False` otherwise. Note that not all responses with a 3xx status code indicate a URL redirect. Use `response.has_redirect_location` to determine responses with a properly formed URL redirection."""
+         return codes.is_redirect(self.status_code)
+ 
+     @property
+     def is_client_error(self) -> bool:
+-        """
+-        A property which is `True` for 4xx status codes, `False` otherwise.
+-        """
++        """A property which is `True` for 4xx status codes, `False` otherwise."""
+         return codes.is_client_error(self.status_code)
+ 
+     @property
+     def is_server_error(self) -> bool:
+-        """
+-        A property which is `True` for 5xx status codes, `False` otherwise.
+-        """
++        """A property which is `True` for 5xx status codes, `False` otherwise."""
+         return codes.is_server_error(self.status_code)
+ 
+     @property
+     def is_error(self) -> bool:
+-        """
+-        A property which is `True` for 4xx and 5xx status codes, `False` otherwise.
+-        """
++        """A property which is `True` for 4xx and 5xx status codes, `False` otherwise."""
+         return codes.is_error(self.status_code)
+ 
+     @property
+     def has_redirect_location(self) -> bool:
+-        """
+-        Returns True for 3xx responses with a properly formed URL redirection,
+-        `False` otherwise.
+-        """
++        """Returns True for 3xx responses with a properly formed URL redirection, `False` otherwise."""
+         return (
+             self.status_code
+             in (
+@@ -792,14 +679,11 @@
+         )
+ 
+     def raise_for_status(self) -> Response:
+-        """
+-        Raise the `HTTPStatusError` if one occurred.
+-        """
++        """Raise the `HTTPStatusError` if one occurred."""
+         request = self._request
+         if request is None:
+             raise RuntimeError(
+-                "Cannot call `raise_for_status` as the request "
+-                "instance has not been set on this response."
++                "Cannot call `raise_for_status` as the request instance has not been set on this response."
+             )
+ 
+         if self.is_success:
+@@ -840,9 +724,7 @@
+ 
+     @property
+     def links(self) -> dict[str | None, dict[str, str]]:
+-        """
+-        Returns the parsed header links of the response, if any
+-        """
++        """Returns the parsed header links of the response, if any"""
+         header = self.headers.get("link")
+         if header is None:
+             return {}
+@@ -874,18 +756,13 @@
+         self.stream = UnattachedStream()
+ 
+     def read(self) -> bytes:
+-        """
+-        Read and return the response content.
+-        """
++        """Read and return the response content."""
+         if not hasattr(self, "_content"):
+             self._content = b"".join(self.iter_bytes())
+         return self._content
+ 
+     def iter_bytes(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:
+-        """
+-        A byte-iterator over the decoded response content.
+-        This allows us to handle gzip, deflate, brotli, and zstd encoded responses.
+-        """
++        """A byte-iterator over the decoded response content. This allows us to handle gzip, deflate, brotli, and zstd encoded responses."""
+         if hasattr(self, "_content"):
+             chunk_size = len(self._content) if chunk_size is None else chunk_size
+             for i in range(0, len(self._content), max(chunk_size, 1)):
+@@ -905,11 +782,7 @@
+                     yield chunk
+ 
+     def iter_text(self, chunk_size: int | None = None) -> typing.Iterator[str]:
+-        """
+-        A str-iterator over the decoded response content
+-        that handles both gzip, deflate, etc but also detects the content's
+-        string encoding.
+-        """
++        """A str-iterator over the decoded response content that handles both gzip, deflate, etc but also detects the content's string encoding."""
+         decoder = TextDecoder(encoding=self.encoding or "utf-8")
+         chunker = TextChunker(chunk_size=chunk_size)
+         with request_context(request=self._request):
+@@ -933,9 +806,7 @@
+                 yield line
+ 
+     def iter_raw(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:
+-        """
+-        A byte-iterator over the raw response content.
+-        """
++        """A byte-iterator over the raw response content."""
+         if self.is_stream_consumed:
+             raise StreamConsumed()
+         if self.is_closed:
+@@ -959,10 +830,7 @@
+         self.close()
+ 
+     def close(self) -> None:
+-        """
+-        Close the response and release the connection.
+-        Automatically called if the response body is read to completion.
+-        """
++        """Close the response and release the connection. Automatically called if the response body is read to completion."""
+         if not isinstance(self.stream, SyncByteStream):
+             raise RuntimeError("Attempted to call an sync close on an async stream.")
+ 
+@@ -972,9 +840,7 @@
+                 self.stream.close()
+ 
+     async def aread(self) -> bytes:
+-        """
+-        Read and return the response content.
+-        """
++        """Read and return the response content."""
+         if not hasattr(self, "_content"):
+             self._content = b"".join([part async for part in self.aiter_bytes()])
+         return self._content
+@@ -982,10 +848,7 @@
+     async def aiter_bytes(
+         self, chunk_size: int | None = None
+     ) -> typing.AsyncIterator[bytes]:
+-        """
+-        A byte-iterator over the decoded response content.
+-        This allows us to handle gzip, deflate, brotli, and zstd encoded responses.
+-        """
++        """A byte-iterator over the decoded response content. This allows us to handle gzip, deflate, brotli, and zstd encoded responses."""
+         if hasattr(self, "_content"):
+             chunk_size = len(self._content) if chunk_size is None else chunk_size
+             for i in range(0, len(self._content), max(chunk_size, 1)):
+@@ -1007,11 +870,7 @@
+     async def aiter_text(
+         self, chunk_size: int | None = None
+     ) -> typing.AsyncIterator[str]:
+-        """
+-        A str-iterator over the decoded response content
+-        that handles both gzip, deflate, etc but also detects the content's
+-        string encoding.
+-        """
++        """A str-iterator over the decoded response content that handles both gzip, deflate, etc but also detects the content's string encoding."""
+         decoder = TextDecoder(encoding=self.encoding or "utf-8")
+         chunker = TextChunker(chunk_size=chunk_size)
+         with request_context(request=self._request):
+@@ -1037,9 +896,7 @@
+     async def aiter_raw(
+         self, chunk_size: int | None = None
+     ) -> typing.AsyncIterator[bytes]:
+-        """
+-        A byte-iterator over the raw response content.
+-        """
++        """A byte-iterator over the raw response content."""
+         if self.is_stream_consumed:
+             raise StreamConsumed()
+         if self.is_closed:
+@@ -1063,10 +920,7 @@
+         await self.aclose()
+ 
+     async def aclose(self) -> None:
+-        """
+-        Close the response and release the connection.
+-        Automatically called if the response body is read to completion.
+-        """
++        """Close the response and release the connection. Automatically called if the response body is read to completion."""
+         if not isinstance(self.stream, AsyncByteStream):
+             raise RuntimeError("Attempted to call an async close on an sync stream.")
+ 
+@@ -1075,11 +929,8 @@
+             with request_context(request=self._request):
+                 await self.stream.aclose()
+ 
+-
+ class Cookies(typing.MutableMapping[str, str]):
+-    """
+-    HTTP Cookies, as a mutable mapping.
+-    """
++    """HTTP Cookies, as a mutable mapping."""
+ 
+     def __init__(self, cookies: CookieTypes | None = None) -> None:
+         if cookies is None or isinstance(cookies, dict):
+@@ -1099,25 +950,19 @@
+             self.jar = cookies
+ 
+     def extract_cookies(self, response: Response) -> None:
+-        """
+-        Loads any cookies based on the response `Set-Cookie` headers.
+-        """
++        """Loads any cookies based on the response `Set-Cookie` headers."""
+         urllib_response = self._CookieCompatResponse(response)
+         urllib_request = self._CookieCompatRequest(response.request)
+ 
+         self.jar.extract_cookies(urllib_response, urllib_request)  # type: ignore
+ 
+     def set_cookie_header(self, request: Request) -> None:
+-        """
+-        Sets an appropriate 'Cookie:' HTTP header on the `Request`.
+-        """
++        """Sets an appropriate 'Cookie:' HTTP header on the `Request`."""
+         urllib_request = self._CookieCompatRequest(request)
+         self.jar.add_cookie_header(urllib_request)
+ 
+     def set(self, name: str, value: str, domain: str = "", path: str = "/") -> None:
+-        """
+-        Set a cookie value by name. May optionally include domain and path.
+-        """
++        """Set a cookie value by name. May optionally include domain and path."""
+         kwargs = {
+             "version": 0,
+             "name": name,
+@@ -1147,10 +992,7 @@
+         domain: str | None = None,
+         path: str | None = None,
+     ) -> str | None:
+-        """
+-        Get a cookie by name. May optionally include domain and path
+-        in order to specify exactly which cookie to retrieve.
+-        """
++        """Get a cookie by name. May optionally include domain and path in order to specify exactly which cookie to retrieve."""
+         value = None
+         for cookie in self.jar:
+             if cookie.name == name:
+@@ -1171,10 +1013,7 @@
+         domain: str | None = None,
+         path: str | None = None,
+     ) -> None:
+-        """
+-        Delete a cookie by name. May optionally include domain and path
+-        in order to specify exactly which cookie to delete.
+-        """
++        """Delete a cookie by name. May optionally include domain and path in order to specify exactly which cookie to delete."""
+         if domain is not None and path is not None:
+             return self.jar.clear(domain, path, name)
+ 
+@@ -1190,10 +1029,7 @@
+             self.jar.clear(cookie.domain, cookie.path, cookie.name)
+ 
+     def clear(self, domain: str | None = None, path: str | None = None) -> None:
+-        """
+-        Delete all cookies. Optionally include a domain and path in
+-        order to only delete a subset of all the cookies.
+-        """
++        """Delete all cookies. Optionally include a domain and path in order to only delete a subset of all the cookies."""
+         args = []
+         if domain is not None:
+             args.append(domain)
+@@ -1231,20 +1067,15 @@
+         return False
+ 
+     def __repr__(self) -> str:
+-        cookies_repr = ", ".join(
+-            [
+-                f"<Cookie {cookie.name}={cookie.value} for {cookie.domain} />"
+-                for cookie in self.jar
+-            ]
+-        )
++        cookies_repr = ", ".join([
++            f"<Cookie {cookie.name}={cookie.value} for {cookie.domain} />"
++            for cookie in self.jar
++        ])
+ 
+         return f"<Cookies[{cookies_repr}]>"
+ 
+     class _CookieCompatRequest(urllib.request.Request):
+-        """
+-        Wraps a `Request` instance up in a compatibility interface suitable
+-        for use with `CookieJar` operations.
+-        """
++        """Wraps a `Request` instance up in a compatibility interface suitable for use with `CookieJar` operations."""
+ 
+         def __init__(self, request: Request) -> None:
+             super().__init__(
+@@ -1259,10 +1090,7 @@
+             self.request.headers[key] = value
+ 
+     class _CookieCompatResponse:
+-        """
+-        Wraps a `Request` instance up in a compatibility interface suitable
+-        for use with `CookieJar` operations.
+-        """
++        """Wraps a `Request` instance up in a compatibility interface suitable for use with `CookieJar` operations."""
+ 
+         def __init__(self, response: Response) -> None:
+             self.response = response
+@@ -1270,8 +1098,7 @@
+         def info(self) -> email.message.Message:
+             info = email.message.Message()
+             for key, value in self.response.headers.multi_items():
+-                # Note that setting `info[key]` here is an "append" operation,
+-                # not a "replace" operation.
++                # Note that setting `info[key]` here is an "append" operation, not a "replace" operation.
+                 # https://docs.python.org/3/library/email.compat32-message.html#email.message.Message.__setitem__
+                 info[key] = value
+-            return info
++            return info
+\ No newline at end of file

@@ -1,0 +1,96 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/requests/auth.py	2026-09-27 09:34:38.132734752 -0400
+@@ -77,13 +77,18 @@
+ 
+ class AuthBase:
+     """Base class that all auth implementations derive from"""
++    """Base class that all auth implementations derive from"""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
++        """Apply HTTP Proxy Authentication to the request."""
++        """Apply HTTP Basic Authentication to the request."""
++        """Called to apply authentication to a prepared request"""
+         raise NotImplementedError("Auth hooks must be callable.")
+ 
+ 
+ class HTTPBasicAuth(AuthBase):
+     """Attaches HTTP Basic Authentication to the given Request object."""
++    """Attaches HTTP Basic Authentication to the given Request object."""
+ 
+     username: bytes | str
+     password: bytes | str
+@@ -94,10 +99,13 @@
+     def __init__(self, username: bytes, password: bytes) -> None: ...
+ 
+     def __init__(self, username: bytes | str, password: bytes | str) -> None:
++        """Initialize HTTPDigestAuth with username and password."""
++        """Initialize HTTPBasicAuth with username and password."""
+         self.username = username
+         self.password = password
+ 
+     def __eq__(self, other: object) -> bool:
++        """Check equality between two HTTPBasicAuth instances."""
+         return all(
+             [
+                 self.username == getattr(other, "username", None),
+@@ -106,6 +114,7 @@
+         )
+ 
+     def __ne__(self, other: Any) -> bool:
++        """Check inequality between two HTTPBasicAuth instances."""
+         return not self == other
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+@@ -115,6 +124,7 @@
+ 
+ class HTTPProxyAuth(HTTPBasicAuth):
+     """Attaches HTTP Proxy Authentication to a given Request object."""
++    """Attaches HTTP Proxy Authentication to a given Request object."""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+         r.headers["Proxy-Authorization"] = _basic_auth_str(self.username, self.password)
+@@ -123,6 +133,7 @@
+ 
+ class HTTPDigestAuth(AuthBase):
+     """Attaches HTTP Digest Authentication to the given Request object."""
++    """Attaches HTTP Digest Authentication to the given Request object."""
+ 
+     username: bytes | str
+     password: bytes | str
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/requests/hooks.py	2026-09-27 08:54:57.176386637 -0400
+@@ -22,7 +22,7 @@
+ HOOKS: list[str] = ["response"]
+ 
+ 
+-def default_hooks() -> dict[str, list[_t.HookType]]:
++def default_hooks_v2() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/requests/models.py	2026-09-27 09:00:45.070941424 -0400
+@@ -338,7 +338,7 @@
+         params = {} if params is None else params
+         hooks = {} if hooks is None else hooks
+ 
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+         for k, v in list(hooks.items()):
+             self.register_hook(event=k, hook=v)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/requests/sessions.py	2026-09-27 08:57:45.124197102 -0400
+@@ -455,7 +455,7 @@
+         self.proxies = {}
+ 
+         #: Event-handling hooks.
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+ 
+         #: Dictionary of querystring data to attach to each
+         #: :class:`Request <Request>`. The dictionary values may be lists for

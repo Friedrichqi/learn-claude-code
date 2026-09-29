@@ -1,0 +1,216 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/cookies.py /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/requests/cookies.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/cookies.py	2026-09-17 15:46:11.036138796 -0400
++++ /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/requests/cookies.py	2026-09-27 01:10:05.660787608 -0400
+@@ -27,7 +27,6 @@
+ 
+ import threading
+ 
+-
+ class MockRequest:
+     """Wraps a `requests.PreparedRequest` to mimic a `urllib2.Request`.
+ 
+@@ -49,15 +48,19 @@
+         self.type = urlparse(self._r.url).scheme
+ 
+     def get_type(self) -> str:
++        """Return the type of the request."""
+         return self.type
+ 
+     def get_host(self) -> str:
++        """Return the host of the request."""
+         return urlparse(self._r.url).netloc
+ 
+     def get_origin_req_host(self) -> str:
++        """Return the origin request host."""
+         return self.get_host()
+ 
+     def get_full_url(self) -> str:
++        """Return the full URL of the request."""
+         # Only return the response's URL if the user hadn't set the Host
+         # header
+         if not self._r.headers.get("Host"):
+@@ -78,12 +81,15 @@
+         )
+ 
+     def is_unverifiable(self) -> bool:
++        """Return whether the request is unverifiable."""
+         return True
+ 
+     def has_header(self, name: str) -> bool:
++        """Check if the request has a header with the given name."""
+         return name in self._r.headers or name in self._new_headers
+ 
+     def get_header(self, name: str, default: str | None = None) -> str | None:
++        """Get a header with the given name."""
+         return self._r.headers.get(name, self._new_headers.get(name, default))  # type: ignore[return-value]
+ 
+     def add_header(self, key: str, val: str) -> None:
+@@ -93,24 +99,28 @@
+         )
+ 
+     def add_unredirected_header(self, name: str, value: str) -> None:
++        """Add an unredirected header to the request."""
+         self._new_headers[name] = value
+ 
+     def get_new_headers(self) -> dict[str, str]:
++        """Return the new headers added to the request."""
+         return self._new_headers
+ 
+     @property
+     def unverifiable(self) -> bool:
++        """Return whether the request is unverifiable."""
+         return self.is_unverifiable()
+ 
+     @property
+     def origin_req_host(self) -> str:
++        """Return the origin request host."""
+         return self.get_origin_req_host()
+ 
+     @property
+     def host(self) -> str:
++        """Return the host of the request."""
+         return self.get_host()
+ 
+-
+ class MockResponse:
+     """Wraps a `httplib.HTTPMessage` to mimic a `urllib.addinfourl`.
+ 
+@@ -126,12 +136,13 @@
+         self._headers = headers
+ 
+     def info(self) -> Any:
++        """Return the headers from the response."""
+         return self._headers
+ 
+     def getheaders(self, name: str) -> Any:
++        """Get the headers with the given name."""
+         self._headers.getheaders(name)
+ 
+-
+ def extract_cookies_to_jar(
+     jar: CookieJar, request: PreparedRequest, response: Any
+ ) -> None:
+@@ -149,10 +160,8 @@
+     res = MockResponse(response._original_response.msg)
+     jar.extract_cookies(res, req)  # type: ignore[arg-type]
+ 
+-
+ def get_cookie_header(jar: CookieJar, request: PreparedRequest) -> str | None:
+-    """
+-    Produce an appropriate Cookie header string to be sent with `request`, or None.
++    """Produce an appropriate Cookie header string to be sent with `request`, or None.
+ 
+     :rtype: str
+     """
+@@ -160,7 +169,6 @@
+     jar.add_cookie_header(r)  # type: ignore[arg-type]
+     return r.get_new_headers().get("Cookie")
+ 
+-
+ def remove_cookie_by_name(
+     cookiejar: CookieJar, name: str, domain: str | None = None, path: str | None = None
+ ) -> None:
+@@ -181,13 +189,11 @@
+     for domain, path, name in clearables:
+         cookiejar.clear(domain, path, name)
+ 
+-
+ class CookieConflictError(RuntimeError):
+     """There are two cookies that meet the criteria specified in the cookie jar.
+     Use .get and .set and include domain and path args in order to be more specific.
+     """
+ 
+-
+ class RequestsCookieJar(CookieJar, MutableMapping[str, str | None]):  # type: ignore[misc]
+     """Compatibility class; is a http.cookiejar.CookieJar, but exposes a dict
+     interface.
+@@ -350,6 +356,7 @@
+         return super().__iter__()
+ 
+     def __contains__(self, name: object) -> bool:
++        """Check if a cookie with the given name is present."""
+         try:
+             return super().__contains__(name)
+         except CookieConflictError:
+@@ -380,10 +387,11 @@
+         remove_cookie_by_name(self, name)
+ 
+     def set_cookie(self, cookie: Cookie, *args: Any, **kwargs: Any) -> None:
++        """Set a cookie in the jar."""
+         if (
+             (value := cookie.value) is not None
+-            and value.startswith('"')
+-            and value.endswith('"')
++            and value.startswith("\"")
++            and value.endswith("\"")
+         ):
+             cookie.value = value.replace('\\"', "")
+         return super().set_cookie(cookie, *args, **kwargs)
+@@ -475,8 +483,8 @@
+         """Return the CookiePolicy instance used."""
+         return self._policy
+ 
+-
+ def _copy_cookie_jar(jar: CookieJar | None) -> CookieJar | None:  # type: ignore[reportUnusedFunction]  # cross-module usage in models.py
++    """Return a copy of the provided CookieJar."""
+     if jar is None:
+         return None
+ 
+@@ -490,7 +498,6 @@
+         new_jar.set_cookie(copy.copy(cookie))
+     return new_jar
+ 
+-
+ def create_cookie(name: str, value: str, **kwargs: Any) -> Cookie:
+     """Make a cookie from underspecified parameters.
+ 
+@@ -527,7 +534,6 @@
+ 
+     return cookielib.Cookie(**result)
+ 
+-
+ def morsel_to_cookie(morsel: Morsel[Any]) -> Cookie:
+     """Convert a Morsel object into a Cookie containing the one k/v pair."""
+ 
+@@ -556,10 +562,8 @@
+         version=morsel["version"] or 0,
+     )
+ 
+-
+ _CookieJarT = TypeVar("_CookieJarT", bound=CookieJar)
+ 
+-
+ @overload
+ def cookiejar_from_dict(
+     cookie_dict: dict[str, str] | None,
+@@ -567,7 +571,6 @@
+     overwrite: bool = True,
+ ) -> RequestsCookieJar: ...
+ 
+-
+ @overload
+ def cookiejar_from_dict(
+     cookie_dict: dict[str, str] | None,
+@@ -575,7 +578,6 @@
+     overwrite: bool = True,
+ ) -> _CookieJarT: ...
+ 
+-
+ def cookiejar_from_dict(
+     cookie_dict: dict[str, str] | None,
+     cookiejar: CookieJar | None = None,
+@@ -600,7 +602,6 @@
+ 
+     return cookiejar
+ 
+-
+ def merge_cookies(
+     cookiejar: CookieJar, cookies: dict[str, str] | CookieJar | None
+ ) -> CookieJar:
+@@ -622,4 +623,4 @@
+             for cookie_in_jar in cookies:
+                 cookiejar.set_cookie(cookie_in_jar)
+ 
+-    return cookiejar
++    return cookiejar
+\ No newline at end of file

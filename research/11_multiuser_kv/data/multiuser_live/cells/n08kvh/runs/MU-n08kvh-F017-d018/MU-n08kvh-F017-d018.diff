@@ -1,0 +1,361 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/asyncio.py	2026-09-27 06:53:58.026725562 -0400
+@@ -10,6 +10,7 @@
+ import asyncio
+ from sys import version_info
+ 
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ __author__ = {"github.com/": ["casperdcl"]}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/autonotebook.py	2026-09-27 06:54:51.798631300 -0400
+@@ -28,7 +28,8 @@
+         warn(WARN_NOIPYW, TqdmWarning, stacklevel=2)
+         raise ImportError('ipywidgets')
+ except Exception:
+-    from .std import tqdm, trange
++    BUILD_TAG = 'profiling'
++from .std import tqdm, trange
+ else:  # pragma: no cover
+     from .notebook import tqdm, trange
+     from .std import TqdmExperimentalWarning
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/auto.py	2026-09-27 06:54:22.426685626 -0400
+@@ -21,6 +21,7 @@
+     from .autonotebook import tqdm as notebook_tqdm
+ 
+ from .asyncio import tqdm as asyncio_tqdm
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ if notebook_tqdm != std_tqdm:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md	2026-09-27 07:04:28.227574130 -0400
+@@ -0,0 +1,63 @@
++# Changelog for BUILD_TAG Addition
++
++The `BUILD_TAG` constant with the value `'profiling'` was added to the following files:
++
++1. **File**: `profiling_sandbox/tqdm/_main.py`
++   - **Line**: 1
++
++2. **File**: `profiling_sandbox/tqdm/_monitor.py`
++   - **Line**: 1
++
++3. **File**: `profiling_sandbox/tqdm/_tqdm.py`
++   - **Line**: 1
++
++4. **File**: `profiling_sandbox/tqdm/_tqdm_gui.py`
++   - **Line**: 1
++
++5. **File**: `profiling_sandbox/tqdm/_tqdm_notebook.py`
++   - **Line**: 1
++
++6. **File**: `profiling_sandbox/tqdm/_tqdm_pandas.py`
++   - **Line**: 1
++
++7. **File**: `profiling_sandbox/tqdm/_utils.py`
++   - **Line**: 1
++
++8. **File**: `profiling_sandbox/tqdm/asyncio.py`
++   - **Line**: 1
++
++9. **File**: `profiling_sandbox/tqdm/auto.py`
++   - **Line**: 1
++
++10. **File**: `profiling_sandbox/tqdm/autonotebook.py`
++    - **Line**: 1
++
++11. **File**: `profiling_sandbox/tqdm/cli.py`
++    - **Line**: 1
++
++12. **File**: `profiling_sandbox/tqdm/dask.py`
++    - **Line**: 1
++
++13. **File**: `profiling_sandbox/tqdm/gui.py`
++    - **Line**: 1
++
++14. **File**: `profiling_sandbox/tqdm/keras.py`
++    - **Line**: 1
++
++15. **File**: `profiling_sandbox/tqdm/notebook.py`
++    - **Line**: 1
++
++16. **File**: `profiling_sandbox/tqdm/rich.py`
++    - **Line**: 1
++
++17. **File**: `profiling_sandbox/tqdm/std.py`
++    - **Line**: 1
++
++18. **File**: `profiling_sandbox/tqdm/tk.py`
++    - **Line**: 1
++
++19. **File**: `profiling_sandbox/tqdm/utils.py`
++    - **Line**: 1
++
++20. **File**: `profiling_sandbox/tqdm/version.py`
++    - **Line**: 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/cli.py	2026-09-27 06:55:49.922523932 -0400
+@@ -1,6 +1,7 @@
+ """
+ Module version for monitoring CLI pipes (`... | python -m tqdm | ...`).
+ """
++BUILD_TAG = 'profiling'
+ import logging
+ import re
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py	2026-09-17 15:46:11.337417657 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/gui.py	2026-09-27 06:56:41.375429036 -0400
+@@ -13,6 +13,7 @@
+ 
+ # to inherit from the tqdm class
+ from .std import TqdmExperimentalWarning
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ # import compatibility functions and utilities
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_main.py	2026-09-27 06:48:41.694242675 -0400
+@@ -1,5 +1,6 @@
+ from warnings import warn
+ 
++BUILD_TAG = 'profiling'
+ from .cli import *  # NOQA
+ from .cli import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_monitor.py	2026-09-27 06:49:17.359184224 -0400
+@@ -1,6 +1,7 @@
+ import atexit
+ from threading import Event, Thread, current_thread
+ from time import time
++BUILD_TAG = 'profiling'
+ from warnings import warn
+ 
+ __all__ = ["TMonitor", "TqdmSynchronisationWarning"]
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py	2026-09-17 15:46:11.345714888 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/notebook.py	2026-09-27 06:58:02.219280213 -0400
+@@ -14,6 +14,7 @@
+ from weakref import proxy
+ 
+ # to inherit from the tqdm class
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ if True:  # pragma: no cover
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/rich.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py	2026-09-17 15:46:11.351142577 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/rich.py	2026-09-27 06:58:29.083230834 -0400
+@@ -12,6 +12,7 @@
+     BarColumn, Progress, ProgressColumn, Text, TimeElapsedColumn, TimeRemainingColumn, filesize)
+ 
+ from .std import TqdmExperimentalWarning
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ __author__ = {"github.com/": ["casperdcl"]}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/std.py	2026-09-27 06:59:24.418129238 -0400
+@@ -7,6 +7,7 @@
+ >>> for i in trange(10):
+ ...     ...
+ """
++BUILD_TAG = 'profiling'
+ import sys
+ from collections import OrderedDict, defaultdict
+ from contextlib import contextmanager
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/tk.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/tk.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/tk.py	2026-09-17 15:46:11.364945066 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/tk.py	2026-09-27 06:59:56.585070250 -0400
+@@ -13,6 +13,7 @@
+ from warnings import warn
+ 
+ from .std import TqdmExperimentalWarning, TqdmWarning
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ __author__ = {"github.com/": ["richardsheridan", "casperdcl"]}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-27 06:50:41.728046106 -0400
+@@ -2,6 +2,7 @@
+ 
+ from .gui import *  # NOQA
+ from .gui import __all__  # NOQA
++BUILD_TAG = 'profiling'
+ from .std import TqdmDeprecationWarning
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-27 06:51:39.109952289 -0400
+@@ -2,6 +2,7 @@
+ 
+ from .notebook import *  # NOQA
+ from .notebook import __all__  # NOQA
++BUILD_TAG = 'profiling'
+ from .std import TqdmDeprecationWarning
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_tqdm.py	2026-09-27 06:49:48.522133183 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from warnings import warn
+ 
+ from .std import *  # NOQA
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py	2026-09-17 15:46:11.306303155 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/_utils.py	2026-09-27 06:53:34.111764555 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from warnings import warn
+ 
+ from .std import TqdmDeprecationWarning
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py	2026-09-17 15:46:11.374453572 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/tqdm/utils.py	2026-09-27 07:00:56.394960707 -0400
+@@ -1,6 +1,7 @@
+ """
+ General helpers required for `tqdm.std`.
+ """
++BUILD_TAG = 'profiling'
+ import os
+ import re
+ import sys
+@@ -32,6 +33,7 @@
+ 
+ 
+ def envwrap(name, app="", types=None, is_method=False):
++    """Wrap function to allow environment variable overrides."""
+     """
+     Basic (env-only) version of [envwrap](https://github.com/tqdm/envwrap).
+     Install `envwrap` for config file support.
+@@ -83,6 +85,7 @@
+ 
+ 
+ class FormatReplace:
++    """Class for replacing formatting in strings."""
+     """
+     >>> a = FormatReplace('something')
+     >>> f"{a:5d}"
+@@ -98,6 +101,7 @@
+ 
+ 
+ class Comparable:
++    """Class for making objects comparable based on self._comparable."""
+     """Assumes child has self._comparable attr/@property"""
+     def __lt__(self, other):
+         return self._comparable < other._comparable
+@@ -119,6 +123,7 @@
+ 
+ 
+ class ObjectWrapper:
++    """Thin wrapper around a given object."""
+     def __getattr__(self, name):
+         return getattr(self._wrapped, name)
+ 
+@@ -144,6 +149,7 @@
+ 
+ 
+ class SimpleTextIOWrapper(ObjectWrapper):
++    """Wrapper to encode text before writing to a file-like object."""
+     """
+     Change only `.write()` of the wrapped object by encoding the passed
+     value and passing the result to the wrapped object's `.write()` method.
+@@ -164,6 +170,7 @@
+ 
+ 
+ class DisableOnWriteError(ObjectWrapper):
++    """Disable tqdm on write/flush errors."""
+     """
+     Disable the given `tqdm_instance` upon `write()` or `flush()` errors.
+     """
+@@ -207,6 +214,7 @@
+ 
+ 
+ class CallbackIOWrapper(ObjectWrapper):
++    """Wrap a file-like object to report lengths to a callback."""
+     def __init__(self, callback, stream, method="read"):
+         """
+         Wrap a given `file`-like object's `read()` or `write()` to report
+@@ -233,6 +241,7 @@
+ 
+ 
+ def _is_utf(encoding):
++    """Check if the given encoding is UTF."""
+     try:
+         '\u2588\u2589'.encode(encoding)
+     except UnicodeEncodeError:
+@@ -247,6 +256,7 @@
+ 
+ 
+ def _supports_unicode(fp):
++    """Check if the file-like object supports Unicode."""
+     try:
+         return _is_utf(fp.encoding)
+     except AttributeError:
+@@ -254,6 +264,7 @@
+ 
+ 
+ def _is_ascii(s):
++    """Check if the string is ASCII."""
+     if isinstance(s, str):
+         for c in s:
+             if ord(c) > 255:
+@@ -263,6 +274,7 @@
+ 
+ 
+ def _screen_shape_wrapper():  # pragma: no cover
++    """Return a function which returns console dimensions."""
+     """
+     Return a function which returns console dimensions (width, height).
+     Supported: linux, osx, windows, cygwin.
+@@ -279,6 +291,7 @@
+ 
+ 
+ def _environ_cols_wrapper():  # pragma: no cover
++    """Return a function which returns console width."""
+     """
+     Return a function which returns console width.
+     Supported: linux, osx, windows, cygwin.
+@@ -297,14 +310,17 @@
+ 
+ 
+ def _term_move_up():  # pragma: no cover
++    """Return ANSI code to move cursor up."""
+     return '' if (os.name == 'nt') and (colorama is None) else '\x1b[A'
+ 
+ 
+ def _text_width(s):
++    """Calculate the on-screen width of a string including wide characters."""
+     return sum(2 if east_asian_width(ch) in 'FW' else 1 for ch in str(s))
+ 
+ 
+ def disp_len(data):
++    """Return the real on-screen length of a string, excluding ANSI codes."""
+     """
+     Returns the real on-screen length of a string which may contain
+     ANSI control codes and wide chars.
+@@ -313,6 +329,7 @@
+ 
+ 
+ def disp_trim(data, length):
++    """Trim a string to fit within a given length, preserving ANSI codes."""
+     """
+     Trim a string which may contain ANSI control characters.
+     """

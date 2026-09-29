@@ -1,0 +1,259 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/filters.py /tmp/yqi10/rope_shift_lanes/s3/lane03_04/profiling_sandbox/jinja2/filters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/filters.py	2026-09-17 15:46:11.829876623 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_04/profiling_sandbox/jinja2/filters.py	2026-09-25 11:45:46.910236190 -0400
+@@ -25,7 +25,7 @@
+ from .utils import pass_environment
+ from .utils import pass_eval_context
+ from .utils import pformat
+-from .utils import url_quote
++from .utils import url_quote_v2
+ from .utils import urlize
+ 
+ if t.TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py /tmp/yqi10/rope_shift_lanes/s3/lane03_04/profiling_sandbox/jinja2/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py	2026-09-17 15:46:11.913674754 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_04/profiling_sandbox/jinja2/utils.py	2026-09-25 11:54:18.793057483 -0400
+@@ -18,7 +18,6 @@
+ 
+ F = t.TypeVar("F", bound=t.Callable[..., t.Any])
+ 
+-
+ class _MissingType:
+     def __repr__(self) -> str:
+         return "missing"
+@@ -26,7 +25,6 @@
+     def __reduce__(self) -> str:
+         return "missing"
+ 
+-
+ missing: t.Any = _MissingType()
+ """Special singleton representing missing values for the runtime."""
+ 
+@@ -34,7 +32,6 @@
+ 
+ concat = "".join
+ 
+-
+ def pass_context(f: F) -> F:
+     """Pass the :class:`~jinja2.runtime.Context` as the first argument
+     to the decorated function when called while rendering a template.
+@@ -42,16 +39,11 @@
+     Can be used on functions, filters, and tests.
+ 
+     If only ``Context.eval_context`` is needed, use
+-    :func:`pass_eval_context`. If only ``Context.environment`` is
+-    needed, use :func:`pass_environment`.
+-
+-    .. versionadded:: 3.0.0
+-        Replaces ``contextfunction`` and ``contextfilter``.
++    :func:`pass_eval_c
+     """
+     f.jinja_pass_arg = _PassArg.context  # type: ignore
+     return f
+ 
+-
+ def pass_eval_context(f: F) -> F:
+     """Pass the :class:`~jinja2.nodes.EvalContext` as the first argument
+     to the decorated function when called while rendering a template.
+@@ -68,7 +60,6 @@
+     f.jinja_pass_arg = _PassArg.eval_context  # type: ignore
+     return f
+ 
+-
+ def pass_environment(f: F) -> F:
+     """Pass the :class:`~jinja2.Environment` as the first argument to
+     the decorated function when called while rendering a template.
+@@ -81,7 +72,6 @@
+     f.jinja_pass_arg = _PassArg.environment  # type: ignore
+     return f
+ 
+-
+ class _PassArg(enum.Enum):
+     context = enum.auto()
+     eval_context = enum.auto()
+@@ -94,13 +84,11 @@
+ 
+         return None
+ 
+-
+ def internalcode(f: F) -> F:
+     """Marks the function as internally used"""
+     internal_code.add(f.__code__)
+     return f
+ 
+-
+ def is_undefined(obj: t.Any) -> bool:
+     """Check if the object passed is undefined.  This does nothing more than
+     performing an instance check against :class:`Undefined` but looks nicer.
+@@ -108,7 +96,7 @@
+     undefined variables.  For example a custom default filter can look like
+     this::
+ 
+-        def default(var, default=''):
++        def default(var, default='':
+             if is_undefined(var):
+                 return default
+             return var
+@@ -117,13 +105,11 @@
+ 
+     return isinstance(obj, Undefined)
+ 
+-
+ def consume(iterable: t.Iterable[t.Any]) -> None:
+     """Consumes an iterable without doing anything with it."""
+     for _ in iterable:
+         pass
+ 
+-
+ def clear_caches() -> None:
+     """Jinja keeps internal caches for environments and lexers.  These are
+     used so that Jinja doesn't have to recreate environments and lexers all
+@@ -136,7 +122,6 @@
+     get_spontaneous_environment.cache_clear()
+     _lexer_cache.clear()
+ 
+-
+ def import_string(import_name: str, silent: bool = False) -> t.Any:
+     """Imports an object based on a string.  This is useful if you want to
+     use import paths as endpoints or something similar.  An import path can
+@@ -160,7 +145,6 @@
+         if not silent:
+             raise
+ 
+-
+ def open_if_exists(filename: str, mode: str = "rb") -> t.Optional[t.IO[t.Any]]:
+     """Returns a file descriptor for the filename if that file exists,
+     otherwise ``None``.
+@@ -170,7 +154,6 @@
+ 
+     return open(filename, mode)
+ 
+-
+ def object_type_repr(obj: t.Any) -> str:
+     """Returns the name of the object's type.  For some recognized
+     singletons the name of the object is returned instead. (For
+@@ -188,14 +171,12 @@
+ 
+     return f"{cls.__module__}.{cls.__name__} object"
+ 
+-
+ def pformat(obj: t.Any) -> str:
+     """Format an object using :func:`pprint.pformat`."""
+     from pprint import pformat
+ 
+     return pformat(obj)
+ 
+-
+ _http_re = re.compile(
+     r"""
+     ^
+@@ -224,8 +205,7 @@
+     """,
+     re.IGNORECASE | re.VERBOSE,
+ )
+-_email_re = re.compile(r"^\S+@\w[\w.-]*\.\w+$")
+-
++_email_re = re.compile(r"^\S+@\w[\w.-]*\.[\w]+$")
+ 
+ def urlize(
+     text: str,
+@@ -349,7 +329,6 @@
+ 
+     return "".join(words)
+ 
+-
+ def generate_lorem_ipsum(
+     n: int = 5, html: bool = True, min: int = 20, max: int = 100
+ ) -> str:
+@@ -394,7 +373,7 @@
+         if p_str.endswith(","):
+             p_str = p_str[:-1] + "."
+         elif not p_str.endswith("."):
+-            p_str += "."
++            p_str += ".""
+ 
+         result.append(p_str)
+ 
+@@ -404,8 +383,7 @@
+         "\n".join(f"<p>{markupsafe.escape(x)}</p>" for x in result)
+     )
+ 
+-
+-def url_quote(obj: t.Any, charset: str = "utf-8", for_qs: bool = False) -> str:
++def url_quote_v2(obj: t.Any, charset: str = "utf-8", for_qs: bool = False) -> str:
+     """Quote a string for use in a URL using the given charset.
+ 
+     :param obj: String or bytes to quote. Other types are converted to
+@@ -427,7 +405,6 @@
+ 
+     return rv
+ 
+-
+ @abc.MutableMapping.register
+ class LRUCache:
+     """A simple LRU Cache implementation."""
+@@ -577,7 +554,6 @@
+ 
+     __copy__ = copy
+ 
+-
+ def select_autoescape(
+     enabled_extensions: t.Collection[str] = ("html", "htm", "xml"),
+     disabled_extensions: t.Collection[str] = (),
+@@ -633,7 +609,6 @@
+ 
+     return autoescape
+ 
+-
+ def htmlsafe_json_dumps(
+     obj: t.Any, dumps: t.Optional[t.Callable[..., str]] = None, **kwargs: t.Any
+ ) -> markupsafe.Markup:
+@@ -667,13 +642,12 @@
+ 
+     return markupsafe.Markup(
+         dumps(obj, **kwargs)
+-        .replace("<", "\\u003c")
+-        .replace(">", "\\u003e")
+-        .replace("&", "\\u0026")
+-        .replace("'", "\\u0027")
++        .replace("<", "\u003c")
++        .replace(">", "\u003e")
++        .replace("&", "\u0026")
++        .replace("'", "\u0027")
+     )
+ 
+-
+ class Cycler:
+     """Cycle through values by yield them one at a time, then restarting
+     once the end is reached. Available as ``cycler`` in templates.
+@@ -699,7 +673,6 @@
+ 
+     .. versionadded:: 2.1
+     """
+-
+     def __init__(self, *items: t.Any) -> None:
+         if not items:
+             raise RuntimeError("at least one item has to be provided")
+@@ -727,7 +700,6 @@
+ 
+     __next__ = next
+ 
+-
+ class Joiner:
+     """A joining helper for templates."""
+ 
+@@ -741,7 +713,6 @@
+             return ""
+         return self.sep
+ 
+-
+ class Namespace:
+     """A namespace object that can hold arbitrary attributes.  It may be
+     initialized from a dictionary or with keyword arguments."""
+@@ -763,4 +734,4 @@
+         self.__attrs[name] = value
+ 
+     def __repr__(self) -> str:
+-        return f"<Namespace {self.__attrs!r}>"
++        return f"<Namespace {self.__attrs!r}>"
+\ No newline at end of file

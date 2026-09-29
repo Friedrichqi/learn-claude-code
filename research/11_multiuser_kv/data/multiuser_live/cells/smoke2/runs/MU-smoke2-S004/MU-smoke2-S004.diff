@@ -1,0 +1,114 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102937/g0/lane00/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102937/g0/lane00/profiling_sandbox/httpx/_models.py	2026-09-27 02:57:57.683055955 -0400
+@@ -380,6 +380,7 @@
+ 
+ 
+ class Request:
++    """Represents an HTTP request with method, URL, headers, stream, content, and extensions."""
+     def __init__(
+         self,
+         method: str,
+@@ -513,6 +514,7 @@
+ 
+ 
+ class Response:
++    """Represents an HTTP response with content, URL, headers, status code, and extensions."""
+     def __init__(
+         self,
+         status_code: int,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/102937/g0/lane00/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/102937/g0/lane00/profiling_sandbox/httpx/_multipart.py	2026-09-27 03:06:01.262726497 -0400
+@@ -21,7 +21,7 @@
+     to_bytes,
+ )
+ 
+-_HTML5_FORM_ENCODING_REPLACEMENTS = {'"': "%22", "\\": "\\\\"}
++_HTML5_FORM_ENCODING_REPLACEMENTS = {'"': "%22", "\\": "\\"}
+ _HTML5_FORM_ENCODING_REPLACEMENTS.update(
+     {chr(c): "%{:02X}".format(c) for c in range(0x1F + 1) if c != 0x1B}
+ )
+@@ -29,7 +29,6 @@
+     r"|".join([re.escape(c) for c in _HTML5_FORM_ENCODING_REPLACEMENTS.keys()])
+ )
+ 
+-
+ def _format_form_param(name: str, value: str) -> bytes:
+     """
+     Encode a name/value pair within a multipart form.
+@@ -41,7 +40,6 @@
+     value = _HTML5_FORM_ENCODING_RE.sub(replacer, value)
+     return f'{name}="{value}"'.encode()
+ 
+-
+ def _guess_content_type(filename: str | None) -> str | None:
+     """
+     Guesses the mimetype based on a filename. Defaults to `application/octet-stream`.
+@@ -52,8 +50,7 @@
+         return mimetypes.guess_type(filename)[0] or "application/octet-stream"
+     return None
+ 
+-
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):
+@@ -66,7 +63,6 @@
+                 return section.strip()[len(b"boundary=") :].strip(b'"')
+     return None
+ 
+-
+ class DataField:
+     """
+     A single form field item, within a multipart form field.
+@@ -79,8 +75,7 @@
+             )
+         if value is not None and not isinstance(value, (str, bytes, int, float)):
+             raise TypeError(
+-                "Invalid type for value. Expected primitive type,"
+-                f" got {type(value)}: {value!r}"
++                "Invalid type for value. Expected primitive type," f" got {type(value)}: {value!r}"
+             )
+         self.name = name
+         self.value: str | bytes = (
+@@ -90,7 +85,7 @@
+     def render_headers(self) -> bytes:
+         if not hasattr(self, "_headers"):
+             name = _format_form_param("name", self.name)
+-            self._headers = b"".join(
++            self._headers = b''.join(
+                 [b"Content-Disposition: form-data; ", name, b"\r\n\r\n"]
+             )
+ 
+@@ -111,7 +106,6 @@
+         yield self.render_headers()
+         yield self.render_data()
+ 
+-
+ class FileField:
+     """
+     A single file field item, within a multipart form field.
+@@ -157,11 +151,11 @@
+ 
+         if isinstance(fileobj, io.StringIO):
+             raise TypeError(
+-                "Multipart file uploads require 'io.BytesIO', not 'io.StringIO'."
++                "Multipart file uploads require 'io.BytesIO', not 'io.StringIO'".
+             )
+         if isinstance(fileobj, io.TextIOBase):
+             raise TypeError(
+-                "Multipart file uploads must be opened in binary mode, not text mode."
++                "Multipart file uploads must be opened in binary mode, not text mode".
+             )
+ 
+         self.filename = filename
+@@ -220,7 +214,6 @@
+         yield self.render_headers()
+         yield from self.render_data()
+ 
+-
+ class MultipartStream(SyncByteStream, AsyncByteStream):
+     """
+     Request content as streaming multipart encoded form data.

@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py /tmp/yqi10/mu/102768/g0/lane02/profiling_sandbox/click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py	2026-09-17 15:46:11.414122732 -0400
++++ /tmp/yqi10/mu/102768/g0/lane02/profiling_sandbox/click/_compat.py	2026-09-27 07:33:50.327094574 -0400
+@@ -371,7 +371,7 @@
+     return open(file, mode, encoding=encoding, errors=errors)
+ 
+ 
+-def open_stream(
++def open_stream_v2(
+     filename: str | os.PathLike[str],
+     mode: str = "r",
+     encoding: str | None = None,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py /tmp/yqi10/mu/102768/g0/lane02/profiling_sandbox/click/_termui_impl.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py	2026-09-17 15:46:11.420759065 -0400
++++ /tmp/yqi10/mu/102768/g0/lane02/profiling_sandbox/click/_termui_impl.py	2026-09-27 07:35:30.267374215 -0400
+@@ -19,7 +19,7 @@
+ from pathlib import Path
+ from types import TracebackType
+ 
+-from ._compat import _default_text_stdout
++from ._compat import _default_text_stdout, open_stream_v2
+ from ._compat import CYGWIN
+ from ._compat import get_best_encoding
+ from ._compat import isatty

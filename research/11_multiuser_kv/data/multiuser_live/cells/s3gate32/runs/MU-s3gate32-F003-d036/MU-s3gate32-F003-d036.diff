@@ -1,0 +1,131 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g1/lane14/profiling_sandbox/typer/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g1/lane14/profiling_sandbox/typer/CHANGES_BUILD_TAG.md	2026-09-27 08:32:28.848722535 -0400
+@@ -0,0 +1,17 @@
++## Build Tag Addition
++
++Added a module-level constant `BUILD_TAG = 'profiling'` to the following files:
++
++1. `__main__.py` (Line 1)
++2. `cli.py` (Line 1)
++3. `core.py` (Line 1)
++4. `_click/_compat.py` (Line 1)
++5. `_click/_textwrap.py` (Line 1)
++6. `_click/_winconsole.py` (Line 1)
++7. `_click/core.py` (Line 1)
++8. `_click/exceptions.py` (Line 1)
++9. `_click/formatting.py` (Line 1)
++10. `_click/parser.py` (Line 1)
++11. `_click/globals.py` (Line 1)
++12. `_click/utils.py` (Line 1)
++13. `_click/shell_completion.py` (Line 1)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_completion_classes.py /tmp/yqi10/mu/103142/g1/lane14/profiling_sandbox/typer/_completion_classes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_completion_classes.py	2026-09-17 15:46:11.557447983 -0400
++++ /tmp/yqi10/mu/103142/g1/lane14/profiling_sandbox/typer/_completion_classes.py	2026-09-27 08:48:03.137274490 -0400
+@@ -5,6 +5,7 @@
+ from typing import Any
+ 
+ from . import _click
++from . import _typing
+ from ._click.shell_completion import CompletionItem, ShellComplete, add_completion_class
+ from ._click.shell_completion import split_arg_string as click_split_arg_string
+ from ._completion_shared import (
+@@ -34,7 +35,7 @@
+             "complete_func": self.func_name,
+             "autocomplete_var": self.complete_var,
+             "prog_name": self.prog_name,
+-        }
++        }  # noqa: E501
+ 
+     def get_completion_args(self) -> tuple[list[str], str]:
+         cwords = click_split_arg_string(os.environ["COMP_WORDS"])
+@@ -46,24 +47,24 @@
+         except IndexError:
+             incomplete = ""
+ 
+-        return args, incomplete
++        return args, incomplete  # noqa: E501
+ 
+     def format_completion(self, item: CompletionItem) -> str:
+         # TODO: Explore replicating the new behavior from Click, with item types and
+         # triggering completion for files and directories
+         # return f"{item.type},{item.value}"
+-        return f"{item.value}"
++        return f"{item.value}"  # noqa: E501
+ 
+     def complete(self) -> str:
+         args, incomplete = self.get_completion_args()
+         completions = self.get_completions(args, incomplete)
+         out = [self.format_completion(item) for item in completions]
+-        return "\n".join(out)
++        return "\n".join(out)  # noqa: E501
+ 
+     @staticmethod
+     def _check_version() -> None:
+         import shutil
+-        import subprocess
++        import subprocess  # noqa: E501
+ 
+         bash_exe = shutil.which("bash")
+ 
+@@ -73,7 +74,7 @@
+             output = subprocess.run(
+                 [bash_exe, "--norc", "-c", 'echo "${BASH_VERSION}"'],
+                 stdout=subprocess.PIPE,
+-            )
++            )  # noqa: E501
+             match = re.search(r"^(\d+)\.(\d+)\.\d+", output.stdout.decode())
+ 
+         if match is not None:
+@@ -88,7 +89,7 @@
+             _click.utils.echo(
+                 "Couldn't detect Bash version, shell completion is not supported.",
+                 err=True,
+-            )  # pragma: no cover
++            )  # pragma: no cover  # noqa: E501
+ 
+     def source(self) -> str:
+         self._check_version()
+@@ -131,9 +132,9 @@
+         # the difference with and without escape
+         # return f"{item.type}\n{item.value}\n{item.help if item.help else '_'}"
+         if item.help:
+-            return f'"{escape(item.value)}":"{_sanitize_help_text(escape(item.help))}"'
++            return f'"{escape(item.value)}":"{_sanitize_help_text(escape(item.help))}"'  # noqa: E501
+         else:
+-            return f'"{escape(item.value)}"'
++            return f'"{escape(item.value)}"'  # noqa: E501
+ 
+     def complete(self) -> str:
+         args, incomplete = self.get_completion_args()
+@@ -177,7 +178,7 @@
+         # return f"{item.type},{item.value}
+         if item.help:
+             formatted_help = re.sub(r"\s", " ", item.help)
+-            return f"{item.value}\t{_sanitize_help_text(formatted_help)}"
++            return f"{item.value}\t{_sanitize_help_text(formatted_help)}"  # noqa: E501
+         else:
+             return f"{item.value}"
+ 
+@@ -218,7 +219,7 @@
+         return args, incomplete
+ 
+     def format_completion(self, item: CompletionItem) -> str:
+-        return f"{item.value}:::{_sanitize_help_text(item.help) if item.help else ' '}"
++        return f"{item.value}:::{_sanitize_help_text(item.help) if item.help else ' '}"  # noqa: E501
+ 
+ 
+ def completion_init() -> None:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py /tmp/yqi10/mu/103142/g1/lane14/profiling_sandbox/typer/_typing.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py	2026-09-17 15:46:11.573110818 -0400
++++ /tmp/yqi10/mu/103142/g1/lane14/profiling_sandbox/typer/_typing.py	2026-09-27 08:46:12.953446969 -0400
+@@ -56,7 +56,7 @@
+     return get_origin(type_) is Literal
+ 
+ 
+-def literal_values(type_: type[Any]) -> tuple[Any, ...]:
++def literal_values_v2(type_: type[Any]) -> tuple[Any, ...]:
+     return get_args(type_)
+ 
+ 

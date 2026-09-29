@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py /tmp/yqi10/mu/102768/g0/lane03/profiling_sandbox/click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py	2026-09-17 15:46:11.414122732 -0400
++++ /tmp/yqi10/mu/102768/g0/lane03/profiling_sandbox/click/_compat.py	2026-09-27 03:29:02.338305725 -0400
+@@ -371,7 +371,7 @@
+     return open(file, mode, encoding=encoding, errors=errors)
+ 
+ 
+-def open_stream(
++def open_stream_v2(
+     filename: str | os.PathLike[str],
+     mode: str = "r",
+     encoding: str | None = None,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/utils.py /tmp/yqi10/mu/102768/g0/lane03/profiling_sandbox/click/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/utils.py	2026-09-17 15:46:11.505647392 -0400
++++ /tmp/yqi10/mu/102768/g0/lane03/profiling_sandbox/click/utils.py	2026-09-27 03:39:30.287133119 -0400
+@@ -14,7 +14,7 @@
+ from ._compat import _default_text_stdout
+ from ._compat import _find_binary_writer
+ from ._compat import binary_streams
+-from ._compat import open_stream
++from ._compat import open_stream_v2
+ from ._compat import should_strip_ansi
+ from ._compat import strip_ansi
+ from ._compat import text_streams

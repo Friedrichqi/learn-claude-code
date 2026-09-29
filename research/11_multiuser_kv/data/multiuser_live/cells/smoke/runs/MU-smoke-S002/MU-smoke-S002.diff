@@ -1,0 +1,367 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py /tmp/yqi10/mu/102748/g0/lane02/profiling_sandbox/s15_harness/code.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py	2026-09-23 22:11:16.950193278 -0400
++++ /tmp/yqi10/mu/102748/g0/lane02/profiling_sandbox/s15_harness/code.py	2026-09-26 21:31:22.097248973 -0400
+@@ -18,6 +18,8 @@
+     built-in tools      persistent teams      MCP tools
+ """
+ 
++BUILD_TAG = 'profiling'
++
+ import ast
+ import atexit
+ import fcntl
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py /tmp/yqi10/mu/102748/g0/lane02/profiling_sandbox/s15_harness/trace_runtime.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py	2026-09-21 17:15:01.589007324 -0400
++++ /tmp/yqi10/mu/102748/g0/lane02/profiling_sandbox/s15_harness/trace_runtime.py	2026-09-26 21:34:15.060159825 -0400
+@@ -5,6 +5,8 @@
+ using NullTraceRecorder and therefore creates no files.
+ """
+ 
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import atexit
+@@ -33,11 +35,11 @@
+     re.IGNORECASE,
+ )
+ _SECRET_TEXT_PATTERNS = (
+-    re.compile(r"(?i)(\bauthorization\s*:\s*bearer\s+)[^\s,'\";]+"),
++    re.compile(r"(?i)(\bauthorization\s*:\s*bearer\s+)[^\s,'";]+"),
+     re.compile(
+         r"(?i)(\b(?:[a-z0-9]+[_-])*(?:api[_-]?key|authorization|credential|password|secret|"
+-        r"(?:access|auth|bearer|refresh)[_-]?token)\b\s*[:=]\s*)"
+-        r"(?:['\"]?)[^\s,'\";]+"
++        r"(?:access|auth|bearer|refresh)[_-]?token)\b\s*:\s*"
++        r"(?:['"]?)[^\s,'";]+"
+     ),
+     re.compile(r"\bsk-(?:ant-)?[A-Za-z0-9_-]{8,}\b"),
+     re.compile(r"(://)[^/@\s:]+:[^/@\s]+@"),
+@@ -45,12 +47,14 @@
+ 
+ 
+ def _utc_now() -> str:
++    """Return the current time in UTC as an ISO 8601 string with microseconds."""
+     return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace(
+         "+00:00", "Z"
+     )
+ 
+ 
+ def _json_default(value: Any) -> Any:
++    """Default JSON serializer for dataclasses and objects with model_dump."""
+     if isinstance(value, Path):
+         return str(value)
+     if hasattr(value, "model_dump"):
+@@ -67,6 +71,7 @@
+ 
+ 
+ def _json_text(value: Any) -> str:
++    """Serialize value to JSON string with error handling."""
+     try:
+         return json.dumps(
+             value, ensure_ascii=True, sort_keys=True, default=_json_default
+@@ -76,6 +81,7 @@
+ 
+ 
+ def _redact_text(value: str) -> str:
++    """Redact sensitive information from text."""
+     redacted = value
+     for index, pattern in enumerate(_SECRET_TEXT_PATTERNS):
+         if index in {0, 1}:
+@@ -88,12 +94,14 @@
+ 
+ 
+ def _block_value(block: Any, key: str, default: Any = None) -> Any:
++    """Get a value from a block, handling both dicts and objects."""
+     if isinstance(block, dict):
+         return block.get(key, default)
+     return getattr(block, key, default)
+ 
+ 
+ def _package_version(name: str) -> str | None:
++    """Get the version of an installed package."""
+     try:
+         return importlib.metadata.version(name)
+     except importlib.metadata.PackageNotFoundError:
+@@ -102,6 +110,7 @@
+ 
+ @dataclass
+ class SpanHandle:
++    """Represents an active span of execution being traced."""
+     recorder: "BaseTraceRecorder"
+     start_event: str
+     end_event: str
+@@ -111,18 +120,22 @@
+     _token: contextvars.Token | None = None
+ 
+     def finish(self, **data: Any) -> None:
++        """Add metadata to the span before it ends."""
+         self.end_data.update(data)
+ 
+ 
+ class BaseTraceRecorder:
++    """Base class for tracing execution with no-op defaults."""
+     enabled = False
+     run_id: str | None = None
+     path: Path | None = None
+ 
+     def new_id(self, prefix: str) -> str:
++        """Generate a unique ID with a given prefix."""
+         return f"{prefix}_000000"
+ 
+     def emit(self, event: str, data: dict[str, Any] | None = None, **_: Any) -> str:
++        """Emit a trace event with the given data."""
+         return "evt_000000"
+ 
+     @contextlib.contextmanager
+@@ -133,10 +146,12 @@
+         data: dict[str, Any] | None = None,
+         **_: Any,
+     ) -> Iterator[SpanHandle]:
++        """Context manager for a span of traced execution."""
+         yield SpanHandle(self, start_event, end_event)
+ 
+     @contextlib.contextmanager
+     def turn_scope(self, _turn_id: str | None) -> Iterator[None]:
++        """Context manager for a turn scope."""
+         yield
+ 
+     @contextlib.contextmanager
+@@ -146,46 +161,58 @@
+         _parent_agent_id: str | None = None,
+         _agent_kind: str | None = None,
+     ) -> Iterator[None]:
++        """Context manager for an agent scope."""
+         yield
+ 
+     @contextlib.contextmanager
+     def model_scope(self, _purpose: str) -> Iterator[None]:
++        """Context manager for a model scope."""
+         yield
+ 
+     @contextlib.contextmanager
+     def restore_context(self, _context: dict[str, Any]) -> Iterator[None]:
++        """Context manager to restore a saved context."""
+         yield
+ 
+     def capture_context(self) -> dict[str, Any]:
++        """Capture the current context for later restoration."""
+         return {}
+ 
+     def current_agent_id(self) -> str | None:
++        """Get the current agent ID from context."""
+         return None
+ 
+     def current_parent_agent_id(self) -> str | None:
++        """Get the current parent agent ID from context."""
+         return None
+ 
+     def current_turn_id(self) -> str | None:
++        """Get the current turn ID from context."""
+         return None
+ 
+     def current_span_id(self) -> str | None:
++        """Get the current span ID from context."""
+         return None
+ 
+     def safe_value(self, value: Any, max_chars: int | None = None) -> Any:
++        """Safely serialize a value for tracing, with redaction and truncation."""
+         return value
+ 
+     def summarize_output(self, value: Any) -> dict[str, Any]:
++        """Summarize output for tracing, with redaction and truncation."""
+         return {}
+ 
+     def finish_run(self, status: str = "completed", **data: Any) -> None:
++        """Finalize and close the trace run."""
+         return None
+ 
+ 
+ class NullTraceRecorder(BaseTraceRecorder):
+-    """No-op recorder used for imports, tests, and HARNESS_TRACE=0."""
++    """No-op recorder used for imports, tests, and HARNESS_TRACE=0."""    
+ 
+ 
+ class TraceRecorder(BaseTraceRecorder):
++    """Recorder for tracing execution with file output."""
+     enabled = True
+ 
+     def __init__(
+@@ -197,6 +224,7 @@
+         preview_chars: int = DEFAULT_PREVIEW_CHARS,
+         argument_chars: int = DEFAULT_ARGUMENT_CHARS,
+     ):
++        """Initialize the recorder with the given configuration."""
+         directory.mkdir(parents=True, exist_ok=True)
+         self.run_id = f"run_{uuid.uuid4().hex[:8]}"
+         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
+@@ -250,12 +278,14 @@
+         self.emit("run_start", payload)
+ 
+     def new_id(self, prefix: str) -> str:
++        """Generate a unique ID with a given prefix."""
+         with self._lock:
+             value = self._counters.get(prefix, 0) + 1
+             self._counters[prefix] = value
+         return f"{prefix}_{value:06d}"
+ 
+     def _write(self, record: dict[str, Any]) -> None:
++        """Write a trace record to the output file."""
+         with self._lock:
+             if self._closed:
+                 return
+@@ -278,6 +308,7 @@
+         caused_by_event_id: str | None = None,
+         depends_on_event_ids: list[str] | None = None,
+     ) -> str:
++        """Emit a trace event with the given data."""
+         now_ns = time.perf_counter_ns()
+         event_id = self.new_id("evt")
+         record = {
+@@ -325,6 +356,7 @@
+         parent_agent_id: str | None = None,
+         caused_by_event_id: str | None = None,
+     ) -> Iterator[SpanHandle]:
++        """Context manager for a span of traced execution."""
+         span_id = span_id or self.new_id("span")
+         parent_span = self._span_id.get()
+         started_ns = time.perf_counter_ns()
+@@ -370,6 +402,7 @@
+ 
+     @contextlib.contextmanager
+     def turn_scope(self, turn_id: str | None) -> Iterator[None]:
++        """Context manager for a turn scope."""
+         token = self._turn_id.set(turn_id)
+         try:
+             yield
+@@ -383,6 +416,7 @@
+         parent_agent_id: str | None = None,
+         agent_kind: str | None = None,
+     ) -> Iterator[None]:
++        """Context manager for an agent scope."""
+         agent_token = self._agent_id.set(agent_id)
+         parent_token = self._parent_agent_id.set(parent_agent_id)
+         kind_token = self._agent_kind.set(agent_kind)
+@@ -395,6 +429,7 @@
+ 
+     @contextlib.contextmanager
+     def model_scope(self, purpose: str) -> Iterator[None]:
++        """Context manager for a model scope."""
+         token = self._model_purpose.set(purpose)
+         try:
+             yield
+@@ -402,6 +437,7 @@
+             self._model_purpose.reset(token)
+ 
+     def capture_context(self) -> dict[str, Any]:
++        """Capture the current context for later restoration."""
+         return {
+             "turn_id": self._turn_id.get(),
+             "agent_id": self._agent_id.get(),
+@@ -413,6 +449,7 @@
+ 
+     @contextlib.contextmanager
+     def restore_context(self, context: dict[str, Any]) -> Iterator[None]:
++        """Context manager to restore a saved context."""
+         tokens = [
+             (self._turn_id, self._turn_id.set(context.get("turn_id"))),
+             (self._agent_id, self._agent_id.set(context.get("agent_id"))),
+@@ -434,21 +471,27 @@
+                 variable.reset(token)
+ 
+     def current_agent_id(self) -> str | None:
++        """Get the current agent ID from context."""
+         return self._agent_id.get()
+ 
+     def current_parent_agent_id(self) -> str | None:
++        """Get the current parent agent ID from context."""
+         return self._parent_agent_id.get()
+ 
+     def current_turn_id(self) -> str | None:
++        """Get the current turn ID from context."""
+         return self._turn_id.get()
+ 
+     def current_span_id(self) -> str | None:
++        """Get the current span ID from context."""
+         return self._span_id.get()
+ 
+     def model_purpose(self) -> str:
++        """Get the current model purpose from context."""
+         return self._model_purpose.get()
+ 
+     def safe_value(self, value: Any, max_chars: int | None = None) -> Any:
++        """Safely serialize a value for tracing, with redaction and truncation."""
+         max_chars = self.argument_chars if max_chars is None else max_chars
+         if isinstance(value, dict):
+             result = {}
+@@ -480,6 +523,7 @@
+         return self.safe_value(_json_default(value), max_chars=max_chars)
+ 
+     def summarize_output(self, value: Any) -> dict[str, Any]:
++        """Summarize output for tracing, with redaction and truncation."""
+         text = value if isinstance(value, str) else _json_text(value)
+         redacted = _redact_text(text)
+         summary = {
+@@ -493,6 +537,7 @@
+         return summary
+ 
+     def finish_run(self, status: str = "completed", **data: Any) -> None:
++        """Finalize and close the trace run."""
+         with self._lock:
+             if self._closed:
+                 return
+@@ -506,14 +551,17 @@
+ 
+ 
+ class TracedMessages:
++    """Traces messages creation and response."""
+     def __init__(self, raw_messages: Any, recorder: BaseTraceRecorder):
+         self._raw_messages = raw_messages
+         self._recorder = recorder
+ 
+     def __getattr__(self, name: str) -> Any:
++        """Delegate to the raw messages object."""
+         return getattr(self._raw_messages, name)
+ 
+     def create(self, **kwargs: Any) -> Any:
++        """Create a traced message with execution tracking."""
+         recorder = self._recorder
+         messages = kwargs.get("messages", [])
+         system = kwargs.get("system", "")
+@@ -591,16 +639,17 @@
+ 
+ class TracedClient:
+     """Delegate every client attribute except the traced messages API."""
+-
+     def __init__(self, raw_client: Any, recorder: BaseTraceRecorder):
+         self._raw_client = raw_client
+         self.messages = TracedMessages(raw_client.messages, recorder)
+ 
+     def __getattr__(self, name: str) -> Any:
++        """Delegate to the raw client."""
+         return getattr(self._raw_client, name)
+ 
+ 
+ def trace_enabled_from_env() -> bool:
++    """Determine if tracing is enabled from the environment."""
+     value = os.getenv("HARNESS_TRACE", "1").strip().lower()
+     return value not in {"0", "false", "no", "off"}
+ 
+@@ -610,6 +659,7 @@
+     runtime_name: str,
+     run_data: dict[str, Any] | None = None,
+ ) -> BaseTraceRecorder:
++    """Create a trace recorder based on environment settings."""
+     if not trace_enabled_from_env():
+         return NullTraceRecorder()
+     directory_value = os.getenv("HARNESS_TRACE_DIR", "traces")
+@@ -633,6 +683,7 @@
+ 
+ 
+ def wrap_client(client: Any, recorder: BaseTraceRecorder) -> Any:
++    """Wrap a client with tracing if enabled."""
+     if not recorder.enabled or isinstance(client, TracedClient):
+         return client
+-    return TracedClient(client, recorder)
++    return TracedClient(client, recorder)
+\ No newline at end of file

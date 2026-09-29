@@ -1,0 +1,135 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py /tmp/yqi10/mu/103142/g1/lane29/profiling_sandbox/requests/help.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py	2026-09-17 15:46:11.047866462 -0400
++++ /tmp/yqi10/mu/103142/g1/lane29/profiling_sandbox/requests/help.py	2026-09-27 08:32:58.347677325 -0400
+@@ -66,7 +66,7 @@
+     return {"name": implementation, "version": implementation_version}
+ 
+ 
+-def info() -> dict[str, Any]:
++def info_v2() -> dict[str, Any]:
+     """Generate information for a bug report."""
+     try:
+         platform_info = {
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py /tmp/yqi10/mu/103142/g1/lane29/profiling_sandbox/requests/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py	2026-09-17 15:46:10.941532986 -0400
++++ /tmp/yqi10/mu/103142/g1/lane29/profiling_sandbox/requests/__init__.py	2026-09-27 08:34:07.320571565 -0400
+@@ -169,6 +169,8 @@
+     __version__,
+ )
+ from .api import delete, get, head, options, patch, post, put, request
++from .help import info_v2
++from .help import info_v2
+ from .exceptions import (
+     ConnectionError,
+     ConnectTimeout,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/103142/g1/lane29/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/103142/g1/lane29/profiling_sandbox/requests/models.py	2026-09-27 08:49:57.082096034 -0400
+@@ -357,6 +357,7 @@
+ 
+     def prepare(self) -> PreparedRequest:
+         """Constructs a :class:`PreparedRequest <PreparedRequest>` for transmission and returns it."""
++        """Constructs a :class:`PreparedRequest <PreparedRequest>` for transmission and returns it."""
+         p = PreparedRequest()
+         p.prepare(
+             method=self.method,
+@@ -403,6 +404,7 @@
+     _body_position: int | object | None
+ 
+     def __init__(self) -> None:
++        """The fully mutable :class:`PreparedRequest <PreparedRequest>` object,"""
+         #: HTTP verb to send to the server.
+         self.method = None
+         #: HTTP URL to send the request to.
+@@ -452,6 +454,7 @@
+         return f"<PreparedRequest [{self.method}]>"
+ 
+     def copy(self) -> PreparedRequest:
++        """Returns a copy of the :class:`PreparedRequest <PreparedRequest>` object."""
+         p = PreparedRequest()
+         p.method = self.method
+         p.url = self.url
+@@ -464,6 +467,7 @@
+ 
+     def prepare_method(self, method: str | None) -> None:
+         """Prepares the given HTTP method."""
++        """Prepares the given HTTP method."""
+         self.method = method
+         if self.method is not None:
+             self.method = to_native_string(self.method.upper())
+@@ -478,7 +482,11 @@
+             raise UnicodeError
+         return host
+ 
+-    def prepare_url(
++    def prepare_url(\n        self,
++        url: _t.UriType,
++        params: _t.ParamsType,
++    ) -> None:
++        """Prepares the given HTTP URL."""
+         self,
+         url: _t.UriType,
+         params: _t.ParamsType,
+@@ -562,6 +570,7 @@
+ 
+     def prepare_headers(self, headers: Mapping[str, str | bytes] | None) -> None:
+         """Prepares the given HTTP headers."""
++        """Prepares the given HTTP headers."""
+ 
+         self.headers = CaseInsensitiveDict()
+         if headers:
+@@ -571,7 +580,12 @@
+                 name, value = header
+                 self.headers[to_native_string(name)] = value
+ 
+-    def prepare_body(
++    def prepare_body(\n        self,
++        data: _t.DataType,
++        files: _t.FilesType,
++        json: _t.JsonType = None,
++    ) -> None:
++        """Prepares the given HTTP body data."""
+         self, data: _t.DataType, files: _t.FilesType, json: _t.JsonType = None
+     ) -> None:
+         """Prepares the given HTTP body data."""
+@@ -651,6 +665,7 @@
+ 
+     def prepare_content_length(self, body: _t.BodyType) -> None:
+         """Prepare Content-Length header based on request method and body"""
++        """Prepare Content-Length header based on request method and body"""
+         if body is not None:
+             length = super_len(body)
+             if length:
+@@ -665,7 +680,11 @@
+             # but don't provide one. (i.e. not GET or HEAD)
+             self.headers["Content-Length"] = "0"
+ 
+-    def prepare_auth(
++    def prepare_auth(\n        self,
++        auth: _t.AuthType,
++        url: _t.UriType = "",
++    ) -> None:
++        """Prepares the given HTTP auth data."""
+         self,
+         auth: _t.AuthType,
+         url: _t.UriType = "",
+@@ -694,7 +713,10 @@
+             # Recompute Content-Length
+             self.prepare_content_length(self.body)
+ 
+-    def prepare_cookies(
++    def prepare_cookies(\n        self,
++        cookies: RequestsCookieJar | CookieJar | dict[str, str] | None,
++    ) -> None:
++        """Prepares the given HTTP cookie data."""
+         self, cookies: RequestsCookieJar | CookieJar | dict[str, str] | None
+     ) -> None:
+         """Prepares the given HTTP cookie data.
+@@ -719,6 +741,7 @@
+ 
+     def prepare_hooks(self, hooks: _t.HooksInputType | None) -> None:
+         """Prepares the given hooks."""
++        """Prepares the given hooks."""
+         # hooks can be passed as None to the prepare method and to this
+         # method. To prevent iterating over None, simply use an empty list
+         # if hooks is False-y

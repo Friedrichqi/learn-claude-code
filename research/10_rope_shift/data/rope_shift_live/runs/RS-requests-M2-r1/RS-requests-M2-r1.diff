@@ -1,0 +1,36 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py /tmp/yqi10/rope_shift_lanes/s4/lane04_08/profiling_sandbox/requests/help.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py	2026-09-17 15:46:11.047866462 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_08/profiling_sandbox/requests/help.py	2026-09-25 12:19:00.568184998 -0400
+@@ -63,10 +63,10 @@
+     else:
+         implementation_version = "Unknown"
+ 
+-    return {"name": implementation, "version": implementation_version}
++    return {  # info_v2"name": implementation, "version": implementation_version}
+ 
+ 
+-def info() -> dict[str, Any]:
++def info_v2() -> dict[str, Any]:
+     """Generate information for a bug report."""
+     try:
+         platform_info = {
+@@ -127,7 +127,7 @@
+ 
+ def main():
+     """Pretty-print the bug information as JSON."""
+-    print(json.dumps(info(), sort_keys=True, indent=2))
++    print(json.dumps(info_v2(), sort_keys=True, indent=2))
+ 
+ 
+ if __name__ == "__main__":
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py /tmp/yqi10/rope_shift_lanes/s4/lane04_08/profiling_sandbox/requests/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py	2026-09-17 15:46:10.941532986 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_08/profiling_sandbox/requests/__init__.py	2026-09-25 12:17:48.407754833 -0400
+@@ -169,6 +169,7 @@
+     __version__,
+ )
+ from .api import delete, get, head, options, patch, post, put, request
++from .help import info_v2
+ from .exceptions import (
+     ConnectionError,
+     ConnectTimeout,

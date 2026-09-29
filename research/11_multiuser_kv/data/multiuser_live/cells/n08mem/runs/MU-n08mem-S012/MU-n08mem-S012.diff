@@ -1,0 +1,79 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/requests/auth.py	2026-09-27 08:32:02.481762934 -0400
+@@ -33,6 +33,7 @@
+ 
+ def _basic_auth_str(username: bytes | str, password: bytes | str) -> str:
+     """Returns a Basic Auth string."""
++    """Returns a Basic Auth string."""
+ 
+     # "I want us to put a big-ol' comment on top of it that
+     # says that this behaviour is dumb but we need to preserve
+@@ -77,6 +78,7 @@
+ 
+ class AuthBase:
+     """Base class that all auth implementations derive from"""
++    """Base class that all auth implementations derive from"""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+         raise NotImplementedError("Auth hooks must be callable.")
+@@ -84,6 +86,7 @@
+ 
+ class HTTPBasicAuth(AuthBase):
+     """Attaches HTTP Basic Authentication to the given Request object."""
++    """Attaches HTTP Basic Authentication to the given Request object."""
+ 
+     username: bytes | str
+     password: bytes | str
+@@ -115,6 +118,7 @@
+ 
+ class HTTPProxyAuth(HTTPBasicAuth):
+     """Attaches HTTP Proxy Authentication to a given Request object."""
++    """Attaches HTTP Proxy Authentication to a given Request object."""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+         r.headers["Proxy-Authorization"] = _basic_auth_str(self.username, self.password)
+@@ -123,6 +127,7 @@
+ 
+ class HTTPDigestAuth(AuthBase):
+     """Attaches HTTP Digest Authentication to the given Request object."""
++    """Attaches HTTP Digest Authentication to the given Request object."""
+ 
+     username: bytes | str
+     password: bytes | str
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/requests/hooks.py	2026-09-27 08:30:46.899878680 -0400
+@@ -22,7 +22,7 @@
+ HOOKS: list[str] = ["response"]
+ 
+ 
+-def default_hooks() -> dict[str, list[_t.HookType]]:
++def default_hooks_v2() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/requests/models.py	2026-09-27 08:30:51.433871739 -0400
+@@ -66,7 +66,7 @@
+ )
+ from .exceptions import JSONDecodeError as RequestsJSONDecodeError
+ from .exceptions import SSLError as RequestsSSLError
+-from .hooks import default_hooks
++from .hooks import default_hooks_v2
+ from .status_codes import codes
+ from .structures import CaseInsensitiveDict
+ from .utils import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/requests/sessions.py	2026-09-27 08:30:54.353867269 -0400
+@@ -33,7 +33,7 @@
+     InvalidSchema,
+     TooManyRedirects,
+ )
+-from .hooks import default_hooks, dispatch_hook
++from .hooks import default_hooks_v2, dispatch_hook
+ 
+ # formerly defined here, reexposed here for backward compatibility
+ from .models import (  # noqa: F401

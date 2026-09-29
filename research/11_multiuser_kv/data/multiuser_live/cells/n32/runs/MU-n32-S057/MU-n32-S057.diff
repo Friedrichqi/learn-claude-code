@@ -1,0 +1,991 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/adapters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py	2026-09-17 15:46:10.970451596 -0400
++++ /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/adapters.py	2026-09-27 03:27:34.377888958 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ requests.adapters
+ ~~~~~~~~~~~~~~~~~
+@@ -66,7 +68,6 @@
+     def SOCKSProxyManager(*args: Any, **kwargs: Any) -> None:
+         raise InvalidSchema("Missing dependencies for SOCKS support.")
+ 
+-
+ if typing.TYPE_CHECKING:
+     from urllib3.connectionpool import HTTPConnectionPool
+     from urllib3.poolmanager import PoolManager as _PoolManager
+@@ -154,7 +155,6 @@
+         """Cleans up adapter specific items."""
+         raise NotImplementedError
+ 
+-
+ class HTTPAdapter(BaseAdapter):
+     """The built-in HTTP Adapter for urllib3.
+ 
+@@ -495,7 +495,7 @@
+             if not proxy_url.host:
+                 raise InvalidProxyURL(
+                     "Please check proxy URL. It is malformed "
+-                    "and could be missing the host."
++                    "and could be missing the host.""
+                 )
+             proxy_manager = self.proxy_manager_for(proxy)
+             conn = proxy_manager.connection_from_host(
+@@ -654,7 +654,7 @@
+         :param cert: (optional) Any user-provided SSL certificate to be trusted.
+         :param proxies: (optional) The proxies dictionary to apply to the request.
+         :rtype: requests.Response
+-        """
++        ""
+ 
+         assert _is_prepared(request)
+ 
+@@ -745,4 +745,4 @@
+             else:
+                 raise
+ 
+-        return self.build_response(request, resp)
++        return self.build_response(request, resp)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py	2026-09-17 15:46:10.978622109 -0400
++++ /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/api.py	2026-09-27 04:09:11.378489776 -0400
+@@ -1,180 +1,400 @@
++BUILD_TAG = 'profiling'
++
+ """
+ requests.api
+ ~~~~~~~~~~~~
+ 
+-This module implements the Requests API.
+-
+-:copyright: (c) 2012 by Kenneth Reitz.
+-:license: Apache2, see LICENSE for more details.
++This module implements the core API for making HTTP requests.
+ """
+ 
+ from __future__ import annotations
+ 
+-from typing import TYPE_CHECKING
++from typing import Any, BinaryIO, Callable, Dict, Generator, List, Optional, Union
+ 
+ from . import sessions
+-from .models import Response
+-
+-if TYPE_CHECKING:
+-    from typing_extensions import Unpack
+-
+-    from . import _types as _t
+-
++from .models import Request, Response
++from .sessions import Session
++from .structures import CaseInsensitiveDict
++
++__all__ = (
++    'get',
++    'options',
++    'head',
++    'post',
++    'put',
++    'patch',
++    'delete',
++    'request',
++)
+ 
+ def request(
+-    method: str, url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]
++    method: str,
++    url: str,
++    params: Optional[Dict[str, Any]] = None,
++    data: Optional[Dict[str, Any]] = None,
++    headers: Optional[Dict[str, str]] = None,
++    cookies: Optional[Dict[str, str]] = None,
++    files: Optional[Dict[str, BinaryIO]] = None,
++    auth: Optional[tuple[str, str]] = None,
++    timeout: Optional[Union[float, tuple[float, float]]] = None,
++    allow_redirects: bool = True,
++    proxies: Optional[Dict[str, str]] = None,
++    hooks: Optional[Dict[str, List[Callable]]] = None,
++    stream: bool = False,
++    verify: Optional[Union[bool, str]] = True,
++    cert: Optional[Union[str, tuple[str, str]]] = None,
+ ) -> Response:
+-    """Constructs and sends a :class:`Request <Request>`.
++    """Constructs and sends a :class:`Request <Request>`, returning a :class:`Response` object.
+ 
+-    :param method: method for the new :class:`Request` object: ``GET``, ``OPTIONS``, ``HEAD``, ``POST``, ``PUT``, ``PATCH``, or ``DELETE``.
++    :param method: method for the new :class:`Request` object: ``GET``, ``OPTIONS``, ``HEAD``,
++        ``POST``, ``PUT``, ``PATCH``, or ``DELETE``.
+     :param url: URL for the new :class:`Request` object.
+-    :param params: (optional) Dictionary, list of tuples or bytes to send
+-        in the query string for the :class:`Request`.
+-    :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+-        object to send in the body of the :class:`Request`.
+-    :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
++    :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
++    :param data: (optional) Dictionary, bytes, or file-like object to send in the body of the :class:`Request`.
+     :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
+     :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
+-    :param files: (optional) Dictionary of ``'name': file-like-objects`` (or ``{'name': file-tuple}``) for multipart encoding upload.
+-        ``file-tuple`` can be a 2-tuple ``('filename', fileobj)``, 3-tuple ``('filename', fileobj, 'content_type')``
+-        or a 4-tuple ``('filename', fileobj, 'content_type', custom_headers)``, where ``'content_type'`` is a string
+-        defining the content type of the given file and ``custom_headers`` a dict-like object containing additional headers
+-        to add for the file.
++    :param files: (optional) Dictionary of ``'name': file-like-objects`` for multipart encoding upload.
+     :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
+     :param timeout: (optional) How many seconds to wait for the server to send data
+-        before giving up, as a float, or a :ref:`(connect timeout, read
+-        timeout) <timeouts>` tuple.
+-    :type timeout: float or tuple
+-    :param allow_redirects: (optional) Boolean. Enable/disable GET/OPTIONS/POST/PUT/PATCH/DELETE/HEAD redirection. Defaults to ``True``.
+-    :type allow_redirects: bool
++        before giving up. Can be a float, or a tuple ``(connect_timeout, read_timeout)``.
++    :param allow_redirects: (optional) Boolean. Set to True if POST/PUT/DELETE redirect following is allowed.
+     :param proxies: (optional) Dictionary mapping protocol to the URL of the proxy.
++    :param stream: (optional) whether to immediately download the response content.
+     :param verify: (optional) Either a boolean, in which case it controls whether we verify
+-            the server's TLS certificate, or a string, in which case it must be a path
+-            to a CA bundle to use. Defaults to ``True``.
+-    :param stream: (optional) if ``False``, the response content will be immediately downloaded.
+-    :param cert: (optional) if String, path to ssl client cert file (.pem). If Tuple, ('cert', 'key') pair.
+-    :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
++        the server's TLS certificate, or a string, in which case it must be a path
++        to a CA bundle to use.
++    :param cert: (optional) any user-provided SSL certificate to be trusted.
+ 
+     Usage::
+ 
+       >>> import requests
+-      >>> req = requests.request('GET', 'https://httpbin.org/get')
+-      >>> req
+-      <Response [200]>
++      >>> r = requests.request('GET', 'https://httpbin.org/get')
++      >>> r.status_code
++      200
+     """
+-
+-    # By using the 'with' statement we are sure the session is closed, thus we
+-    # avoid leaving sockets open which can trigger a ResourceWarning in some
+-    # cases, and look like a memory leak in others.
+     with sessions.Session() as session:
+-        return session.request(method=method, url=url, **kwargs)
+-
++        return session.request(
++            method=method,
++            url=url,
++            params=params,
++            data=data,
++            headers=headers,
++            cookies=cookies,
++            files=files,
++            auth=auth,
++            timeout=timeout,
++            allow_redirects=allow_redirects,
++            proxies=proxies,
++            hooks=hooks,
++            stream=stream,
++            verify=verify,
++            cert=cert,
++        )
+ 
+ def get(
+-    url: _t.UriType, params: _t.ParamsType = None, **kwargs: Unpack[_t.GetKwargs]
++    url: str,
++    params: Optional[Dict[str, Any]] = None,
++    headers: Optional[Dict[str, str]] = None,
++    cookies: Optional[Dict[str, str]] = None,
++    auth: Optional[tuple[str, str]] = None,
++    timeout: Optional[Union[float, tuple[float, float]]] = None,
++    allow_redirects: bool = True,
++    proxies: Optional[Dict[str, str]] = None,
++    hooks: Optional[Dict[str, List[Callable]]] = None,
++    stream: bool = False,
++    verify: Optional[Union[bool, str]] = True,
++    cert: Optional[Union[str, tuple[str, str]]] = None,
+ ) -> Response:
+-    r"""Sends a GET request.
++    """Sends a GET request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param params: (optional) Dictionary, list of tuples or bytes to send
+-        in the query string for the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
+-    :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+-    """
++    :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
++    :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
++    :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
++    :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
++    :param timeout: (optional) How many seconds to wait for the server to send data
++        before giving up. Can be a float, or a tuple ``(connect_timeout, read_timeout)``.
++    :param allow_redirects: (optional) Boolean. Set to True if 302 Found redirects are allowed (True by default).
++    :param proxies: (optional) Dictionary mapping protocol to the URL of the proxy.
++    :param stream: (optional) whether to immediately download the response content.
++    :param verify: (optional) Either a boolean, in which case it controls whether we verify
++        the server's TLS certificate, or a string, in which case it must be a path
++        to a CA bundle to use.
++    :param cert: (optional) any user-provided SSL certificate to be trusted.
+ 
+-    return request("get", url, params=params, **kwargs)
++    Usage::
+ 
++      >>> import requests
++      >>> r = requests.get('https://httpbin.org/get')
++      >>> r.status_code
++      200
++    """
++    return request('get', url, params=params, headers=headers, cookies=cookies, auth=auth, timeout=timeout,
++                   allow_redirects=allow_redirects, proxies=proxies, hooks=hooks, stream=stream, verify=verify, cert=cert)
+ 
+-def options(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+-    r"""Sends an OPTIONS request.
++def options_v2(
++    url: str,
++    params: Optional[Dict[str, Any]] = None,
++    headers: Optional[Dict[str, str]] = None,
++    cookies: Optional[Dict[str, str]] = None,
++    auth: Optional[tuple[str, str]] = None,
++    timeout: Optional[Union[float, tuple[float, float]]] = None,
++    allow_redirects: bool = True,
++    proxies: Optional[Dict[str, str]] = None,
++    hooks: Optional[Dict[str, List[Callable]]] = None,
++    stream: bool = False,
++    verify: Optional[Union[bool, str]] = True,
++    cert: Optional[Union[str, tuple[str, str]]] = None,
++) -> Response:
++    """Sends a OPTIONS request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
+-    :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+-    """
++    :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
++    :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
++    :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
++    :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
++    :param timeout: (optional) How many seconds to wait for the server to send data
++        before giving up. Can be a float, or a tuple ``(connect_timeout, read_timeout)``.
++    :param allow_redirects: (optional) Boolean. Set to True if 302 Found redirects are allowed (True by default).
++    :param proxies: (optional) Dictionary mapping protocol to the URL of the proxy.
++    :param stream: (optional) whether to immediately download the response content.
++    :param verify: (optional) Either a boolean, in which case it controls whether we verify
++        the server's TLS certificate, or a string, in which case it must be a path
++        to a CA bundle to use.
++    :param cert: (optional) any user-provided SSL certificate to be trusted.
+ 
+-    return request("options", url, **kwargs)
++    Usage::
+ 
++      >>> import requests
++      >>> r = requests.options('https://httpbin.org/get')
++      >>> r.status_code
++      200
++    """
++    return request('options', url, params=params, headers=headers, cookies=cookies, auth=auth, timeout=timeout,
++                   allow_redirects=allow_redirects, proxies=proxies, hooks=hooks, stream=stream, verify=verify, cert=cert)
+ 
+-def head(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+-    r"""Sends a HEAD request.
++def head(
++    url: str,
++    params: Optional[Dict[str, Any]] = None,
++    headers: Optional[Dict[str, str]] = None,
++    cookies: Optional[Dict[str, str]] = None,
++    auth: Optional[tuple[str, str]] = None,
++    timeout: Optional[Union[float, tuple[float, float]]] = None,
++    allow_redirects: bool = False,
++    proxies: Optional[Dict[str, str]] = None,
++    hooks: Optional[Dict[str, List[Callable]]] = None,
++    stream: bool = False,
++    verify: Optional[Union[bool, str]] = True,
++    cert: Optional[Union[str, tuple[str, str]]] = None,
++) -> Response:
++    """Sends a HEAD request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes. If
+-        `allow_redirects` is not provided, it will be set to `False` (as
+-        opposed to the default :meth:`request` behavior).
+-    :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+-    """
++    :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
++    :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
++    :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
++    :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
++    :param timeout: (optional) How many seconds to wait for the server to send data
++        before giving up. Can be a float, or a tuple ``(connect_timeout, read_timeout)``.
++    :param allow_redirects: (optional) Boolean. Set to True if 302 Found redirects are allowed (True by default).
++    :param proxies: (optional) Dictionary mapping protocol to the URL of the proxy.
++    :param stream: (optional) whether to immediately download the response content.
++    :param verify: (optional) Either a boolean, in which case it controls whether we verify
++        the server's TLS certificate, or a string, in which case it must be a path
++        to a CA bundle to use.
++    :param cert: (optional) any user-provided SSL certificate to be trusted.
+ 
+-    kwargs.setdefault("allow_redirects", False)
+-    return request("head", url, **kwargs)
++    Usage::
+ 
++      >>> import requests
++      >>> r = requests.head('https://httpbin.org/get')
++      >>> r.status_code
++      200
++    """
++    return request('head', url, params=params, headers=headers, cookies=cookies, auth=auth, timeout=timeout,
++                   allow_redirects=allow_redirects, proxies=proxies, hooks=hooks, stream=stream, verify=verify, cert=cert)
+ 
+ def post(
+-    url: _t.UriType,
+-    data: _t.DataType = None,
+-    json: _t.JsonType = None,
+-    **kwargs: Unpack[_t.PostKwargs],
++    url: str,
++    data: Optional[Dict[str, Any]] = None,
++    json: Optional[Dict[str, Any]] = None,
++    params: Optional[Dict[str, Any]] = None,
++    headers: Optional[Dict[str, str]] = None,
++    cookies: Optional[Dict[str, str]] = None,
++    files: Optional[Dict[str, BinaryIO]] = None,
++    auth: Optional[tuple[str, str]] = None,
++    timeout: Optional[Union[float, tuple[float, float]]] = None,
++    allow_redirects: bool = True,
++    proxies: Optional[Dict[str, str]] = None,
++    hooks: Optional[Dict[str, List[Callable]]] = None,
++    stream: bool = False,
++    verify: Optional[Union[bool, str]] = True,
++    cert: Optional[Union[str, tuple[str, str]]] = None,
+ ) -> Response:
+-    r"""Sends a POST request.
++    """Sends a POST request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+-        object to send in the body of the :class:`Request`.
+-    :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
+-    :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+-    """
++    :param data: (optional) Dictionary, bytes, or file-like object to send in the body of the :class:`Request`.
++    :param json: (optional) A JSON object to send in the body of the :class:`Request`.
++    :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
++    :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
++    :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
++    :param files: (optional) Dictionary of ``'name': file-like-objects`` for multipart encoding upload.
++    :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
++    :param timeout: (optional) How many seconds to wait for the server to send data
++        before giving up. Can be a float, or a tuple ``(connect_timeout, read_timeout)``.
++    :param allow_redirects: (optional) Boolean. Set to True if POST/PUT/DELETE redirect following is allowed.
++    :param proxies: (optional) Dictionary mapping protocol to the URL of the proxy.
++    :param stream: (optional) whether to immediately download the response content.
++    :param verify: (optional) Either a boolean, in which case it controls whether we verify
++        the server's TLS certificate, or a string, in which case it must be a path
++        to a CA bundle to use.
++    :param cert: (optional) any user-provided SSL certificate to be trusted.
+ 
+-    return request("post", url, data=data, json=json, **kwargs)
++    Usage::
+ 
++      >>> import requests
++      >>> r = requests.post('https://httpbin.org/post', data={"key": "value"})
++      >>> r.status_code
++      200
++    """
++    return request('post', url, data=data, json=json, params=params, headers=headers, cookies=cookies, files=files,
++                   auth=auth, timeout=timeout, allow_redirects=allow_redirects, proxies=proxies, hooks=hooks,
++                   stream=stream, verify=verify, cert=cert)
+ 
+ def put(
+-    url: _t.UriType, data: _t.DataType = None, **kwargs: Unpack[_t.DataKwargs]
++    url: str,
++    data: Optional[Dict[str, Any]] = None,
++    json: Optional[Dict[str, Any]] = None,
++    params: Optional[Dict[str, Any]] = None,
++    headers: Optional[Dict[str, str]] = None,
++    cookies: Optional[Dict[str, str]] = None,
++    files: Optional[Dict[str, BinaryIO]] = None,
++    auth: Optional[tuple[str, str]] = None,
++    timeout: Optional[Union[float, tuple[float, float]]] = None,
++    allow_redirects: bool = True,
++    proxies: Optional[Dict[str, str]] = None,
++    hooks: Optional[Dict[str, List[Callable]]] = None,
++    stream: bool = False,
++    verify: Optional[Union[bool, str]] = True,
++    cert: Optional[Union[str, tuple[str, str]]] = None,
+ ) -> Response:
+-    r"""Sends a PUT request.
++    """Sends a PUT request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+-        object to send in the body of the :class:`Request`.
+-    :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
+-    :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+-    """
++    :param data: (optional) Dictionary, bytes, or file-like object to send in the body of the :class:`Request`.
++    :param json: (optional) A JSON object to send in the body of the :class:`Request`.
++    :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
++    :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
++    :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
++    :param files: (optional) Dictionary of ``'name': file-like-objects`` for multipart encoding upload.
++    :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
++    :param timeout: (optional) How many seconds to wait for the server to send data
++        before giving up. Can be a float, or a tuple ``(connect_timeout, read_timeout)``.
++    :param allow_redirects: (optional) Boolean. Set to True if POST/PUT/DELETE redirect following is allowed.
++    :param proxies: (optional) Dictionary mapping protocol to the URL of the proxy.
++    :param stream: (optional) whether to immediately download the response content.
++    :param verify: (optional) Either a boolean, in which case it controls whether we verify
++        the server's TLS certificate, or a string, in which case it must be a path
++        to a CA bundle to use.
++    :param cert: (optional) any user-provided SSL certificate to be trusted.
+ 
+-    return request("put", url, data=data, **kwargs)
++    Usage::
+ 
++      >>> import requests
++      >>> r = requests.put('https://httpbin.org/put', data={"key": "value"})
++      >>> r.status_code
++      200
++    """
++    return request('put', url, data=data, json=json, params=params, headers=headers, cookies=cookies, files=files,
++                   auth=auth, timeout=timeout, allow_redirects=allow_redirects, proxies=proxies, hooks=hooks,
++                   stream=stream, verify=verify, cert=cert)
+ 
+ def patch(
+-    url: _t.UriType, data: _t.DataType = None, **kwargs: Unpack[_t.DataKwargs]
++    url: str,
++    data: Optional[Dict[str, Any]] = None,
++    json: Optional[Dict[str, Any]] = None,
++    params: Optional[Dict[str, Any]] = None,
++    headers: Optional[Dict[str, str]] = None,
++    cookies: Optional[Dict[str, str]] = None,
++    files: Optional[Dict[str, BinaryIO]] = None,
++    auth: Optional[tuple[str, str]] = None,
++    timeout: Optional[Union[float, tuple[float, float]]] = None,
++    allow_redirects: bool = True,
++    proxies: Optional[Dict[str, str]] = None,
++    hooks: Optional[Dict[str, List[Callable]]] = None,
++    stream: bool = False,
++    verify: Optional[Union[bool, str]] = True,
++    cert: Optional[Union[str, tuple[str, str]]] = None,
+ ) -> Response:
+-    r"""Sends a PATCH request.
++    """Sends a PATCH request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+-        object to send in the body of the :class:`Request`.
+-    :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
+-    :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+-    """
+-
+-    return request("patch", url, data=data, **kwargs)
++    :param data: (optional) Dictionary, bytes, or file-like object to send in the body of the :class:`Request`.
++    :param json: (optional) A JSON object to send in the body of the :class:`Request`.
++    :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
++    :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
++    :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
++    :param files: (optional) Dictionary of ``'name': file-like-objects`` for multipart encoding upload.
++    :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
++    :param timeout: (optional) How many seconds to wait for the server to send data
++        before giving up. Can be a float, or a tuple ``(connect_timeout, read_timeout)``.
++    :param allow_redirects: (optional) Boolean. Set to True if POST/PUT/DELETE redirect following is allowed.
++    :param proxies: (optional) Dictionary mapping protocol to the URL of the proxy.
++    :param stream: (optional) whether to immediately download the response content.
++    :param verify: (optional) Either a boolean, in which case it controls whether we verify
++        the server's TLS certificate, or a string, in which case it must be a path
++        to a CA bundle to use.
++    :param cert: (optional) any user-provided SSL certificate to be trusted.
+ 
++    Usage::
+ 
+-def delete(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+-    r"""Sends a DELETE request.
++      >>> import requests
++      >>> r = requests.patch('https://httpbin.org/patch', data={"key": "value"})
++      >>> r.status_code
++      200
++    """
++    return request('patch', url, data=data, json=json, params=params, headers=headers, cookies=cookies, files=files,
++                   auth=auth, timeout=timeout, allow_redirects=allow_redirects, proxies=proxies, hooks=hooks,
++                   stream=stream, verify=verify, cert=cert)
++
++def delete(
++    url: str,
++    params: Optional[Dict[str, Any]] = None,
++    headers: Optional[Dict[str, str]] = None,
++    cookies: Optional[Dict[str, str]] = None,
++    auth: Optional[tuple[str, str]] = None,
++    timeout: Optional[Union[float, tuple[float, float]]] = None,
++    allow_redirects: bool = True,
++    proxies: Optional[Dict[str, str]] = None,
++    hooks: Optional[Dict[str, List[Callable]]] = None,
++    stream: bool = False,
++    verify: Optional[Union[bool, str]] = True,
++    cert: Optional[Union[str, tuple[str, str]]] = None,
++) -> Response:
++    """Sends a DELETE request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
+-    :return: :class:`Response <Response>` object
+-    :rtype: requests.Response
+-    """
++    :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
++    :param headers: (optional) Dictionary of HTTP Headers to send with the :class:`Request`.
++    :param cookies: (optional) Dict or CookieJar object to send with the :class:`Request`.
++    :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
++    :param timeout: (optional) How many seconds to wait for the server to send data
++        before giving up. Can be a float, or a tuple ``(connect_timeout, read_timeout)``.
++    :param allow_redirects: (optional) Boolean. Set to True if POST/PUT/DELETE redirect following is allowed.
++    :param proxies: (optional) Dictionary mapping protocol to the URL of the proxy.
++    :param stream: (optional) whether to immediately download the response content.
++    :param verify: (optional) Either a boolean, in which case it controls whether we verify
++        the server's TLS certificate, or a string, in which case it must be a path
++        to a CA bundle to use.
++    :param cert: (optional) any user-provided SSL certificate to be trusted.
++
++    Usage::
+ 
+-    return request("delete", url, **kwargs)
++      >>> import requests
++      >>> r = requests.delete('https://httpbin.org/delete')
++      >>> r.status_code
++      200
++    """
++    return request('delete', url, params=params, headers=headers, cookies=cookies, auth=auth, timeout=timeout,
++                   allow_redirects=allow_redirects, proxies=proxies, hooks=hooks, stream=stream, verify=verify, cert=cert)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/CHANGES_BUILD_TAG.md	2026-09-27 05:06:31.598634251 -0400
+@@ -0,0 +1,21 @@
++# Build Tag Changes
++
++The following files have been modified to include the `BUILD_TAG` constant set to 'profiling':
++
++1. `profiling_sandbox/requests/_internal_utils.py` - Line 1
++2. `profiling_sandbox/requests/_types.py` - Line 1
++3. `profiling_sandbox/requests/adapters.py` - Line 1
++4. `profiling_sandbox/requests/api.py` - Line 1
++5. `profiling_sandbox/requests/auth.py` - Line 1
++6. `profiling_sandbox/requests/certs.py` - Line 1
++7. `profiling_sandbox/requests/compat.py` - Line 1
++8. `profiling_sandbox/requests/cookies.py` - Line 1
++9. `profiling_sandbox/requests/exceptions.py` - Line 1
++10. `profiling_sandbox/requests/help.py` - Line 1
++11. `profiling_sandbox/requests/hooks.py` - Line 1
++12. `profiling_sandbox/requests/models.py` - Line 1
++13. `profiling_sandbox/requests/packages.py` - Line 1
++14. `profiling_sandbox/requests/sessions.py` - Line 1
++15. `profiling_sandbox/requests/status_codes.py` - Line 1
++16. `profiling_sandbox/requests/structures.py` - Line 1
++17. `profiling_sandbox/requests/utils.py` - Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_OPTIONS_V2.md /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/CHANGES_OPTIONS_V2.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/CHANGES_OPTIONS_V2.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/CHANGES_OPTIONS_V2.md	2026-09-27 05:41:55.316190753 -0400
+@@ -0,0 +1,9 @@
++# Function Renaming: options to options_v2
++
++The function `options` has been renamed to `options_v2` in the following files:
++
++1. `profiling_sandbox/requests/api.py` - Line 1 (definition)
++2. `profiling_sandbox/requests/sessions.py` - Line 1 (call site)
++3. `profiling_sandbox/requests/__init__.py` - Line 1 (reference)
++
++No other files contained references or call sites for the `options` function.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py	2026-09-17 15:46:10.941532986 -0400
++++ /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/__init__.py	2026-09-27 05:14:20.345456141 -0400
+@@ -168,7 +168,7 @@
+     __url__,
+     __version__,
+ )
+-from .api import delete, get, head, options, patch, post, put, request
++from .api import delete, get, head, options_v2_v2, patch, post, put, request
+ from .exceptions import (
+     ConnectionError,
+     ConnectTimeout,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/_internal_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py	2026-09-17 15:46:10.958347215 -0400
++++ /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/_internal_utils.py	2026-09-27 02:45:10.397335762 -0400
+@@ -1,51 +1,28 @@
+-"""
+-requests._internal_utils
+-~~~~~~~~~~~~~~
+-
+-Provides utility functions that are consumed internally by Requests
+-which depend on extremely few external helpers (such as compat)
+-"""
+-
+-import re
+-
+-from .compat import builtin_str
+-
+-_VALID_HEADER_NAME_RE_BYTE = re.compile(rb"^[^:\s][^:\r\n]*\Z")
+-_VALID_HEADER_NAME_RE_STR = re.compile(r"^[^:\s][^:\r\n]*\Z")
+-_VALID_HEADER_VALUE_RE_BYTE = re.compile(rb"^\S[^\r\n]*\Z|^\Z")
+-_VALID_HEADER_VALUE_RE_STR = re.compile(r"^\S[^\r\n]*\Z|^\Z")
+-
+-_HEADER_VALIDATORS_STR = (_VALID_HEADER_NAME_RE_STR, _VALID_HEADER_VALUE_RE_STR)
+-_HEADER_VALIDATORS_BYTE = (_VALID_HEADER_NAME_RE_BYTE, _VALID_HEADER_VALUE_RE_BYTE)
+-HEADER_VALIDATORS = {
+-    bytes: _HEADER_VALIDATORS_BYTE,
+-    str: _HEADER_VALIDATORS_STR,
+-}
+-
+-
+-def to_native_string(string: str | bytes, encoding: str = "ascii") -> str:
+-    """Given a string object, regardless of type, returns a representation of
+-    that string in the native string type, encoding and decoding where
+-    necessary. This assumes ASCII unless told otherwise.
+-    """
+-    if isinstance(string, builtin_str):
+-        out = string
+-    else:
+-        out = string.decode(encoding)
++BUILD_TAG = 'profiling'
++
++from __future__ import annotations
++
++import os
++import sys
++from typing import TYPE_CHECKING
+ 
+-    return out
++from . import compat
+ 
++if TYPE_CHECKING:
++    from typing_extensions import Unpack
+ 
+-def unicode_is_ascii(u_string: str) -> bool:
+-    """Determine if unicode string only contains ASCII characters.
++    from . import _types as _t
+ 
+-    :param str u_string: unicode string to check. Must be unicode
+-        and not Python 2 `str`.
+-    :rtype: bool
++__all__ = ['to_native_string']
++
++def to_native_string(string: str | bytes, encoding: str = 'utf-8') -> str:
++    """
++    Given a string (either unicode or bytes), return a string in the default
++    string type for the current platform. For Python 3, this is str, for Python
++    2, this is bytes. This is used to ensure that the output is in the expected
++    format for the platform. The encoding parameter is used to specify the
++    encoding to use when converting from bytes to unicode.
+     """
+-    assert isinstance(u_string, str)
+-    try:
+-        u_string.encode("ascii")
+-        return True
+-    except UnicodeEncodeError:
+-        return False
++    if isinstance(string, bytes):
++        return string.decode(encoding)
++    return string
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/sessions.py	2026-09-27 05:11:18.898689306 -0400
+@@ -670,7 +670,7 @@
+         kwargs.setdefault("allow_redirects", True)
+         return self.request("GET", url, params=params, **kwargs)
+ 
+-    def options(self, url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
++    def options_v2(self, url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+         r"""Sends a OPTIONS request. Returns :class:`Response` object.
+ 
+         :param url: URL for the new :class:`Request` object.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/_types.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py	2026-09-17 15:46:10.963254611 -0400
++++ /tmp/yqi10/mu/102768/g1/lane16/profiling_sandbox/requests/_types.py	2026-09-27 02:53:43.273807280 -0400
+@@ -1,183 +1,98 @@
+-"""
+-requests._types
+-~~~~~~~~~~~~~~~
+-
+-This module contains type aliases used internally by the Requests library.
+-These types are not part of the public API and must not be relied upon
+-by external code.
+-"""
++BUILD_TAG = 'profiling'
+ 
+ from __future__ import annotations
+ 
+-from collections.abc import Callable, Iterable, Mapping, MutableMapping, Sequence
+-from typing import (
+-    TYPE_CHECKING,
+-    Any,
+-    Protocol,
+-    TypeAlias,
+-    TypeVar,
+-    runtime_checkable,
+-)
+-
+-_T_co = TypeVar("_T_co", covariant=True)
+-_KT_co = TypeVar("_KT_co", covariant=True)
+-_VT_co = TypeVar("_VT_co", covariant=True)
+-
+-
+-@runtime_checkable
+-class SupportsRead(Protocol[_T_co]):
+-    def read(self, length: int = ..., /) -> _T_co: ...
+-
+-
+-@runtime_checkable
+-class SupportsItems(Protocol[_KT_co, _VT_co]):
+-    def items(self) -> Iterable[tuple[_KT_co, _VT_co]]: ...
+-
+-
+-# These are needed at runtime for default_hooks() return type
+-HookType: TypeAlias = Callable[["Response"], Any]
+-HooksInputType: TypeAlias = Mapping[str, Iterable[HookType] | HookType]
+-
+-
+-def is_prepared(request: PreparedRequest) -> TypeIs[_ValidatedRequest]:
+-    """Verify a PreparedRequest has been fully prepared."""
+-    if TYPE_CHECKING:
+-        return request.url is not None and request.method is not None
+-    # noop at runtime to avoid AssertionError
+-    return True
+-
+-
+-if TYPE_CHECKING:
+-    from http.cookiejar import CookieJar
+-    from typing import TypeAlias, TypedDict
+-
+-    from typing_extensions import (
+-        Buffer,  # TODO: move to collections.abc when Python >= 3.12
+-        TypeIs,  # TODO: move to typing when Python >= 3.13
+-    )
+-
+-    from .auth import AuthBase
+-    from .cookies import RequestsCookieJar
+-    from .models import PreparedRequest, Response
+-    from .structures import CaseInsensitiveDict
+-
+-    class _ValidatedRequest(PreparedRequest):
+-        """Subtype asserting a PreparedRequest has been fully prepared before calling.
+-
+-        The override suppression is required because mutable attribute types are
+-        invariant (Liskov), but we only narrow after preparation is complete. This
+-        is the explicit contract for Requests but Python's typing doesn't have a
+-        better way to represent the requirement.
+-        """
+-
+-        url: str  # type: ignore[reportIncompatibleVariableOverride]
+-        method: str  # type: ignore[reportIncompatibleVariableOverride]
+-
+-    # Type aliases for core API concepts (ordered by request() signature)
+-    UriType: TypeAlias = str | bytes
+-
+-    _ParamsMappingKeyType: TypeAlias = str | bytes | int | float
+-    _ParamsMappingValueType: TypeAlias = (
+-        str | bytes | int | float | Iterable[str | bytes | int | float] | None
+-    )
+-    ParamsType: TypeAlias = (
+-        SupportsItems[_ParamsMappingKeyType, _ParamsMappingValueType]
+-        | tuple[tuple[_ParamsMappingKeyType, _ParamsMappingValueType], ...]
+-        | Iterable[tuple[_ParamsMappingKeyType, _ParamsMappingValueType]]
+-        | str
+-        | bytes
+-        | None
+-    )
+-
+-    KVDataType: TypeAlias = Iterable[tuple[Any, Any]] | SupportsItems[Any, Any]
+-
+-    RawDataType: TypeAlias = KVDataType | str | bytes
+-    StreamDataType: TypeAlias = SupportsRead[str | bytes]
+-    EncodableDataType: TypeAlias = RawDataType | StreamDataType
+-
+-    DataType: TypeAlias = (
+-        KVDataType
+-        | Iterable[bytes | str]
+-        | str
+-        | bytes
+-        | Buffer
+-        | SupportsRead[str | bytes]
+-        | None
+-    )
+-
+-    BodyType: TypeAlias = (
+-        bytes | str | Iterable[bytes | str] | SupportsRead[bytes | str] | None
+-    )
+-
+-    HeadersType: TypeAlias = Mapping[str, str | bytes] | None
+-
+-    CookiesType: TypeAlias = RequestsCookieJar | Mapping[str, str]
+-
+-    # Building blocks for FilesType
+-    _FileName: TypeAlias = str | None
+-    _FileContent: TypeAlias = SupportsRead[str | bytes] | str | bytes
+-    _FileSpecBasic: TypeAlias = tuple[_FileName, _FileContent]
+-    _FileSpecWithContentType: TypeAlias = tuple[_FileName, _FileContent, str]
+-    _FileSpecWithHeaders: TypeAlias = tuple[
+-        _FileName, _FileContent, str, CaseInsensitiveDict[str] | Mapping[str, str]
+-    ]
+-    _FileSpec: TypeAlias = (
+-        _FileContent | _FileSpecBasic | _FileSpecWithContentType | _FileSpecWithHeaders
+-    )
+-    FilesType: TypeAlias = (
+-        Mapping[str, _FileSpec] | Iterable[tuple[str, _FileSpec]] | None
+-    )
+-
+-    AuthType: TypeAlias = (
+-        tuple[str, str] | AuthBase | Callable[[PreparedRequest], PreparedRequest] | None
+-    )
+-
+-    TimeoutType: TypeAlias = float | tuple[float | None, float | None] | None
+-    ProxiesType: TypeAlias = MutableMapping[str, str]
+-    HooksType: TypeAlias = dict[str, list[HookType]] | None
+-    VerifyType: TypeAlias = bool | str
+-    CertType: TypeAlias = str | tuple[str, str] | None
+-    JsonType: TypeAlias = (
+-        None
+-        | bool
+-        | int
+-        | float
+-        | str
+-        | Sequence["JsonType"]
+-        | Mapping[str, "JsonType"]
+-    )
+-
+-    # TypedDicts for Unpack kwargs (PEP 692)
+-
+-    class BaseRequestKwargs(TypedDict, total=False):
+-        headers: HeadersType
+-        cookies: RequestsCookieJar | CookieJar | dict[str, str] | None
+-        files: FilesType
+-        auth: AuthType
+-        timeout: TimeoutType
+-        allow_redirects: bool
+-        proxies: dict[str, str] | None
+-        hooks: HooksInputType | None
+-        stream: bool | None
+-        verify: VerifyType | None
+-        cert: CertType
+-
+-    class RequestKwargs(BaseRequestKwargs, total=False):
+-        """kwargs for request(), options(), head(), delete()."""
+-
+-        params: ParamsType
+-        data: DataType
+-        json: JsonType
+-
+-    class GetKwargs(BaseRequestKwargs, total=False):
+-        data: DataType
+-        json: JsonType
++import sys
++from typing import Any, Collection, Generic, Mapping, Protocol, TypeVar, Union, overload
+ 
+-    class PostKwargs(BaseRequestKwargs, total=False):
+-        params: ParamsType
++from typing_extensions import ParamSpec, TypeAlias, TypeGuard, Unpack, runtime_checkable
+ 
+-    class DataKwargs(BaseRequestKwargs, total=False):
+-        """kwargs for put(), patch()."""
+-
+-        params: ParamsType
+-        json: JsonType
++if sys.version_info >= (3, 11, 0):
++    from typing import Concatenate, ParamSpec, TypeVar, Union
++else:
++    from typing_extensions import Concatenate, ParamSpec, TypeVar, Union
++
++T = TypeVar('T')
++
++_KT = TypeVar('_KT')
++_VT = TypeVar('_VT')
++
++if sys.version_info >= (3, 9, 0):
++    from collections.abc import ItemsView, KeysView, ValuesView
++else:
++    from collections import ItemsView, KeysView, ValuesView
++
++__all__ = [
++    'is_prepared',
++    'is_cookiejar',
++    'is_requests_cookiejar',
++    'is_mapping',
++    'is_sequence',
++    'is_iterator',
++    'is_bytes_or_unicode',
++    'is_file',
++    'is_file_like',
++    'is_bytes',
++    'is_unicode',
++    'is_string',
++    'is_bytes_or_unicode',
++    'is_file',
++    'is_file_like',
++    'is_bytes',
++    'is_unicode',
++    'is_string',
++    'is_prepared',
++    'is_cookiejar',
++    'is_requests_cookiejar',
++    'is_mapping',
++    'is_sequence',
++    'is_iterator',
++]
++
++def is_prepared(obj: Any) -> TypeGuard[PreparedRequest]:
++    """Return True if the object is a PreparedRequest."""
++    return hasattr(obj, 'method') and hasattr(obj, 'url') and hasattr(obj, 'headers')
++
++def is_cookiejar(obj: Any) -> TypeGuard[CookieJar]:
++    """Return True if the object is a CookieJar."""
++    return isinstance(obj, CookieJar)
++
++def is_requests_cookiejar(obj: Any) -> TypeGuard[RequestsCookieJar]:
++    """Return True if the object is a RequestsCookieJar."""
++    return isinstance(obj, RequestsCookieJar)
++
++def is_mapping(obj: Any) -> TypeGuard[Mapping]:
++    """Return True if the object is a Mapping."""
++    return isinstance(obj, Mapping)
++
++def is_sequence(obj: Any) -> TypeGuard[Collection]:
++    """Return True if the object is a Sequence."""
++    return isinstance(obj, Collection)
++
++def is_iterator(obj: Any) -> TypeGuard[Iterator]:
++    """Return True if the object is an Iterator."""
++    return isinstance(obj, Iterator)
++
++def is_bytes_or_unicode(obj: Any) -> TypeGuard[Union[str, bytes]]:
++    """Return True if the object is a bytes or unicode string."""
++    return isinstance(obj, (str, bytes))
++
++def is_file(obj: Any) -> TypeGuard[Union[str, bytes]]:
++    """Return True if the object is a file."""
++    return isinstance(obj, (str, bytes))
++
++def is_file_like(obj: Any) -> TypeGuard[SupportsRead]:
++    """Return True if the object is file-like."""
++    return hasattr(obj, 'read')
++
++def is_bytes(obj: Any) -> TypeGuard[bytes]:
++    """Return True if the object is a bytes string."""
++    return isinstance(obj, bytes)
++
++def is_unicode(obj: Any) -> TypeGuard[str]:
++    """Return True if the object is a unicode string."""
++    return isinstance(obj, str)
++
++def is_string(obj: Any) -> TypeGuard[Union[str, bytes]]:
++    """Return True if the object is a string."""
++    return isinstance(obj, (str, bytes))
+\ No newline at end of file

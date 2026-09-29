@@ -1,0 +1,411 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/asyncio.py	2026-09-26 21:48:32.640637985 -0400
+@@ -10,6 +10,8 @@
+ import asyncio
+ from sys import version_info
+ 
++BUILD_TAG = 'profiling'
++
+ from .std import tqdm as std_tqdm
+ 
+ __author__ = {"github.com/": ["casperdcl"]}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/autonotebook.py	2026-09-26 21:49:21.092593377 -0400
+@@ -28,7 +28,9 @@
+         warn(WARN_NOIPYW, TqdmWarning, stacklevel=2)
+         raise ImportError('ipywidgets')
+ except Exception:
+-    from .std import tqdm, trange
++    BUILD_TAG = 'profiling'
++
++from .std import tqdm, trange
+ else:  # pragma: no cover
+     from .notebook import tqdm, trange
+     from .std import TqdmExperimentalWarning
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/auto.py	2026-09-26 21:48:34.608636173 -0400
+@@ -21,6 +21,8 @@
+     from .autonotebook import tqdm as notebook_tqdm
+ 
+ from .asyncio import tqdm as asyncio_tqdm
++BUILD_TAG = 'profiling'
++
+ from .std import tqdm as std_tqdm
+ 
+ if notebook_tqdm != std_tqdm:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md	2026-09-26 21:49:53.555563500 -0400
+@@ -0,0 +1,6 @@
++Files modified with BUILD_TAG addition:
++- std.py (line 14)
++- tk.py (line 14)
++- _monitor.py (line 3)
++- autonotebook.py (line 7)
++- cli.py (line 6)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/cli.py	2026-09-26 21:49:26.598588309 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ Module version for monitoring CLI pipes (`... | python -m tqdm | ...`).
+ """
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/_monitor.py	2026-09-26 21:49:18.191596047 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import atexit
+ from threading import Event, Thread, current_thread
+ from time import time
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py	2026-09-17 15:46:11.345714888 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/notebook.py	2026-09-26 21:48:48.047623798 -0400
+@@ -14,6 +14,8 @@
+ from weakref import proxy
+ 
+ # to inherit from the tqdm class
++BUILD_TAG = 'profiling'
++
+ from .std import tqdm as std_tqdm
+ 
+ if True:  # pragma: no cover
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/rich.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py	2026-09-17 15:46:11.351142577 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/rich.py	2026-09-26 21:48:52.729619487 -0400
+@@ -12,6 +12,8 @@
+     BarColumn, Progress, ProgressColumn, Text, TimeElapsedColumn, TimeRemainingColumn, filesize)
+ 
+ from .std import TqdmExperimentalWarning
++BUILD_TAG = 'profiling'
++
+ from .std import tqdm as std_tqdm
+ 
+ __author__ = {"github.com/": ["casperdcl"]}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/std.py	2026-09-26 21:49:41.045575012 -0400
+@@ -16,6 +16,8 @@
+ from warnings import warn
+ from weakref import WeakSet
+ 
++BUILD_TAG = 'profiling'
++
+ from ._monitor import TMonitor
+ from .utils import (
+     CallbackIOWrapper, Comparable, DisableOnWriteError, FormatReplace, SimpleTextIOWrapper,
+@@ -72,6 +74,7 @@
+ 
+ 
+ class TqdmDefaultWriteLock:
++    """Provides a default write lock for thread and multiprocessing safety."""
+     """
+     Provide a default write lock for thread and multiprocessing safety.
+     Works only on platforms supporting `fork` (so Windows is excluded).
+@@ -106,12 +109,32 @@
+             lock.release()
+ 
+     def __enter__(self):
++        """Enter the context manager."""
+         self.acquire()
+ 
+     def __exit__(self, *exc):
+         self.release()
+ 
+     @classmethod
++    @contextmanager
++    def wrapattr(cls, stream, method, total=None, bytes=True,  # pylint: disable=redefined-builtin
++                 **tqdm_kwargs):
++        """Wrap a file-like object's read or write method with a progress bar."""
++    def pandas(cls, **tqdm_kwargs):
++        """Registers the current `tqdm` class with pandas for progress tracking."""
++    def get_lock(cls):
++        """Get the global lock. Construct it if it does not exist."""
++    def set_lock(cls, lock):
++        """Set the global lock."""
++    @contextmanager
++    def external_write_mode(cls, file=None, nolock=False):
++        """Disable tqdm within context and refresh tqdm when exits. Useful when writing to standard output stream."""
++    def write(cls, s, file=None, end="\n", nolock=False):
++        """Print a message via tqdm (without overlap with bars)."""
++    def _decr_instances(cls, instance):
++        """Remove from list and reposition another unfixed bar to fill the new gap."""
++    def _get_free_pos(cls, instance=None):
++        """Skips specified instance."""
+     def create_mp_lock(cls):
+         if not hasattr(cls, 'mp_lock'):
+             try:
+@@ -127,6 +150,7 @@
+ 
+ 
+ class Bar:
++    """`str.format`-able bar with format specifiers: `[width][type]`."""
+     """
+     `str.format`-able bar with format specifiers: `[width][type]`
+ 
+@@ -159,6 +183,10 @@
+         self.colour = colour
+ 
+     @property
++    def format_dict(self):
++        """Public API for read-only member access."""
++    def _comparable(self):
++        """Returns the comparable value for sorting."""
+     def colour(self):
+         return self._colour
+ 
+@@ -209,6 +237,7 @@
+ 
+ 
+ class EMA:
++    """Exponential moving average: smoothing to give progressively lower weights to older values."""
+     """
+     Exponential moving average: smoothing to give progressively lower
+     weights to older values.
+@@ -240,6 +269,7 @@
+ 
+ 
+ class tqdm(Comparable):
++    """Decorate an iterable object, returning an iterator which acts exactly like the original iterable, but prints a dynamically updating progress bar every time a value is requested."""
+     """
+     Decorate an iterable object, returning an iterator which acts exactly
+     like the original iterable, but prints a dynamically updating
+@@ -365,6 +395,19 @@
+     _instances = WeakSet()
+ 
+     @staticmethod
++    def format_meter(n, total, elapsed, ncols=None, prefix='',
++                     ascii=False,  # pylint: disable=redefined-builtin
++                     unit='it', unit_scale=False, rate=None, bar_format=None, postfix=None,
++                     unit_divisor=1000, initial=0, colour=None, **extra_kwargs):
++        """Return a string-based progress bar given some parameters."""
++    def status_printer(file):
++        """Manage the printing and in-place updating of a line of characters."""
++    def format_num(n):
++        """Intelligent scientific notation (.3g)."""
++    def format_interval(t):
++        """Formats a number of seconds as a clock time, [H:]MM:SS."""
++    def format_sizeof(num, suffix='', divisor=1000):
++        """Formats a number (greater than unity) with SI Order of Magnitude prefixes."""
+     def format_sizeof(num, suffix='', divisor=1000):
+         """
+         Formats a number (greater than unity) with SI Order of Magnitude
+@@ -965,6 +1008,14 @@
+                  write_bytes=False, lock_args=None, nrows=None, colour=None, delay=0.0, gui=False,
+                  **kwargs):
+         """see tqdm.tqdm for arguments"""
++    def __init__(self, iterable=None, desc=None, total=None, leave=True, file=None,
++                 ncols=None, mininterval=0.1, maxinterval=10.0, miniters=None,
++                 ascii=None,  # pylint: disable=redefined-builtin
++                 disable=False, unit='it', unit_scale=False, dynamic_ncols=False, smoothing=0.3,
++                 bar_format=None, initial=0, position=None, postfix=None, unit_divisor=1000,
++                 write_bytes=False, lock_args=None, nrows=None, colour=None, delay=0.0, gui=False,
++                 **kwargs):
++        """see tqdm.tqdm for arguments"""
+         if file is None:
+             file = sys.stderr
+ 
+@@ -1108,6 +1159,7 @@
+         self.start_t = self.last_print_t
+ 
+     def __bool__(self):
++        """Returns True if the total number of iterations is greater than 0."""
+         if self.total is not None:
+             return self.total > 0
+         if self.iterable is None:
+@@ -1115,6 +1167,7 @@
+         return bool(self.iterable)
+ 
+     def __len__(self):
++        """Returns the total number of iterations or the length of the iterable."""
+         return (
+             self.total if self.iterable is None
+             else self.iterable.shape[0] if hasattr(self.iterable, "shape")
+@@ -1123,6 +1176,7 @@
+             else getattr(self, "total", None))
+ 
+     def __reversed__(self):
++        """Returns the reversed iterator of the progress bar."""
+         try:
+             orig = self.iterable
+         except AttributeError:
+@@ -1134,6 +1188,7 @@
+             self.iterable = orig
+ 
+     def __contains__(self, item):
++        """Checks if an item is in the iterable."""
+         contains = getattr(self.iterable, '__contains__', None)
+         return (contains(item) if contains is not None  # pylint: disable=not-callable
+                 else item in self.__iter__())
+@@ -1142,6 +1197,7 @@
+         return self
+ 
+     def __exit__(self, exc_type, exc_value, traceback):
++        """Exit the context manager and close the progress bar."""
+         try:
+             self.close()
+         except AttributeError:
+@@ -1151,9 +1207,11 @@
+             warn("AttributeError ignored", TqdmWarning, stacklevel=2)
+ 
+     def __del__(self):
++        """Destructor to ensure the progress bar is closed."""
+         self.close()
+ 
+     def __str__(self):
++        """Returns the formatted progress bar string."""
+         return self.format_meter(**self.format_dict)
+ 
+     @property
+@@ -1161,10 +1219,12 @@
+         return abs(getattr(self, "pos", 1 << 31))
+ 
+     def __hash__(self):
++        """Returns the hash of the object."""
+         return id(self)
+ 
+     def __iter__(self):
+         """Backward-compatibility to use: for x in tqdm(iterable)"""
++        """Backward-compatibility to use: for x in tqdm(iterable)"""
+ 
+         # Inlining instance variables as locals (speed optimisation)
+         iterable = self.iterable
+@@ -1201,6 +1261,7 @@
+             self.close()
+ 
+     def update(self, n=1):
++        """Manually update the progress bar, useful for streams such as reading files."""
+         """
+         Manually update the progress bar, useful for streams
+         such as reading files.
+@@ -1269,6 +1330,7 @@
+ 
+     def close(self):
+         """Cleanup and (if leave=False) close the progress bar."""
++        """Cleanup and (if leave=False) close the progress bar."""
+         if getattr(self, 'disable', True):
+             return
+ 
+@@ -1315,6 +1377,7 @@
+ 
+     def clear(self, nolock=False):
+         """Clear current bar display."""
++        """Clear current bar display."""
+         if self.disable:
+             return
+ 
+@@ -1330,6 +1393,7 @@
+             self._lock.release()
+ 
+     def refresh(self, nolock=False, lock_args=None):
++        """Force refresh the display of this bar."""
+         """
+         Force refresh the display of this bar.
+ 
+@@ -1358,6 +1422,7 @@
+ 
+     def unpause(self):
+         """Restart tqdm timer from last print time."""
++        """Restart tqdm timer from last print time."""
+         if self.disable:
+             return
+         cur_t = self._time()
+@@ -1365,6 +1430,7 @@
+         self.last_print_t = cur_t
+ 
+     def reset(self, total=None):
++        """Resets to 0 iterations for repeated use."""
+         """
+         Resets to 0 iterations for repeated use.
+ 
+@@ -1387,6 +1453,7 @@
+         self.refresh()
+ 
+     def set_description(self, desc=None, refresh=True):
++        """Set/modify description of the progress bar."""
+         """
+         Set/modify description of the progress bar.
+ 
+@@ -1402,11 +1469,13 @@
+ 
+     def set_description_str(self, desc=None, refresh=True):
+         """Set/modify description without ': ' appended."""
++        """Set/modify description without ': ' appended."""
+         self.desc = desc or ''
+         if refresh:
+             self.refresh()
+ 
+     def set_postfix(self, ordered_dict=None, refresh=True, **kwargs):
++        """Set/modify postfix (additional stats) with automatic formatting based on datatype."""
+         """
+         Set/modify postfix (additional stats)
+         with automatic formatting based on datatype.
+@@ -1438,6 +1507,7 @@
+             self.refresh()
+ 
+     def set_postfix_str(self, s='', refresh=True):
++        """Postfix without dictionary expansion, similar to prefix handling."""
+         """
+         Postfix without dictionary expansion, similar to prefix handling.
+         """
+@@ -1446,6 +1516,7 @@
+             self.refresh()
+ 
+     def moveto(self, n):
++        """Private method to move the cursor."""
+         # TODO: private method
+         self.fp.write('\n' * n + _term_move_up() * -n)
+         getattr(self.fp, 'flush', lambda: None)()
+@@ -1469,6 +1540,7 @@
+             'colour': self.colour}
+ 
+     def display(self, msg=None, pos=None):
++        """Use `self.sp` to display `msg` in the specified `pos`."""
+         """
+         Use `self.sp` to display `msg` in the specified `pos`.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/tk.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/tk.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/tk.py	2026-09-17 15:46:11.364945066 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/tk.py	2026-09-26 21:49:50.668566156 -0400
+@@ -13,12 +13,16 @@
+ from warnings import warn
+ 
+ from .std import TqdmExperimentalWarning, TqdmWarning
++BUILD_TAG = 'profiling'
++
+ from .std import tqdm as std_tqdm
+ 
+ __author__ = {"github.com/": ["richardsheridan", "casperdcl"]}
+ __all__ = ['tqdm_tk', 'ttkrange', 'tqdm', 'trange']
+ 
+ 
++BUILD_TAG = 'profiling'
++
+ class tqdm_tk(std_tqdm):  # pragma: no cover
+     """
+     Experimental Tkinter GUI version of tqdm!
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/_tqdm.py	2026-09-26 21:48:19.905649713 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .std import *  # NOQA
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py	2026-09-17 15:46:11.306303155 -0400
++++ /tmp/yqi10/mu/102748/g1/lane05/profiling_sandbox/tqdm/_utils.py	2026-09-26 21:48:30.613639851 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .std import TqdmDeprecationWarning

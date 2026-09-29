@@ -1,0 +1,12 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py /tmp/yqi10/mu/102768/g1/lane06/profiling_sandbox/click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py	2026-09-17 15:46:11.414122732 -0400
++++ /tmp/yqi10/mu/102768/g1/lane06/profiling_sandbox/click/_compat.py	2026-09-27 02:25:04.995613831 -0400
+@@ -371,7 +371,7 @@
+     return open(file, mode, encoding=encoding, errors=errors)
+ 
+ 
+-def open_stream(
++def open_stream_v2(
+     filename: str | os.PathLike[str],
+     mode: str = "r",
+     encoding: str | None = None,

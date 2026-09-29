@@ -1,0 +1,232 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py /tmp/yqi10/mu/103142/g0/lane12/profiling_sandbox/jinja2/runtime.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py	2026-09-17 15:46:11.892446012 -0400
++++ /tmp/yqi10/mu/103142/g0/lane12/profiling_sandbox/jinja2/runtime.py	2026-09-27 09:13:02.300920178 -0400
+@@ -68,9 +68,7 @@
+ 
+ 
+ def identity(x: V) -> V:
+-    """Returns its argument. Useful for certain things in the
+-    environment.
+-    """
++    """Returns its argument. Useful for certain things in the environment."""
+     return x
+ 
+ 
+@@ -114,6 +112,7 @@
+         for key, value in locals.items():
+             if value is not missing:
+                 parent[key] = value
++    """Internal helper for context creation."""
+     return environment.context_class(
+         environment, parent, template_name, blocks, globals=globals
+     )
+@@ -130,6 +129,7 @@
+         return BlockReference(name, self.__context, blocks, 0)
+ 
+     def __repr__(self) -> str:
++        """Return a string representation of the context."""
+         return f"<{type(self).__name__} {self.__context.name!r}>"
+ 
+ 
+@@ -204,6 +204,12 @@
+         :param key: The variable name to look up.
+         :param default: The value to return if the key is not found.
+         """
++        """Look up a variable by name, or return a default if the key is
++        not found.
++
++        :param key: The variable name to look up.
++        :param default: The value to return if the key is not found.
++        """
+         try:
+             return self[key]
+         except KeyError:
+@@ -219,6 +225,15 @@
+ 
+         :param key: The variable name to look up.
+         """
++        """Look up a variable by name, or return an :class:`Undefined`
++        object if the key is not found.
++
++        If you need to add custom behavior, override
++        :meth:`resolve_or_missing`, not this method. The various lookup
++        functions use that method, not this one.
++
++        :param key: The variable name to look up.
++        """
+         rv = self.resolve_or_missing(key)
+ 
+         if rv is missing:
+@@ -236,6 +251,15 @@
+ 
+         :param key: The variable name to look up.
+         """
++        """Look up a variable by name, or return a ``missing`` sentinel
++        if the key is not found.
++
++        Override this method to add custom lookup behavior.
++        :meth:`resolve`, :meth:`get`, and :meth:`__getitem__` use this
++        method. Don't call this method directly.
++
++        :param key: The variable name to look up.
++        """
+         if key in self.vars:
+             return self.vars[key]
+ 
+@@ -246,6 +270,7 @@
+ 
+     def get_exported(self) -> t.Dict[str, t.Any]:
+         """Get a new dict with the exported variables."""
++        """Get a new dict with the exported variables."""
+         return {k: self.vars[k] for k in self.exported_vars}
+ 
+     def get_all(self) -> t.Dict[str, t.Any]:
+@@ -253,6 +278,10 @@
+         variables.  For optimizations reasons this might not return an
+         actual copy so be careful with using it.
+         """
++        """Return the complete context as dict including the exported
++        variables.  For optimizations reasons this might not return an
++        actual copy so be careful with using it.
++        """
+         if not self.vars:
+             return self.parent
+         if not self.parent:
+@@ -271,6 +300,11 @@
+         argument if the callable has :func:`pass_context` or
+         :func:`pass_environment`.
+         """
++        """Call the callable with the arguments and keyword arguments
++        provided but inject the active context or environment as first
++        argument if the callable has :func:`pass_context` or
++        :func:`pass_environment`.
++        """
+         if __debug__:
+             __traceback_hide__ = True  # noqa
+ 
+@@ -312,6 +346,10 @@
+         used in situations where the system needs a new context in the same
+         template that is independent.
+         """
++        """Internal helper function to create a derived context.  This is
++        used in situations where the system needs a new context in the same
++        template that is independent.
++        """
+         context = new_context(
+             self.environment, self.name, {}, self.get_all(), True, None, locals
+         )
+@@ -324,12 +362,16 @@
+     items = _dict_method_all(dict.items)
+ 
+     def __contains__(self, name: str) -> bool:
++        """Check if a variable is present in the context."""
+         return name in self.vars or name in self.parent
+ 
+     def __getitem__(self, key: str) -> t.Any:
+         """Look up a variable by name with ``[]`` syntax, or raise a
+         ``KeyError`` if the key is not found.
+         """
++        """Look up a variable by name with ``[]`` syntax, or raise a
++        ``KeyError`` if the key is not found.
++        """
+         item = self.resolve_or_missing(key)
+ 
+         if item is missing:
+@@ -378,6 +420,7 @@
+ 
+     @internalcode
+     def __call__(self) -> str:
++        """Render the block and return the result as a string."""
+         if self._context.environment.is_async:
+             return self._async_call()  # type: ignore
+ 
+@@ -412,6 +455,16 @@
+         recurse: t.Optional["LoopRenderFunc"] = None,
+         depth0: int = 0,
+     ) -> None:
++        """A wrapper iterable for dynamic ``for`` loops, with information
++        about the loop and iteration.
++
++        :param iterable: Iterable to wrap.
++        :param undefined: :class:`Undefined` class to use for next and
++            previous items.
++        :param recurse: The function to render the loop body when the
++            loop is marked recursive.
++        :param depth0: Incremented when looping recursively.
++        """
+         """
+         :param iterable: Iterable to wrap.
+         :param undefined: :class:`Undefined` class to use for next and
+@@ -429,6 +482,7 @@
+ 
+     @staticmethod
+     def _to_iterator(iterable: t.Iterable[V]) -> t.Iterator[V]:
++        """Convert the iterable into an iterator."""
+         return iter(iterable)
+ 
+     @property
+@@ -438,6 +492,11 @@
+         If the iterable is a generator or otherwise does not have a
+         size, it is eagerly evaluated to get a size.
+         """
++        """Length of the iterable.
++
++        If the iterable is a generator or otherwise does not have a
++        size, it is eagerly evaluated to get a size.
++        """
+         if self._length is not None:
+             return self._length
+ 
+@@ -456,11 +515,13 @@
+     @property
+     def depth(self) -> int:
+         """How many levels deep a recursive loop currently is, starting at 1."""
++        """How many levels deep a recursive loop currently is, starting at 1."""
+         return self.depth0 + 1
+ 
+     @property
+     def index(self) -> int:
+         """Current iteration of the loop, starting at 1."""
++        """Current iteration of the loop, starting at 1."""
+         return self.index0 + 1
+ 
+     @property
+@@ -469,6 +530,10 @@
+ 
+         Requires calculating :attr:`length`.
+         """
++        """Number of iterations from the end of the loop, ending at 0.
++
++        Requires calculating :attr:`length`.
++        """
+         return self.length - self.index
+ 
+     @property
+@@ -477,17 +542,27 @@
+ 
+         Requires calculating :attr:`length`.
+         """
++        """Number of iterations from the end of the loop, ending at 1.
++
++        Requires calculating :attr:`length`.
++        """
+         return self.length - self.index0
+ 
+     @property
+     def first(self) -> bool:
+         """Whether this is the first iteration of the loop."""
++        """Whether this is the first iteration of the loop."""
+         return self.index0 == 0
+ 
+     def _peek_next(self) -> t.Any:
+         """Return the next element in the iterable, or :data:`missing`
+         if the iterable is exhausted. Only peeks one item ahead, caching
+         the result in :attr:`_last` for use in subsequent checks. The
++        cache is reset when :meth:`__next__` is called.
++        """
++        """Return the next element in the iterable, or :data:`missing`
++        if the iterable is exhausted. Only peeks one item ahead, caching
++        the result in :attr:`_last` for use in subsequent checks. The
+         cache is reset when :meth:`__next__` is called.
+         """
+         if self._after is not missing:

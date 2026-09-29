@@ -1,0 +1,535 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py /tmp/yqi10/mu/102768/g1/lane00/profiling_sandbox/rich/console.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py	2026-09-17 15:46:12.433011978 -0400
++++ /tmp/yqi10/mu/102768/g1/lane00/profiling_sandbox/rich/console.py	2026-09-27 05:46:31.070312692 -0400
+@@ -31,6 +31,8 @@
+     runtime_checkable,
+ )
+ 
++BUILD_TAG = 'profiling'
++
+ from rich._null_file import NULL_FILE
+ 
+ from . import errors, themes
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__main__.py /tmp/yqi10/mu/102768/g1/lane00/profiling_sandbox/rich/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__main__.py	2026-09-17 15:46:12.133039129 -0400
++++ /tmp/yqi10/mu/102768/g1/lane00/profiling_sandbox/rich/__main__.py	2026-09-27 05:38:06.040752848 -0400
+@@ -2,6 +2,8 @@
+ import io
+ from time import process_time
+ 
++BUILD_TAG = 'profiling'
++
+ from rich import box
+ from rich.color import Color
+ from rich.console import Console, ConsoleOptions, Group, RenderableType, RenderResult
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py /tmp/yqi10/mu/102768/g1/lane00/profiling_sandbox/rich/markdown.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py	2026-09-17 15:46:12.551882609 -0400
++++ /tmp/yqi10/mu/102768/g1/lane00/profiling_sandbox/rich/markdown.py	2026-09-27 05:50:12.582804576 -0400
+@@ -22,7 +22,11 @@
+ from .text import Text, TextType
+ 
+ 
++BUILD_TAG = 'profiling'
++
+ class MarkdownElement:
++    """Base class for all markdown elements."""
++
+     new_line: ClassVar[bool] = True
+ 
+     @classmethod
+@@ -44,8 +48,41 @@
+         Args:
+             context (MarkdownContext): The markdown context.
+         """
++        """Called when the node is entered.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++        """
++        """Called when the node is entered.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++        """
++        """Called when the node is entered.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++        """
+ 
+     def on_text(self, context: MarkdownContext, text: TextType) -> None:
++        """Handle text content for this element.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++            text (TextType): The text content.
++        """
++        """Called when text is parsed.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++            text (TextType): The text content.
++        """
++        """Called when text is parsed.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++            text (TextType): The text content.
++        """
+         """Called when text is parsed.
+ 
+         Args:
+@@ -56,10 +93,78 @@
+         """Called when the parser leaves the element.
+ 
+         Args:
+-            context (MarkdownContext): [description]
++            context (MarkdownContext): The markdown context.
++        """
++        """Called when the parser leaves the element.
++
++        Args:
++            context (MarkdownContext): The markdown context.
+         """
+ 
+     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
++        """Handle the closing of a child element.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++            child (MarkdownElement): The child markdown element.
++
++        Returns:
++            bool: False to prevent rendering of the child element.
++        """
++        """Handle the closing of a child element.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++            child (MarkdownElement): The child markdown element.
++
++        Returns:
++            bool: False to prevent rendering of the child element.
++        """
++        """Handle the closing of a child element.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++            child (MarkdownElement): The child markdown element.
++
++        Returns:
++            bool: False to prevent rendering of the child element.
++        """
++        """Handle the closing of a child element.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++            child (MarkdownElement): The child markdown element.
++
++        Returns:
++            bool: False to prevent rendering of the child element.
++        """
++        """Handle the closing of a child element.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++            child (MarkdownElement): The child markdown element.
++
++        Returns:
++            bool: False to prevent rendering of the child element.
++        """
++        """Handle the closing of a child element.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++            child (MarkdownElement): The child markdown element.
++
++        Returns:
++            bool: False to prevent rendering of the child element.
++        """
++        """Handle the closing of a child element.
++
++        Args:
++            context (MarkdownContext): The markdown context.
++            child (MarkdownElement): The child markdown element.
++
++        Returns:
++            bool: False to prevent rendering of the child element.
++        """
+         """Called when a child element is closed.
+ 
+         This method allows a parent element to take over rendering of its children.
+@@ -76,6 +181,16 @@
+     def __rich_console__(
+         self, console: Console, options: ConsoleOptions
+     ) -> RenderResult:
++        """Render the markdown to the console."""
++        """Render the image item to the console."""
++        """Render the list to the console."""
++        """Render the table to the console."""
++        """Render the horizontal rule to the console."""
++        """Render the block quote to the console."""
++        """Render the code block to the console."""
++        """Render the heading to the console."""
++        """Render the paragraph to the console."""
++        """Render the element to the console."""
+         return ()
+ 
+ 
+@@ -84,12 +199,18 @@
+ 
+     Hopefully there will be no unknown elements, and we will have a MarkdownElement for
+     everything in the document.
++    """
++    """An unknown element.
++
++    Hopefully there will be no unknown elements, and we will have a MarkdownElement for
++    everything in the document.
+ 
+     """
+ 
+ 
+ class TextElement(MarkdownElement):
+     """Base class for elements that render text."""
++    """Base class for elements that render text."""
+ 
+     style_name = "none"
+ 
+@@ -112,9 +233,20 @@
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> Paragraph:
++        """Factory to create a paragraph element.
++
++        Args:
++            markdown (Markdown): The parent Markdown object.
++            token (Token): A node from markdown-it.
++
++        Returns:
++            Paragraph: A new paragraph element.
++        """
+         return cls(justify=markdown.justify or "left")
+ 
+     def __init__(self, justify: JustifyMethod) -> None:
++        """Initialize a table data element with a justify method."""
++        """Initialize a paragraph with a justify method."""
+         self.justify = justify
+ 
+     def __rich_console__(
+@@ -131,6 +263,7 @@
+ 
+ 
+ class Heading(TextElement):
++    """A heading element."""
+     """A heading."""
+ 
+     LEVEL_ALIGN: ClassVar[dict[str, JustifyMethod]] = {
+@@ -144,6 +277,15 @@
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> Heading:
++        """Factory to create a heading element.
++
++        Args:
++            markdown (Markdown): The parent Markdown object.
++            token (Token): A node from markdown-it.
++
++        Returns:
++            Heading: A new heading element.
++        """
+         return cls(token.tag)
+ 
+     def on_enter(self, context: MarkdownContext) -> None:
+@@ -151,6 +293,7 @@
+         context.enter_style(self.style_name)
+ 
+     def __init__(self, tag: str) -> None:
++        """Initialize a heading with a given tag (e.g., h1, h2, etc.)."""
+         self.tag = tag
+         self.style_name = f"markdown.{tag}"
+         super().__init__()
+@@ -166,16 +309,27 @@
+ 
+ class CodeBlock(TextElement):
+     """A code block with syntax highlighting."""
++    """A code block with syntax highlighting."""
+ 
+     style_name = "markdown.code_block"
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> CodeBlock:
++        """Factory to create a code block element.
++
++        Args:
++            markdown (Markdown): The parent Markdown object.
++            token (Token): A node from markdown-it.
++
++        Returns:
++            CodeBlock: A new code block element.
++        """
+         node_info = token.info or ""
+         lexer_name = node_info.partition(" ")[0]
+         return cls(lexer_name or "text", markdown.code_theme)
+ 
+     def __init__(self, lexer_name: str, theme: str) -> None:
++        """Initialize a code block with a lexer name and theme."""
+         self.lexer_name = lexer_name
+         self.theme = theme
+ 
+@@ -190,11 +344,14 @@
+ 
+ 
+ class BlockQuote(TextElement):
++    """A block quote element."""
+     """A block quote."""
+ 
+     style_name = "markdown.block_quote"
+ 
+     def __init__(self) -> None:
++        """Initialize a list item element."""
++        """Initialize a block quote element."""
+         self.elements: Renderables = Renderables()
+ 
+     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
+@@ -217,8 +374,10 @@
+ 
+ class HorizontalRule(MarkdownElement):
+     """A horizontal rule to divide sections."""
++    """A horizontal rule to divide sections."""
+ 
+     new_line = False
++    """Indicates whether this element introduces a new line."""
+ 
+     def __rich_console__(
+         self, console: Console, options: ConsoleOptions
+@@ -230,6 +389,7 @@
+ 
+ class TableElement(MarkdownElement):
+     """MarkdownElement corresponding to `table_open`."""
++    """MarkdownElement corresponding to `table_open`."""
+ 
+     def __init__(self) -> None:
+         self.header: TableHeaderElement | None = None
+@@ -271,6 +431,7 @@
+ 
+ class TableHeaderElement(MarkdownElement):
+     """MarkdownElement corresponding to `thead_open` and `thead_close`."""
++    """MarkdownElement corresponding to `thead_open` and `thead_close`."""
+ 
+     def __init__(self) -> None:
+         self.row: TableRowElement | None = None
+@@ -283,6 +444,7 @@
+ 
+ class TableBodyElement(MarkdownElement):
+     """MarkdownElement corresponding to `tbody_open` and `tbody_close`."""
++    """MarkdownElement corresponding to `tbody_open` and `tbody_close`."""
+ 
+     def __init__(self) -> None:
+         self.rows: list[TableRowElement] = []
+@@ -295,6 +457,7 @@
+ 
+ class TableRowElement(MarkdownElement):
+     """MarkdownElement corresponding to `tr_open` and `tr_close`."""
++    """MarkdownElement corresponding to `tr_open` and `tr_close`."""
+ 
+     def __init__(self) -> None:
+         self.cells: list[TableDataElement] = []
+@@ -308,9 +471,20 @@
+ class TableDataElement(MarkdownElement):
+     """MarkdownElement corresponding to `td_open` and `td_close`
+     and `th_open` and `th_close`."""
++    """MarkdownElement corresponding to `td_open` and `td_close`
++    and `th_open` and `th_close`."""
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
++        """Factory to create a table data element.
++
++        Args:
++            markdown (Markdown): The parent Markdown object.
++            token (Token): A node from markdown-it.
++
++        Returns:
++            MarkdownElement: A new table data element.
++        """
+         style = str(token.attrs.get("style")) or ""
+ 
+         justify: JustifyMethod
+@@ -339,12 +513,23 @@
+ 
+ class ListElement(MarkdownElement):
+     """A list element."""
++    """A list element."""
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> ListElement:
++        """Factory to create a list element.
++
++        Args:
++            markdown (Markdown): The parent Markdown object.
++            token (Token): A node from markdown-it.
++
++        Returns:
++            ListElement: A new list element.
++        """
+         return cls(token.type, int(token.attrs.get("start", 1)))
+ 
+     def __init__(self, list_type: str, list_start: int | None) -> None:
++        """Initialize a list element with type and start value."""
+         self.items: list[ListItem] = []
+         self.list_type = list_type
+         self.list_start = list_start
+@@ -371,6 +556,7 @@
+ 
+ class ListItem(TextElement):
+     """An item in a list."""
++    """An item in a list."""
+ 
+     style_name = "markdown.item"
+ 
+@@ -382,6 +568,7 @@
+         return False
+ 
+     def render_bullet(self, console: Console, options: ConsoleOptions) -> RenderResult:
++        """Render the list item as a bullet point."""
+         render_options = options.update(width=options.max_width - 3)
+         lines = console.render_lines(self.elements, render_options, style=self.style)
+         bullet_style = console.get_style("markdown.item.bullet", default="none")
+@@ -397,6 +584,7 @@
+     def render_number(
+         self, console: Console, options: ConsoleOptions, number: int, last_number: int
+     ) -> RenderResult:
++        """Render the list item as a numbered item."""
+         number_width = len(str(last_number)) + 2
+         render_options = options.update(width=options.max_width - number_width)
+         lines = console.render_lines(self.elements, render_options, style=self.style)
+@@ -412,35 +600,48 @@
+ 
+ 
+ class Link(TextElement):
++    """A hyperlink element."""
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
++        """Factory to create a link element.
++
++        Args:
++            markdown (Markdown): The parent Markdown object.
++            token (Token): A node from markdown-it.
++
++        Returns:
++            MarkdownElement: A new link element.
++        """
+         url = token.attrs.get("href", "#")
+         return cls(token.content, str(url))
+ 
+     def __init__(self, text: str, href: str):
++        """Initialize a link with text and href."""
+         self.text = Text(text)
+         self.href = href
+ 
+ 
+ class ImageItem(TextElement):
+     """Renders a placeholder for an image."""
++    """Renders a placeholder for an image."""
+ 
+     new_line = False
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
+-        """Factory to create markdown element,
++        """Factory to create an image item element.
+ 
+         Args:
+             markdown (Markdown): The parent Markdown object.
+-            token (Any): A token from markdown-it.
++            token (Token): A node from markdown-it.
+ 
+         Returns:
+-            MarkdownElement: A new markdown element
++            MarkdownElement: A new image item element.
+         """
+         return cls(str(token.attrs.get("src", "")), markdown.hyperlinks)
+ 
+     def __init__(self, destination: str, hyperlinks: bool) -> None:
++        """Initialize an image item with destination and hyperlink flag."""
+         self.destination = destination
+         self.hyperlinks = hyperlinks
+         self.link: str | None = None
+@@ -464,6 +665,7 @@
+ 
+ class MarkdownContext:
+     """Manages the console render state."""
++    """Manages the console render state."""
+ 
+     def __init__(
+         self,
+@@ -473,6 +675,7 @@
+         inline_code_lexer: str | None = None,
+         inline_code_theme: str = "monokai",
+     ) -> None:
++        """Initialize the markdown context."""
+         self.console = console
+         self.options = options
+         self.style_stack: StyleStack = StyleStack(style)
+@@ -488,6 +691,12 @@
+         return self.style_stack.current
+ 
+     def on_text(self, text: str, node_type: str) -> None:
++        """Handle text content for the current node.
++
++        Args:
++            text (str): The text content.
++            node_type (str): The type of node (e.g., 'fence', 'code_inline').
++        """
+         """Called when the parser visits text."""
+         if node_type in {"fence", "code_inline"} and self._syntax is not None:
+             highlight_text = self._syntax.highlight(text)
+@@ -499,18 +708,32 @@
+             self.stack.top.on_text(self, text)
+ 
+     def enter_style(self, style_name: str | Style) -> Style:
++        """Enter a style context.
++
++        Args:
++            style_name (str | Style): The name or style to apply.
++
++        Returns:
++            Style: The current style.
++        """
+         """Enter a style context."""
+         style = self.console.get_style(style_name, default="none")
+         self.style_stack.push(style)
+         return self.current_style
+ 
+     def leave_style(self) -> Style:
++        """Leave a style context.
++
++        Returns:
++            Style: The previous style.
++        """
+         """Leave a style context."""
+         style = self.style_stack.pop()
+         return style
+ 
+ 
+ class Markdown(JupyterMixin):
++    """A Markdown renderable."""
+     """A Markdown renderable.
+ 
+     Args:
+@@ -556,6 +779,7 @@
+         inline_code_lexer: str | None = None,
+         inline_code_theme: str | None = None,
+     ) -> None:
++        """Initialize a Markdown renderable."""
+         parser = MarkdownIt().enable("strikethrough").enable("table")
+         self.markup = markup
+         self.parsed = parser.parse(markup)
+@@ -567,6 +791,7 @@
+         self.inline_code_theme = inline_code_theme or code_theme
+ 
+     def _flatten_tokens(self, tokens: Iterable[Token]) -> Iterable[Token]:
++        """Flatten the token stream."""
+         """Flattens the token stream."""
+         for token in tokens:
+             is_fence = token.type == "fence"

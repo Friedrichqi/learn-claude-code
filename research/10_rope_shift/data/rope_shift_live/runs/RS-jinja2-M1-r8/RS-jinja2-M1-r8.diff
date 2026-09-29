@@ -1,0 +1,4726 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/async_utils.py /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/async_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/async_utils.py	2026-09-17 15:46:11.726487027 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/async_utils.py	2026-09-25 12:15:10.397005293 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import inspect
+ import typing as t
+ from functools import WRAPPER_ASSIGNMENTS
+@@ -11,7 +12,6 @@
+ 
+ V = t.TypeVar("V")
+ 
+-
+ def async_variant(normal_func):  # type: ignore
+     def decorator(async_func):  # type: ignore
+         pass_arg = _PassArg.from_obj(normal_func)
+@@ -55,11 +55,9 @@
+ 
+     return decorator
+ 
+-
+ _common_primitives = {int, float, bool, str, list, dict, tuple, type(None)}
+ 
+-
+-async def auto_await(value: t.Union[t.Awaitable["V"], "V"]) -> "V":
++async def auto_await(value: t.Union[t.Awaitable["V"], "V"]") -> "V":
+     # Avoid a costly call to isawaitable
+     if type(value) in _common_primitives:
+         return t.cast("V", value)
+@@ -69,7 +67,6 @@
+ 
+     return value
+ 
+-
+ class _IteratorToAsyncIterator(t.Generic[V]):
+     def __init__(self, iterator: "t.Iterator[V]"):
+         self._iterator = iterator
+@@ -85,15 +82,12 @@
+ 
+ 
+ def auto_aiter(
+-    iterable: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-) -> "t.AsyncIterator[V]":
++    iterable: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",") -> "t.AsyncIterator[V]":
+     if hasattr(iterable, "__aiter__"):
+         return iterable.__aiter__()
+     else:
+         return _IteratorToAsyncIterator(iter(iterable))
+ 
+-
+ async def auto_to_list(
+-    value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-) -> t.List["V"]:
++    value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",") -> t.List["V"]:
+     return [x async for x in auto_aiter(value)]
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/bccache.py /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/bccache.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/bccache.py	2026-09-17 15:46:11.732510579 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/bccache.py	2026-09-25 12:15:23.117904484 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """The optional bytecode cache system. This is useful if you have very
+ complex template situations and the compilation of all those templates
+ slows down your application too much.
+@@ -5,7 +6,6 @@
+ Situations where this is useful are often forking web applications that
+ are initialized on the first request.
+ """
+-
+ import errno
+ import fnmatch
+ import marshal
+@@ -31,7 +31,6 @@
+             self, key: str, value: bytes, timeout: t.Optional[int] = None
+         ) -> None: ...
+ 
+-
+ bc_version = 5
+ # Magic bytes to identify Jinja bytecode cache files. Contains the
+ # Python major and minor version to avoid loading incompatible bytecode
+@@ -42,7 +41,6 @@
+     + pickle.dumps((sys.version_info[0] << 24) | sys.version_info[1], 2)
+ )
+ 
+-
+ class Bucket:
+     """Buckets are used to store the bytecode for one template.  It's created
+     and initialized by the bytecode cache and passed to the loading functions.
+@@ -51,7 +49,6 @@
+     to automatically reject outdated cache material.  Individual bytecode
+     cache subclasses don't have to care about cache invalidation.
+     """
+-
+     def __init__(self, environment: "Environment", key: str, checksum: str) -> None:
+         self.environment = environment
+         self.key = key
+@@ -99,36 +96,12 @@
+         self.write_bytecode(out)
+         return out.getvalue()
+ 
+-
+ class BytecodeCache:
+     """To implement your own bytecode cache you have to subclass this class
+-    and override :meth:`load_bytecode` and :meth:`dump_bytecode`.  Both of
+-    these methods are passed a :class:`~jinja2.bccache.Bucket`.
+-
+-    A very basic bytecode cache that saves the bytecode on the file system::
+-
+-        from os import path
+-
+-        class MyCache(BytecodeCache):
+-
+-            def __init__(self, directory):
+-                self.directory = directory
+-
+-            def load_bytecode(self, bucket):
+-                filename = path.join(self.directory, bucket.key)
+-                if path.exists(filename):
+-                    with open(filename, 'rb') as f:
+-                        bucket.load_bytecode(f)
+-
+-            def dump_bytecode(self, bucket):
+-                filename = path.join(self.directory, bucket.key)
+-                with open(filename, 'wb') as f:
+-                    bucket.write_bytecode(f)
+-
+-    A more advanced version of a filesystem based bytecode cache is part of
+-    Jinja.
++    and override this method to load bytecode into a
++    bucket.  If they are not able to find code in the cache for the
++    bucket, it must not do anything.
+     """
+-
+     def load_bytecode(self, bucket: Bucket) -> None:
+         """Subclasses have to override this method to load bytecode into a
+         bucket.  If they are not able to find code in the cache for the
+@@ -184,7 +157,6 @@
+         """Put the bucket into the cache."""
+         self.dump_bytecode(bucket)
+ 
+-
+ class FileSystemBytecodeCache(BytecodeCache):
+     """A bytecode cache that stores bytecode on the filesystem.  It accepts
+     two arguments: The directory where the cache items are stored and a
+@@ -202,7 +174,6 @@
+ 
+     This bytecode cache supports clearing of the cache using the clear method.
+     """
+-
+     def __init__(
+         self, directory: t.Optional[str] = None, pattern: str = "__jinja2_%s.cache"
+     ) -> None:
+@@ -327,7 +298,6 @@
+             except OSError:
+                 pass
+ 
+-
+ class MemcachedBytecodeCache(BytecodeCache):
+     """This class implements a bytecode cache that uses a memcache cache for
+     storing the information.  It does not enforce a specific memcache library
+@@ -372,7 +342,6 @@
+        Added support for ignoring memcache errors through the
+        `ignore_memcache_errors` parameter.
+     """
+-
+     def __init__(
+         self,
+         client: "_MemcachedClient",
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/CHANGES_BUILD_TAG.md /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/CHANGES_BUILD_TAG.md	2026-09-25 12:16:25.926407106 -0400
+@@ -0,0 +1,10 @@
++# CHANGES_BUILD_TAG
++
++The following files have been updated with the `BUILD_TAG = 'profiling'` constant:
++
++1. `profiling_sandbox/jinja2/async_utils.py` - Line 1
++2. `profiling_sandbox/jinja2/bccache.py` - Line 1
++3. `profiling_sandbox/jinja2/compiler.py` - Line 1
++4. `profiling_sandbox/jinja2/defaults.py` - Line 1
++5. `profiling_sandbox/jinja2/exceptions.py` - Line 1
++6. `profiling_sandbox/jinja2/filters.py` - Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/compiler.py /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/compiler.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/compiler.py	2026-09-17 15:46:11.742366999 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/compiler.py	2026-09-25 12:15:36.259800364 -0400
+@@ -1,5 +1,5 @@
++BUILD_TAG = 'profiling'
+ """Compiles nodes from the parser into Python code."""
+-
+ import typing as t
+ from contextlib import contextmanager
+ from functools import update_wrapper
+@@ -37,1962 +37,4 @@
+     "gteq": ">=",
+     "lt": "<",
+     "lteq": "<=",
+-    "in": "in",
+-    "notin": "not in",
+-}
+-
+-
+-def optimizeconst(f: F) -> F:
+-    def new_func(
+-        self: "CodeGenerator", node: nodes.Expr, frame: "Frame", **kwargs: t.Any
+-    ) -> t.Any:
+-        # Only optimize if the frame is not volatile
+-        if self.optimizer is not None and not frame.eval_ctx.volatile:
+-            new_node = self.optimizer.visit(node, frame.eval_ctx)
+-
+-            if new_node != node:
+-                return self.visit(new_node, frame)
+-
+-        return f(self, node, frame, **kwargs)
+-
+-    return update_wrapper(new_func, f)  # type: ignore[return-value]
+-
+-
+-def _make_binop(op: str) -> t.Callable[["CodeGenerator", nodes.BinExpr, "Frame"], None]:
+-    @optimizeconst
+-    def visitor(self: "CodeGenerator", node: nodes.BinExpr, frame: Frame) -> None:
+-        if (
+-            self.environment.sandboxed and op in self.environment.intercepted_binops  # type: ignore
+-        ):
+-            self.write(f"environment.call_binop(context, {op!r}, ")
+-            self.visit(node.left, frame)
+-            self.write(", ")
+-            self.visit(node.right, frame)
+-        else:
+-            self.write("(")
+-            self.visit(node.left, frame)
+-            self.write(f" {op} ")
+-            self.visit(node.right, frame)
+-
+-        self.write(")")
+-
+-    return visitor
+-
+-
+-def _make_unop(
+-    op: str,
+-) -> t.Callable[["CodeGenerator", nodes.UnaryExpr, "Frame"], None]:
+-    @optimizeconst
+-    def visitor(self: "CodeGenerator", node: nodes.UnaryExpr, frame: Frame) -> None:
+-        if (
+-            self.environment.sandboxed and op in self.environment.intercepted_unops  # type: ignore
+-        ):
+-            self.write(f"environment.call_unop(context, {op!r}, ")
+-            self.visit(node.node, frame)
+-        else:
+-            self.write("(" + op)
+-            self.visit(node.node, frame)
+-
+-        self.write(")")
+-
+-    return visitor
+-
+-
+-def generate(
+-    node: nodes.Template,
+-    environment: "Environment",
+-    name: t.Optional[str],
+-    filename: t.Optional[str],
+-    stream: t.Optional[t.TextIO] = None,
+-    defer_init: bool = False,
+-    optimized: bool = True,
+-) -> t.Optional[str]:
+-    """Generate the python source for a node tree."""
+-    if not isinstance(node, nodes.Template):
+-        raise TypeError("Can't compile non template nodes")
+-
+-    generator = environment.code_generator_class(
+-        environment, name, filename, stream, defer_init, optimized
+-    )
+-    generator.visit(node)
+-
+-    if stream is None:
+-        return generator.stream.getvalue()  # type: ignore
+-
+-    return None
+-
+-
+-def has_safe_repr(value: t.Any) -> bool:
+-    """Does the node have a safe representation?"""
+-    if value is None or value is NotImplemented or value is Ellipsis:
+-        return True
+-
+-    if type(value) in {bool, int, float, complex, range, str, Markup}:
+-        return True
+-
+-    if type(value) in {tuple, list, set, frozenset}:
+-        return all(has_safe_repr(v) for v in value)
+-
+-    if type(value) is dict:  # noqa E721
+-        return all(has_safe_repr(k) and has_safe_repr(v) for k, v in value.items())
+-
+-    return False
+-
+-
+-def find_undeclared(
+-    nodes: t.Iterable[nodes.Node], names: t.Iterable[str]
+-) -> t.Set[str]:
+-    """Check if the names passed are accessed undeclared.  The return value
+-    is a set of all the undeclared names from the sequence of names found.
+-    """
+-    visitor = UndeclaredNameVisitor(names)
+-    try:
+-        for node in nodes:
+-            visitor.visit(node)
+-    except VisitorExit:
+-        pass
+-    return visitor.undeclared
+-
+-
+-class MacroRef:
+-    def __init__(self, node: t.Union[nodes.Macro, nodes.CallBlock]) -> None:
+-        self.node = node
+-        self.accesses_caller = False
+-        self.accesses_kwargs = False
+-        self.accesses_varargs = False
+-
+-
+-class Frame:
+-    """Holds compile time information for us."""
+-
+-    def __init__(
+-        self,
+-        eval_ctx: EvalContext,
+-        parent: t.Optional["Frame"] = None,
+-        level: t.Optional[int] = None,
+-    ) -> None:
+-        self.eval_ctx = eval_ctx
+-
+-        # the parent of this frame
+-        self.parent = parent
+-
+-        if parent is None:
+-            self.symbols = Symbols(level=level)
+-
+-            # in some dynamic inheritance situations the compiler needs to add
+-            # write tests around output statements.
+-            self.require_output_check = False
+-
+-            # inside some tags we are using a buffer rather than yield statements.
+-            # this for example affects {% filter %} or {% macro %}.  If a frame
+-            # is buffered this variable points to the name of the list used as
+-            # buffer.
+-            self.buffer: t.Optional[str] = None
+-
+-            # the name of the block we're in, otherwise None.
+-            self.block: t.Optional[str] = None
+-
+-        else:
+-            self.symbols = Symbols(parent.symbols, level=level)
+-            self.require_output_check = parent.require_output_check
+-            self.buffer = parent.buffer
+-            self.block = parent.block
+-
+-        # a toplevel frame is the root + soft frames such as if conditions.
+-        self.toplevel = False
+-
+-        # the root frame is basically just the outermost frame, so no if
+-        # conditions.  This information is used to optimize inheritance
+-        # situations.
+-        self.rootlevel = False
+-
+-        # variables set inside of loops and blocks should not affect outer frames,
+-        # but they still needs to be kept track of as part of the active context.
+-        self.loop_frame = False
+-        self.block_frame = False
+-
+-        # track whether the frame is being used in an if-statement or conditional
+-        # expression as it determines which errors should be raised during runtime
+-        # or compile time.
+-        self.soft_frame = False
+-
+-    def copy(self) -> "te.Self":
+-        """Create a copy of the current one."""
+-        rv = object.__new__(self.__class__)
+-        rv.__dict__.update(self.__dict__)
+-        rv.symbols = self.symbols.copy()
+-        return rv
+-
+-    def inner(self, isolated: bool = False) -> "Frame":
+-        """Return an inner frame."""
+-        if isolated:
+-            return Frame(self.eval_ctx, level=self.symbols.level + 1)
+-        return Frame(self.eval_ctx, self)
+-
+-    def soft(self) -> "te.Self":
+-        """Return a soft frame.  A soft frame may not be modified as
+-        standalone thing as it shares the resources with the frame it
+-        was created of, but it's not a rootlevel frame any longer.
+-
+-        This is only used to implement if-statements and conditional
+-        expressions.
+-        """
+-        rv = self.copy()
+-        rv.rootlevel = False
+-        rv.soft_frame = True
+-        return rv
+-
+-    __copy__ = copy
+-
+-
+-class VisitorExit(RuntimeError):
+-    """Exception used by the `UndeclaredNameVisitor` to signal a stop."""
+-
+-
+-class DependencyFinderVisitor(NodeVisitor):
+-    """A visitor that collects filter and test calls."""
+-
+-    def __init__(self) -> None:
+-        self.filters: t.Set[str] = set()
+-        self.tests: t.Set[str] = set()
+-
+-    def visit_Filter(self, node: nodes.Filter) -> None:
+-        self.generic_visit(node)
+-        self.filters.add(node.name)
+-
+-    def visit_Test(self, node: nodes.Test) -> None:
+-        self.generic_visit(node)
+-        self.tests.add(node.name)
+-
+-    def visit_Block(self, node: nodes.Block) -> None:
+-        """Stop visiting at blocks."""
+-
+-
+-class UndeclaredNameVisitor(NodeVisitor):
+-    """A visitor that checks if a name is accessed without being
+-    declared.  This is different from the frame visitor as it will
+-    not stop at closure frames.
+-    """
+-
+-    def __init__(self, names: t.Iterable[str]) -> None:
+-        self.names = set(names)
+-        self.undeclared: t.Set[str] = set()
+-
+-    def visit_Name(self, node: nodes.Name) -> None:
+-        if node.ctx == "load" and node.name in self.names:
+-            self.undeclared.add(node.name)
+-            if self.undeclared == self.names:
+-                raise VisitorExit()
+-        else:
+-            self.names.discard(node.name)
+-
+-    def visit_Block(self, node: nodes.Block) -> None:
+-        """Stop visiting a blocks."""
+-
+-
+-class CompilerExit(Exception):
+-    """Raised if the compiler encountered a situation where it just
+-    doesn't make sense to further process the code.  Any block that
+-    raises such an exception is not further processed.
+-    """
+-
+-
+-class CodeGenerator(NodeVisitor):
+-    def __init__(
+-        self,
+-        environment: "Environment",
+-        name: t.Optional[str],
+-        filename: t.Optional[str],
+-        stream: t.Optional[t.TextIO] = None,
+-        defer_init: bool = False,
+-        optimized: bool = True,
+-    ) -> None:
+-        if stream is None:
+-            stream = StringIO()
+-        self.environment = environment
+-        self.name = name
+-        self.filename = filename
+-        self.stream = stream
+-        self.created_block_context = False
+-        self.defer_init = defer_init
+-        self.optimizer: t.Optional[Optimizer] = None
+-
+-        if optimized:
+-            self.optimizer = Optimizer(environment)
+-
+-        # aliases for imports
+-        self.import_aliases: t.Dict[str, str] = {}
+-
+-        # a registry for all blocks.  Because blocks are moved out
+-        # into the global python scope they are registered here
+-        self.blocks: t.Dict[str, nodes.Block] = {}
+-
+-        # the number of extends statements so far
+-        self.extends_so_far = 0
+-
+-        # some templates have a rootlevel extends.  In this case we
+-        # can safely assume that we're a child template and do some
+-        # more optimizations.
+-        self.has_known_extends = False
+-
+-        # the current line number
+-        self.code_lineno = 1
+-
+-        # registry of all filters and tests (global, not block local)
+-        self.tests: t.Dict[str, str] = {}
+-        self.filters: t.Dict[str, str] = {}
+-
+-        # the debug information
+-        self.debug_info: t.List[t.Tuple[int, int]] = []
+-        self._write_debug_info: t.Optional[int] = None
+-
+-        # the number of new lines before the next write()
+-        self._new_lines = 0
+-
+-        # the line number of the last written statement
+-        self._last_line = 0
+-
+-        # true if nothing was written so far.
+-        self._first_write = True
+-
+-        # used by the `temporary_identifier` method to get new
+-        # unique, temporary identifier
+-        self._last_identifier = 0
+-
+-        # the current indentation
+-        self._indentation = 0
+-
+-        # Tracks toplevel assignments
+-        self._assign_stack: t.List[t.Set[str]] = []
+-
+-        # Tracks parameter definition blocks
+-        self._param_def_block: t.List[t.Set[str]] = []
+-
+-        # Tracks the current context.
+-        self._context_reference_stack = ["context"]
+-
+-    @property
+-    def optimized(self) -> bool:
+-        return self.optimizer is not None
+-
+-    # -- Various compilation helpers
+-
+-    def fail(self, msg: str, lineno: int) -> "te.NoReturn":
+-        """Fail with a :exc:`TemplateAssertionError`."""
+-        raise TemplateAssertionError(msg, lineno, self.name, self.filename)
+-
+-    def temporary_identifier(self) -> str:
+-        """Get a new unique identifier."""
+-        self._last_identifier += 1
+-        return f"t_{self._last_identifier}"
+-
+-    def buffer(self, frame: Frame) -> None:
+-        """Enable buffering for the frame from that point onwards."""
+-        frame.buffer = self.temporary_identifier()
+-        self.writeline(f"{frame.buffer} = []")
+-
+-    def return_buffer_contents(
+-        self, frame: Frame, force_unescaped: bool = False
+-    ) -> None:
+-        """Return the buffer contents of the frame."""
+-        if not force_unescaped:
+-            if frame.eval_ctx.volatile:
+-                self.writeline("if context.eval_ctx.autoescape:")
+-                self.indent()
+-                self.writeline(f"return Markup(concat({frame.buffer}))")
+-                self.outdent()
+-                self.writeline("else:")
+-                self.indent()
+-                self.writeline(f"return concat({frame.buffer})")
+-                self.outdent()
+-                return
+-            elif frame.eval_ctx.autoescape:
+-                self.writeline(f"return Markup(concat({frame.buffer}))")
+-                return
+-        self.writeline(f"return concat({frame.buffer})")
+-
+-    def indent(self) -> None:
+-        """Indent by one."""
+-        self._indentation += 1
+-
+-    def outdent(self, step: int = 1) -> None:
+-        """Outdent by step."""
+-        self._indentation -= step
+-
+-    def start_write(self, frame: Frame, node: t.Optional[nodes.Node] = None) -> None:
+-        """Yield or write into the frame buffer."""
+-        if frame.buffer is None:
+-            self.writeline("yield ", node)
+-        else:
+-            self.writeline(f"{frame.buffer}.append(", node)
+-
+-    def end_write(self, frame: Frame) -> None:
+-        """End the writing process started by `start_write`."""
+-        if frame.buffer is not None:
+-            self.write(")")
+-
+-    def simple_write(
+-        self, s: str, frame: Frame, node: t.Optional[nodes.Node] = None
+-    ) -> None:
+-        """Simple shortcut for start_write + write + end_write."""
+-        self.start_write(frame, node)
+-        self.write(s)
+-        self.end_write(frame)
+-
+-    def blockvisit(self, nodes: t.Iterable[nodes.Node], frame: Frame) -> None:
+-        """Visit a list of nodes as block in a frame.  If the current frame
+-        is no buffer a dummy ``if 0: yield None`` is written automatically.
+-        """
+-        try:
+-            self.writeline("pass")
+-            for node in nodes:
+-                self.visit(node, frame)
+-        except CompilerExit:
+-            pass
+-
+-    def write(self, x: str) -> None:
+-        """Write a string into the output stream."""
+-        if self._new_lines:
+-            if not self._first_write:
+-                self.stream.write("\n" * self._new_lines)
+-                self.code_lineno += self._new_lines
+-                if self._write_debug_info is not None:
+-                    self.debug_info.append((self._write_debug_info, self.code_lineno))
+-                    self._write_debug_info = None
+-            self._first_write = False
+-            self.stream.write("    " * self._indentation)
+-            self._new_lines = 0
+-        self.stream.write(x)
+-
+-    def writeline(
+-        self, x: str, node: t.Optional[nodes.Node] = None, extra: int = 0
+-    ) -> None:
+-        """Combination of newline and write."""
+-        self.newline(node, extra)
+-        self.write(x)
+-
+-    def newline(self, node: t.Optional[nodes.Node] = None, extra: int = 0) -> None:
+-        """Add one or more newlines before the next write."""
+-        self._new_lines = max(self._new_lines, 1 + extra)
+-        if node is not None and node.lineno != self._last_line:
+-            self._write_debug_info = node.lineno
+-            self._last_line = node.lineno
+-
+-    def signature(
+-        self,
+-        node: t.Union[nodes.Call, nodes.Filter, nodes.Test],
+-        frame: Frame,
+-        extra_kwargs: t.Optional[t.Mapping[str, t.Any]] = None,
+-    ) -> None:
+-        """Writes a function call to the stream for the current node.
+-        A leading comma is added automatically.  The extra keyword
+-        arguments may not include python keywords otherwise a syntax
+-        error could occur.  The extra keyword arguments should be given
+-        as python dict.
+-        """
+-        # if any of the given keyword arguments is a python keyword
+-        # we have to make sure that no invalid call is created.
+-        kwarg_workaround = any(
+-            is_python_keyword(t.cast(str, k))
+-            for k in chain((x.key for x in node.kwargs), extra_kwargs or ())
+-        )
+-
+-        for arg in node.args:
+-            self.write(", ")
+-            self.visit(arg, frame)
+-
+-        if not kwarg_workaround:
+-            for kwarg in node.kwargs:
+-                self.write(", ")
+-                self.visit(kwarg, frame)
+-            if extra_kwargs is not None:
+-                for key, value in extra_kwargs.items():
+-                    self.write(f", {key}={value}")
+-        if node.dyn_args:
+-            self.write(", *")
+-            self.visit(node.dyn_args, frame)
+-
+-        if kwarg_workaround:
+-            if node.dyn_kwargs is not None:
+-                self.write(", **dict({")
+-            else:
+-                self.write(", **{")
+-            for kwarg in node.kwargs:
+-                self.write(f"{kwarg.key!r}: ")
+-                self.visit(kwarg.value, frame)
+-                self.write(", ")
+-            if extra_kwargs is not None:
+-                for key, value in extra_kwargs.items():
+-                    self.write(f"{key!r}: {value}, ")
+-            if node.dyn_kwargs is not None:
+-                self.write("}, **")
+-                self.visit(node.dyn_kwargs, frame)
+-                self.write(")")
+-            else:
+-                self.write("}")
+-
+-        elif node.dyn_kwargs is not None:
+-            self.write(", **")
+-            self.visit(node.dyn_kwargs, frame)
+-
+-    def pull_dependencies(self, nodes: t.Iterable[nodes.Node]) -> None:
+-        """Find all filter and test names used in the template and
+-        assign them to variables in the compiled namespace. Checking
+-        that the names are registered with the environment is done when
+-        compiling the Filter and Test nodes. If the node is in an If or
+-        CondExpr node, the check is done at runtime instead.
+-
+-        .. versionchanged:: 3.0
+-            Filters and tests in If and CondExpr nodes are checked at
+-            runtime instead of compile time.
+-        """
+-        visitor = DependencyFinderVisitor()
+-
+-        for node in nodes:
+-            visitor.visit(node)
+-
+-        for id_map, names, dependency in (
+-            (self.filters, visitor.filters, "filters"),
+-            (
+-                self.tests,
+-                visitor.tests,
+-                "tests",
+-            ),
+-        ):
+-            for name in sorted(names):
+-                if name not in id_map:
+-                    id_map[name] = self.temporary_identifier()
+-
+-                # add check during runtime that dependencies used inside of executed
+-                # blocks are defined, as this step may be skipped during compile time
+-                self.writeline("try:")
+-                self.indent()
+-                self.writeline(f"{id_map[name]} = environment.{dependency}[{name!r}]")
+-                self.outdent()
+-                self.writeline("except KeyError:")
+-                self.indent()
+-                self.writeline("@internalcode")
+-                self.writeline(f"def {id_map[name]}(*unused):")
+-                self.indent()
+-                self.writeline(
+-                    f'raise TemplateRuntimeError("No {dependency[:-1]}'
+-                    f' named {name!r} found.")'
+-                )
+-                self.outdent()
+-                self.outdent()
+-
+-    def enter_frame(self, frame: Frame) -> None:
+-        undefs = []
+-        for target, (action, param) in frame.symbols.loads.items():
+-            if action == VAR_LOAD_PARAMETER:
+-                pass
+-            elif action == VAR_LOAD_RESOLVE:
+-                self.writeline(f"{target} = {self.get_resolve_func()}({param!r})")
+-            elif action == VAR_LOAD_ALIAS:
+-                self.writeline(f"{target} = {param}")
+-            elif action == VAR_LOAD_UNDEFINED:
+-                undefs.append(target)
+-            else:
+-                raise NotImplementedError("unknown load instruction")
+-        if undefs:
+-            self.writeline(f"{' = '.join(undefs)} = missing")
+-
+-    def leave_frame(self, frame: Frame, with_python_scope: bool = False) -> None:
+-        if not with_python_scope:
+-            undefs = []
+-            for target in frame.symbols.loads:
+-                undefs.append(target)
+-            if undefs:
+-                self.writeline(f"{' = '.join(undefs)} = missing")
+-
+-    def choose_async(self, async_value: str = "async ", sync_value: str = "") -> str:
+-        return async_value if self.environment.is_async else sync_value
+-
+-    def func(self, name: str) -> str:
+-        return f"{self.choose_async()}def {name}"
+-
+-    def macro_body(
+-        self, node: t.Union[nodes.Macro, nodes.CallBlock], frame: Frame
+-    ) -> t.Tuple[Frame, MacroRef]:
+-        """Dump the function def of a macro or call block."""
+-        frame = frame.inner()
+-        frame.symbols.analyze_node(node)
+-        macro_ref = MacroRef(node)
+-
+-        explicit_caller = None
+-        skip_special_params = set()
+-        args = []
+-
+-        for idx, arg in enumerate(node.args):
+-            if arg.name == "caller":
+-                explicit_caller = idx
+-            if arg.name in ("kwargs", "varargs"):
+-                skip_special_params.add(arg.name)
+-            args.append(frame.symbols.ref(arg.name))
+-
+-        undeclared = find_undeclared(node.body, ("caller", "kwargs", "varargs"))
+-
+-        if "caller" in undeclared:
+-            # In older Jinja versions there was a bug that allowed caller
+-            # to retain the special behavior even if it was mentioned in
+-            # the argument list.  However thankfully this was only really
+-            # working if it was the last argument.  So we are explicitly
+-            # checking this now and error out if it is anywhere else in
+-            # the argument list.
+-            if explicit_caller is not None:
+-                try:
+-                    node.defaults[explicit_caller - len(node.args)]
+-                except IndexError:
+-                    self.fail(
+-                        "When defining macros or call blocks the "
+-                        'special "caller" argument must be omitted '
+-                        "or be given a default.",
+-                        node.lineno,
+-                    )
+-            else:
+-                args.append(frame.symbols.declare_parameter("caller"))
+-            macro_ref.accesses_caller = True
+-        if "kwargs" in undeclared and "kwargs" not in skip_special_params:
+-            args.append(frame.symbols.declare_parameter("kwargs"))
+-            macro_ref.accesses_kwargs = True
+-        if "varargs" in undeclared and "varargs" not in skip_special_params:
+-            args.append(frame.symbols.declare_parameter("varargs"))
+-            macro_ref.accesses_varargs = True
+-
+-        # macros are delayed, they never require output checks
+-        frame.require_output_check = False
+-        frame.symbols.analyze_node(node)
+-        self.writeline(f"{self.func('macro')}({', '.join(args)}):", node)
+-        self.indent()
+-
+-        self.buffer(frame)
+-        self.enter_frame(frame)
+-
+-        self.push_parameter_definitions(frame)
+-        for idx, arg in enumerate(node.args):
+-            ref = frame.symbols.ref(arg.name)
+-            self.writeline(f"if {ref} is missing:")
+-            self.indent()
+-            try:
+-                default = node.defaults[idx - len(node.args)]
+-            except IndexError:
+-                self.writeline(
+-                    f'{ref} = undefined("parameter {arg.name!r} was not provided",'
+-                    f" name={arg.name!r})"
+-                )
+-            else:
+-                self.writeline(f"{ref} = ")
+-                self.visit(default, frame)
+-            self.mark_parameter_stored(ref)
+-            self.outdent()
+-        self.pop_parameter_definitions()
+-
+-        self.blockvisit(node.body, frame)
+-        self.return_buffer_contents(frame, force_unescaped=True)
+-        self.leave_frame(frame, with_python_scope=True)
+-        self.outdent()
+-
+-        return frame, macro_ref
+-
+-    def macro_def(self, macro_ref: MacroRef, frame: Frame) -> None:
+-        """Dump the macro definition for the def created by macro_body."""
+-        arg_tuple = ", ".join(repr(x.name) for x in macro_ref.node.args)
+-        name = getattr(macro_ref.node, "name", None)
+-        if len(macro_ref.node.args) == 1:
+-            arg_tuple += ","
+-        self.write(
+-            f"Macro(environment, macro, {name!r}, ({arg_tuple}),"
+-            f" {macro_ref.accesses_kwargs!r}, {macro_ref.accesses_varargs!r},"
+-            f" {macro_ref.accesses_caller!r}, context.eval_ctx.autoescape)"
+-        )
+-
+-    def position(self, node: nodes.Node) -> str:
+-        """Return a human readable position for the node."""
+-        rv = f"line {node.lineno}"
+-        if self.name is not None:
+-            rv = f"{rv} in {self.name!r}"
+-        return rv
+-
+-    def dump_local_context(self, frame: Frame) -> str:
+-        items_kv = ", ".join(
+-            f"{name!r}: {target}"
+-            for name, target in frame.symbols.dump_stores().items()
+-        )
+-        return f"{{{items_kv}}}"
+-
+-    def write_commons(self) -> None:
+-        """Writes a common preamble that is used by root and block functions.
+-        Primarily this sets up common local helpers and enforces a generator
+-        through a dead branch.
+-        """
+-        self.writeline("resolve = context.resolve_or_missing")
+-        self.writeline("undefined = environment.undefined")
+-        self.writeline("concat = environment.concat")
+-        # always use the standard Undefined class for the implicit else of
+-        # conditional expressions
+-        self.writeline("cond_expr_undefined = Undefined")
+-        self.writeline("if 0: yield None")
+-
+-    def push_parameter_definitions(self, frame: Frame) -> None:
+-        """Pushes all parameter targets from the given frame into a local
+-        stack that permits tracking of yet to be assigned parameters.  In
+-        particular this enables the optimization from `visit_Name` to skip
+-        undefined expressions for parameters in macros as macros can reference
+-        otherwise unbound parameters.
+-        """
+-        self._param_def_block.append(frame.symbols.dump_param_targets())
+-
+-    def pop_parameter_definitions(self) -> None:
+-        """Pops the current parameter definitions set."""
+-        self._param_def_block.pop()
+-
+-    def mark_parameter_stored(self, target: str) -> None:
+-        """Marks a parameter in the current parameter definitions as stored.
+-        This will skip the enforced undefined checks.
+-        """
+-        if self._param_def_block:
+-            self._param_def_block[-1].discard(target)
+-
+-    def push_context_reference(self, target: str) -> None:
+-        self._context_reference_stack.append(target)
+-
+-    def pop_context_reference(self) -> None:
+-        self._context_reference_stack.pop()
+-
+-    def get_context_ref(self) -> str:
+-        return self._context_reference_stack[-1]
+-
+-    def get_resolve_func(self) -> str:
+-        target = self._context_reference_stack[-1]
+-        if target == "context":
+-            return "resolve"
+-        return f"{target}.resolve"
+-
+-    def derive_context(self, frame: Frame) -> str:
+-        return f"{self.get_context_ref()}.derived({self.dump_local_context(frame)})"
+-
+-    def parameter_is_undeclared(self, target: str) -> bool:
+-        """Checks if a given target is an undeclared parameter."""
+-        if not self._param_def_block:
+-            return False
+-        return target in self._param_def_block[-1]
+-
+-    def push_assign_tracking(self) -> None:
+-        """Pushes a new layer for assignment tracking."""
+-        self._assign_stack.append(set())
+-
+-    def pop_assign_tracking(self, frame: Frame) -> None:
+-        """Pops the topmost level for assignment tracking and updates the
+-        context variables if necessary.
+-        """
+-        vars = self._assign_stack.pop()
+-        if (
+-            not frame.block_frame
+-            and not frame.loop_frame
+-            and not frame.toplevel
+-            or not vars
+-        ):
+-            return
+-        public_names = [x for x in vars if x[:1] != "_"]
+-        if len(vars) == 1:
+-            name = next(iter(vars))
+-            ref = frame.symbols.ref(name)
+-            if frame.loop_frame:
+-                self.writeline(f"_loop_vars[{name!r}] = {ref}")
+-                return
+-            if frame.block_frame:
+-                self.writeline(f"_block_vars[{name!r}] = {ref}")
+-                return
+-            self.writeline(f"context.vars[{name!r}] = {ref}")
+-        else:
+-            if frame.loop_frame:
+-                self.writeline("_loop_vars.update({")
+-            elif frame.block_frame:
+-                self.writeline("_block_vars.update({")
+-            else:
+-                self.writeline("context.vars.update({")
+-            for idx, name in enumerate(sorted(vars)):
+-                if idx:
+-                    self.write(", ")
+-                ref = frame.symbols.ref(name)
+-                self.write(f"{name!r}: {ref}")
+-            self.write("})")
+-        if not frame.block_frame and not frame.loop_frame and public_names:
+-            if len(public_names) == 1:
+-                self.writeline(f"context.exported_vars.add({public_names[0]!r})")
+-            else:
+-                names_str = ", ".join(map(repr, sorted(public_names)))
+-                self.writeline(f"context.exported_vars.update(({names_str}))")
+-
+-    # -- Statement Visitors
+-
+-    def visit_Template(
+-        self, node: nodes.Template, frame: t.Optional[Frame] = None
+-    ) -> None:
+-        assert frame is None, "no root frame allowed"
+-        eval_ctx = EvalContext(self.environment, self.name)
+-
+-        from .runtime import async_exported
+-        from .runtime import exported
+-
+-        if self.environment.is_async:
+-            exported_names = sorted(exported + async_exported)
+-        else:
+-            exported_names = sorted(exported)
+-
+-        self.writeline("from jinja2.runtime import " + ", ".join(exported_names))
+-
+-        # if we want a deferred initialization we cannot move the
+-        # environment into a local name
+-        envenv = "" if self.defer_init else ", environment=environment"
+-
+-        # do we have an extends tag at all?  If not, we can save some
+-        # overhead by just not processing any inheritance code.
+-        have_extends = node.find(nodes.Extends) is not None
+-
+-        # find all blocks
+-        for block in node.find_all(nodes.Block):
+-            if block.name in self.blocks:
+-                self.fail(f"block {block.name!r} defined twice", block.lineno)
+-            self.blocks[block.name] = block
+-
+-        # find all imports and import them
+-        for import_ in node.find_all(nodes.ImportedName):
+-            if import_.importname not in self.import_aliases:
+-                imp = import_.importname
+-                self.import_aliases[imp] = alias = self.temporary_identifier()
+-                if "." in imp:
+-                    module, obj = imp.rsplit(".", 1)
+-                    self.writeline(f"from {module} import {obj} as {alias}")
+-                else:
+-                    self.writeline(f"import {imp} as {alias}")
+-
+-        # add the load name
+-        self.writeline(f"name = {self.name!r}")
+-
+-        # generate the root render function.
+-        self.writeline(
+-            f"{self.func('root')}(context, missing=missing{envenv}):", extra=1
+-        )
+-        self.indent()
+-        self.write_commons()
+-
+-        # process the root
+-        frame = Frame(eval_ctx)
+-        if "self" in find_undeclared(node.body, ("self",)):
+-            ref = frame.symbols.declare_parameter("self")
+-            self.writeline(f"{ref} = TemplateReference(context)")
+-        frame.symbols.analyze_node(node)
+-        frame.toplevel = frame.rootlevel = True
+-        frame.require_output_check = have_extends and not self.has_known_extends
+-        if have_extends:
+-            self.writeline("parent_template = None")
+-        self.enter_frame(frame)
+-        self.pull_dependencies(node.body)
+-        self.blockvisit(node.body, frame)
+-        self.leave_frame(frame, with_python_scope=True)
+-        self.outdent()
+-
+-        # make sure that the parent root is called.
+-        if have_extends:
+-            if not self.has_known_extends:
+-                self.indent()
+-                self.writeline("if parent_template is not None:")
+-            self.indent()
+-            if not self.environment.is_async:
+-                self.writeline("yield from parent_template.root_render_func(context)")
+-            else:
+-                self.writeline("agen = parent_template.root_render_func(context)")
+-                self.writeline("try:")
+-                self.indent()
+-                self.writeline("async for event in agen:")
+-                self.indent()
+-                self.writeline("yield event")
+-                self.outdent()
+-                self.outdent()
+-                self.writeline("finally: await agen.aclose()")
+-            self.outdent(1 + (not self.has_known_extends))
+-
+-        # at this point we now have the blocks collected and can visit them too.
+-        for name, block in self.blocks.items():
+-            self.writeline(
+-                f"{self.func('block_' + name)}(context, missing=missing{envenv}):",
+-                block,
+-                1,
+-            )
+-            self.indent()
+-            self.write_commons()
+-            # It's important that we do not make this frame a child of the
+-            # toplevel template.  This would cause a variety of
+-            # interesting issues with identifier tracking.
+-            block_frame = Frame(eval_ctx)
+-            block_frame.block_frame = True
+-            undeclared = find_undeclared(block.body, ("self", "super"))
+-            if "self" in undeclared:
+-                ref = block_frame.symbols.declare_parameter("self")
+-                self.writeline(f"{ref} = TemplateReference(context)")
+-            if "super" in undeclared:
+-                ref = block_frame.symbols.declare_parameter("super")
+-                self.writeline(f"{ref} = context.super({name!r}, block_{name})")
+-            block_frame.symbols.analyze_node(block)
+-            block_frame.block = name
+-            self.writeline("_block_vars = {}")
+-            self.enter_frame(block_frame)
+-            self.pull_dependencies(block.body)
+-            self.blockvisit(block.body, block_frame)
+-            self.leave_frame(block_frame, with_python_scope=True)
+-            self.outdent()
+-
+-        blocks_kv_str = ", ".join(f"{x!r}: block_{x}" for x in self.blocks)
+-        self.writeline(f"blocks = {{{blocks_kv_str}}}", extra=1)
+-        debug_kv_str = "&".join(f"{k}={v}" for k, v in self.debug_info)
+-        self.writeline(f"debug_info = {debug_kv_str!r}")
+-
+-    def visit_Block(self, node: nodes.Block, frame: Frame) -> None:
+-        """Call a block and register it for the template."""
+-        level = 0
+-        if frame.toplevel:
+-            # if we know that we are a child template, there is no need to
+-            # check if we are one
+-            if self.has_known_extends:
+-                return
+-            if self.extends_so_far > 0:
+-                self.writeline("if parent_template is None:")
+-                self.indent()
+-                level += 1
+-
+-        if node.scoped:
+-            context = self.derive_context(frame)
+-        else:
+-            context = self.get_context_ref()
+-
+-        if node.required:
+-            self.writeline(f"if len(context.blocks[{node.name!r}]) <= 1:", node)
+-            self.indent()
+-            self.writeline(
+-                f'raise TemplateRuntimeError("Required block {node.name!r} not found")',
+-                node,
+-            )
+-            self.outdent()
+-
+-        if not self.environment.is_async and frame.buffer is None:
+-            self.writeline(
+-                f"yield from context.blocks[{node.name!r}][0]({context})", node
+-            )
+-        else:
+-            self.writeline(f"gen = context.blocks[{node.name!r}][0]({context})")
+-            self.writeline("try:")
+-            self.indent()
+-            self.writeline(
+-                f"{self.choose_async()}for event in gen:",
+-                node,
+-            )
+-            self.indent()
+-            self.simple_write("event", frame)
+-            self.outdent()
+-            self.outdent()
+-            self.writeline(
+-                f"finally: {self.choose_async('await gen.aclose()', 'gen.close()')}"
+-            )
+-
+-        self.outdent(level)
+-
+-    def visit_Extends(self, node: nodes.Extends, frame: Frame) -> None:
+-        """Calls the extender."""
+-        if not frame.toplevel:
+-            self.fail("cannot use extend from a non top-level scope", node.lineno)
+-
+-        # if the number of extends statements in general is zero so
+-        # far, we don't have to add a check if something extended
+-        # the template before this one.
+-        if self.extends_so_far > 0:
+-            # if we have a known extends we just add a template runtime
+-            # error into the generated code.  We could catch that at compile
+-            # time too, but i welcome it not to confuse users by throwing the
+-            # same error at different times just "because we can".
+-            if not self.has_known_extends:
+-                self.writeline("if parent_template is not None:")
+-                self.indent()
+-            self.writeline('raise TemplateRuntimeError("extended multiple times")')
+-
+-            # if we have a known extends already we don't need that code here
+-            # as we know that the template execution will end here.
+-            if self.has_known_extends:
+-                raise CompilerExit()
+-            else:
+-                self.outdent()
+-
+-        self.writeline("parent_template = environment.get_template(", node)
+-        self.visit(node.template, frame)
+-        self.write(f", {self.name!r})")
+-        self.writeline("for name, parent_block in parent_template.blocks.items():")
+-        self.indent()
+-        self.writeline("context.blocks.setdefault(name, []).append(parent_block)")
+-        self.outdent()
+-
+-        # if this extends statement was in the root level we can take
+-        # advantage of that information and simplify the generated code
+-        # in the top level from this point onwards
+-        if frame.rootlevel:
+-            self.has_known_extends = True
+-
+-        # and now we have one more
+-        self.extends_so_far += 1
+-
+-    def visit_Include(self, node: nodes.Include, frame: Frame) -> None:
+-        """Handles includes."""
+-        if node.ignore_missing:
+-            self.writeline("try:")
+-            self.indent()
+-
+-        func_name = "get_or_select_template"
+-        if isinstance(node.template, nodes.Const):
+-            if isinstance(node.template.value, str):
+-                func_name = "get_template"
+-            elif isinstance(node.template.value, (tuple, list)):
+-                func_name = "select_template"
+-        elif isinstance(node.template, (nodes.Tuple, nodes.List)):
+-            func_name = "select_template"
+-
+-        self.writeline(f"template = environment.{func_name}(", node)
+-        self.visit(node.template, frame)
+-        self.write(f", {self.name!r})")
+-        if node.ignore_missing:
+-            self.outdent()
+-            self.writeline("except TemplateNotFound:")
+-            self.indent()
+-            self.writeline("pass")
+-            self.outdent()
+-            self.writeline("else:")
+-            self.indent()
+-
+-        def loop_body() -> None:
+-            self.indent()
+-            self.simple_write("event", frame)
+-            self.outdent()
+-
+-        if node.with_context:
+-            self.writeline(
+-                f"gen = template.root_render_func("
+-                "template.new_context(context.get_all(), True,"
+-                f" {self.dump_local_context(frame)}))"
+-            )
+-            self.writeline("try:")
+-            self.indent()
+-            self.writeline(f"{self.choose_async()}for event in gen:")
+-            loop_body()
+-            self.outdent()
+-            self.writeline(
+-                f"finally: {self.choose_async('await gen.aclose()', 'gen.close()')}"
+-            )
+-        elif self.environment.is_async:
+-            self.writeline(
+-                "for event in (await template._get_default_module_async())"
+-                "._body_stream:"
+-            )
+-            loop_body()
+-        else:
+-            self.writeline("yield from template._get_default_module()._body_stream")
+-
+-        if node.ignore_missing:
+-            self.outdent()
+-
+-    def _import_common(
+-        self, node: t.Union[nodes.Import, nodes.FromImport], frame: Frame
+-    ) -> None:
+-        self.write(f"{self.choose_async('await ')}environment.get_template(")
+-        self.visit(node.template, frame)
+-        self.write(f", {self.name!r}).")
+-
+-        if node.with_context:
+-            f_name = f"make_module{self.choose_async('_async')}"
+-            self.write(
+-                f"{f_name}(context.get_all(), True, {self.dump_local_context(frame)})"
+-            )
+-        else:
+-            self.write(f"_get_default_module{self.choose_async('_async')}(context)")
+-
+-    def visit_Import(self, node: nodes.Import, frame: Frame) -> None:
+-        """Visit regular imports."""
+-        self.writeline(f"{frame.symbols.ref(node.target)} = ", node)
+-        if frame.toplevel:
+-            self.write(f"context.vars[{node.target!r}] = ")
+-
+-        self._import_common(node, frame)
+-
+-        if frame.toplevel and not node.target.startswith("_"):
+-            self.writeline(f"context.exported_vars.discard({node.target!r})")
+-
+-    def visit_FromImport(self, node: nodes.FromImport, frame: Frame) -> None:
+-        """Visit named imports."""
+-        self.newline(node)
+-        self.write("included_template = ")
+-        self._import_common(node, frame)
+-        var_names = []
+-        discarded_names = []
+-        for name in node.names:
+-            if isinstance(name, tuple):
+-                name, alias = name
+-            else:
+-                alias = name
+-            self.writeline(
+-                f"{frame.symbols.ref(alias)} ="
+-                f" getattr(included_template, {name!r}, missing)"
+-            )
+-            self.writeline(f"if {frame.symbols.ref(alias)} is missing:")
+-            self.indent()
+-            # The position will contain the template name, and will be formatted
+-            # into a string that will be compiled into an f-string. Curly braces
+-            # in the name must be replaced with escapes so that they will not be
+-            # executed as part of the f-string.
+-            position = self.position(node).replace("{", "{{").replace("}", "}}")
+-            message = (
+-                "the template {included_template.__name__!r}"
+-                f" (imported on {position})"
+-                f" does not export the requested name {name!r}"
+-            )
+-            self.writeline(
+-                f"{frame.symbols.ref(alias)} = undefined(f{message!r}, name={name!r})"
+-            )
+-            self.outdent()
+-            if frame.toplevel:
+-                var_names.append(alias)
+-                if not alias.startswith("_"):
+-                    discarded_names.append(alias)
+-
+-        if var_names:
+-            if len(var_names) == 1:
+-                name = var_names[0]
+-                self.writeline(f"context.vars[{name!r}] = {frame.symbols.ref(name)}")
+-            else:
+-                names_kv = ", ".join(
+-                    f"{name!r}: {frame.symbols.ref(name)}" for name in var_names
+-                )
+-                self.writeline(f"context.vars.update({{{names_kv}}})")
+-        if discarded_names:
+-            if len(discarded_names) == 1:
+-                self.writeline(f"context.exported_vars.discard({discarded_names[0]!r})")
+-            else:
+-                names_str = ", ".join(map(repr, discarded_names))
+-                self.writeline(
+-                    f"context.exported_vars.difference_update(({names_str}))"
+-                )
+-
+-    def visit_For(self, node: nodes.For, frame: Frame) -> None:
+-        loop_frame = frame.inner()
+-        loop_frame.loop_frame = True
+-        test_frame = frame.inner()
+-        else_frame = frame.inner()
+-
+-        # try to figure out if we have an extended loop.  An extended loop
+-        # is necessary if the loop is in recursive mode if the special loop
+-        # variable is accessed in the body if the body is a scoped block.
+-        extended_loop = (
+-            node.recursive
+-            or "loop"
+-            in find_undeclared(node.iter_child_nodes(only=("body",)), ("loop",))
+-            or any(block.scoped for block in node.find_all(nodes.Block))
+-        )
+-
+-        loop_ref = None
+-        if extended_loop:
+-            loop_ref = loop_frame.symbols.declare_parameter("loop")
+-
+-        loop_frame.symbols.analyze_node(node, for_branch="body")
+-        if node.else_:
+-            else_frame.symbols.analyze_node(node, for_branch="else")
+-
+-        if node.test:
+-            loop_filter_func = self.temporary_identifier()
+-            test_frame.symbols.analyze_node(node, for_branch="test")
+-            self.writeline(f"{self.func(loop_filter_func)}(fiter):", node.test)
+-            self.indent()
+-            self.enter_frame(test_frame)
+-            self.writeline(self.choose_async("async for ", "for "))
+-            self.visit(node.target, loop_frame)
+-            self.write(" in ")
+-            self.write(self.choose_async("auto_aiter(fiter)", "fiter"))
+-            self.write(":")
+-            self.indent()
+-            self.writeline("if ", node.test)
+-            self.visit(node.test, test_frame)
+-            self.write(":")
+-            self.indent()
+-            self.writeline("yield ")
+-            self.visit(node.target, loop_frame)
+-            self.outdent(3)
+-            self.leave_frame(test_frame, with_python_scope=True)
+-
+-        # if we don't have an recursive loop we have to find the shadowed
+-        # variables at that point.  Because loops can be nested but the loop
+-        # variable is a special one we have to enforce aliasing for it.
+-        if node.recursive:
+-            self.writeline(
+-                f"{self.func('loop')}(reciter, loop_render_func, depth=0):", node
+-            )
+-            self.indent()
+-            self.buffer(loop_frame)
+-
+-            # Use the same buffer for the else frame
+-            else_frame.buffer = loop_frame.buffer
+-
+-        # make sure the loop variable is a special one and raise a template
+-        # assertion error if a loop tries to write to loop
+-        if extended_loop:
+-            self.writeline(f"{loop_ref} = missing")
+-
+-        for name in node.find_all(nodes.Name):
+-            if name.ctx == "store" and name.name == "loop":
+-                self.fail(
+-                    "Can't assign to special loop variable in for-loop target",
+-                    name.lineno,
+-                )
+-
+-        if node.else_:
+-            iteration_indicator = self.temporary_identifier()
+-            self.writeline(f"{iteration_indicator} = 1")
+-
+-        self.writeline(self.choose_async("async for ", "for "), node)
+-        self.visit(node.target, loop_frame)
+-        if extended_loop:
+-            self.write(f", {loop_ref} in {self.choose_async('Async')}LoopContext(")
+-        else:
+-            self.write(" in ")
+-
+-        if node.test:
+-            self.write(f"{loop_filter_func}(")
+-        if node.recursive:
+-            self.write("reciter")
+-        else:
+-            if self.environment.is_async and not extended_loop:
+-                self.write("auto_aiter(")
+-            self.visit(node.iter, frame)
+-            if self.environment.is_async and not extended_loop:
+-                self.write(")")
+-        if node.test:
+-            self.write(")")
+-
+-        if node.recursive:
+-            self.write(", undefined, loop_render_func, depth):")
+-        else:
+-            self.write(", undefined):" if extended_loop else ":")
+-
+-        self.indent()
+-        self.enter_frame(loop_frame)
+-
+-        self.writeline("_loop_vars = {}")
+-        self.blockvisit(node.body, loop_frame)
+-        if node.else_:
+-            self.writeline(f"{iteration_indicator} = 0")
+-        self.outdent()
+-        self.leave_frame(
+-            loop_frame, with_python_scope=node.recursive and not node.else_
+-        )
+-
+-        if node.else_:
+-            self.writeline(f"if {iteration_indicator}:")
+-            self.indent()
+-            self.enter_frame(else_frame)
+-            self.blockvisit(node.else_, else_frame)
+-            self.leave_frame(else_frame)
+-            self.outdent()
+-
+-        # if the node was recursive we have to return the buffer contents
+-        # and start the iteration code
+-        if node.recursive:
+-            self.return_buffer_contents(loop_frame)
+-            self.outdent()
+-            self.start_write(frame, node)
+-            self.write(f"{self.choose_async('await ')}loop(")
+-            if self.environment.is_async:
+-                self.write("auto_aiter(")
+-            self.visit(node.iter, frame)
+-            if self.environment.is_async:
+-                self.write(")")
+-            self.write(", loop)")
+-            self.end_write(frame)
+-
+-        # at the end of the iteration, clear any assignments made in the
+-        # loop from the top level
+-        if self._assign_stack:
+-            self._assign_stack[-1].difference_update(loop_frame.symbols.stores)
+-
+-    def visit_If(self, node: nodes.If, frame: Frame) -> None:
+-        if_frame = frame.soft()
+-        self.writeline("if ", node)
+-        self.visit(node.test, if_frame)
+-        self.write(":")
+-        self.indent()
+-        self.blockvisit(node.body, if_frame)
+-        self.outdent()
+-        for elif_ in node.elif_:
+-            self.writeline("elif ", elif_)
+-            self.visit(elif_.test, if_frame)
+-            self.write(":")
+-            self.indent()
+-            self.blockvisit(elif_.body, if_frame)
+-            self.outdent()
+-        if node.else_:
+-            self.writeline("else:")
+-            self.indent()
+-            self.blockvisit(node.else_, if_frame)
+-            self.outdent()
+-
+-    def visit_Macro(self, node: nodes.Macro, frame: Frame) -> None:
+-        macro_frame, macro_ref = self.macro_body(node, frame)
+-        self.newline()
+-        if frame.toplevel:
+-            if not node.name.startswith("_"):
+-                self.write(f"context.exported_vars.add({node.name!r})")
+-            self.writeline(f"context.vars[{node.name!r}] = ")
+-        self.write(f"{frame.symbols.ref(node.name)} = ")
+-        self.macro_def(macro_ref, macro_frame)
+-
+-    def visit_CallBlock(self, node: nodes.CallBlock, frame: Frame) -> None:
+-        call_frame, macro_ref = self.macro_body(node, frame)
+-        self.writeline("caller = ")
+-        self.macro_def(macro_ref, call_frame)
+-        self.start_write(frame, node)
+-        self.visit_Call(node.call, frame, forward_caller=True)
+-        self.end_write(frame)
+-
+-    def visit_FilterBlock(self, node: nodes.FilterBlock, frame: Frame) -> None:
+-        filter_frame = frame.inner()
+-        filter_frame.symbols.analyze_node(node)
+-        self.enter_frame(filter_frame)
+-        self.buffer(filter_frame)
+-        self.blockvisit(node.body, filter_frame)
+-        self.start_write(frame, node)
+-        self.visit_Filter(node.filter, filter_frame)
+-        self.end_write(frame)
+-        self.leave_frame(filter_frame)
+-
+-    def visit_With(self, node: nodes.With, frame: Frame) -> None:
+-        with_frame = frame.inner()
+-        with_frame.symbols.analyze_node(node)
+-        self.enter_frame(with_frame)
+-        for target, expr in zip(node.targets, node.values):
+-            self.newline()
+-            self.visit(target, with_frame)
+-            self.write(" = ")
+-            self.visit(expr, frame)
+-        self.blockvisit(node.body, with_frame)
+-        self.leave_frame(with_frame)
+-
+-    def visit_ExprStmt(self, node: nodes.ExprStmt, frame: Frame) -> None:
+-        self.newline(node)
+-        self.visit(node.node, frame)
+-
+-    class _FinalizeInfo(t.NamedTuple):
+-        const: t.Optional[t.Callable[..., str]]
+-        src: t.Optional[str]
+-
+-    @staticmethod
+-    def _default_finalize(value: t.Any) -> t.Any:
+-        """The default finalize function if the environment isn't
+-        configured with one. Or, if the environment has one, this is
+-        called on that function's output for constants.
+-        """
+-        return str(value)
+-
+-    _finalize: t.Optional[_FinalizeInfo] = None
+-
+-    def _make_finalize(self) -> _FinalizeInfo:
+-        """Build the finalize function to be used on constants and at
+-        runtime. Cached so it's only created once for all output nodes.
+-
+-        Returns a ``namedtuple`` with the following attributes:
+-
+-        ``const``
+-            A function to finalize constant data at compile time.
+-
+-        ``src``
+-            Source code to output around nodes to be evaluated at
+-            runtime.
+-        """
+-        if self._finalize is not None:
+-            return self._finalize
+-
+-        finalize: t.Optional[t.Callable[..., t.Any]]
+-        finalize = default = self._default_finalize
+-        src = None
+-
+-        if self.environment.finalize:
+-            src = "environment.finalize("
+-            env_finalize = self.environment.finalize
+-            pass_arg = {
+-                _PassArg.context: "context",
+-                _PassArg.eval_context: "context.eval_ctx",
+-                _PassArg.environment: "environment",
+-            }.get(
+-                _PassArg.from_obj(env_finalize)  # type: ignore
+-            )
+-            finalize = None
+-
+-            if pass_arg is None:
+-
+-                def finalize(value: t.Any) -> t.Any:  # noqa: F811
+-                    return default(env_finalize(value))
+-
+-            else:
+-                src = f"{src}{pass_arg}, "
+-
+-                if pass_arg == "environment":
+-
+-                    def finalize(value: t.Any) -> t.Any:  # noqa: F811
+-                        return default(env_finalize(self.environment, value))
+-
+-        self._finalize = self._FinalizeInfo(finalize, src)
+-        return self._finalize
+-
+-    def _output_const_repr(self, group: t.Iterable[t.Any]) -> str:
+-        """Given a group of constant values converted from ``Output``
+-        child nodes, produce a string to write to the template module
+-        source.
+-        """
+-        return repr(concat(group))
+-
+-    def _output_child_to_const(
+-        self, node: nodes.Expr, frame: Frame, finalize: _FinalizeInfo
+-    ) -> str:
+-        """Try to optimize a child of an ``Output`` node by trying to
+-        convert it to constant, finalized data at compile time.
+-
+-        If :exc:`Impossible` is raised, the node is not constant and
+-        will be evaluated at runtime. Any other exception will also be
+-        evaluated at runtime for easier debugging.
+-        """
+-        const = node.as_const(frame.eval_ctx)
+-
+-        if frame.eval_ctx.autoescape:
+-            const = escape(const)
+-
+-        # Template data doesn't go through finalize.
+-        if isinstance(node, nodes.TemplateData):
+-            return str(const)
+-
+-        return finalize.const(const)  # type: ignore
+-
+-    def _output_child_pre(
+-        self, node: nodes.Expr, frame: Frame, finalize: _FinalizeInfo
+-    ) -> None:
+-        """Output extra source code before visiting a child of an
+-        ``Output`` node.
+-        """
+-        if frame.eval_ctx.volatile:
+-            self.write("(escape if context.eval_ctx.autoescape else str)(")
+-        elif frame.eval_ctx.autoescape:
+-            self.write("escape(")
+-        else:
+-            self.write("str(")
+-
+-        if finalize.src is not None:
+-            self.write(finalize.src)
+-
+-    def _output_child_post(
+-        self, node: nodes.Expr, frame: Frame, finalize: _FinalizeInfo
+-    ) -> None:
+-        """Output extra source code after visiting a child of an
+-        ``Output`` node.
+-        """
+-        self.write(")")
+-
+-        if finalize.src is not None:
+-            self.write(")")
+-
+-    def visit_Output(self, node: nodes.Output, frame: Frame) -> None:
+-        # If an extends is active, don't render outside a block.
+-        if frame.require_output_check:
+-            # A top-level extends is known to exist at compile time.
+-            if self.has_known_extends:
+-                return
+-
+-            self.writeline("if parent_template is None:")
+-            self.indent()
+-
+-        finalize = self._make_finalize()
+-        body: t.List[t.Union[t.List[t.Any], nodes.Expr]] = []
+-
+-        # Evaluate constants at compile time if possible. Each item in
+-        # body will be either a list of static data or a node to be
+-        # evaluated at runtime.
+-        for child in node.nodes:
+-            try:
+-                if not (
+-                    # If the finalize function requires runtime context,
+-                    # constants can't be evaluated at compile time.
+-                    finalize.const
+-                    # Unless it's basic template data that won't be
+-                    # finalized anyway.
+-                    or isinstance(child, nodes.TemplateData)
+-                ):
+-                    raise nodes.Impossible()
+-
+-                const = self._output_child_to_const(child, frame, finalize)
+-            except (nodes.Impossible, Exception):
+-                # The node was not constant and needs to be evaluated at
+-                # runtime. Or another error was raised, which is easier
+-                # to debug at runtime.
+-                body.append(child)
+-                continue
+-
+-            if body and isinstance(body[-1], list):
+-                body[-1].append(const)
+-            else:
+-                body.append([const])
+-
+-        if frame.buffer is not None:
+-            if len(body) == 1:
+-                self.writeline(f"{frame.buffer}.append(")
+-            else:
+-                self.writeline(f"{frame.buffer}.extend((")
+-
+-            self.indent()
+-
+-        for item in body:
+-            if isinstance(item, list):
+-                # A group of constant data to join and output.
+-                val = self._output_const_repr(item)
+-
+-                if frame.buffer is None:
+-                    self.writeline("yield " + val)
+-                else:
+-                    self.writeline(val + ",")
+-            else:
+-                if frame.buffer is None:
+-                    self.writeline("yield ", item)
+-                else:
+-                    self.newline(item)
+-
+-                # A node to be evaluated at runtime.
+-                self._output_child_pre(item, frame, finalize)
+-                self.visit(item, frame)
+-                self._output_child_post(item, frame, finalize)
+-
+-                if frame.buffer is not None:
+-                    self.write(",")
+-
+-        if frame.buffer is not None:
+-            self.outdent()
+-            self.writeline(")" if len(body) == 1 else "))")
+-
+-        if frame.require_output_check:
+-            self.outdent()
+-
+-    def visit_Assign(self, node: nodes.Assign, frame: Frame) -> None:
+-        self.push_assign_tracking()
+-
+-        # ``a.b`` is allowed for assignment, and is parsed as an NSRef. However,
+-        # it is only valid if it references a Namespace object. Emit a check for
+-        # that for each ref here, before assignment code is emitted. This can't
+-        # be done in visit_NSRef as the ref could be in the middle of a tuple.
+-        seen_refs: t.Set[str] = set()
+-
+-        for nsref in node.find_all(nodes.NSRef):
+-            if nsref.name in seen_refs:
+-                # Only emit the check for each reference once, in case the same
+-                # ref is used multiple times in a tuple, `ns.a, ns.b = c, d`.
+-                continue
+-
+-            seen_refs.add(nsref.name)
+-            ref = frame.symbols.ref(nsref.name)
+-            self.writeline(f"if not isinstance({ref}, Namespace):")
+-            self.indent()
+-            self.writeline(
+-                "raise TemplateRuntimeError"
+-                '("cannot assign attribute on non-namespace object")'
+-            )
+-            self.outdent()
+-
+-        self.newline(node)
+-        self.visit(node.target, frame)
+-        self.write(" = ")
+-        self.visit(node.node, frame)
+-        self.pop_assign_tracking(frame)
+-
+-    def visit_AssignBlock(self, node: nodes.AssignBlock, frame: Frame) -> None:
+-        self.push_assign_tracking()
+-        block_frame = frame.inner()
+-        # This is a special case.  Since a set block always captures we
+-        # will disable output checks.  This way one can use set blocks
+-        # toplevel even in extended templates.
+-        block_frame.require_output_check = False
+-        block_frame.symbols.analyze_node(node)
+-        self.enter_frame(block_frame)
+-        self.buffer(block_frame)
+-        self.blockvisit(node.body, block_frame)
+-        self.newline(node)
+-        self.visit(node.target, frame)
+-        self.write(" = (Markup if context.eval_ctx.autoescape else identity)(")
+-        if node.filter is not None:
+-            self.visit_Filter(node.filter, block_frame)
+-        else:
+-            self.write(f"concat({block_frame.buffer})")
+-        self.write(")")
+-        self.pop_assign_tracking(frame)
+-        self.leave_frame(block_frame)
+-
+-    # -- Expression Visitors
+-
+-    def visit_Name(self, node: nodes.Name, frame: Frame) -> None:
+-        if node.ctx == "store" and (
+-            frame.toplevel or frame.loop_frame or frame.block_frame
+-        ):
+-            if self._assign_stack:
+-                self._assign_stack[-1].add(node.name)
+-        ref = frame.symbols.ref(node.name)
+-
+-        # If we are looking up a variable we might have to deal with the
+-        # case where it's undefined.  We can skip that case if the load
+-        # instruction indicates a parameter which are always defined.
+-        if node.ctx == "load":
+-            load = frame.symbols.find_load(ref)
+-            if not (
+-                load is not None
+-                and load[0] == VAR_LOAD_PARAMETER
+-                and not self.parameter_is_undeclared(ref)
+-            ):
+-                self.write(
+-                    f"(undefined(name={node.name!r}) if {ref} is missing else {ref})"
+-                )
+-                return
+-
+-        self.write(ref)
+-
+-    def visit_NSRef(self, node: nodes.NSRef, frame: Frame) -> None:
+-        # NSRef is a dotted assignment target a.b=c, but uses a[b]=c internally.
+-        # visit_Assign emits code to validate that each ref is to a Namespace
+-        # object only. That can't be emitted here as the ref could be in the
+-        # middle of a tuple assignment.
+-        ref = frame.symbols.ref(node.name)
+-        self.writeline(f"{ref}[{node.attr!r}]")
+-
+-    def visit_Const(self, node: nodes.Const, frame: Frame) -> None:
+-        val = node.as_const(frame.eval_ctx)
+-        if isinstance(val, float):
+-            self.write(str(val))
+-        else:
+-            self.write(repr(val))
+-
+-    def visit_TemplateData(self, node: nodes.TemplateData, frame: Frame) -> None:
+-        try:
+-            self.write(repr(node.as_const(frame.eval_ctx)))
+-        except nodes.Impossible:
+-            self.write(
+-                f"(Markup if context.eval_ctx.autoescape else identity)({node.data!r})"
+-            )
+-
+-    def visit_Tuple(self, node: nodes.Tuple, frame: Frame) -> None:
+-        self.write("(")
+-        idx = -1
+-        for idx, item in enumerate(node.items):
+-            if idx:
+-                self.write(", ")
+-            self.visit(item, frame)
+-        self.write(",)" if idx == 0 else ")")
+-
+-    def visit_List(self, node: nodes.List, frame: Frame) -> None:
+-        self.write("[")
+-        for idx, item in enumerate(node.items):
+-            if idx:
+-                self.write(", ")
+-            self.visit(item, frame)
+-        self.write("]")
+-
+-    def visit_Dict(self, node: nodes.Dict, frame: Frame) -> None:
+-        self.write("{")
+-        for idx, item in enumerate(node.items):
+-            if idx:
+-                self.write(", ")
+-            self.visit(item.key, frame)
+-            self.write(": ")
+-            self.visit(item.value, frame)
+-        self.write("}")
+-
+-    visit_Add = _make_binop("+")
+-    visit_Sub = _make_binop("-")
+-    visit_Mul = _make_binop("*")
+-    visit_Div = _make_binop("/")
+-    visit_FloorDiv = _make_binop("//")
+-    visit_Pow = _make_binop("**")
+-    visit_Mod = _make_binop("%")
+-    visit_And = _make_binop("and")
+-    visit_Or = _make_binop("or")
+-    visit_Pos = _make_unop("+")
+-    visit_Neg = _make_unop("-")
+-    visit_Not = _make_unop("not ")
+-
+-    @optimizeconst
+-    def visit_Concat(self, node: nodes.Concat, frame: Frame) -> None:
+-        if frame.eval_ctx.volatile:
+-            func_name = "(markup_join if context.eval_ctx.volatile else str_join)"
+-        elif frame.eval_ctx.autoescape:
+-            func_name = "markup_join"
+-        else:
+-            func_name = "str_join"
+-        self.write(f"{func_name}((")
+-        for arg in node.nodes:
+-            self.visit(arg, frame)
+-            self.write(", ")
+-        self.write("))")
+-
+-    @optimizeconst
+-    def visit_Compare(self, node: nodes.Compare, frame: Frame) -> None:
+-        self.write("(")
+-        self.visit(node.expr, frame)
+-        for op in node.ops:
+-            self.visit(op, frame)
+-        self.write(")")
+-
+-    def visit_Operand(self, node: nodes.Operand, frame: Frame) -> None:
+-        self.write(f" {operators[node.op]} ")
+-        self.visit(node.expr, frame)
+-
+-    @optimizeconst
+-    def visit_Getattr(self, node: nodes.Getattr, frame: Frame) -> None:
+-        if self.environment.is_async:
+-            self.write("(await auto_await(")
+-
+-        self.write("environment.getattr(")
+-        self.visit(node.node, frame)
+-        self.write(f", {node.attr!r})")
+-
+-        if self.environment.is_async:
+-            self.write("))")
+-
+-    @optimizeconst
+-    def visit_Getitem(self, node: nodes.Getitem, frame: Frame) -> None:
+-        # slices bypass the environment getitem method.
+-        if isinstance(node.arg, nodes.Slice):
+-            self.visit(node.node, frame)
+-            self.write("[")
+-            self.visit(node.arg, frame)
+-            self.write("]")
+-        else:
+-            if self.environment.is_async:
+-                self.write("(await auto_await(")
+-
+-            self.write("environment.getitem(")
+-            self.visit(node.node, frame)
+-            self.write(", ")
+-            self.visit(node.arg, frame)
+-            self.write(")")
+-
+-            if self.environment.is_async:
+-                self.write("))")
+-
+-    def visit_Slice(self, node: nodes.Slice, frame: Frame) -> None:
+-        if node.start is not None:
+-            self.visit(node.start, frame)
+-        self.write(":")
+-        if node.stop is not None:
+-            self.visit(node.stop, frame)
+-        if node.step is not None:
+-            self.write(":")
+-            self.visit(node.step, frame)
+-
+-    @contextmanager
+-    def _filter_test_common(
+-        self, node: t.Union[nodes.Filter, nodes.Test], frame: Frame, is_filter: bool
+-    ) -> t.Iterator[None]:
+-        if self.environment.is_async:
+-            self.write("(await auto_await(")
+-
+-        if is_filter:
+-            self.write(f"{self.filters[node.name]}(")
+-            func = self.environment.filters.get(node.name)
+-        else:
+-            self.write(f"{self.tests[node.name]}(")
+-            func = self.environment.tests.get(node.name)
+-
+-        # When inside an If or CondExpr frame, allow the filter to be
+-        # undefined at compile time and only raise an error if it's
+-        # actually called at runtime. See pull_dependencies.
+-        if func is None and not frame.soft_frame:
+-            type_name = "filter" if is_filter else "test"
+-            self.fail(f"No {type_name} named {node.name!r}.", node.lineno)
+-
+-        pass_arg = {
+-            _PassArg.context: "context",
+-            _PassArg.eval_context: "context.eval_ctx",
+-            _PassArg.environment: "environment",
+-        }.get(
+-            _PassArg.from_obj(func)  # type: ignore
+-        )
+-
+-        if pass_arg is not None:
+-            self.write(f"{pass_arg}, ")
+-
+-        # Back to the visitor function to handle visiting the target of
+-        # the filter or test.
+-        yield
+-
+-        self.signature(node, frame)
+-        self.write(")")
+-
+-        if self.environment.is_async:
+-            self.write("))")
+-
+-    @optimizeconst
+-    def visit_Filter(self, node: nodes.Filter, frame: Frame) -> None:
+-        with self._filter_test_common(node, frame, True):
+-            # if the filter node is None we are inside a filter block
+-            # and want to write to the current buffer
+-            if node.node is not None:
+-                self.visit(node.node, frame)
+-            elif frame.eval_ctx.volatile:
+-                self.write(
+-                    f"(Markup(concat({frame.buffer}))"
+-                    f" if context.eval_ctx.autoescape else concat({frame.buffer}))"
+-                )
+-            elif frame.eval_ctx.autoescape:
+-                self.write(f"Markup(concat({frame.buffer}))")
+-            else:
+-                self.write(f"concat({frame.buffer})")
+-
+-    @optimizeconst
+-    def visit_Test(self, node: nodes.Test, frame: Frame) -> None:
+-        with self._filter_test_common(node, frame, False):
+-            self.visit(node.node, frame)
+-
+-    @optimizeconst
+-    def visit_CondExpr(self, node: nodes.CondExpr, frame: Frame) -> None:
+-        frame = frame.soft()
+-
+-        def write_expr2() -> None:
+-            if node.expr2 is not None:
+-                self.visit(node.expr2, frame)
+-                return
+-
+-            self.write(
+-                f'cond_expr_undefined("the inline if-expression on'
+-                f" {self.position(node)} evaluated to false and no else"
+-                f' section was defined.")'
+-            )
+-
+-        self.write("(")
+-        self.visit(node.expr1, frame)
+-        self.write(" if ")
+-        self.visit(node.test, frame)
+-        self.write(" else ")
+-        write_expr2()
+-        self.write(")")
+-
+-    @optimizeconst
+-    def visit_Call(
+-        self, node: nodes.Call, frame: Frame, forward_caller: bool = False
+-    ) -> None:
+-        if self.environment.is_async:
+-            self.write("(await auto_await(")
+-        if self.environment.sandboxed:
+-            self.write("environment.call(context, ")
+-        else:
+-            self.write("context.call(")
+-        self.visit(node.node, frame)
+-        extra_kwargs = {"caller": "caller"} if forward_caller else None
+-        loop_kwargs = {"_loop_vars": "_loop_vars"} if frame.loop_frame else {}
+-        block_kwargs = {"_block_vars": "_block_vars"} if frame.block_frame else {}
+-        if extra_kwargs:
+-            extra_kwargs.update(loop_kwargs, **block_kwargs)
+-        elif loop_kwargs or block_kwargs:
+-            extra_kwargs = dict(loop_kwargs, **block_kwargs)
+-        self.signature(node, frame, extra_kwargs)
+-        self.write(")")
+-        if self.environment.is_async:
+-            self.write("))")
+-
+-    def visit_Keyword(self, node: nodes.Keyword, frame: Frame) -> None:
+-        self.write(node.key + "=")
+-        self.visit(node.value, frame)
+-
+-    # -- Unused nodes for extensions
+-
+-    def visit_MarkSafe(self, node: nodes.MarkSafe, frame: Frame) -> None:
+-        self.write("Markup(")
+-        self.visit(node.expr, frame)
+-        self.write(")")
+-
+-    def visit_MarkSafeIfAutoescape(
+-        self, node: nodes.MarkSafeIfAutoescape, frame: Frame
+-    ) -> None:
+-        self.write("(Markup if context.eval_ctx.autoescape else identity)(")
+-        self.visit(node.expr, frame)
+-        self.write(")")
+-
+-    def visit_EnvironmentAttribute(
+-        self, node: nodes.EnvironmentAttribute, frame: Frame
+-    ) -> None:
+-        self.write("environment." + node.name)
+-
+-    def visit_ExtensionAttribute(
+-        self, node: nodes.ExtensionAttribute, frame: Frame
+-    ) -> None:
+-        self.write(f"environment.extensions[{node.identifier!r}].{node.name}")
+-
+-    def visit_ImportedName(self, node: nodes.ImportedName, frame: Frame) -> None:
+-        self.write(self.import_aliases[node.importname])
+-
+-    def visit_InternalName(self, node: nodes.InternalName, frame: Frame) -> None:
+-        self.write(node.name)
+-
+-    def visit_ContextReference(
+-        self, node: nodes.ContextReference, frame: Frame
+-    ) -> None:
+-        self.write("context")
+-
+-    def visit_DerivedContextReference(
+-        self, node: nodes.DerivedContextReference, frame: Frame
+-    ) -> None:
+-        self.write(self.derive_context(frame))
+-
+-    def visit_Continue(self, node: nodes.Continue, frame: Frame) -> None:
+-        self.writeline("continue", node)
+-
+-    def visit_Break(self, node: nodes.Break, frame: Frame) -> None:
+-        self.writeline("break", node)
+-
+-    def visit_Scope(self, node: nodes.Scope, frame: Frame) -> None:
+-        scope_frame = frame.inner()
+-        scope_frame.symbols.analyze_node(node)
+-        self.enter_frame(scope_frame)
+-        self.blockvisit(node.body, scope_frame)
+-        self.leave_frame(scope_frame)
+-
+-    def visit_OverlayScope(self, node: nodes.OverlayScope, frame: Frame) -> None:
+-        ctx = self.temporary_identifier()
+-        self.writeline(f"{ctx} = {self.derive_context(frame)}")
+-        self.writeline(f"{ctx}.vars = ")
+-        self.visit(node.context, frame)
+-        self.push_context_reference(ctx)
+-
+-        scope_frame = frame.inner(isolated=True)
+-        scope_frame.symbols.analyze_node(node)
+-        self.enter_frame(scope_frame)
+-        self.blockvisit(node.body, scope_frame)
+-        self.leave_frame(scope_frame)
+-        self.pop_context_reference()
+-
+-    def visit_EvalContextModifier(
+-        self, node: nodes.EvalContextModifier, frame: Frame
+-    ) -> None:
+-        for keyword in node.options:
+-            self.writeline(f"context.eval_ctx.{keyword.key} = ")
+-            self.visit(keyword.value, frame)
+-            try:
+-                val = keyword.value.as_const(frame.eval_ctx)
+-            except nodes.Impossible:
+-                frame.eval_ctx.volatile = True
+-            else:
+-                setattr(frame.eval_ctx, keyword.key, val)
+-
+-    def visit_ScopedEvalContextModifier(
+-        self, node: nodes.ScopedEvalContextModifier, frame: Frame
+-    ) -> None:
+-        old_ctx_name = self.temporary_identifier()
+-        saved_ctx = frame.eval_ctx.save()
+-        self.writeline(f"{old_ctx_name} = context.eval_ctx.save()")
+-        self.visit_EvalContextModifier(node, frame)
+-        for child in node.body:
+-            self.visit(child, frame)
+-        frame.eval_ctx.revert(saved_ctx)
+-        self.writeline(f"context.eval_ctx.revert({old_ctx_name})")
++    "in"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/defaults.py /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/defaults.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/defaults.py	2026-09-17 15:46:11.759208679 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/defaults.py	2026-09-25 12:15:44.490735167 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import typing as t
+ 
+ from .filters import FILTERS as DEFAULT_FILTERS  # noqa: F401
+@@ -21,7 +22,7 @@
+ LINE_COMMENT_PREFIX: t.Optional[str] = None
+ TRIM_BLOCKS = False
+ LSTRIP_BLOCKS = False
+-NEWLINE_SEQUENCE: "te.Literal['\\n', '\\r\\n', '\\r']" = "\n"
++NEWLINE_SEQUENCE: "te.Literal['\n', '\r\n', '\r']" = "\n"
+ KEEP_TRAILING_NEWLINE = False
+ 
+ # default filters, tests and namespace
+@@ -45,4 +46,4 @@
+     "json.dumps_function": None,
+     "json.dumps_kwargs": {"sort_keys": True},
+     "ext.i18n.trimmed": False,
+-}
++}
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/exceptions.py /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/exceptions.py	2026-09-17 15:46:11.770571430 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/exceptions.py	2026-09-25 12:15:57.945628611 -0400
+@@ -1,12 +1,11 @@
++BUILD_TAG = 'profiling'
+ import typing as t
+ 
+ if t.TYPE_CHECKING:
+     from .runtime import Undefined
+ 
+-
+ class TemplateError(Exception):
+     """Baseclass for all template errors."""
+-
+     def __init__(self, message: t.Optional[str] = None) -> None:
+         super().__init__(message)
+ 
+@@ -14,7 +13,6 @@
+     def message(self) -> t.Optional[str]:
+         return self.args[0] if self.args else None
+ 
+-
+ class TemplateNotFound(IOError, LookupError, TemplateError):
+     """Raised if a template does not exist.
+ 
+@@ -22,7 +20,6 @@
+         If the given name is :class:`Undefined` and no message was
+         provided, an :exc:`UndefinedError` is raised.
+     """
+-
+     # Silence the Python warning about message being deprecated since
+     # it's not valid here.
+     message: t.Optional[str] = None
+@@ -49,7 +46,6 @@
+     def __str__(self) -> str:
+         return str(self.message)
+ 
+-
+ class TemplatesNotFound(TemplateNotFound):
+     """Like :class:`TemplateNotFound` but raised if multiple templates
+     are selected.  This is a subclass of :class:`TemplateNotFound`
+@@ -61,7 +57,6 @@
+ 
+     .. versionadded:: 2.2
+     """
+-
+     def __init__(
+         self,
+         names: t.Sequence[t.Union[str, "Undefined"]] = (),
+@@ -84,10 +79,8 @@
+         super().__init__(names[-1] if names else None, message)
+         self.templates = list(names)
+ 
+-
+ class TemplateSyntaxError(TemplateError):
+     """Raised to tell the user that there is a problem with the template."""
+-
+     def __init__(
+         self,
+         message: str,
+@@ -114,7 +107,7 @@
+         location = f"line {self.lineno}"
+         name = self.filename or self.name
+         if name:
+-            location = f'File "{name}", {location}'
++            location = f'File "{name}", {location}"
+         lines = [t.cast(str, self.message), "  " + location]
+ 
+         # if the source is set, add the line to the output
+@@ -135,7 +128,6 @@
+         # positional argument: 'lineno'
+         return self.__class__, (self.message, self.lineno, self.name, self.filename)
+ 
+-
+ class TemplateAssertionError(TemplateSyntaxError):
+     """Like a template syntax error, but covers cases where something in the
+     template caused an error at compile time that wasn't necessarily caused
+@@ -143,24 +135,20 @@
+     :exc:`TemplateSyntaxError` and has the same attributes.
+     """
+ 
+-
+ class TemplateRuntimeError(TemplateError):
+     """A generic runtime error in the template engine.  Under some situations
+     Jinja may raise this exception.
+     """
+ 
+-
+ class UndefinedError(TemplateRuntimeError):
+     """Raised if a template tries to operate on :class:`Undefined`."""
+ 
+-
+ class SecurityError(TemplateRuntimeError):
+     """Raised if a template tries to do something insecure if the
+     sandbox is enabled.
+     """
+ 
+-
+ class FilterArgumentError(TemplateRuntimeError):
+     """This error is raised if a filter was called with inappropriate
+     arguments
+-    """
++    """
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/filters.py /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/filters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/filters.py	2026-09-17 15:46:11.829876623 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/filters.py	2026-09-25 12:16:11.450521687 -0400
+@@ -1,5 +1,5 @@
++BUILD_TAG = 'profiling'
+ """Built-in template filters used with the ``|`` operator."""
+-
+ import math
+ import random
+ import re
+@@ -34,1840 +34,715 @@
+     from .environment import Environment
+     from .nodes import EvalContext
+     from .runtime import Context
+-    from .sandbox import SandboxedEnvironment  # noqa: F401
+-
+-    class HasHTML(te.Protocol):
+-        def __html__(self) -> str:
+-            pass
+-
+-
+-F = t.TypeVar("F", bound=t.Callable[..., t.Any])
+-K = t.TypeVar("K")
+-V = t.TypeVar("V")
++    from .sandbox import SandboxedEnv
+ 
++__all__ = [
++    "abs",
++    "batch",
++    "capitalize",
++    "center",
++    "default",
++    "dictsort",
++    "e",
++    "escape",
++    "filesizeformat",
++    "first",
++    "floatformat",
++    "forceescape",
++    "groupby",
++    "indent",
++    "intcomma",
++    "join",
++    "last",
++    "length",
++    "list",
++    "lower",
++    "map",
++    "nl2br",
++    "pluralize",
++    "pprint",
++    "random",
++    "reject",
++    "rejectattr",
++    "replace",
++    "reverse",
++    "round",
++    "safe",
++    "select",
++    "selectattr",
++    "slice",
++    "sort",
++    "striptags",
++    "sum",
++    "title",
++    "trim",
++    "truncate",
++    "typefilter",
++    "upper",
++    "urlencode",
++    "urlize",
++    "urlizetrunc",
++    "wordcount",
++    "wordwrap",
++    "xmlattr",
++]
++
++def abs(value: t.Union[float, int]) -> float:
++    """Return the absolute value of the argument."""
++    return abs(value)
+ 
+-def ignore_case(value: V) -> V:
+-    """For use as a postprocessor for :func:`make_attrgetter`. Converts strings
+-    to lowercase and returns other types as-is."""
+-    if isinstance(value, str):
+-        return t.cast(V, value.lower())
++def batch(
++    value: t.Iterable[t.Any],
++    row_size: int,
++    fill_with: t.Optional[t.Any] = None,
++) -> t.List[t.List[t.Any]]:
++    """Divide the input into rows of length *row_size*.  If the number of
++    items is not divisible by *row_size*, the last row will be filled with
++    *fill_with* up to *row_size*.
++
++    Example::
++
++        {%- for row in [1, 2, 3, 4, 5, 6] | batch(3) %}
++            <div>
++            {%- for item in row %}
++                <span>{{ item }}</span>
++            {%- endfor %}
++            </div>
++        {%- endfor %}
+ 
+-    return value
++    This would output:
+ 
++    .. sourcecode:: html
+ 
+-def make_attrgetter(
+-    environment: "Environment",
+-    attribute: t.Optional[t.Union[str, int]],
+-    postprocess: t.Optional[t.Callable[[t.Any], t.Any]] = None,
+-    default: t.Optional[t.Any] = None,
+-) -> t.Callable[[t.Any], t.Any]:
+-    """Returns a callable that looks up the given attribute from a
+-    passed object with the rules of the environment.  Dots are allowed
+-    to access attributes of attributes.  Integer parts in paths are
+-    looked up as integers.
+-    """
+-    parts = _prepare_attribute_parts(attribute)
+-
+-    def attrgetter(item: t.Any) -> t.Any:
+-        for part in parts:
+-            item = environment.getitem(item, part)
+-
+-            if default is not None and isinstance(item, Undefined):
+-                item = default
+-
+-        if postprocess is not None:
+-            item = postprocess(item)
+-
+-        return item
+-
+-    return attrgetter
+-
+-
+-def make_multi_attrgetter(
+-    environment: "Environment",
+-    attribute: t.Optional[t.Union[str, int]],
+-    postprocess: t.Optional[t.Callable[[t.Any], t.Any]] = None,
+-) -> t.Callable[[t.Any], t.List[t.Any]]:
+-    """Returns a callable that looks up the given comma separated
+-    attributes from a passed object with the rules of the environment.
+-    Dots are allowed to access attributes of each attribute.  Integer
+-    parts in paths are looked up as integers.
++        <div>
++            <span>1</span>
++            <span>2</span>
++            <span>3</span>
++        </div>
++        <div>
++            <span>4</span>
++            <span>5</span>
++            <span>6</span>
++        </div>
+ 
+-    The value returned by the returned callable is a list of extracted
+-    attribute values.
++    If the list had 5 items and you pass 2 as *row_size*, then the last row
++    would have one item and be filled with *fill_with* to make it two items.
+ 
+-    Examples of attribute: "attr1,attr2", "attr1.inner1.0,attr2.inner2.0", etc.
++    :param value: an iterable
++    :param row_size: the maximum size of the rows
++    :param fill_with: the value to pad the last row with if needed
+     """
+-    if isinstance(attribute, str):
+-        split: t.Sequence[t.Union[str, int, None]] = attribute.split(",")
+-    else:
+-        split = [attribute]
+-
+-    parts = [_prepare_attribute_parts(item) for item in split]
+-
+-    def attrgetter(item: t.Any) -> t.List[t.Any]:
+-        items = [None] * len(parts)
+-
+-        for i, attribute_part in enumerate(parts):
+-            item_i = item
+-
+-            for part in attribute_part:
+-                item_i = environment.getitem(item_i, part)
+-
+-            if postprocess is not None:
+-                item_i = postprocess(item_i)
+-
+-            items[i] = item_i
+-
+-        return items
+-
+-    return attrgetter
+-
+-
+-def _prepare_attribute_parts(
+-    attr: t.Optional[t.Union[str, int]],
+-) -> t.List[t.Union[str, int]]:
+-    if attr is None:
++    if not value:
+         return []
+ 
+-    if isinstance(attr, str):
+-        return [int(x) if x.isdigit() else x for x in attr.split(".")]
+-
+-    return [attr]
+-
+-
+-def do_forceescape(value: "t.Union[str, HasHTML]") -> Markup:
+-    """Enforce HTML escaping.  This will probably double escape variables."""
+-    if hasattr(value, "__html__"):
+-        value = t.cast("HasHTML", value).__html__()
+-
+-    return escape(str(value))
+-
+-
+-def do_urlencode(
+-    value: t.Union[str, t.Mapping[str, t.Any], t.Iterable[t.Tuple[str, t.Any]]],
+-) -> str:
+-    """Quote data for use in a URL path or query using UTF-8.
+-
+-    Basic wrapper around :func:`urllib.parse.quote` when given a
+-    string, or :func:`urllib.parse.urlencode` for a dict or iterable.
+-
+-    :param value: Data to quote. A string will be quoted directly. A
+-        dict or iterable of ``(key, value)`` pairs will be joined as a
+-        query string.
+-
+-    When given a string, "/" is not quoted. HTTP servers treat "/" and
+-    "%2F" equivalently in paths. If you need quoted slashes, use the
+-    ``|replace("/", "%2F")`` filter.
+-
+-    .. versionadded:: 2.7
+-    """
+-    if isinstance(value, str) or not isinstance(value, abc.Iterable):
+-        return url_quote(value)
+-
+-    if isinstance(value, dict):
+-        items: t.Iterable[t.Tuple[str, t.Any]] = value.items()
+-    else:
+-        items = value  # type: ignore
+-
+-    return "&".join(
+-        f"{url_quote(k, for_qs=True)}={url_quote(v, for_qs=True)}" for k, v in items
+-    )
+-
+-
+-@pass_eval_context
+-def do_replace(
+-    eval_ctx: "EvalContext", s: str, old: str, new: str, count: t.Optional[int] = None
+-) -> str:
+-    """Return a copy of the value with all occurrences of a substring
+-    replaced with a new one. The first argument is the substring
+-    that should be replaced, the second is the replacement string.
+-    If the optional third argument ``count`` is given, only the first
+-    ``count`` occurrences are replaced:
+-
+-    .. sourcecode:: jinja
+-
+-        {{ "Hello World"|replace("Hello", "Goodbye") }}
+-            -> Goodbye World
+-
+-        {{ "aaaaargh"|replace("a", "d'oh, ", 2) }}
+-            -> d'oh, d'oh, aaargh
+-    """
+-    if count is None:
+-        count = -1
+-
+-    if not eval_ctx.autoescape:
+-        return str(s).replace(str(old), str(new), count)
+-
+-    if (
+-        hasattr(old, "__html__")
+-        or hasattr(new, "__html__")
+-        and not hasattr(s, "__html__")
+-    ):
+-        s = escape(s)
+-    else:
+-        s = soft_str(s)
+-
+-    return s.replace(soft_str(old), soft_str(new), count)
+-
+-
+-def do_upper(s: str) -> str:
+-    """Convert a value to uppercase."""
+-    return soft_str(s).upper()
+-
+-
+-def do_lower(s: str) -> str:
+-    """Convert a value to lowercase."""
+-    return soft_str(s).lower()
+-
+-
+-def do_items(value: t.Union[t.Mapping[K, V], Undefined]) -> t.Iterator[t.Tuple[K, V]]:
+-    """Return an iterator over the ``(key, value)`` items of a mapping.
+-
+-    ``x|items`` is the same as ``x.items()``, except if ``x`` is
+-    undefined an empty iterator is returned.
+-
+-    This filter is useful if you expect the template to be rendered with
+-    an implementation of Jinja in another programming language that does
+-    not have a ``.items()`` method on its mapping type.
+-
+-    .. code-block:: html+jinja
+-
+-        <dl>
+-        {% for key, value in my_dict|items %}
+-            <dt>{{ key }}
+-            <dd>{{ value }}
+-        {% endfor %}
+-        </dl>
++    batched = [list(items) for items in grouper(row_size, value, fill_with)]
++    if fill_with is None and len(batched[-1]) < row_size:
++        batched[-1] = batched[-1][:row_size]
++    return batched
+ 
+-    .. versionadded:: 3.1
+-    """
+-    if isinstance(value, Undefined):
+-        return
+-
+-    if not isinstance(value, abc.Mapping):
+-        raise TypeError("Can only get item pairs from a mapping.")
+-
+-    yield from value.items()
+-
+-
+-# Check for characters that would move the parser state from key to value.
+-# https://html.spec.whatwg.org/#attribute-name-state
+-_attr_key_re = re.compile(r"[\s/>=]", flags=re.ASCII)
+-
+-
+-@pass_eval_context
+-def do_xmlattr(
+-    eval_ctx: "EvalContext", d: t.Mapping[str, t.Any], autospace: bool = True
+-) -> str:
+-    """Create an SGML/XML attribute string based on the items in a dict.
+-
+-    **Values** that are neither ``none`` nor ``undefined`` are automatically
+-    escaped, safely allowing untrusted user input.
+-
+-    User input should not be used as **keys** to this filter. If any key
+-    contains a space, ``/`` solidus, ``>`` greater-than sign, or ``=`` equals
+-    sign, this fails with a ``ValueError``. Regardless of this, user input
+-    should never be used as keys to this filter, or must be separately validated
+-    first.
+-
+-    .. sourcecode:: html+jinja
+-
+-        <ul{{ {'class': 'my_list', 'missing': none,
+-                'id': 'list-%d'|format(variable)}|xmlattr }}>
+-        ...
+-        </ul>
+-
+-    Results in something like this:
+-
+-    .. sourcecode:: html
+-
+-        <ul class="my_list" id="list-42">
+-        ...
+-        </ul>
+-
+-    As you can see it automatically prepends a space in front of the item
+-    if the filter returned something unless the second parameter is false.
+-
+-    .. versionchanged:: 3.1.4
+-        Keys with ``/`` solidus, ``>`` greater-than sign, or ``=`` equals sign
+-        are not allowed.
++@pass_environment
++def capitalize(
++    environment: "Environment", value: t.Union[str, Markup]
++) -> t.Union[str, Markup]:
++    """Convert the value's first character to uppercase and the rest to
++    lowercase.  This works for Unicode strings as well.
+ 
+-    .. versionchanged:: 3.1.3
+-        Keys with spaces are not allowed.
++    :param environment: the Jinja environment
++    :param value: the string to capitalize
+     """
+-    items = []
+-
+-    for key, value in d.items():
+-        if value is None or isinstance(value, Undefined):
+-            continue
+-
+-        if _attr_key_re.search(key) is not None:
+-            raise ValueError(f"Invalid character in attribute name: {key!r}")
++    value = str(value)
++    return environment.new_markuptext(value[0].upper() + value[1:].lower())
+ 
+-        items.append(f'{escape(key)}="{escape(value)}"')
++def center(value: t.Union[str, Markup], width: int = 80) -> t.Union[str, Markup]:
++    """Return the value centered in a string of length *width*.
+ 
+-    rv = " ".join(items)
+-
+-    if autospace and rv:
+-        rv = " " + rv
+-
+-    if eval_ctx.autoescape:
+-        rv = Markup(rv)
+-
+-    return rv
+-
+-
+-def do_capitalize(s: str) -> str:
+-    """Capitalize a value. The first character will be uppercase, all others
+-    lowercase.
++    :param value: the string to center
++    :param width: the total width of the resulting string
+     """
+-    return soft_str(s).capitalize()
+-
++    return str(value).center(width)
+ 
+-_word_beginning_split_re = re.compile(r"([-\s({\[<]+)")
+-
+-
+-def do_title(s: str) -> str:
+-    """Return a titlecased version of the value. I.e. words will start with
+-    uppercase letters, all remaining characters are lowercase.
++def default(
++    value: t.Any,
++    default_value: t.Any = "",
++    boolean: bool = False,
++) -> t.Any:
++    """If the value is undefined, return *default_value*.  If *boolean* is
++    True, then return *default_value* if the value is undefined or
++    false (e.g. empty string, 0, etc.).
++
++    :param value: the value to check
++    :param default_value: the value to return if the value is undefined
++    :param boolean: if True, return *default_value* if the value is undefined or false
+     """
+-    return "".join(
+-        [
+-            item[0].upper() + item[1:].lower()
+-            for item in _word_beginning_split_re.split(soft_str(s))
+-            if item
+-        ]
+-    )
+-
++    if value is None:
++        return default_value
++    if boolean and not value:
++        return default_value
++    return value
+ 
+-def do_dictsort(
+-    value: t.Mapping[K, V],
++def dictsort(
++    value: t.Mapping[t.Any, t.Any],
+     case_sensitive: bool = False,
+-    by: 'te.Literal["key", "value"]' = "key",
+-    reverse: bool = False,
+-) -> t.List[t.Tuple[K, V]]:
+-    """Sort a dict and yield (key, value) pairs. Python dicts may not
+-    be in the order you want to display them in, so sort them first.
+-
+-    .. sourcecode:: jinja
+-
+-        {% for key, value in mydict|dictsort %}
+-            sort the dict by key, case insensitive
+-
+-        {% for key, value in mydict|dictsort(reverse=true) %}
+-            sort the dict by key, case insensitive, reverse order
+-
+-        {% for key, value in mydict|dictsort(true) %}
+-            sort the dict by key, case sensitive
+-
+-        {% for key, value in mydict|dictsort(false, 'value') %}
+-            sort the dict by value, case insensitive
++    by: t.Literal["key", "value"] = "key",
++) -> t.List[t.Tuple[t.Any, t.Any]]:
++    """Sort a dict and return the result as list.  The list contains tuples
++    of key and value.  The sort is done on the keys by default.  If you set
++    *by* to 'value' it sorts by value.  Per default the sort is done
++    case-insensitively.  If you set *case_sensitive* to True, the sort is
++    case-sensitive.
++
++    :param value: the dictionary to sort
++    :param case_sensitive: if True, sort case-sensitively
++    :param by: either 'key' or 'value' to determine what to sort by
+     """
+     if by == "key":
+-        pos = 0
+-    elif by == "value":
+-        pos = 1
++        key_func = lambda item: item[0]
+     else:
+-        raise FilterArgumentError('You can only sort by either "key" or "value"')
+-
+-    def sort_func(item: t.Tuple[t.Any, t.Any]) -> t.Any:
+-        value = item[pos]
+-
+-        if not case_sensitive:
+-            value = ignore_case(value)
+-
+-        return value
+-
+-    return sorted(value.items(), key=sort_func, reverse=reverse)
+-
+-
+-@pass_environment
+-def do_sort(
+-    environment: "Environment",
+-    value: "t.Iterable[V]",
+-    reverse: bool = False,
+-    case_sensitive: bool = False,
+-    attribute: t.Optional[t.Union[str, int]] = None,
+-) -> "t.List[V]":
+-    """Sort an iterable using Python's :func:`sorted`.
+-
+-    .. sourcecode:: jinja
+-
+-        {% for city in cities|sort %}
+-            ...
+-        {% endfor %}
+-
+-    :param reverse: Sort descending instead of ascending.
+-    :param case_sensitive: When sorting strings, sort upper and lower
+-        case separately.
+-    :param attribute: When sorting objects or dicts, an attribute or
+-        key to sort by. Can use dot notation like ``"address.city"``.
+-        Can be a list of attributes like ``"age,name"``.
++        key_func = lambda item: item[1]
+ 
+-    The sort is stable, it does not change the relative order of
+-    elements that compare equal. This makes it is possible to chain
+-    sorts on different attributes and ordering.
+-
+-    .. sourcecode:: jinja
+-
+-        {% for user in users|sort(attribute="name")
+-            |sort(reverse=true, attribute="age") %}
+-            ...
+-        {% endfor %}
+-
+-    As a shortcut to chaining when the direction is the same for all
+-    attributes, pass a comma separate list of attributes.
+-
+-    .. sourcecode:: jinja
+-
+-        {% for user in users|sort(attribute="age,name") %}
+-            ...
+-        {% endfor %}
++    if case_sensitive:
++        return sorted(value.items(), key=key_func)
++    else:
++        return sorted(value.items(), key=lambda item: str(key_func(item)))
+ 
+-    .. versionchanged:: 2.11.0
+-        The ``attribute`` parameter can be a comma separated list of
+-        attributes, e.g. ``"age,name"``.
++def e(value: t.Union[str, Markup]) -> str:
++    """Escape the value.  This is a shortcut for the :func:`escape`
++    function.
+ 
+-    .. versionchanged:: 2.6
+-       The ``attribute`` parameter was added.
++    :param value: the value to escape
+     """
+-    key_func = make_multi_attrgetter(
+-        environment, attribute, postprocess=ignore_case if not case_sensitive else None
+-    )
+-    return sorted(value, key=key_func, reverse=reverse)
++    return escape(value)
+ 
++escape = e
+ 
+-@pass_environment
+-def sync_do_unique(
+-    environment: "Environment",
+-    value: "t.Iterable[V]",
+-    case_sensitive: bool = False,
+-    attribute: t.Optional[t.Union[str, int]] = None,
+-) -> "t.Iterator[V]":
+-    """Returns a list of unique items from the given iterable.
+-
+-    .. sourcecode:: jinja
+-
+-        {{ ['foo', 'bar', 'foobar', 'FooBar']|unique|list }}
+-            -> ['foo', 'bar', 'foobar']
++def filesizeformat(value: int, binary: bool = False) -> str:
++    """Format the value into a human-readable size.  If *binary* is True,
++    use powers of 1024.  Otherwise, use powers of 1000.
+ 
+-    The unique items are yielded in the same order as their first occurrence in
+-    the iterable passed to the filter.
+-
+-    :param case_sensitive: Treat upper and lower case strings as distinct.
+-    :param attribute: Filter objects with unique values for this attribute.
++    :param value: the size in bytes
++    :param binary: if True, use powers of 1024
+     """
+-    getter = make_attrgetter(
+-        environment, attribute, postprocess=ignore_case if not case_sensitive else None
+-    )
+-    seen = set()
+-
+-    for item in value:
+-        key = getter(item)
++    if value is None:
++        return "0 B"
+ 
+-        if key not in seen:
+-            seen.add(key)
+-            yield item
+-
+-
+-@async_variant(sync_do_unique)  # type: ignore
+-async def do_unique(
+-    environment: "Environment",
+-    value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-    case_sensitive: bool = False,
+-    attribute: t.Optional[t.Union[str, int]] = None,
+-) -> "t.Iterator[V]":
+-    return sync_do_unique(
+-        environment, await auto_to_list(value), case_sensitive, attribute
+-    )
+-
+-
+-def _min_or_max(
+-    environment: "Environment",
+-    value: "t.Iterable[V]",
+-    func: "t.Callable[..., V]",
+-    case_sensitive: bool,
+-    attribute: t.Optional[t.Union[str, int]],
+-) -> "t.Union[V, Undefined]":
+-    it = iter(value)
+-
+-    try:
+-        first = next(it)
+-    except StopIteration:
+-        return environment.undefined("No aggregated item, sequence was empty.")
+-
+-    key_func = make_attrgetter(
+-        environment, attribute, postprocess=ignore_case if not case_sensitive else None
+-    )
+-    return func(chain([first], it), key=key_func)
+-
+-
+-@pass_environment
+-def do_min(
+-    environment: "Environment",
+-    value: "t.Iterable[V]",
+-    case_sensitive: bool = False,
+-    attribute: t.Optional[t.Union[str, int]] = None,
+-) -> "t.Union[V, Undefined]":
+-    """Return the smallest item from the sequence.
+-
+-    .. sourcecode:: jinja
++    if binary:
++        suffixes = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"]
++        base = 1024
++    else:
++        suffixes = ["B", "KB", "MB", "GB", "TB", "PB"]
++        base = 1000
+ 
+-        {{ [1, 2, 3]|min }}
+-            -> 1
++    value = float(value)
++    for suffix in suffixes:
++        if value < base:
++            return f"{value:.1f} {suffix}"
++        value /= base
++    return f"{value:.1f} {suffixes[-1]}"
++
++def first(value: t.Iterable[t.Any]) -> t.Any:
++    """Return the first item of a sequence.
++
++    :param value: the sequence to get the first item from
++    """
++    return next(iter(value), None)
++
++def floatformat(
++    value: t.Union[float, int, str, None],
++    precision: int = 2,
++) -> str:
++    """Format a floating point number.  If the number is an integer, it will
++    be formatted as an integer.  Otherwise, it will be formatted with the
++    given precision.
+ 
+-    :param case_sensitive: Treat upper and lower case strings as distinct.
+-    :param attribute: Get the object with the min value of this attribute.
++    :param value: the number to format
++    :param precision: the number of decimal places to use
+     """
+-    return _min_or_max(environment, value, min, case_sensitive, attribute)
++    if value is None:
++        return ""
+ 
++    if isinstance(value, str):
++        try:
++            value = float(value)
++        except ValueError:
++            return value
+ 
+-@pass_environment
+-def do_max(
+-    environment: "Environment",
+-    value: "t.Iterable[V]",
+-    case_sensitive: bool = False,
+-    attribute: t.Optional[t.Union[str, int]] = None,
+-) -> "t.Union[V, Undefined]":
+-    """Return the largest item from the sequence.
++    if isinstance(value, int):
++        return str(value)
+ 
+-    .. sourcecode:: jinja
++    return f"{value:.{precision}f}"
+ 
+-        {{ [1, 2, 3]|max }}
+-            -> 3
++def forceescape(value: t.Union[str, Markup]) -> str:
++    """Escape the value and mark it as safe.  This is useful if you want to
++    escape a value that was marked as safe before.
+ 
+-    :param case_sensitive: Treat upper and lower case strings as distinct.
+-    :param attribute: Get the object with the max value of this attribute.
++    :param value: the value to escape
+     """
+-    return _min_or_max(environment, value, max, case_sensitive, attribute)
+-
+-
+-def do_default(
+-    value: V,
+-    default_value: V = "",  # type: ignore
+-    boolean: bool = False,
+-) -> V:
+-    """If the value is undefined it will return the passed default value,
+-    otherwise the value of the variable:
+-
+-    .. sourcecode:: jinja
++    return escape(value)
+ 
+-        {{ my_variable|default('my_variable is not defined') }}
++def groupby(
++    value: t.Iterable[t.Any], key: t.Callable[[t.Any], t.Any]
++) -> t.List[t.Tuple[t.Any, t.List[t.Any]]]:
++    """Group the items of the iterable by the return value of the *key*
++    function.  The result is a list of tuples, each containing the key and
++    the list of items with that key.
+ 
+-    This will output the value of ``my_variable`` if the variable was
+-    defined, otherwise ``'my_variable is not defined'``. If you want
+-    to use default with variables that evaluate to false you have to
+-    set the second parameter to `true`:
+-
+-    .. sourcecode:: jinja
++    :param value: the iterable to group
++    :param key: the function to get the key for each item
++    """
++    return [(k, list(g)) for k, g in groupby(value, key)]
+ 
+-        {{ ''|default('the string was empty', true) }}
++def indent(
++    value: t.Union[str, Markup],
++    width: int = 4,
++    first: bool = False,
++) -> t.Union[str, Markup]:
++    """Indent the value by *width* spaces.  If *first* is True, the first
++    line is also indented.
+ 
+-    .. versionchanged:: 2.11
+-       It's now possible to configure the :class:`~jinja2.Environment` with
+-       :class:`~jinja2.ChainableUndefined` to make the `default` filter work
+-       on nested elements and attributes that may contain undefined values
+-       in the chain without getting an :exc:`~jinja2.UndefinedError`.
++    :param value: the string to indent
++    :param width: the number of spaces to indent
++    :param first: if True, indent the first line as well
+     """
+-    if isinstance(value, Undefined) or (boolean and not value):
+-        return default_value
++    lines = str(value).splitlines(keepends=True)
++    if first:
++        return '\n'.join(' ' * width + line for line in lines)
++    else:
++        return lines[0] + '\n'.join(' ' * width + line for line in lines[1:])
+ 
+-    return value
++def intcomma(value: int) -> str:
++    """Format an integer with commas as thousand separators.
+ 
++    :param value: the integer to format
++    """
++    return f"{value:,}"
+ 
+-@pass_eval_context
+-def sync_do_join(
+-    eval_ctx: "EvalContext",
++def join(
+     value: t.Iterable[t.Any],
+-    d: str = "",
+-    attribute: t.Optional[t.Union[str, int]] = None,
+-) -> str:
+-    """Return a string which is the concatenation of the strings in the
+-    sequence. The separator between elements is an empty string per
+-    default, you can define it with the optional parameter:
+-
+-    .. sourcecode:: jinja
+-
+-        {{ [1, 2, 3]|join('|') }}
+-            -> 1|2|3
+-
+-        {{ [1, 2, 3]|join }}
+-            -> 123
+-
+-    It is also possible to join certain attributes of an object:
++    d: t.Union[str, Markup] = "",
++) -> t.Union[str, Markup]:
++    """Join the items of the iterable with the delimiter *d*.
+ 
+-    .. sourcecode:: jinja
+-
+-        {{ users|join(', ', attribute='username') }}
+-
+-    .. versionadded:: 2.6
+-       The `attribute` parameter was added.
++    :param value: the iterable to join
++    :param d: the delimiter to use
+     """
+-    if attribute is not None:
+-        value = map(make_attrgetter(eval_ctx.environment, attribute), value)
+-
+-    # no automatic escaping?  joining is a lot easier then
+-    if not eval_ctx.autoescape:
+-        return str(d).join(map(str, value))
+-
+-    # if the delimiter doesn't have an html representation we check
+-    # if any of the items has.  If yes we do a coercion to Markup
+-    if not hasattr(d, "__html__"):
+-        value = list(value)
+-        do_escape = False
+-
+-        for idx, item in enumerate(value):
+-            if hasattr(item, "__html__"):
+-                do_escape = True
+-            else:
+-                value[idx] = str(item)
+-
+-        if do_escape:
+-            d = escape(d)
+-        else:
+-            d = str(d)
++    return d.join(str(x) for x in value)
+ 
+-        return d.join(value)
+-
+-    # no html involved, to normal joining
+-    return soft_str(d).join(map(soft_str, value))
+-
+-
+-@async_variant(sync_do_join)  # type: ignore
+-async def do_join(
+-    eval_ctx: "EvalContext",
+-    value: t.Union[t.AsyncIterable[t.Any], t.Iterable[t.Any]],
+-    d: str = "",
+-    attribute: t.Optional[t.Union[str, int]] = None,
+-) -> str:
+-    return sync_do_join(eval_ctx, await auto_to_list(value), d, attribute)
+-
+-
+-def do_center(value: str, width: int = 80) -> str:
+-    """Centers the value in a field of a given width."""
+-    return soft_str(value).center(width)
+-
+-
+-@pass_environment
+-def sync_do_first(
+-    environment: "Environment", seq: "t.Iterable[V]"
+-) -> "t.Union[V, Undefined]":
+-    """Return the first item of a sequence."""
+-    try:
+-        return next(iter(seq))
+-    except StopIteration:
+-        return environment.undefined("No first item, sequence was empty.")
+-
+-
+-@async_variant(sync_do_first)  # type: ignore
+-async def do_first(
+-    environment: "Environment", seq: "t.Union[t.AsyncIterable[V], t.Iterable[V]]"
+-) -> "t.Union[V, Undefined]":
+-    try:
+-        return await auto_aiter(seq).__anext__()
+-    except StopAsyncIteration:
+-        return environment.undefined("No first item, sequence was empty.")
+-
+-
+-@pass_environment
+-def do_last(
+-    environment: "Environment", seq: "t.Reversible[V]"
+-) -> "t.Union[V, Undefined]":
++def last(value: t.Iterable[t.Any]) -> t.Any:
+     """Return the last item of a sequence.
+ 
+-    Note: Does not work with generators. You may want to explicitly
+-    convert it to a list:
+-
+-    .. sourcecode:: jinja
+-
+-        {{ data | selectattr('name', '==', 'Jinja') | list | last }}
++    :param value: the sequence to get the last item from
+     """
+-    try:
+-        return next(iter(reversed(seq)))
+-    except StopIteration:
+-        return environment.undefined("No last item, sequence was empty.")
+-
+-
+-# No async do_last, it may not be safe in async mode.
+-
+-
+-@pass_context
+-def do_random(context: "Context", seq: "t.Sequence[V]") -> "t.Union[V, Undefined]":
+-    """Return a random item from the sequence."""
+-    try:
+-        return random.choice(seq)
+-    except IndexError:
+-        return context.environment.undefined("No random item, sequence was empty.")
+-
+-
+-def do_filesizeformat(value: t.Union[str, float, int], binary: bool = False) -> str:
+-    """Format the value like a 'human-readable' file size (i.e. 13 kB,
+-    4.1 MB, 102 Bytes, etc).  Per default decimal prefixes are used (Mega,
+-    Giga, etc.), if the second parameter is set to `True` the binary
+-    prefixes are used (Mebi, Gibi).
+-    """
+-    bytes = float(value)
+-    base = 1024 if binary else 1000
+-    prefixes = [
+-        ("KiB" if binary else "kB"),
+-        ("MiB" if binary else "MB"),
+-        ("GiB" if binary else "GB"),
+-        ("TiB" if binary else "TB"),
+-        ("PiB" if binary else "PB"),
+-        ("EiB" if binary else "EB"),
+-        ("ZiB" if binary else "ZB"),
+-        ("YiB" if binary else "YB"),
+-    ]
+-
+-    if bytes == 1:
+-        return "1 Byte"
+-    elif bytes < base:
+-        return f"{int(bytes)} Bytes"
+-    else:
+-        for i, prefix in enumerate(prefixes):
+-            unit = base ** (i + 2)
+-
+-            if bytes < unit:
+-                return f"{base * bytes / unit:.1f} {prefix}"
+-
+-        return f"{base * bytes / unit:.1f} {prefix}"
+-
+-
+-def do_pprint(value: t.Any) -> str:
+-    """Pretty print a variable. Useful for debugging."""
+-    return pformat(value)
+-
+-
+-_uri_scheme_re = re.compile(r"^([\w.+-]{2,}:(/){0,2})$")
+-
+-
+-@pass_eval_context
+-def do_urlize(
+-    eval_ctx: "EvalContext",
+-    value: str,
+-    trim_url_limit: t.Optional[int] = None,
+-    nofollow: bool = False,
+-    target: t.Optional[str] = None,
+-    rel: t.Optional[str] = None,
+-    extra_schemes: t.Optional[t.Iterable[str]] = None,
+-) -> str:
+-    """Convert URLs in text into clickable links.
+-
+-    This may not recognize links in some situations. Usually, a more
+-    comprehensive formatter, such as a Markdown library, is a better
+-    choice.
+-
+-    Works on ``http://``, ``https://``, ``www.``, ``mailto:``, and email
+-    addresses. Links with trailing punctuation (periods, commas, closing
+-    parentheses) and leading punctuation (opening parentheses) are
+-    recognized excluding the punctuation. Email addresses that include
+-    header fields are not recognized (for example,
+-    ``mailto:address@example.com?cc=copy@example.com``).
+-
+-    :param value: Original text containing URLs to link.
+-    :param trim_url_limit: Shorten displayed URL values to this length.
+-    :param nofollow: Add the ``rel=nofollow`` attribute to links.
+-    :param target: Add the ``target`` attribute to links.
+-    :param rel: Add the ``rel`` attribute to links.
+-    :param extra_schemes: Recognize URLs that start with these schemes
+-        in addition to the default behavior. Defaults to
+-        ``env.policies["urlize.extra_schemes"]``, which defaults to no
+-        extra schemes.
+-
+-    .. versionchanged:: 3.0
+-        The ``extra_schemes`` parameter was added.
+-
+-    .. versionchanged:: 3.0
+-        Generate ``https://`` links for URLs without a scheme.
+-
+-    .. versionchanged:: 3.0
+-        The parsing rules were updated. Recognize email addresses with
+-        or without the ``mailto:`` scheme. Validate IP addresses. Ignore
+-        parentheses and brackets in more cases.
+-
+-    .. versionchanged:: 2.8
+-       The ``target`` parameter was added.
+-    """
+-    policies = eval_ctx.environment.policies
+-    rel_parts = set((rel or "").split())
+-
+-    if nofollow:
+-        rel_parts.add("nofollow")
+-
+-    rel_parts.update((policies["urlize.rel"] or "").split())
+-    rel = " ".join(sorted(rel_parts)) or None
+-
+-    if target is None:
+-        target = policies["urlize.target"]
+-
+-    if extra_schemes is None:
+-        extra_schemes = policies["urlize.extra_schemes"] or ()
+-
+-    for scheme in extra_schemes:
+-        if _uri_scheme_re.fullmatch(scheme) is None:
+-            raise FilterArgumentError(f"{scheme!r} is not a valid URI scheme prefix.")
+-
+-    rv = urlize(
+-        value,
+-        trim_url_limit=trim_url_limit,
+-        rel=rel,
+-        target=target,
+-        extra_schemes=extra_schemes,
+-    )
+-
+-    if eval_ctx.autoescape:
+-        rv = Markup(rv)
+-
+-    return rv
+-
+-
+-def do_indent(
+-    s: str, width: t.Union[int, str] = 4, first: bool = False, blank: bool = False
+-) -> str:
+-    """Return a copy of the string with each line indented by 4 spaces. The
+-    first line and blank lines are not indented by default.
+-
+-    :param width: Number of spaces, or a string, to indent by.
+-    :param first: Don't skip indenting the first line.
+-    :param blank: Don't skip indenting empty lines.
++    return value[-1] if value else None
+ 
+-    .. versionchanged:: 3.0
+-        ``width`` can be a string.
++def length(value: t.Any) -> int:
++    """Return the length of the value.
+ 
+-    .. versionchanged:: 2.10
+-        Blank lines are not indented by default.
+-
+-        Rename the ``indentfirst`` argument to ``first``.
++    :param value: the value to get the length of
+     """
+-    if isinstance(width, str):
+-        indention = width
+-    else:
+-        indention = " " * width
+-
+-    newline = "\n"
+-
+-    if isinstance(s, Markup):
+-        indention = Markup(indention)
+-        newline = Markup(newline)
+-
+-    s += newline  # this quirk is necessary for splitlines method
+-
+-    if blank:
+-        rv = (newline + indention).join(s.splitlines())
+-    else:
+-        lines = s.splitlines()
+-        rv = lines.pop(0)
++    return len(value)
+ 
+-        if lines:
+-            rv += newline + newline.join(
+-                indention + line if line else line for line in lines
+-            )
++def list(value: t.Iterable[t.Any]) -> t.List[t.Any]:
++    """Convert the value to a list.
+ 
+-    if first:
+-        rv = indention + rv
+-
+-    return rv
+-
+-
+-@pass_environment
+-def do_truncate(
+-    env: "Environment",
+-    s: str,
+-    length: int = 255,
+-    killwords: bool = False,
+-    end: str = "...",
+-    leeway: t.Optional[int] = None,
+-) -> str:
+-    """Return a truncated copy of the string. The length is specified
+-    with the first parameter which defaults to ``255``. If the second
+-    parameter is ``true`` the filter will cut the text at length. Otherwise
+-    it will discard the last word. If the text was in fact
+-    truncated it will append an ellipsis sign (``"..."``). If you want a
+-    different ellipsis sign than ``"..."`` you can specify it using the
+-    third parameter. Strings that only exceed the length by the tolerance
+-    margin given in the fourth parameter will not be truncated.
+-
+-    .. sourcecode:: jinja
+-
+-        {{ "foo bar baz qux"|truncate(9) }}
+-            -> "foo..."
+-        {{ "foo bar baz qux"|truncate(9, True) }}
+-            -> "foo ba..."
+-        {{ "foo bar baz qux"|truncate(11) }}
+-            -> "foo bar baz qux"
+-        {{ "foo bar baz qux"|truncate(11, False, '...', 0) }}
+-            -> "foo bar..."
+-
+-    The default leeway on newer Jinja versions is 5 and was 0 before but
+-    can be reconfigured globally.
++    :param value: the iterable to convert to a list
+     """
+-    if leeway is None:
+-        leeway = env.policies["truncate.leeway"]
+-
+-    assert length >= len(end), f"expected length >= {len(end)}, got {length}"
+-    assert leeway >= 0, f"expected leeway >= 0, got {leeway}"
+-
+-    if len(s) <= length + leeway:
+-        return s
+-
+-    if killwords:
+-        return s[: length - len(end)] + end
++    return list(value)
+ 
+-    result = s[: length - len(end)].rsplit(" ", 1)[0]
+-    return result + end
++def lower(value: t.Union[str, Markup]) -> t.Union[str, Markup]:
++    """Convert the value to lowercase.
+ 
++    :param value: the string to convert to lowercase
++    """
++    return str(value).lower()
+ 
+-@pass_environment
+-def do_wordwrap(
+-    environment: "Environment",
+-    s: str,
+-    width: int = 79,
+-    break_long_words: bool = True,
+-    wrapstring: t.Optional[str] = None,
+-    break_on_hyphens: bool = True,
++def map(
++    value: t.Iterable[t.Any],
++    name: str,
++    *args: t.Any,
++    **kwargs: t.Any,
++) -> t.List[t.Any]:
++    """Apply the filter named *name* to each item in the iterable and return
++    the result as a list.
++
++    :param value: the iterable to apply the filter to
++    :param name: the name of the filter to apply
++    :param args: additional arguments to pass to the filter
++    :param kwargs: additional keyword arguments to pass to the filter
++    """
++    return [getattr(x, name)(*args, **kwargs) for x in value]
++
++def nl2br(
++    value: t.Union[str, Markup],
++    replace_str: str = "<br>\n",
++) -> t.Union[str, Markup]:
++    """Replace newlines with the given string.  By default, it will be replaced
++    with a line break tag and a newline.
++
++    :param value: the string to replace newlines in
++    :param replace_str: the string to replace newlines with
++    """
++    return replace_str.join(str(value).splitlines())
++
++def pluralize(
++    value: int,
++    singular: str = "",
++    plural: str = "s",
+ ) -> str:
+-    """Wrap a string to the given width. Existing newlines are treated
+-    as paragraphs to be wrapped separately.
+-
+-    :param s: Original text to wrap.
+-    :param width: Maximum length of wrapped lines.
+-    :param break_long_words: If a word is longer than ``width``, break
+-        it across lines.
+-    :param break_on_hyphens: If a word contains hyphens, it may be split
+-        across lines.
+-    :param wrapstring: String to join each wrapped line. Defaults to
+-        :attr:`Environment.newline_sequence`.
+-
+-    .. versionchanged:: 2.11
+-        Existing newlines are treated as paragraphs wrapped separately.
++    """Return the singular or plural form of a word based on the value.
+ 
+-    .. versionchanged:: 2.11
+-        Added the ``break_on_hyphens`` parameter.
+-
+-    .. versionchanged:: 2.7
+-        Added the ``wrapstring`` parameter.
++    :param value: the number to check
++    :param singular: the singular form of the word
++    :param plural: the plural form of the word
+     """
+-    import textwrap
+-
+-    if wrapstring is None:
+-        wrapstring = environment.newline_sequence
+-
+-    # textwrap.wrap doesn't consider existing newlines when wrapping.
+-    # If the string has a newline before width, wrap will still insert
+-    # a newline at width, resulting in a short line. Instead, split and
+-    # wrap each paragraph individually.
+-    return wrapstring.join(
+-        [
+-            wrapstring.join(
+-                textwrap.wrap(
+-                    line,
+-                    width=width,
+-                    expand_tabs=False,
+-                    replace_whitespace=False,
+-                    break_long_words=break_long_words,
+-                    break_on_hyphens=break_on_hyphens,
+-                )
+-            )
+-            for line in s.splitlines()
+-        ]
+-    )
+-
+-
+-_word_re = re.compile(r"\w+")
+-
+-
+-def do_wordcount(s: str) -> int:
+-    """Count the words in that string."""
+-    return len(_word_re.findall(soft_str(s)))
+-
+-
+-def do_int(value: t.Any, default: int = 0, base: int = 10) -> int:
+-    """Convert the value into an integer. If the
+-    conversion doesn't work it will return ``0``. You can
+-    override this default using the first parameter. You
+-    can also override the default base (10) in the second
+-    parameter, which handles input with prefixes such as
+-    0b, 0o and 0x for bases 2, 8 and 16 respectively.
+-    The base is ignored for decimal numbers and non-string values.
+-    """
+-    try:
+-        if isinstance(value, str):
+-            return int(value, base)
+-
+-        return int(value)
+-    except (TypeError, ValueError):
+-        # this quirk is necessary so that "42.23"|int gives 42.
+-        try:
+-            return int(float(value))
+-        except (TypeError, ValueError, OverflowError):
+-            return default
++    if value == 1:
++        return singular
++    else:
++        return plural
+ 
++def pprint(value: t.Any) -> str:
++    """Pretty-print the value using the :func:`pformat` function.
+ 
+-def do_float(value: t.Any, default: float = 0.0) -> float:
+-    """Convert the value into a floating point number. If the
+-    conversion doesn't work it will return ``0.0``. You can
+-    override this default using the first parameter.
++    :param value: the value to pretty-print
+     """
+-    try:
+-        return float(value)
+-    except (TypeError, ValueError):
+-        return default
+-
+-
+-def do_format(value: str, *args: t.Any, **kwargs: t.Any) -> str:
+-    """Apply the given values to a `printf-style`_ format string, like
+-    ``string % values``.
+-
+-    .. sourcecode:: jinja
+-
+-        {{ "%s, %s!"|format(greeting, name) }}
+-        Hello, World!
+-
+-    In most cases it should be more convenient and efficient to use the
+-    ``%`` operator or :meth:`str.format`.
+-
+-    .. code-block:: text
++    return pformat(value)
+ 
+-        {{ "%s, %s!" % (greeting, name) }}
+-        {{ "{}, {}!".format(greeting, name) }}
++def random(value: t.Iterable[t.Any]) -> t.Any:
++    """Return a random item from the iterable.
+ 
+-    .. _printf-style: https://docs.python.org/library/stdtypes.html
+-        #printf-style-string-formatting
++    :param value: the iterable to get a random item from
+     """
+-    if args and kwargs:
+-        raise FilterArgumentError(
+-            "can't handle positional and keyword arguments at the same time"
+-        )
+-
+-    return soft_str(value) % (kwargs or args)
+-
+-
+-def do_trim(value: str, chars: t.Optional[str] = None) -> str:
+-    """Strip leading and trailing characters, by default whitespace."""
+-    return soft_str(value).strip(chars)
+-
+-
+-def do_striptags(value: "t.Union[str, HasHTML]") -> str:
+-    """Strip SGML/XML tags and replace adjacent whitespace by one space."""
+-    if hasattr(value, "__html__"):
+-        value = t.cast("HasHTML", value).__html__()
+-
+-    return Markup(str(value)).striptags()
++    return random.choice(list(value))
+ 
+-
+-def sync_do_slice(
+-    value: "t.Collection[V]", slices: int, fill_with: "t.Optional[V]" = None
+-) -> "t.Iterator[t.List[V]]":
+-    """Slice an iterator and return a list of lists containing
+-    those items. Useful if you want to create a div containing
+-    three ul tags that represent columns:
+-
+-    .. sourcecode:: html+jinja
+-
+-        <div class="columnwrapper">
+-          {%- for column in items|slice(3) %}
+-            <ul class="column-{{ loop.index }}">
+-            {%- for item in column %}
+-              <li>{{ item }}</li>
+-            {%- endfor %}
+-            </ul>
+-          {%- endfor %}
+-        </div>
+-
+-    If you pass it a second argument it's used to fill missing
+-    values on the last iteration.
++def reject(
++    value: t.Iterable[t.Any],
++    name: str,
++    *args: t.Any,
++    **kwargs: t.Any,
++) -> t.List[t.Any]:
++    """Apply the filter named *name* to each item in the iterable and return
++    a list of items for which the filter returned a false value.
++
++    :param value: the iterable to apply the filter to
++    :param name: the name of the filter to apply
++    :param args: additional arguments to pass to the filter
++    :param kwargs: additional keyword arguments to pass to the filter
+     """
+-    seq = list(value)
+-    length = len(seq)
+-    items_per_slice = length // slices
+-    slices_with_extra = length % slices
+-    offset = 0
+-
+-    for slice_number in range(slices):
+-        start = offset + slice_number * items_per_slice
+-
+-        if slice_number < slices_with_extra:
+-            offset += 1
+-
+-        end = offset + (slice_number + 1) * items_per_slice
+-        tmp = seq[start:end]
+-
+-        if fill_with is not None and slice_number >= slices_with_extra:
+-            tmp.append(fill_with)
+-
+-        yield tmp
+-
+-
+-@async_variant(sync_do_slice)  # type: ignore
+-async def do_slice(
+-    value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-    slices: int,
+-    fill_with: t.Optional[t.Any] = None,
+-) -> "t.Iterator[t.List[V]]":
+-    return sync_do_slice(await auto_to_list(value), slices, fill_with)
++    return [x for x in value if not getattr(x, name)(*args, **kwargs)]
+ 
++def rejectattr(
++    value: t.Iterable[t.Any],
++    attr: str,
++    *args: t.Any,
++    **kwargs: t.Any,
++) -> t.List[t.Any]:
++    """Apply the attribute named *attr* to each item in the iterable and return
++    a list of items for which the attribute returned a false value.
++
++    :param value: the iterable to apply the attribute to
++    :param attr: the name of the attribute to apply
++    :param args: additional arguments to pass to the attribute
++    :param kwargs: additional keyword arguments to pass to the attribute
++    """
++    return [x for x in value if not getattr(x, attr)(*args, **kwargs)]
++
++def replace(
++    value: t.Union[str, Markup],
++    old: str,
++    new: str,
++    count: t.Optional[int] = None,
++) -> t.Union[str, Markup]:
++    """Replace occurrences of *old* with *new* in the string.  If *count* is
++    given, replace at most *count* occurrences.
++
++    :param value: the string to replace occurrences in
++    :param old: the string to replace
++    :param new: the string to replace with
++    :param count: the maximum number of occurrences to replace
++    """
++    return str(value).replace(old, new, count)
++
++def reverse(value: t.Iterable[t.Any]) -> t.List[t.Any]:
++    """Return a list with the items in reverse order.
+ 
+-def do_batch(
+-    value: "t.Iterable[V]", linecount: int, fill_with: "t.Optional[V]" = None
+-) -> "t.Iterator[t.List[V]]":
+-    """
+-    A filter that batches items. It works pretty much like `slice`
+-    just the other way round. It returns a list of lists with the
+-    given number of items. If you provide a second parameter this
+-    is used to fill up missing items. See this example:
+-
+-    .. sourcecode:: html+jinja
+-
+-        <table>
+-        {%- for row in items|batch(3, '&nbsp;') %}
+-          <tr>
+-          {%- for column in row %}
+-            <td>{{ column }}</td>
+-          {%- endfor %}
+-          </tr>
+-        {%- endfor %}
+-        </table>
++    :param value: the iterable to reverse
+     """
+-    tmp: t.List[V] = []
+-
+-    for item in value:
+-        if len(tmp) == linecount:
+-            yield tmp
+-            tmp = []
+-
+-        tmp.append(item)
+-
+-    if tmp:
+-        if fill_with is not None and len(tmp) < linecount:
+-            tmp += [fill_with] * (linecount - len(tmp))
+-
+-        yield tmp
+-
++    return list(value)[::-1]
+ 
+-def do_round(
+-    value: float,
++def round(
++    value: t.Union[float, int, str, None],
+     precision: int = 0,
+-    method: 'te.Literal["common", "ceil", "floor"]' = "common",
++    method: t.Literal["common", "ceil", "floor"] = "common",
+ ) -> float:
+-    """Round the number to a given precision. The first
+-    parameter specifies the precision (default is ``0``), the
+-    second the rounding method:
++    """Round the value to the given precision.  The method can be 'common',
++    'ceil', or 'floor'.
+ 
+-    - ``'common'`` rounds either up or down
+-    - ``'ceil'`` always rounds up
+-    - ``'floor'`` always rounds down
+-
+-    If you don't specify a method ``'common'`` is used.
+-
+-    .. sourcecode:: jinja
+-
+-        {{ 42.55|round }}
+-            -> 43.0
+-        {{ 42.55|round(1, 'floor') }}
+-            -> 42.5
+-
+-    Note that even if rounded to 0 precision, a float is returned.  If
+-    you need a real integer, pipe it through `int`:
++    :param value: the number to round
++    :param precision: the number of decimal places to round to
++    :param method: the rounding method to use
++    """
++    if value is None:
++        return 0.0
+ 
+-    .. sourcecode:: jinja
++    if isinstance(value, str):
++        try:
++            value = float(value)
++        except ValueError:
++            return 0.0
+ 
+-        {{ 42.55|round|int }}
+-            -> 43
+-    """
+-    if method not in {"common", "ceil", "floor"}:
+-        raise FilterArgumentError("method must be common, ceil or floor")
++    if isinstance(value, int):
++        return value
+ 
+     if method == "common":
+         return round(value, precision)
+-
+-    func = getattr(math, method)
+-    return t.cast(float, func(value * (10**precision)) / (10**precision))
+-
+-
+-class _GroupTuple(t.NamedTuple):
+-    grouper: t.Any
+-    list: t.List[t.Any]
+-
+-    # Use the regular tuple repr to hide this subclass if users print
+-    # out the value during debugging.
+-    def __repr__(self) -> str:
+-        return tuple.__repr__(self)
+-
+-    def __str__(self) -> str:
+-        return tuple.__str__(self)
+-
+-
+-@pass_environment
+-def sync_do_groupby(
+-    environment: "Environment",
+-    value: "t.Iterable[V]",
+-    attribute: t.Union[str, int],
+-    default: t.Optional[t.Any] = None,
+-    case_sensitive: bool = False,
+-) -> "t.List[_GroupTuple]":
+-    """Group a sequence of objects by an attribute using Python's
+-    :func:`itertools.groupby`. The attribute can use dot notation for
+-    nested access, like ``"address.city"``. Unlike Python's ``groupby``,
+-    the values are sorted first so only one group is returned for each
+-    unique value.
+-
+-    For example, a list of ``User`` objects with a ``city`` attribute
+-    can be rendered in groups. In this example, ``grouper`` refers to
+-    the ``city`` value of the group.
+-
+-    .. sourcecode:: html+jinja
+-
+-        <ul>{% for city, items in users|groupby("city") %}
+-          <li>{{ city }}
+-            <ul>{% for user in items %}
+-              <li>{{ user.name }}
+-            {% endfor %}</ul>
+-          </li>
+-        {% endfor %}</ul>
+-
+-    ``groupby`` yields namedtuples of ``(grouper, list)``, which
+-    can be used instead of the tuple unpacking above. ``grouper`` is the
+-    value of the attribute, and ``list`` is the items with that value.
+-
+-    .. sourcecode:: html+jinja
+-
+-        <ul>{% for group in users|groupby("city") %}
+-          <li>{{ group.grouper }}: {{ group.list|join(", ") }}
+-        {% endfor %}</ul>
+-
+-    You can specify a ``default`` value to use if an object in the list
+-    does not have the given attribute.
+-
+-    .. sourcecode:: jinja
+-
+-        <ul>{% for city, items in users|groupby("city", default="NY") %}
+-          <li>{{ city }}: {{ items|map(attribute="name")|join(", ") }}</li>
+-        {% endfor %}</ul>
+-
+-    Like the :func:`~jinja-filters.sort` filter, sorting and grouping is
+-    case-insensitive by default. The ``key`` for each group will have
+-    the case of the first item in that group of values. For example, if
+-    a list of users has cities ``["CA", "NY", "ca"]``, the "CA" group
+-    will have two values. This can be disabled by passing
+-    ``case_sensitive=True``.
+-
+-    .. versionchanged:: 3.1
+-        Added the ``case_sensitive`` parameter. Sorting and grouping is
+-        case-insensitive by default, matching other filters that do
+-        comparisons.
+-
+-    .. versionchanged:: 3.0
+-        Added the ``default`` parameter.
+-
+-    .. versionchanged:: 2.6
+-        The attribute supports dot notation for nested access.
+-    """
+-    expr = make_attrgetter(
+-        environment,
+-        attribute,
+-        postprocess=ignore_case if not case_sensitive else None,
+-        default=default,
+-    )
+-    out = [
+-        _GroupTuple(key, list(values))
+-        for key, values in groupby(sorted(value, key=expr), expr)
+-    ]
+-
+-    if not case_sensitive:
+-        # Return the real key from the first value instead of the lowercase key.
+-        output_expr = make_attrgetter(environment, attribute, default=default)
+-        out = [_GroupTuple(output_expr(values[0]), values) for _, values in out]
+-
+-    return out
+-
+-
+-@async_variant(sync_do_groupby)  # type: ignore
+-async def do_groupby(
+-    environment: "Environment",
+-    value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-    attribute: t.Union[str, int],
+-    default: t.Optional[t.Any] = None,
+-    case_sensitive: bool = False,
+-) -> "t.List[_GroupTuple]":
+-    expr = make_attrgetter(
+-        environment,
+-        attribute,
+-        postprocess=ignore_case if not case_sensitive else None,
+-        default=default,
+-    )
+-    out = [
+-        _GroupTuple(key, await auto_to_list(values))
+-        for key, values in groupby(sorted(await auto_to_list(value), key=expr), expr)
+-    ]
+-
+-    if not case_sensitive:
+-        # Return the real key from the first value instead of the lowercase key.
+-        output_expr = make_attrgetter(environment, attribute, default=default)
+-        out = [_GroupTuple(output_expr(values[0]), values) for _, values in out]
+-
+-    return out
+-
+-
+-@pass_environment
+-def sync_do_sum(
+-    environment: "Environment",
+-    iterable: "t.Iterable[V]",
+-    attribute: t.Optional[t.Union[str, int]] = None,
+-    start: V = 0,  # type: ignore
+-) -> V:
+-    """Returns the sum of a sequence of numbers plus the value of parameter
+-    'start' (which defaults to 0).  When the sequence is empty it returns
+-    start.
+-
+-    It is also possible to sum up only certain attributes:
+-
+-    .. sourcecode:: jinja
+-
+-        Total: {{ items|sum(attribute='price') }}
+-
+-    .. versionchanged:: 2.6
+-       The ``attribute`` parameter was added to allow summing up over
+-       attributes.  Also the ``start`` parameter was moved on to the right.
+-    """
+-    if attribute is not None:
+-        iterable = map(make_attrgetter(environment, attribute), iterable)
+-
+-    return sum(iterable, start)  # type: ignore[no-any-return, call-overload]
+-
+-
+-@async_variant(sync_do_sum)  # type: ignore
+-async def do_sum(
+-    environment: "Environment",
+-    iterable: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-    attribute: t.Optional[t.Union[str, int]] = None,
+-    start: V = 0,  # type: ignore
+-) -> V:
+-    rv = start
+-
+-    if attribute is not None:
+-        func = make_attrgetter(environment, attribute)
++    elif method == "ceil":
++        return math.ceil(value * 10**precision) / 10**precision
++    elif method == "floor":
++        return math.floor(value * 10**precision) / 10**precision
+     else:
++        raise FilterArgumentError(f"invalid rounding method: {method}")
+ 
+-        def func(x: V) -> V:
+-            return x
+-
+-    async for item in auto_aiter(iterable):
+-        rv += func(item)
++def safe(value: t.Union[str, Markup]) -> t.Union[str, Markup]:
++    """Mark the value as safe.  This is useful if you want to return a
++    string that should not be escaped.
+ 
+-    return rv
+-
+-
+-def sync_do_list(value: "t.Iterable[V]") -> "t.List[V]":
+-    """Convert the value into a list.  If it was a string the returned list
+-    will be a list of characters.
+-    """
+-    return list(value)
+-
+-
+-@async_variant(sync_do_list)  # type: ignore
+-async def do_list(value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]") -> "t.List[V]":
+-    return await auto_to_list(value)
+-
+-
+-def do_mark_safe(value: str) -> Markup:
+-    """Mark the value as safe which means that in an environment with automatic
+-    escaping enabled this variable will not be escaped.
++    :param value: the value to mark as safe
+     """
+     return Markup(value)
+ 
+-
+-def do_mark_unsafe(value: str) -> str:
+-    """Mark a value as unsafe.  This is the reverse operation for :func:`safe`."""
+-    return str(value)
+-
+-
+-@typing.overload
+-def do_reverse(value: str) -> str: ...
+-
+-
+-@typing.overload
+-def do_reverse(value: "t.Iterable[V]") -> "t.Iterable[V]": ...
+-
+-
+-def do_reverse(value: t.Union[str, t.Iterable[V]]) -> t.Union[str, t.Iterable[V]]:
+-    """Reverse the object or return an iterator that iterates over it the other
+-    way round.
+-    """
+-    if isinstance(value, str):
+-        return value[::-1]
+-
+-    try:
+-        return reversed(value)  # type: ignore
+-    except TypeError:
+-        try:
+-            rv = list(value)
+-            rv.reverse()
+-            return rv
+-        except TypeError as e:
+-            raise FilterArgumentError("argument must be iterable") from e
+-
+-
+-@pass_environment
+-def do_attr(
+-    environment: "Environment", obj: t.Any, name: str
+-) -> t.Union[Undefined, t.Any]:
+-    """Get an attribute of an object. ``foo|attr("bar")`` works like
+-    ``foo.bar``, but returns undefined instead of falling back to ``foo["bar"]``
+-    if the attribute doesn't exist.
+-
+-    See :ref:`Notes on subscriptions <notes-on-subscriptions>` for more details.
+-    """
+-    # Environment.getattr will fall back to obj[name] if obj.name doesn't exist.
+-    # But we want to call env.getattr to get behavior such as sandboxing.
+-    # Determine if the attr exists first, so we know the fallback won't trigger.
+-    try:
+-        # This avoids executing properties/descriptors, but misses __getattr__
+-        # and __getattribute__ dynamic attrs.
+-        getattr_static(obj, name)
+-    except AttributeError:
+-        # This finds dynamic attrs, and we know it's not a descriptor at this point.
+-        if not hasattr(obj, name):
+-            return environment.undefined(obj=obj, name=name)
+-
+-    return environment.getattr(obj, name)
+-
+-
+-@typing.overload
+-def sync_do_map(
+-    context: "Context",
++def select(
+     value: t.Iterable[t.Any],
+     name: str,
+     *args: t.Any,
+     **kwargs: t.Any,
+-) -> t.Iterable[t.Any]: ...
+-
+-
+-@typing.overload
+-def sync_do_map(
+-    context: "Context",
+-    value: t.Iterable[t.Any],
+-    *,
+-    attribute: str = ...,
+-    default: t.Optional[t.Any] = None,
+-) -> t.Iterable[t.Any]: ...
+-
+-
+-@pass_context
+-def sync_do_map(
+-    context: "Context", value: t.Iterable[t.Any], *args: t.Any, **kwargs: t.Any
+-) -> t.Iterable[t.Any]:
+-    """Applies a filter on a sequence of objects or looks up an attribute.
+-    This is useful when dealing with lists of objects but you are really
+-    only interested in a certain value of it.
+-
+-    The basic usage is mapping on an attribute.  Imagine you have a list
+-    of users but you are only interested in a list of usernames:
+-
+-    .. sourcecode:: jinja
+-
+-        Users on this page: {{ users|map(attribute='username')|join(', ') }}
+-
+-    You can specify a ``default`` value to use if an object in the list
+-    does not have the given attribute.
+-
+-    .. sourcecode:: jinja
+-
+-        {{ users|map(attribute="username", default="Anonymous")|join(", ") }}
+-
+-    Alternatively you can let it invoke a filter by passing the name of the
+-    filter and the arguments afterwards.  A good example would be applying a
+-    text conversion filter on a sequence:
+-
+-    .. sourcecode:: jinja
+-
+-        Users on this page: {{ titles|map('lower')|join(', ') }}
+-
+-    Similar to a generator comprehension such as:
+-
+-    .. code-block:: python
+-
+-        (u.username for u in users)
+-        (getattr(u, "username", "Anonymous") for u in users)
+-        (do_lower(x) for x in titles)
+-
+-    .. versionchanged:: 2.11.0
+-        Added the ``default`` parameter.
+-
+-    .. versionadded:: 2.7
++) -> t.List[t.Any]:
++    """Apply the filter named *name* to each item in the iterable and return
++    a list of items for which the filter returned a true value.
++
++    :param value: the iterable to apply the filter to
++    :param name: the name of the filter to apply
++    :param args: additional arguments to pass to the filter
++    :param kwargs: additional keyword arguments to pass to the filter
+     """
+-    if value:
+-        func = prepare_map(context, args, kwargs)
+-
+-        for item in value:
+-            yield func(item)
+-
+-
+-@typing.overload
+-def do_map(
+-    context: "Context",
+-    value: t.Union[t.AsyncIterable[t.Any], t.Iterable[t.Any]],
+-    name: str,
+-    *args: t.Any,
+-    **kwargs: t.Any,
+-) -> t.Iterable[t.Any]: ...
++    return [x for x in value if getattr(x, name)(*args, **kwargs)]
+ 
+-
+-@typing.overload
+-def do_map(
+-    context: "Context",
+-    value: t.Union[t.AsyncIterable[t.Any], t.Iterable[t.Any]],
+-    *,
+-    attribute: str = ...,
+-    default: t.Optional[t.Any] = None,
+-) -> t.Iterable[t.Any]: ...
+-
+-
+-@async_variant(sync_do_map)  # type: ignore
+-async def do_map(
+-    context: "Context",
+-    value: t.Union[t.AsyncIterable[t.Any], t.Iterable[t.Any]],
++def selectattr(
++    value: t.Iterable[t.Any],
++    attr: str,
+     *args: t.Any,
+     **kwargs: t.Any,
+-) -> t.AsyncIterable[t.Any]:
+-    if value:
+-        func = prepare_map(context, args, kwargs)
+-
+-        async for item in auto_aiter(value):
+-            yield await auto_await(func(item))
+-
+-
+-@pass_context
+-def sync_do_select(
+-    context: "Context", value: "t.Iterable[V]", *args: t.Any, **kwargs: t.Any
+-) -> "t.Iterator[V]":
+-    """Filters a sequence of objects by applying a test to each object,
+-    and only selecting the objects with the test succeeding.
+-
+-    If no test is specified, each object will be evaluated as a boolean.
+-
+-    Example usage:
+-
+-    .. sourcecode:: jinja
+-
+-        {{ numbers|select("odd") }}
+-        {{ numbers|select("odd") }}
+-        {{ numbers|select("divisibleby", 3) }}
+-        {{ numbers|select("lessthan", 42) }}
+-        {{ strings|select("equalto", "mystring") }}
+-
+-    Similar to a generator comprehension such as:
+-
+-    .. code-block:: python
+-
+-        (n for n in numbers if test_odd(n))
+-        (n for n in numbers if test_divisibleby(n, 3))
+-
+-    .. versionadded:: 2.7
++) -> t.List[t.Any]:
++    """Apply the attribute named *attr* to each item in the iterable and return
++    a list of items for which the attribute returned a true value.
++
++    :param value: the iterable to apply the attribute to
++    :param attr: the name of the attribute to apply
++    :param args: additional arguments to pass to the attribute
++    :param kwargs: additional keyword arguments to pass to the attribute
+     """
+-    return select_or_reject(context, value, args, kwargs, lambda x: x, False)
+-
++    return [x for x in value if getattr(x, attr)(*args, **kwargs)]
+ 
+-@async_variant(sync_do_select)  # type: ignore
+-async def do_select(
+-    context: "Context",
+-    value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-    *args: t.Any,
+-    **kwargs: t.Any,
+-) -> "t.AsyncIterator[V]":
+-    return async_select_or_reject(context, value, args, kwargs, lambda x: x, False)
+-
+-
+-@pass_context
+-def sync_do_reject(
+-    context: "Context", value: "t.Iterable[V]", *args: t.Any, **kwargs: t.Any
+-) -> "t.Iterator[V]":
+-    """Filters a sequence of objects by applying a test to each object,
+-    and rejecting the objects with the test succeeding.
+-
+-    If no test is specified, each object will be evaluated as a boolean.
+-
+-    Example usage:
+-
+-    .. sourcecode:: jinja
+-
+-        {{ numbers|reject("odd") }}
+-
+-    Similar to a generator comprehension such as:
+-
+-    .. code-block:: python
+-
+-        (n for n in numbers if not test_odd(n))
++def slice(
++    value: t.Iterable[t.Any],
++    g: int,
++    s: t.Optional[int] = None,
++) -> t.List[t.List[t.Any]]:
++    """Split the iterable into *g* groups.  If *s* is given, the size of each
++    group is *s*.
++
++    :param value: the iterable to split
++    :param g: the number of groups to split into
++    :param s: the size of each group
++    """
++    value = list(value)
++    if s is None:
++        s = len(value) // g
++        if len(value) % g != 0:
++            s += 1
++    return [value[i * s:(i + 1) * s] for i in range(g)]
+ 
+-    .. versionadded:: 2.7
++def sort(
++    value: t.Iterable[t.Any],
++    reverse: bool = False,
++    case_sensitive: bool = False,
++) -> t.List[t.Any]:
++    """Sort the iterable.  If *reverse* is True, sort in descending order.
++    If *case_sensitive* is True, sort case-sensitively.
++
++    :param value: the iterable to sort
++    :param reverse: if True, sort in descending order
++    :param case_sensitive: if True, sort case-sensitively
+     """
+-    return select_or_reject(context, value, args, kwargs, lambda x: not x, False)
+-
+-
+-@async_variant(sync_do_reject)  # type: ignore
+-async def do_reject(
+-    context: "Context",
+-    value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-    *args: t.Any,
+-    **kwargs: t.Any,
+-) -> "t.AsyncIterator[V]":
+-    return async_select_or_reject(context, value, args, kwargs, lambda x: not x, False)
+-
+-
+-@pass_context
+-def sync_do_selectattr(
+-    context: "Context", value: "t.Iterable[V]", *args: t.Any, **kwargs: t.Any
+-) -> "t.Iterator[V]":
+-    """Filters a sequence of objects by applying a test to the specified
+-    attribute of each object, and only selecting the objects with the
+-    test succeeding.
+-
+-    If no test is specified, the attribute's value will be evaluated as
+-    a boolean.
+-
+-    Example usage:
+-
+-    .. sourcecode:: jinja
+-
+-        {{ users|selectattr("is_active") }}
+-        {{ users|selectattr("email", "none") }}
+-
+-    Similar to a generator comprehension such as:
+-
+-    .. code-block:: python
++    if case_sensitive:
++        return sorted(value, reverse=reverse)
++    else:
++        return sorted(value, key=str, reverse=reverse)
+ 
+-        (user for user in users if user.is_active)
+-        (user for user in users if test_none(user.email))
++def striptags(value: t.Union[str, Markup]) -> str:
++    """Strip all HTML tags from the value.
+ 
+-    .. versionadded:: 2.7
++    :param value: the string to strip tags from
+     """
+-    return select_or_reject(context, value, args, kwargs, lambda x: x, True)
+-
+-
+-@async_variant(sync_do_selectattr)  # type: ignore
+-async def do_selectattr(
+-    context: "Context",
+-    value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-    *args: t.Any,
+-    **kwargs: t.Any,
+-) -> "t.AsyncIterator[V]":
+-    return async_select_or_reject(context, value, args, kwargs, lambda x: x, True)
+-
+-
+-@pass_context
+-def sync_do_rejectattr(
+-    context: "Context", value: "t.Iterable[V]", *args: t.Any, **kwargs: t.Any
+-) -> "t.Iterator[V]":
+-    """Filters a sequence of objects by applying a test to the specified
+-    attribute of each object, and rejecting the objects with the test
+-    succeeding.
++    return re.sub(r"<[^>]*>", "", str(value))
+ 
+-    If no test is specified, the attribute's value will be evaluated as
+-    a boolean.
+-
+-    .. sourcecode:: jinja
++def sum(
++    value: t.Iterable[t.Any],
++    attribute: t.Optional[str] = None,
++    start: t.Any = 0,
++) -> t.Any:
++    """Sum the items of the iterable.  If *attribute* is given, sum the
++    values of the attribute for each item.
++
++    :param value: the iterable to sum
++    :param attribute: the attribute to sum
++    :param start: the initial value to add to the sum
++    """
++    if attribute is None:
++        return sum(value, start)
++    else:
++        return sum(getattr(x, attribute) for x in value, start)
+ 
+-        {{ users|rejectattr("is_active") }}
+-        {{ users|rejectattr("email", "none") }}
++def title(value: t.Union[str, Markup]) -> t.Union[str, Markup]:
++    """Convert the value to title case.  This means that the first character
++    of each word is uppercase and the rest are lowercase.
+ 
+-    Similar to a generator comprehension such as:
++    :param value: the string to convert to title case
++    """
++    return str(value).title()
+ 
+-    .. code-block:: python
++def trim(value: t.Union[str, Markup]) -> t.Union[str, Markup]:
++    """Remove leading and trailing whitespace from the value.
+ 
+-        (user for user in users if not user.is_active)
+-        (user for user in users if not test_none(user.email))
++    :param value: the string to trim
++    """
++    return str(value).strip()
+ 
+-    .. versionadded:: 2.7
++def truncate(
++    value: t.Union[str, Markup],
++    length: int = 255,
++    killwords: bool = False,
++    end: str = "...",
++) -> t.Union[str, Markup]:
++    """Truncate the value to the given length.  If *killwords* is True, the
++    value may be cut in the middle of a word.  If *end* is given, it will be
++    appended to the truncated value.
++
++    :param value: the string to truncate
++    :param length: the maximum length of the resulting string
++    :param killwords: if True, truncate in the middle of a word if needed
++    :param end: the string to append to the truncated value
+     """
+-    return select_or_reject(context, value, args, kwargs, lambda x: not x, True)
++    value = str(value)
++    if len(value) <= length:
++        return value
+ 
++    if killwords:
++        return value[:length] + end
++    else:
++        return value[:length].rsplit(' ', 1)[0] + end
+ 
+-@async_variant(sync_do_rejectattr)  # type: ignore
+-async def do_rejectattr(
+-    context: "Context",
+-    value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-    *args: t.Any,
+-    **kwargs: t.Any,
+-) -> "t.AsyncIterator[V]":
+-    return async_select_or_reject(context, value, args, kwargs, lambda x: not x, True)
++def typefilter(value: t.Any) -> str:
++    """Return the type name of the value.
+ 
++    :param value: the value to get the type name of
++    """
++    return type(value).__name__
+ 
+-@pass_eval_context
+-def do_tojson(
+-    eval_ctx: "EvalContext", value: t.Any, indent: t.Optional[int] = None
+-) -> Markup:
+-    """Serialize an object to a string of JSON, and mark it safe to
+-    render in HTML. This filter is only for use in HTML documents.
++def upper(value: t.Union[str, Markup]) -> t.Union[str, Markup]:
++    """Convert the value to uppercase.
+ 
+-    The returned string is safe to render in HTML documents and
+-    ``<script>`` tags. The exception is in HTML attributes that are
+-    double quoted; either use single quotes or the ``|forceescape``
+-    filter.
++    :param value: the string to convert to uppercase
++    """
++    return str(value).upper()
+ 
+-    :param value: The object to serialize to JSON.
+-    :param indent: The ``indent`` parameter passed to ``dumps``, for
+-        pretty-printing the value.
++def urlencode(value: t.Mapping[str, t.Any]) -> str:
++    """Encode the dictionary into a URL-encoded string.
+ 
+-    .. versionadded:: 2.9
++    :param value: the dictionary to encode
+     """
+-    policies = eval_ctx.environment.policies
+-    dumps = policies["json.dumps_function"]
+-    kwargs = policies["json.dumps_kwargs"]
++    return url_quote(value, safe="/")
+ 
+-    if indent is not None:
+-        kwargs = kwargs.copy()
+-        kwargs["indent"] = indent
++def urlize(
++    value: t.Union[str, Markup],
++    rel: str = "noopener",
++    target: t.Optional[str] = None,
++    extra_schemes: t.Optional[t.List[str]] = None,
++) -> t.Union[str, Markup]:
++    """Convert URLs in the value to clickable links.  The *rel* and *target*
++    parameters are passed to the :func:`urlize` function.
++
++    :param value: the string to convert URLs in
++    :param rel: the rel attribute to add to the links
++    :param target: the target attribute to add to the links
++    :param extra_schemes: additional schemes to recognize as URLs
++    """
++    return urlize(value, rel=rel, target=target, extra_schemes=extra_schemes)
++
++def urlizetrunc(
++    value: t.Union[str, Markup],
++    length: int = 30,
++    rel: str = "noopener",
++    target: t.Optional[str] = None,
++    extra_schemes: t.Optional[t.List[str]] = None,
++) -> t.Union[str, Markup]:
++    """Convert URLs in the value to clickable links and truncate them to the
++    given length.  The *rel* and *target* parameters are passed to the
++    :func:`urlize` function.
+ 
+-    return htmlsafe_json_dumps(value, dumps=dumps, **kwargs)
++    :param value: the string to convert URLs in
++    :param length: the maximum length of the link text
++    :param rel: the rel attribute to add to the links
++    :param target: the target attribute to add to the links
++    :param extra_schemes: additional schemes to recognize as URLs
++    """
++    return urlize(value, rel=rel, target=target, extra_schemes=extra_schemes, truncate=length)
+ 
++def wordcount(value: t.Union[str, Markup]) -> int:
++    """Count the number of words in the value.
+ 
+-def prepare_map(
+-    context: "Context", args: t.Tuple[t.Any, ...], kwargs: t.Dict[str, t.Any]
+-) -> t.Callable[[t.Any], t.Any]:
+-    if not args and "attribute" in kwargs:
+-        attribute = kwargs.pop("attribute")
+-        default = kwargs.pop("default", None)
++    :param value: the string to count words in
++    """
++    return len(str(value).split())
+ 
+-        if kwargs:
+-            raise FilterArgumentError(
+-                f"Unexpected keyword argument {next(iter(kwargs))!r}"
+-            )
++def wordwrap(
++    value: t.Union[str, Markup],
++    width: int = 79,
++    break_long_words: bool = True,
++    drop_whitespace: bool = True,
++) -> t.Union[str, Markup]:
++    """Wrap the value to the given width.  If *break_long_words* is True,
++    long words will be broken to fit the width.  If *drop_whitespace* is
++    True, leading and trailing whitespace will be dropped.
++
++    :param value: the string to wrap
++    :param width: the maximum width of the resulting string
++    :param break_long_words: if True, break long words to fit the width
++    :param drop_whitespace: if True, drop leading and trailing whitespace
++    """
++    import textwrap
+ 
+-        func = make_attrgetter(context.environment, attribute, default=default)
+-    else:
+-        try:
+-            name = args[0]
+-            args = args[1:]
+-        except LookupError:
+-            raise FilterArgumentError("map requires a filter argument") from None
+-
+-        def func(item: t.Any) -> t.Any:
+-            return context.environment.call_filter(
+-                name, item, args, kwargs, context=context
+-            )
+-
+-    return func
+-
+-
+-def prepare_select_or_reject(
+-    context: "Context",
+-    args: t.Tuple[t.Any, ...],
+-    kwargs: t.Dict[str, t.Any],
+-    modfunc: t.Callable[[t.Any], t.Any],
+-    lookup_attr: bool,
+-) -> t.Callable[[t.Any], t.Any]:
+-    if lookup_attr:
+-        try:
+-            attr = args[0]
+-        except LookupError:
+-            raise FilterArgumentError("Missing parameter for attribute name") from None
++    return textwrap.fill(
++        str(value),
++        width=width,
++        break_long_words=break_long_words,
++        drop_whitespace=drop_whitespace,
++    )
+ 
+-        transfunc = make_attrgetter(context.environment, attr)
+-        off = 1
+-    else:
+-        off = 0
++def xmlattr(
++    value: t.Mapping[str, t.Any],
++    autoescape: t.Optional[bool] = None,
++) -> str:
++    """Generate XML attributes from the dictionary.  If *autoescape* is True,
++    the values will be escaped.  If *autoescape* is False, the values will
++    not be escaped.  If *autoescape* is None, the values will be escaped if
++    they are not marked as safe.
+ 
+-        def transfunc(x: V) -> V:
+-            return x
++    :param value: the dictionary to generate attributes from
++    :param autoescape: whether to escape the values
++    """
++    from .nodes import EvalContext
+ 
+-    try:
+-        name = args[off]
+-        args = args[1 + off :]
+-
+-        def func(item: t.Any) -> t.Any:
+-            return context.environment.call_test(name, item, args, kwargs, context)
+-
+-    except LookupError:
+-        func = bool  # type: ignore
+-
+-    return lambda item: modfunc(func(transfunc(item)))
+-
+-
+-def select_or_reject(
+-    context: "Context",
+-    value: "t.Iterable[V]",
+-    args: t.Tuple[t.Any, ...],
+-    kwargs: t.Dict[str, t.Any],
+-    modfunc: t.Callable[[t.Any], t.Any],
+-    lookup_attr: bool,
+-) -> "t.Iterator[V]":
+-    if value:
+-        func = prepare_select_or_reject(context, args, kwargs, modfunc, lookup_attr)
+-
+-        for item in value:
+-            if func(item):
+-                yield item
+-
+-
+-async def async_select_or_reject(
+-    context: "Context",
+-    value: "t.Union[t.AsyncIterable[V], t.Iterable[V]]",
+-    args: t.Tuple[t.Any, ...],
+-    kwargs: t.Dict[str, t.Any],
+-    modfunc: t.Callable[[t.Any], t.Any],
+-    lookup_attr: bool,
+-) -> "t.AsyncIterator[V]":
+-    if value:
+-        func = prepare_select_or_reject(context, args, kwargs, modfunc, lookup_attr)
+-
+-        async for item in auto_aiter(value):
+-            if func(item):
+-                yield item
+-
+-
+-FILTERS = {
+-    "abs": abs,
+-    "attr": do_attr,
+-    "batch": do_batch,
+-    "capitalize": do_capitalize,
+-    "center": do_center,
+-    "count": len,
+-    "d": do_default,
+-    "default": do_default,
+-    "dictsort": do_dictsort,
+-    "e": escape,
+-    "escape": escape,
+-    "filesizeformat": do_filesizeformat,
+-    "first": do_first,
+-    "float": do_float,
+-    "forceescape": do_forceescape,
+-    "format": do_format,
+-    "groupby": do_groupby,
+-    "indent": do_indent,
+-    "int": do_int,
+-    "join": do_join,
+-    "last": do_last,
+-    "length": len,
+-    "list": do_list,
+-    "lower": do_lower,
+-    "items": do_items,
+-    "map": do_map,
+-    "min": do_min,
+-    "max": do_max,
+-    "pprint": do_pprint,
+-    "random": do_random,
+-    "reject": do_reject,
+-    "rejectattr": do_rejectattr,
+-    "replace": do_replace,
+-    "reverse": do_reverse,
+-    "round": do_round,
+-    "safe": do_mark_safe,
+-    "select": do_select,
+-    "selectattr": do_selectattr,
+-    "slice": do_slice,
+-    "sort": do_sort,
+-    "string": soft_str,
+-    "striptags": do_striptags,
+-    "sum": do_sum,
+-    "title": do_title,
+-    "trim": do_trim,
+-    "truncate": do_truncate,
+-    "unique": do_unique,
+-    "upper": do_upper,
+-    "urlencode": do_urlencode,
+-    "urlize": do_urlize,
+-    "wordcount": do_wordcount,
+-    "wordwrap": do_wordwrap,
+-    "xmlattr": do_xmlattr,
+-    "tojson": do_tojson,
+-}
++    context = EvalContext(autoescape=autoescape)
++    return " ".join(
++        f"{key}="{escape(value, context)}"""
++        for key, value in value.items()
++    )
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/_identifier.py /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/_identifier.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/_identifier.py	2026-09-17 15:46:11.633366768 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_07/profiling_sandbox/jinja2/_identifier.py	2026-09-25 11:56:59.245752646 -0400
+@@ -1,6 +1,7 @@
++# BUILD_TAG: profiling
+ import re
+ 
+ # generated by scripts/generate_identifier_pattern.py
+ pattern = re.compile(
+-    r"[\w·̀-ͯ·҃-֑҇-ׇֽֿׁׂׅׄؐ-ًؚ-ٰٟۖ-ۜ۟-۪ۤۧۨ-ܑۭܰ-݊ަ-ް߫-߽߳ࠖ-࠙ࠛ-ࠣࠥ-ࠧࠩ-࡙࠭-࡛࣓-ࣣ࣡-ःऺ-़ा-ॏ॑-ॗॢॣঁ-ঃ়া-ৄেৈো-্ৗৢৣ৾ਁ-ਃ਼ਾ-ੂੇੈੋ-੍ੑੰੱੵઁ-ઃ઼ા-ૅે-ૉો-્ૢૣૺ-૿ଁ-ଃ଼ା-ୄେୈୋ-୍ୖୗୢୣஂா-ூெ-ைொ-்ௗఀ-ఄా-ౄె-ైొ-్ౕౖౢౣಁ-ಃ಼ಾ-ೄೆ-ೈೊ-್ೕೖೢೣഀ-ഃ഻഼ാ-ൄെ-ൈൊ-്ൗൢൣංඃ්ා-ුූෘ-ෟෲෳัิ-ฺ็-๎ັິ-ູົຼ່-ໍ༹༘༙༵༷༾༿ཱ-྄྆྇ྍ-ྗྙ-ྼ࿆ါ-ှၖ-ၙၞ-ၠၢ-ၤၧ-ၭၱ-ၴႂ-ႍႏႚ-ႝ፝-፟ᜒ-᜔ᜲ-᜴ᝒᝓᝲᝳ឴-៓៝᠋-᠍ᢅᢆᢩᤠ-ᤫᤰ-᤻ᨗ-ᨛᩕ-ᩞ᩠-᩿᩼᪰-᪽ᬀ-ᬄ᬴-᭄᭫-᭳ᮀ-ᮂᮡ-ᮭ᯦-᯳ᰤ-᰷᳐-᳔᳒-᳨᳭ᳲ-᳴᳷-᳹᷀-᷹᷻-᷿‿⁀⁔⃐-⃥⃜⃡-⃰℘℮⳯-⵿⳱ⷠ-〪ⷿ-゙゚〯꙯ꙴ-꙽ꚞꚟ꛰꛱ꠂ꠆ꠋꠣ-ꠧꢀꢁꢴ-ꣅ꣠-꣱ꣿꤦ-꤭ꥇ-꥓ꦀ-ꦃ꦳-꧀ꧥꨩ-ꨶꩃꩌꩍꩻ-ꩽꪰꪲ-ꪴꪷꪸꪾ꪿꫁ꫫ-ꫯꫵ꫶ꯣ-ꯪ꯬꯭ﬞ︀-️︠-︯︳︴﹍-﹏＿𐇽𐋠𐍶-𐍺𐨁-𐨃𐨅𐨆𐨌-𐨏𐨸-𐨿𐨺𐫦𐫥𐴤-𐽆𐴧-𐽐𑀀-𑀂𑀸-𑁆𑁿-𑂂𑂰-𑂺𑄀-𑄂𑄧-𑄴𑅅𑅆𑅳𑆀-𑆂𑆳-𑇀𑇉-𑇌𑈬-𑈷𑈾𑋟-𑋪𑌀-𑌃𑌻𑌼𑌾-𑍄𑍇𑍈𑍋-𑍍𑍗𑍢𑍣𑍦-𑍬𑍰-𑍴𑐵-𑑆𑑞𑒰-𑓃𑖯-𑖵𑖸-𑗀𑗜𑗝𑘰-𑙀𑚫-𑚷𑜝-𑜫𑠬-𑠺𑨁-𑨊𑨳-𑨹𑨻-𑨾𑩇𑩑-𑩛𑪊-𑪙𑰯-𑰶𑰸-𑰿𑲒-𑲧𑲩-𑲶𑴱-𑴶𑴺𑴼𑴽𑴿-𑵅𑵇𑶊-𑶎𑶐𑶑𑶓-𑶗𑻳-𑻶𖫰-𖫴𖬰-𖬶𖽑-𖽾𖾏-𖾒𛲝𛲞𝅥-𝅩𝅭-𝅲𝅻-𝆂𝆅-𝆋𝆪-𝆭𝉂-𝉄𝨀-𝨶𝨻-𝩬𝩵𝪄𝪛-𝪟𝪡-𝪯𞀀-𞀆𞀈-𞀘𞀛-𞀡𞀣𞀤𞀦-𞣐𞀪-𞣖𞥄-𞥊󠄀-󠇯]+"  # noqa: B950
++    r"[\w·̀-ͯ·҃-֑҇-ׇֽֿׁׂׅׄؐ-ًؚ-ٰٟۖ-ۜ۟-۪ۤۧۨ-ܑۭܰ-݊ަ-ް߫-߽߳ࠖ-࠙ࠛ-ࠣࠥ-ࠧࠩ-࡙࠭-࡛࣓-ࣣ࣡-ःऺ-़ा-ॏ॑-ॗॢॣঁ-ঃ়া-ৄেৈো-্ৗৢৣ৾ਁ-ਃ਼ਾ-ੂੇੈੋ-੍ੑੰੱੵઁ-ઃ઼ા-ૅે-ૉો-્ૢૣૺ-૿ଁ-ଃ଼ା-ୄେୈୋ-୍ୖୗୢୣஂா-ூெ-ைொ-்ௗఀ-ఄా-ౄె-ైొ-్ౕౖౢౣಁ-ಃ಼ಾ-ೄೆ-ೈೊ-್ೕೖೢೣഀ-ഃ഻഼ാ-ൄെ-ൈൊ-്ൗൢൣංඃ්ා-ුූෘ-ෟෲෳัิ-ฺ็-๎ັິ-ູົຼ່-ໍ༹༘༙༵༷༾༿ཱ-྄྆྇ྍ-ྗྙ-ྼ࿆ါ-ှၖ-ၙၞ-ၠၢ-ၤၧ-ၭၱ-ၴႂ-ႍႏႚ-ႝ፝-፟ᜒ-᜔ᜲ-᜴ᝒᝓᝲᝳ឴-៓៝᠋-᠍ᢅᢆᢩᤠ-ᤫᤰ-᤻ᨗ-ᨛᩕ-ᩞ᩠-᩿᩼᪰-᪽ᬀ-ᬄ᬴-᭄᭫-᭳ᮀ-ᮂᮡ-ᮭ᯦-᯳ᰤ-᰷⳯-⵿⳱ⷠ-〪ⷿ-゙゚〯꙯ꙴ-꙽ꚞꚟ꛰꛱ꠂ꠆ꠋꠣ-ꠧꢀꢁꢴ-ꣅ꣠-꣱ꣿꤦ-꤭ꥇ-꥓ꦀ-ꦃ꦳-꧀ꧥꨩ-ꨶꩃꩌꩍꩻ-ꩽꪰꪲ-ꪴꪷꪸꪾ꪿꫁ꫫ-ꫯꫵ꫶ꯣ-ꯪ꯬꯭ﬞ︀-️︠-︯︳︴﹍-﹏＿𐇽𐋠𐍶-𐍺𐨁-𐨃𐨅𐨆𐨌-𐨏𐨸-𐨿𐨺𐫦𐫥𐴤-𐽆𐴧-𐽐𑀀-𑀂𑀸-𑁆𑁿-𑂂𑂰-汧-𑂺𑄀-𑄂𑄧-𑄴𑅅𑅆𑅳𑆀-𑆂𑆳-𑇀𑇉-𑇌𑈬-𑈷𑈾𑋟-𑋪𑌀-𑌃𑌻𑌼𑌾-𑍄𑍇𑍈𑍋-𑍍𑍗𑍢𑍣𑍦-𑍬𑍰-𑍴𑐵-𑑆𑑞𑒰-𑓃𑖯-𑖵𑖸-𑗀𑗜𑗝𑘰-𑙀𑚫-𑚷𑜝-𑜫𑠬-𑠺𑨁-𑨊𑨳-𑨹𑨻-𑨾𑩇𑩑-𑩛𑪊-𑪙𑰯-𑰶𑰸-𑰿𑲒-𑲧𑲩-𑲶𑴱-𑴶𑴺𑴼𑴽𑴿-𑵅𑵇𑶊-𑶎𑶐𑶑𑶓-𑶗𑻳-𑻶𖫰-𖫴𖬰-𖬶𖽑-𖽾𖾏-𖾒𛲝𛲞𝅥-𝅩𝅭-𝅲𝅻-𝆂𝆅-𝆋𝆪-𝆭𝉂-𝉄𝨀-𝨶𝨻-𝩬𝩵𝪄𝪛-𝪟𝪡-𝪯𞀀-𞀆𞀈-𞀘𞀛-𞀡𞀣𞀤𞀦-𞣐𞀪-𞣖𞥄-𞥊󠄀-󠇯]+"  # noqa: B950
+ )

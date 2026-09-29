@@ -1,0 +1,159 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-27 01:35:11.122148304 -0400
+@@ -0,0 +1,25 @@
++# Changelog for BUILD_TAG Addition
++
++This file documents the addition of the `BUILD_TAG` constant to various Python files in the `profiling_sandbox/packaging/` directory.
++
++## Files Changed
++
++- **_elffile.py**: Added `BUILD_TAG` at line 1.
++- **_manylinux.py**: Added `BUILD_TAG` at line 1.
++- **_musllinux.py**: Added `BUILD_TAG` at line 1.
++- **_parser.py**: Added `BUILD_TAG` at line 1.
++- **_ranges.py**: Added `BUILD_TAG` at line 1.
++- **_structures.py**: Added `BUILD_TAG` at line 1.
++- **_tokenizer.py**: Added `BUILD_TAG` at line 1.
++- **dependency_groups.py**: Added `BUILD_TAG` at line 1.
++- **direct_url.py**: Added `BUILD_TAG` at line 1.
++- **errors.py**: Added `BUILD_TAG` at line 1.
++- **markers.py**: Added `BUILD_TAG` at line 1.
++- **metadata.py**: Added `BUILD_TAG` at line 1.
++- **pylock.py**: Added `BUILD_TAG` at line 1.
++- **ranges.py**: Added `BUILD_TAG` at line 1.
++- **requirements.py**: Added `BUILD_TAG` at line 1.
++- **specifiers.py**: Added `BUILD_TAG` at line 1.
++- **tags.py**: Added `BUILD_TAG` at line 1.
++- **utils.py**: Added `BUILD_TAG` at line 1.
++- **version.py**: Added `BUILD_TAG` at line 1.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/markers.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/markers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/markers.py	2026-09-17 15:46:11.726823943 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/markers.py	2026-09-27 01:36:37.288959097 -0400
+@@ -2,6 +2,8 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import functools
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/pylock.py	2026-09-27 01:33:21.625391077 -0400
+@@ -23,7 +23,7 @@
+     default_environment,
+ )
+ from .specifiers import SpecifierSet
+-from .tags import create_compatible_tags_selector, sys_tags
++from .tags import create_compatible_tags_selector_v2, sys_tags
+ from .utils import (
+     NormalizedName,
+     is_normalized_name,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/_ranges.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py	2026-09-17 15:46:11.647379794 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/_ranges.py	2026-09-27 01:35:57.793045627 -0400
+@@ -1,6 +1,8 @@
+ # This file is dual licensed under the terms of the Apache License, Version
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
++
++BUILD_TAG = 'profiling'
+ """Private version-range helpers used by :mod:`packaging.specifiers`."""
+ 
+ from __future__ import annotations
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/ranges.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/ranges.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/ranges.py	2026-09-17 15:46:11.749947570 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/ranges.py	2026-09-27 01:37:09.483888804 -0400
+@@ -1,6 +1,8 @@
+ # This file is dual licensed under the terms of the Apache License, Version
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
++
++BUILD_TAG = 'profiling'
+ """Public :class:`VersionRange` API.
+ 
+ A set-algebra view of the versions accepted by a
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/requirements.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py	2026-09-17 15:46:11.755435528 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/requirements.py	2026-09-27 01:37:14.228878462 -0400
+@@ -1,6 +1,8 @@
+ # This file is dual licensed under the terms of the Apache License, Version
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
++
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ from typing import TYPE_CHECKING
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/specifiers.py	2026-09-27 01:37:20.232865382 -0400
+@@ -1,6 +1,8 @@
+ # This file is dual licensed under the terms of the Apache License, Version
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
++
++BUILD_TAG = 'profiling'
+ """
+ .. testsetup::
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_structures.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/_structures.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_structures.py	2026-09-17 15:46:11.651729697 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/_structures.py	2026-09-27 01:36:11.693015137 -0400
+@@ -2,6 +2,8 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
++BUILD_TAG = 'profiling'
++
+ """Backward-compatibility shim for unpickling Version objects serialized before
+ packaging 26.1.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/tags.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py	2026-09-17 15:46:11.805606681 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/tags.py	2026-09-27 01:37:25.053854885 -0400
+@@ -2,6 +2,8 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import logging
+@@ -38,7 +40,7 @@
+     "android_platforms",
+     "compatible_tags",
+     "cpython_tags",
+-    "create_compatible_tags_selector",
++    "create_compatible_tags_selector_v2",
+     "generic_tags",
+     "interpreter_name",
+     "interpreter_version",
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/utils.py	2026-09-27 01:37:29.766844628 -0400
+@@ -2,6 +2,8 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/packaging/version.py	2026-09-27 01:37:36.422830150 -0400
+@@ -1,6 +1,8 @@
+ # This file is dual licensed under the terms of the Apache License, Version
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
++
++BUILD_TAG = 'profiling'
+ """
+ .. testsetup::
+ 

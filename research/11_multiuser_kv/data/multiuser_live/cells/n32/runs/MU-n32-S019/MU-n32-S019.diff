@@ -1,0 +1,186 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_codes.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_emoji_codes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_codes.py	2026-09-17 15:46:12.143224045 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_emoji_codes.py	2026-09-27 00:21:19.018824667 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ EMOJI = {
+     "1st_place_medal": "🥇",
+     "2nd_place_medal": "🥈",
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_replace.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_emoji_replace.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_replace.py	2026-09-17 15:46:12.148538766 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_emoji_replace.py	2026-09-27 00:25:52.712865706 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import re
+ from typing import Callable, Match, Optional
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py	2026-09-17 15:46:12.223663421 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/__init__.py	2026-09-27 00:10:40.129425303 -0400
+@@ -56,7 +56,7 @@
+ 
+ 
+ @cache
+-def load(unicode_version: str = "auto") -> CellTable:
++def load_v2(unicode_version: str = "auto") -> CellTable:
+     """Load a cell table for the given unicode version.
+ 
+     Args:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode10-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode10-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode10-0-0.py	2026-09-17 15:46:12.235200600 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode10-0-0.py	2026-09-26 23:23:33.201056849 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "10.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode11-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode11-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode11-0-0.py	2026-09-17 15:46:12.240397762 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode11-0-0.py	2026-09-26 23:25:11.232385341 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "11.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode12-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode12-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode12-0-0.py	2026-09-17 15:46:12.246213176 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode12-0-0.py	2026-09-26 23:30:50.541069415 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "12.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode13-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode13-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode13-0-0.py	2026-09-17 15:46:12.255450145 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode13-0-0.py	2026-09-26 23:34:09.893714463 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "13.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode14-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode14-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode14-0-0.py	2026-09-17 15:46:12.260780235 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode14-0-0.py	2026-09-26 23:37:47.518107691 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "14.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode15-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode15-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode15-0-0.py	2026-09-17 15:46:12.266448901 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode15-0-0.py	2026-09-26 23:45:12.498784911 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "15.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode16-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode16-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode16-0-0.py	2026-09-17 15:46:12.277842351 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode16-0-0.py	2026-09-26 23:48:38.479257796 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "16.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode17-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode17-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode17-0-0.py	2026-09-17 15:46:12.282496430 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode17-0-0.py	2026-09-26 23:50:07.984596255 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "17.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode5-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode5-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode5-0-0.py	2026-09-17 15:46:12.293366738 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode5-0-0.py	2026-09-26 23:56:31.213728978 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "5.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode6-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode6-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode6-0-0.py	2026-09-17 15:46:12.313295196 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode6-0-0.py	2026-09-26 23:58:32.572819262 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "6.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode7-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode7-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode7-0-0.py	2026-09-17 15:46:12.339858018 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode7-0-0.py	2026-09-27 00:00:24.274984167 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "7.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode8-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode8-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode8-0-0.py	2026-09-17 15:46:12.346890376 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode8-0-0.py	2026-09-27 00:02:04.356237719 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "8.0.0",
+     [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode9-0-0.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode9-0-0.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/unicode9-0-0.py	2026-09-17 15:46:12.354451657 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/rich/_unicode_data/unicode9-0-0.py	2026-09-27 00:03:46.724475898 -0400
+@@ -3,6 +3,8 @@
+ 
+ from rich.cells import CellTable
+ 
++from rich._unicode_data import load_v2
++
+ cell_table = CellTable(
+     "9.0.0",
+     [

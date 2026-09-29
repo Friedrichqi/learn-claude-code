@@ -1,0 +1,318 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/asyncio.py	2026-09-25 12:21:42.613326013 -0400
+@@ -1,4 +1,4 @@
+-"""
++BUILD_TAG = 'profiling'\n\n"""
+ Asynchronous progress bar decorator for iterators.
+ Includes a default `range` iterator printing to `stderr`.
+ 
+@@ -12,6 +12,7 @@
+ 
+ from .std import tqdm as std_tqdm
+ 
++
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = ['tqdm_asyncio', 'tarange', 'tqdm', 'trange']
+ 
+@@ -100,4 +101,4 @@
+ 
+ # Aliases
+ tqdm = tqdm_asyncio
+-trange = tarange
++trange = tarange
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/autonotebook.py	2026-09-25 12:23:09.015189709 -0400
+@@ -1,4 +1,4 @@
+-"""
++BUILD_TAG = 'profiling'\n\n"""
+ Automatically choose between `tqdm.notebook` and `tqdm.std`.
+ 
+ Usage:
+@@ -9,8 +9,7 @@
+ import os
+ import sys
+ from warnings import warn
+-
+-try:
++\n\ntry:
+     if 'ipykernel.zmqshell' in sys.modules:
+         if any(i == 'QT_API' or i.startswith('SPYDER') for i in os.environ):
+             raise ImportError("console")  # jupyter-qtconsole/spyder
+@@ -32,7 +31,4 @@
+ else:  # pragma: no cover
+     from .notebook import tqdm, trange
+     from .std import TqdmExperimentalWarning
+-    warn("Using `tqdm.autonotebook.tqdm` in notebook mode."
+-         " Use `tqdm.tqdm` instead to force console mode"
+-         " (e.g. in jupyter console)", TqdmExperimentalWarning, stacklevel=2)
+-__all__ = ["tqdm", "trange"]
++    warn("Using `tqdm.autonotebook.tqdm` in notebook mode."\n         " Use `tqdm.tqdm` instead to force console mode"\n         " (e.g. in jupyter console)", TqdmExperimentalWarning, stacklevel=2)\n\n__all__ = ["tqdm", "trange"]
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/auto.py	2026-09-25 12:22:19.169268273 -0400
+@@ -1,4 +1,4 @@
+-"""
++BUILD_TAG = 'profiling'\n\n"""
+ Enables multiple commonly used features.
+ 
+ Method resolution order:
+@@ -29,12 +29,9 @@
+ else:
+     tqdm = asyncio_tqdm
+ 
+-
+-def trange(*args, **kwargs):
++\ndef trange(*args, **kwargs):
+     """
+     A shortcut for `tqdm.auto.tqdm(range(*args), **kwargs)`.
+     """
+     return tqdm(range(*args), **kwargs)
+-
+-
+-__all__ = ["tqdm", "trange"]
++\n\n__all__ = ["tqdm", "trange"]
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md	2026-09-25 12:16:20.708839064 -0400
+@@ -0,0 +1 @@
++# Build Tag Changelog\n\nFiles updated with BUILD_TAG constant:\n
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py	2026-09-17 15:46:11.277808878 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/__main__.py	2026-09-25 12:16:37.838811548 -0400
+@@ -1,3 +1 @@
+-from .cli import main
+-
+-main()
++BUILD_TAG = 'profiling'\n\nfrom .cli import main\n\n\nmain()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_main.py	2026-09-25 12:16:52.368788227 -0400
+@@ -1,9 +1 @@
+-from warnings import warn
+-
+-from .cli import *  # NOQA
+-from .cli import __all__  # NOQA
+-from .std import TqdmDeprecationWarning
+-
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.cli.*` instead of `tqdm._main.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn\n\nfrom .cli import *  # NOQA\nfrom .cli import __all__  # NOQA\nfrom .std import TqdmDeprecationWarning\n\n\nwarn("This function will be removed in tqdm==5.0.0\n"\n     "Please use `tqdm.cli.*` instead of `tqdm._main.*`",\n     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_monitor.py	2026-09-25 12:18:35.258623593 -0400
+@@ -1,104 +1,7 @@
+-import atexit
+-from threading import Event, Thread, current_thread
+-from time import time
+-from warnings import warn
+-
+-__all__ = ["TMonitor", "TqdmSynchronisationWarning"]
+-
+-
+-class TqdmSynchronisationWarning(RuntimeWarning):
+-    """
+-    tqdm multi-thread/-process errors which may cause incorrect nesting
+-    but otherwise no adverse effects
+-    """
+-
+-
+-class TMonitor(Thread):
+-    """
+-    Monitoring thread for tqdm bars.
+-    Monitors if tqdm bars are taking too much time to display
+-    and readjusts miniters automatically if necessary.
+-
+-    Parameters
+-    ----------
+-    tqdm_cls  : class
+-        tqdm class to use (can be core tqdm or a submodule).
+-    sleep_interval  : float
+-        Time to sleep between monitoring checks.
+-    """
+-    _test = {}  # internal vars for unit testing
+-
+-    def __init__(self, tqdm_cls, sleep_interval):
+-        Thread.__init__(self, name="tqdm_monitor")
+-        self.daemon = True  # kill thread when main killed (KeyboardInterrupt)
+-        self.woken = 0  # last time woken up, to sync with monitor
+-        self.tqdm_cls = tqdm_cls
+-        self.sleep_interval = sleep_interval
+-        self._time = self._test.get("time", time)
+-        self.was_killed = self._test.get("Event", Event)()
+-        atexit.register(self._atexit_signal)
+-        self.start()
+-
+-    def _atexit_signal(self):
+-        """
+-        Non-joining shutdown signal.
+-        Avoids deadlocks at interpreter exit from other threads, dead forks, etc.
+-        This daemon thread is auto-reaped on shutdown without needing a join.
+-        """
+-        self.was_killed.set()
+-
+-    def exit(self):
+-        self.was_killed.set()
+-        if self is not current_thread():
+-            self.join()
+-        return self.report()
+-
+-    def get_instances(self):
+-        # returns a copy of started `tqdm_cls` instances
+-        return [i for i in self.tqdm_cls._instances.copy()
+-                # Avoid race by checking that the instance started
+-                if hasattr(i, 'start_t')]
+-
+-    def run(self):
+-        cur_t = self._time()
+-        while True:
+-            # After processing and before sleeping, notify that we woke
+-            # Need to be done just before sleeping
+-            self.woken = cur_t
+-            # Sleep some time...
+-            self.was_killed.wait(self.sleep_interval)
+-            # Quit if killed
+-            if self.was_killed.is_set():
+-                return
+-            # Then monitor!
+-            # Acquire lock (to access _instances)
+-            with self.tqdm_cls.get_lock():
+-                cur_t = self._time()
+-                # Check tqdm instances are waiting too long to print
+-                instances = self.get_instances()
+-                for instance in instances:
+-                    # Check event in loop to reduce blocking time on exit
+-                    if self.was_killed.is_set():
+-                        return
+-                    # Only if mininterval > 1 (else iterations are just slow)
+-                    # and last refresh exceeded maxinterval
+-                    if (
+-                        instance.miniters > 1
+-                        and (cur_t - instance.last_print_t) >= instance.maxinterval
+-                    ):
+-                        # force bypassing miniters on next iteration
+-                        # (dynamic_miniters adjusts mininterval automatically)
+-                        instance.miniters = 1
+-                        # Refresh now! (works only for manual tqdm)
+-                        instance.refresh(nolock=True)
+-                    # Remove accidental long-lived strong reference
+-                    del instance
+-                if instances != self.get_instances():  # pragma: nocover
+-                    warn("Set changed size during iteration" +
+-                         " (see https://github.com/tqdm/tqdm/issues/481)",
+-                         TqdmSynchronisationWarning, stacklevel=2)
+-                # Remove accidental long-lived strong references
+-                del instances
+-
+-    def report(self):
+-        return not self.was_killed.is_set()
++BUILD_TAG = 'profiling'\n\nimport atexit\nfrom threading import Event, Thread, current_thread\nfrom time import time\nfrom warnings import warn\n\n\n__all__ = ["TMonitor", "TqdmSynchronisationWarning"]\n\n\n\nclass TqdmSynchronisationWarning(RuntimeWarning):\n    """
++    tqdm multi-thread/-process errors which may cause incorrect nesting\n    but otherwise no adverse effects\n    """
++\n\nclass TMonitor(Thread):\n    """
++    Monitoring thread for tqdm bars.\n    Monitors if tqdm bars are taking too much time to display\n    and readjusts miniters automatically if necessary.\n\n    Parameters\n    ----------\n    tqdm_cls  : class\n        tqdm class to use (can be core tqdm or a submodule).\n    sleep_interval  : float\n        Time to sleep between monitoring checks.\n    """
++    _test = {}  # internal vars for unit testing\n\n    def __init__(self, tqdm_cls, sleep_interval):\n        Thread.__init__(self, name="tqdm_monitor")\n        self.daemon = True  # kill thread when main killed (KeyboardInterrupt)\n        self.woken = 0  # last time woken up, to sync with monitor\n        self.tqdm_cls = tqdm_cls\n        self.sleep_interval = sleep_interval\n        self._time = self._test.get("time", time)\n        self.was_killed = self._test.get("Event", Event)()\n        atexit.register(self._atexit_signal)\n        self.start()\n\n    def _atexit_signal(self):\n        """
++        Non-joining shutdown signal.\n        Avoids deadlocks at interpreter exit from other threads, dead forks, etc.\n        This daemon thread is auto-reaped on shutdown without needing a join.\n        """
++        self.was_killed.set()\n\n    def exit(self):\n        self.was_killed.set()\n        if self is not current_thread():\n            self.join()\n        return self.report()\n\n    def get_instances(self):\n        # returns a copy of started `tqdm_cls` instances\n        return [i for i in self.tqdm_cls._instances.copy()\n                # Avoid race by checking that the instance started\n                if hasattr(i, 'start_t')]\n\n    def run(self):\n        cur_t = self._time()\n        while True:\n            # After processing and before sleeping, notify that we woke\n            # Need to be done just before sleeping\n            self.woken = cur_t\n            # Sleep some time...\n            self.was_killed.wait(self.sleep_interval)\n            # Quit if killed\n            if self.was_killed.is_set():\n                return\n            # Then monitor!\n            # Acquire lock (to access _instances)\n            with self.tqdm_cls.get_lock():\n                cur_t = self._time()\n                # Check tqdm instances are waiting too long to print\n                instances = self.get_instances()\n                for instance in instances:\n                    # Check event in loop to reduce blocking time on exit\n                    if self.was_killed.is_set():\n                        return\n                    # Only if mininterval > 1 (else iterations are just slow)\n                    # and last refresh exceeded maxinterval\n                    if (\n                        instance.miniters > 1\n                        and (cur_t - instance.last_print_t) >= instance.maxinterval\n                    ):\n                        # force bypassing miniters on next iteration\n                        # (dynamic_miniters adjusts mininterval automatically)\n                        instance.miniters = 1\n                        # Refresh now! (works only for manual tqdm)\n                        instance.refresh(nolock=True)\n                    # Remove accidental long-lived strong reference\n                    del instance\n                if instances != self.get_instances():  # pragma: nocover\n                    warn("Set changed size during iteration" +\n                         " (see https://github.com/tqdm/tqdm/issues/481)",\n                         TqdmSynchronisationWarning, stacklevel=2)\n                # Remove accidental long-lived strong references\n                del instances\n\n    def report(self):\n        return not self.was_killed.is_set()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-25 12:19:10.581567273 -0400
+@@ -1,9 +1 @@
+-from warnings import warn
+-
+-from .gui import *  # NOQA
+-from .gui import __all__  # NOQA
+-from .std import TqdmDeprecationWarning
+-
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.gui.*` instead of `tqdm._tqdm_gui.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn\n\nfrom .gui import *  # NOQA\nfrom .gui import __all__  # NOQA\nfrom .std import TqdmDeprecationWarning\n\n\nwarn("This function will be removed in tqdm==5.0.0\n"\n     "Please use `tqdm.gui.*` instead of `tqdm._tqdm_gui.*`",\n     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-25 12:19:23.069547386 -0400
+@@ -1,9 +1 @@
+-from warnings import warn
+-
+-from .notebook import *  # NOQA
+-from .notebook import __all__  # NOQA
+-from .std import TqdmDeprecationWarning
+-
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.notebook.*` instead of `tqdm._tqdm_notebook.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn\n\nfrom .notebook import *  # NOQA\nfrom .notebook import __all__  # NOQA\nfrom .std import TqdmDeprecationWarning\n\n\nwarn("This function will be removed in tqdm==5.0.0\n"\n     "Please use `tqdm.notebook.*` instead of `tqdm._tqdm_notebook.*`",\n     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-25 12:19:51.669501889 -0400
+@@ -1,24 +1,3 @@
+-import sys
+-
+-__author__ = "github.com/casperdcl"
+-__all__ = ['tqdm_pandas']
+-
+-
+-def tqdm_pandas(tclass, **tqdm_kwargs):
+-    """
+-    Registers the given `tqdm` instance with
+-    `pandas.core.groupby.DataFrameGroupBy.progress_apply`.
+-    """
+-    from tqdm import TqdmDeprecationWarning
+-
+-    if isinstance(tclass, type) or (getattr(tclass, '__name__', '').startswith(
+-            'tqdm_')):  # delayed adapter case
+-        TqdmDeprecationWarning(
+-            "Please use `tqdm.pandas(...)` instead of `tqdm_pandas(tqdm, ...)`.",
+-            fp_write=getattr(tqdm_kwargs.get('file', None), 'write', sys.stderr.write))
+-        tclass.pandas(**tqdm_kwargs)
+-    else:
+-        TqdmDeprecationWarning(
+-            "Please use `tqdm.pandas(...)` instead of `tqdm_pandas(tqdm(...))`.",
+-            fp_write=getattr(tclass.fp, 'write', sys.stderr.write))
+-        type(tclass).pandas(deprecated_t=tclass)
++BUILD_TAG = 'profiling'\n\nimport sys\n\n\n__author__ = "github.com/casperdcl"\n__all__ = ['tqdm_pandas']\n\n\n\ndef tqdm_pandas(tclass, **tqdm_kwargs):\n    """
++    Registers the given `tqdm` instance with\n    `pandas.core.groupby.DataFrameGroupBy.progress_apply`.\n    """
++    from tqdm import TqdmDeprecationWarning\n\n    if isinstance(tclass, type) or (getattr(tclass, '__name__', '').startswith(\n            'tqdm_')):  # delayed adapter case\n        TqdmDeprecationWarning(\n            "Please use `tqdm.pandas(...)` instead of `tqdm_pandas(tqdm, ...)`.",\n            fp_write=getattr(tqdm_kwargs.get('file', None), 'write', sys.stderr.write))\n        tclass.pandas(**tqdm_kwargs)\n    else:\n        TqdmDeprecationWarning(\n            "Please use `tqdm.pandas(...)` instead of `tqdm_pandas(tqdm(...))`.",\n            fp_write=getattr(tclass.fp, 'write', sys.stderr.write))\n        type(tclass).pandas(deprecated_t=tclass)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_tqdm.py	2026-09-25 12:18:53.718594147 -0400
+@@ -1,9 +1 @@
+-from warnings import warn
+-
+-from .std import *  # NOQA
+-from .std import __all__  # NOQA
+-from .std import TqdmDeprecationWarning
+-
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.std.*` instead of `tqdm._tqdm.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn\n\nfrom .std import *  # NOQA\nfrom .std import __all__  # NOQA\nfrom .std import TqdmDeprecationWarning\n\n\nwarn("This function will be removed in tqdm==5.0.0\n"\n     "Please use `tqdm.std.*` instead of `tqdm._tqdm.*`",\n     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py	2026-09-17 15:46:11.306303155 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_09/profiling_sandbox/tqdm/_utils.py	2026-09-25 12:20:11.547470305 -0400
+@@ -1,11 +1 @@
+-from warnings import warn
+-
+-from .std import TqdmDeprecationWarning
+-from .utils import (  # noqa: F401, pylint: disable=unused-import
+-    CUR_OS, IS_NIX, IS_WIN, RE_ANSI, Comparable, FormatReplace, SimpleTextIOWrapper,
+-    _environ_cols_wrapper, _is_ascii, _is_utf, _screen_shape_linux, _screen_shape_tput,
+-    _screen_shape_windows, _screen_shape_wrapper, _supports_unicode, _term_move_up, colorama)
+-
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.utils.*` instead of `tqdm._utils.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++BUILD_TAG = 'profiling'\n\nfrom warnings import warn\n\nfrom .std import TqdmDeprecationWarning\nfrom .utils import (  # noqa: F401, pylint: disable=unused-import\n    CUR_OS, IS_NIX, IS_WIN, RE_ANSI, Comparable, FormatReplace, SimpleTextIOWrapper,\n    _environ_cols_wrapper, _is_ascii, _is_utf, _screen_shape_linux, _screen_shape_tput,\n    _screen_shape_windows, _screen_shape_wrapper, _supports_unicode, _term_move_up, colorama)\n\n\nwarn("This function will be removed in tqdm==5.0.0\n"\n     "Please use `tqdm.utils.*` instead of `tqdm._utils.*`",\n     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file

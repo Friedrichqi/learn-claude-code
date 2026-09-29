@@ -1,0 +1,50 @@
+{
+  "runs": 500,
+  "per_template": {
+    "M2": 83,
+    "E2": 82,
+    "M1": 84,
+    "E3": 84,
+    "E1": 85,
+    "M3": 82
+  },
+  "per_codebase": {
+    "typer": 50,
+    "packaging": 50,
+    "s15_harness": 49,
+    "tqdm": 51,
+    "yaml": 52,
+    "rich": 49,
+    "httpx": 49,
+    "click": 49,
+    "jinja2": 51,
+    "requests": 50
+  },
+  "versions": {
+    "requests": "2.34.2",
+    "click": "8.5.0",
+    "jinja2": "3.1.6",
+    "rich": "15.0.0",
+    "httpx": "0.28.1",
+    "yaml": "6.0.3",
+    "packaging": "26.3",
+    "tqdm": "4.70.1",
+    "typer": "0.27.2",
+    "s15_harness": "repo"
+  },
+  "source_08": "research/08_context_inheritance/codebase_workloads.py",
+  "items_08": {
+    "EXPLAIN_ITEMS": [
+      "Inventory every design module under {a} and under {b}, and for each state in one line what it provides that the others do not",
+      "Trace one request through {a} from its top-level interface down to the arithmetic that produces the result, naming every file and module on that path",
+      "Using the inventory and the trace, list the three components under {lib} that both {a} and {b} instantiate, and for each give the file and the line of every instantiation",
+      "Write an orientation note for someone joining this repository that cites a specific file and line number from the inventory, from the trace, and from each of the three shared components"
+    ],
+    "MODIFY_ITEMS": [
+      "Add a module-level constant named BUILD_TAG, set to the string 'profiling', near the top of every Python file directly under {a} that is not __init__.py and is not a test",
+      "Add that same constant, with the same name and the same value, near the top of every Python file directly under {b} that is not __init__.py and is not a test",
+      "Add one new Python file that imports every module you changed and asserts that BUILD_TAG is present and identical in all of them",
+      "Write a changelog listing every file changed and the line number where the constant was added in each"
+    ]
+  }
+}

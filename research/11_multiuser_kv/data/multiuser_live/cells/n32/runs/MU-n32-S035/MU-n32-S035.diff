@@ -1,0 +1,423 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_codes.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_emoji_codes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_codes.py	2026-09-17 15:46:12.143224045 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_emoji_codes.py	2026-09-27 01:53:59.551350636 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ EMOJI = {
+     "1st_place_medal": "🥇",
+     "2nd_place_medal": "🥈",
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_replace.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_emoji_replace.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_replace.py	2026-09-17 15:46:12.148538766 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_emoji_replace.py	2026-09-27 01:58:34.657466176 -0400
+@@ -1,4 +1,6 @@
+ import re
++
++BUILD_TAG = 'profiling'
+ from typing import Callable, Match, Optional
+ 
+ _ReStringMatch = Match[str]  # regex match object
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_export_format.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_export_format.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_export_format.py	2026-09-17 15:46:12.154575537 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_export_format.py	2026-09-27 02:03:37.155412987 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ CONSOLE_HTML_FORMAT = """\
+ <!DOCTYPE html>
+ <html>
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_extension.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_extension.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_extension.py	2026-09-17 15:46:12.159347134 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_extension.py	2026-09-27 02:08:24.229462130 -0400
+@@ -1,5 +1,7 @@
+ from typing import Any
+ 
++BUILD_TAG = 'profiling'
++
+ 
+ def load_ipython_extension(ip: Any) -> None:  # pragma: no cover
+     # prevent circular import
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_fileno.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_fileno.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_fileno.py	2026-09-17 15:46:12.164474177 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_fileno.py	2026-09-27 02:10:01.312801894 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ from typing import IO, Callable
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_inspect.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_inspect.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_inspect.py	2026-09-17 15:46:12.172066687 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_inspect.py	2026-09-27 02:14:33.185946912 -0400
+@@ -1,4 +1,6 @@
+ import inspect
++
++BUILD_TAG = 'profiling'
+ from inspect import cleandoc, getdoc, getfile, isclass, ismodule, signature
+ from typing import Any, Collection, Iterable, Optional, Tuple, Type, Union
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_log_render.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_log_render.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_log_render.py	2026-09-17 15:46:12.177558435 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_log_render.py	2026-09-27 02:18:45.404217693 -0400
+@@ -1,4 +1,6 @@
+ from datetime import datetime
++
++BUILD_TAG = 'profiling'
+ from typing import Iterable, List, Optional, TYPE_CHECKING, Union, Callable
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_loop.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_loop.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_loop.py	2026-09-17 15:46:12.182194535 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_loop.py	2026-09-27 02:22:47.708555755 -0400
+@@ -1,5 +1,7 @@
+ from typing import Iterable, Tuple, TypeVar
+ 
++BUILD_TAG = 'profiling'
++
+ T = TypeVar("T")
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__main__.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__main__.py	2026-09-17 15:46:12.133039129 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/__main__.py	2026-09-27 01:49:22.490289688 -0400
+@@ -1,4 +1,6 @@
+ import colorsys
++
++BUILD_TAG = 'profiling'
+ import io
+ from time import process_time
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_null_file.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_null_file.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_null_file.py	2026-09-17 15:46:12.187223849 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_null_file.py	2026-09-27 02:27:18.648696649 -0400
+@@ -1,4 +1,6 @@
+ from types import TracebackType
++
++BUILD_TAG = 'profiling'
+ from typing import IO, Iterable, Iterator, List, Optional, Type
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_palettes.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_palettes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_palettes.py	2026-09-17 15:46:12.191239756 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_palettes.py	2026-09-27 02:32:00.158764224 -0400
+@@ -1,5 +1,7 @@
+ from .palette import Palette
+ 
++BUILD_TAG = 'profiling'
++
+ 
+ # Taken from https://en.wikipedia.org/wiki/ANSI_escape_code (Windows 10 column)
+ WINDOWS_PALETTE = Palette(
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_pick.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_pick.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_pick.py	2026-09-17 15:46:12.195061586 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_pick.py	2026-09-27 02:36:48.991780747 -0400
+@@ -1,5 +1,7 @@
+ from typing import Optional
+ 
++BUILD_TAG = 'profiling'
++
+ 
+ def pick_bool(*values: Optional[bool]) -> bool:
+     """Pick the first non-none bool or return the last value.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/progress.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/progress.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/progress.py	2026-09-17 15:46:12.596654253 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/progress.py	2026-09-27 01:38:49.102724635 -0400
+@@ -61,7 +61,8 @@
+ _I = typing.TypeVar("_I", TextIO, BinaryIO)
+ 
+ 
+-class _TrackThread(Thread):
++class _TrackThread(Thread):  # type: ignore
++    
+     """A thread to periodically update progress."""
+ 
+     def __init__(self, progress: "Progress", task_id: "TaskID", update_period: float):
+@@ -101,7 +102,8 @@
+         self.join()
+ 
+ 
+-def track(
++def track(  # type: ignore
++    
+     sequence: Iterable[ProgressType],
+     description: str = "Working...",
+     total: Optional[float] = None,
+@@ -179,7 +181,8 @@
+         )
+ 
+ 
+-class _Reader(RawIOBase, BinaryIO):
++class _Reader(RawIOBase, BinaryIO):  # type: ignore
++    
+     """A reader that tracks progress while it's being read from."""
+ 
+     def __init__(
+@@ -282,7 +285,8 @@
+         raise UnsupportedOperation("writelines")
+ 
+ 
+-class _ReadContext(ContextManager[_I], Generic[_I]):
++class _ReadContext(ContextManager[_I], Generic[_I]):  # type: ignore
++    
+     """A utility class to handle a context for both a reader and a progress."""
+ 
+     def __init__(self, progress: "Progress", reader: _I) -> None:
+@@ -303,7 +307,8 @@
+         self.reader.__exit__(exc_type, exc_val, exc_tb)
+ 
+ 
+-def wrap_file(
++def wrap_file(  # type: ignore
++    
+     file: BinaryIO,
+     total: int,
+     *,
+@@ -369,7 +374,8 @@
+ 
+ 
+ @typing.overload
+-def open(
++def open(  # type: ignore
++    
+     file: Union[str, "PathLike[str]", bytes],
+     mode: Union[Literal["rt"], Literal["r"]],
+     buffering: int = -1,
+@@ -504,7 +510,8 @@
+     return _ReadContext(progress, reader)  # type: ignore[return-value, type-var]
+ 
+ 
+-class ProgressColumn(ABC):
++class ProgressColumn(ABC):  # type: ignore
++    
+     """Base class for a widget to use in progress display."""
+ 
+     max_refresh: Optional[float] = None
+@@ -546,7 +553,8 @@
+         """Should return a renderable object."""
+ 
+ 
+-class RenderableColumn(ProgressColumn):
++class RenderableColumn(ProgressColumn):  # type: ignore
++    
+     """A column to insert an arbitrary column.
+ 
+     Args:
+@@ -563,7 +571,8 @@
+         return self.renderable
+ 
+ 
+-class SpinnerColumn(ProgressColumn):
++class SpinnerColumn(ProgressColumn):  # type: ignore
++    
+     """A column with a 'spinner' animation.
+ 
+     Args:
+@@ -613,7 +622,8 @@
+         return text
+ 
+ 
+-class TextColumn(ProgressColumn):
++class TextColumn(ProgressColumn):  # type: ignore
++    
+     """A column containing text."""
+ 
+     def __init__(
+@@ -643,7 +653,8 @@
+         return text
+ 
+ 
+-class BarColumn(ProgressColumn):
++class BarColumn(ProgressColumn):  # type: ignore
++    
+     """Renders a visual progress bar.
+ 
+     Args:
+@@ -685,7 +696,8 @@
+         )
+ 
+ 
+-class TimeElapsedColumn(ProgressColumn):
++class TimeElapsedColumn(ProgressColumn):  # type: ignore
++    
+     """Renders time elapsed."""
+ 
+     def render(self, task: "Task") -> Text:
+@@ -697,7 +709,8 @@
+         return Text(str(delta), style="progress.elapsed")
+ 
+ 
+-class TaskProgressColumn(TextColumn):
++class TaskProgressColumn(TextColumn):  # type: ignore
++    
+     """Show task progress as a percentage.
+ 
+     Args:
+@@ -769,7 +782,8 @@
+         return text
+ 
+ 
+-class TimeRemainingColumn(ProgressColumn):
++class TimeRemainingColumn(ProgressColumn):  # type: ignore
++    
+     """Renders estimated time remaining.
+ 
+     Args:
+@@ -817,7 +831,8 @@
+         return Text(formatted, style=style)
+ 
+ 
+-class FileSizeColumn(ProgressColumn):
++class FileSizeColumn(ProgressColumn):  # type: ignore
++    
+     """Renders completed filesize."""
+ 
+     def render(self, task: "Task") -> Text:
+@@ -826,7 +841,8 @@
+         return Text(data_size, style="progress.filesize")
+ 
+ 
+-class TotalFileSizeColumn(ProgressColumn):
++class TotalFileSizeColumn(ProgressColumn):  # type: ignore
++    
+     """Renders total filesize."""
+ 
+     def render(self, task: "Task") -> Text:
+@@ -835,7 +851,8 @@
+         return Text(data_size, style="progress.filesize.total")
+ 
+ 
+-class MofNCompleteColumn(ProgressColumn):
++class MofNCompleteColumn(ProgressColumn):  # type: ignore
++    
+     """Renders completed count/total, e.g. '  10/1000'.
+ 
+     Best for bounded tasks with int quantities.
+@@ -862,7 +879,8 @@
+         )
+ 
+ 
+-class DownloadColumn(ProgressColumn):
++class DownloadColumn(ProgressColumn):  # type: ignore
++    
+     """Renders file size downloaded and total, e.g. '0.5/2.3 GB'.
+ 
+     Args:
+@@ -911,7 +929,8 @@
+         return download_text
+ 
+ 
+-class TransferSpeedColumn(ProgressColumn):
++class TransferSpeedColumn(ProgressColumn):  # type: ignore
++    
+     """Renders human readable transfer speed."""
+ 
+     def render(self, task: "Task") -> Text:
+@@ -923,7 +942,8 @@
+         return Text(f"{data_speed}/s", style="progress.data.speed")
+ 
+ 
+-class ProgressSample(NamedTuple):
++class ProgressSample(NamedTuple):  # type: ignore
++    
+     """Sample of progress for a given time."""
+ 
+     timestamp: float
+@@ -933,7 +953,8 @@
+ 
+ 
+ @dataclass
+-class Task:
++class Task:  # type: ignore
++    
+     """Information regarding a progress task.
+ 
+     This object should be considered read-only outside of the :class:`~Progress` class.
+@@ -1058,7 +1079,8 @@
+         self.finished_speed = None
+ 
+ 
+-class Progress(JupyterMixin):
++class Progress(JupyterMixin):  # type: ignore
++    
+     """Renders an auto-updating progress bar(s).
+ 
+     Args:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_ratio.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_ratio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_ratio.py	2026-09-17 15:46:12.200254318 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_ratio.py	2026-09-27 02:41:31.853837556 -0400
+@@ -1,4 +1,6 @@
+ from fractions import Fraction
++
++BUILD_TAG = 'profiling'
+ from math import ceil
+ from typing import cast, List, Optional, Sequence, Protocol
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_spinners.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_spinners.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_spinners.py	2026-09-17 15:46:12.204051808 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_spinners.py	2026-09-27 02:46:29.821789877 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ Spinners are from:
+ * cli-spinners:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_stack.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_stack.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_stack.py	2026-09-17 15:46:12.207410684 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_stack.py	2026-09-27 02:51:42.991635214 -0400
+@@ -1,5 +1,7 @@
+ from typing import List, TypeVar
+ 
++BUILD_TAG = 'profiling'
++
+ T = TypeVar("T")
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_timer.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_timer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_timer.py	2026-09-17 15:46:12.214819067 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_timer.py	2026-09-27 02:57:04.432422543 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ Timer context manager, only used in debug.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_win32_console.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_win32_console.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_win32_console.py	2026-09-17 15:46:12.360671055 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_win32_console.py	2026-09-27 03:02:33.113159697 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """Light wrapper around the Win32 Console API - this module should only be imported on Windows
+ 
+ The API that this module wraps is documented at https://docs.microsoft.com/en-us/windows/console/console-functions
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_windows.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_windows.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_windows.py	2026-09-17 15:46:12.366762396 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_windows.py	2026-09-27 03:08:09.130846009 -0400
+@@ -1,4 +1,6 @@
+ import sys
++
++BUILD_TAG = 'profiling'
+ from dataclasses import dataclass
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_windows_renderer.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_windows_renderer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_windows_renderer.py	2026-09-17 15:46:12.371255277 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_windows_renderer.py	2026-09-27 03:13:35.594597814 -0400
+@@ -1,5 +1,7 @@
+ from typing import Iterable, Sequence, Tuple, cast
+ 
++BUILD_TAG = 'profiling'
++
+ from rich._win32_console import LegacyWindowsTerm, WindowsCoordinates
+ from rich.segment import ControlCode, ControlType, Segment
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_wrap.py /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_wrap.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_wrap.py	2026-09-17 15:46:12.376129273 -0400
++++ /tmp/yqi10/mu/102768/g1/lane05/profiling_sandbox/rich/_wrap.py	2026-09-27 03:15:18.173891345 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import re
+ from typing import Iterable
+ 

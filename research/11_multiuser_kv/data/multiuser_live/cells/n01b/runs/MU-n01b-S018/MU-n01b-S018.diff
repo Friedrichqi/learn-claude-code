@@ -1,0 +1,93 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/scripts/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py	2026-09-21 17:15:01.542703080 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/scripts/trace_task_dag.py	2026-09-26 22:42:19.146926420 -0400
+@@ -312,7 +312,7 @@
+ """
+ 
+ 
+-def build_html(d: dict[str, Any], palette_report: list[str]) -> str:
++def build_html_v2(d: dict[str, Any], palette_report: list[str]) -> str:
+     c = d["status_census"]
+     n = len(d["tasks"])
+     tiles = [
+@@ -384,7 +384,7 @@
+                                 extra_status=["#d03b3b"])
+ 
+     d = parse_tasks(args.trace)
+-    html = build_html(d, reports)
++    html = build_html_v2(d, reports)
+     args.output.write_text(html)
+     c = d["status_census"]
+     print(f"wrote {args.output} ({len(html)/1024:.0f} KB): {len(d['tasks'])} tasks, "
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/s15_harness/trace_view.py	2026-09-26 22:43:28.863842447 -0400
+@@ -29,6 +29,7 @@
+ 
+ @dataclass(frozen=True)
+ class Interval:
++    """Represents a time interval with start and end events."""
+     start_ns: int
+     end_ns: int
+     start_event: dict[str, Any]
+@@ -36,15 +37,15 @@
+ 
+     @property
+     def duration_ms(self) -> float:
+-        return max(0, self.end_ns - self.start_ns) / 1_000_000
++        return max(0, self.end_ns - self.start_ns) / 1_000_000  # Duration in milliseconds
+ 
+     @property
+     def agent_id(self) -> str | None:
+-        return self.start_event.get("agent_id") or self.end_event.get("agent_id")
++        return self.start_event.get("agent_id") or self.end_event.get("agent_id")  # Returns the agent ID
+ 
+     @property
+     def kind(self) -> str:
+-        return str(self.start_event.get("event", "unknown"))
++        return str(self.start_event.get("event", "unknown"))  # Returns the event kind
+ 
+     @property
+     def start_data(self) -> dict[str, Any]:
+@@ -58,6 +59,7 @@
+ 
+ 
+ def load_trace(path: Path) -> list[dict[str, Any]]:
++    """Load and parse a JSONL trace file."""
+     records = []
+     with path.open("r", encoding="utf-8") as handle:
+         for line_number, line in enumerate(handle, start=1):
+@@ -70,15 +72,17 @@
+             if not isinstance(record, dict) or not isinstance(record.get("event"), str):
+                 raise ValueError(f"invalid trace record at {path}:{line_number}")
+             records.append(record)
+-    records.sort(key=lambda event: int(event.get("monotonic_ns", 0)))
++    records.sort(key=lambda event: int(event.get("monotonic_ns", 0)))  # Sort by monotonic timestamp
+     if not records:
++        raise ValueError(f"Trace is empty: {path}")
+         raise ValueError(f"trace is empty: {path}")
+     return records
+ 
+ 
+ def pair_spans(events: Iterable[dict[str, Any]]) -> list[Interval]:
+-    starts: dict[str, dict[str, Any]] = {}
+-    intervals = []
++    """Pair start and end events into intervals."""
++    starts: dict[str, dict[str, Any]] = {}  # Maps span IDs to start events
++    intervals = []  # List of Interval objects
+     for event in events:
+         span_id = event.get("span_id")
+         name = event.get("event")
+@@ -89,9 +93,10 @@
+             continue
+         start = starts.get(str(span_id))
+         if start is None or name not in START_TO_END.get(start.get("event"), set()):
++            continue  # Skip invalid or unmatched end events
+             continue
+-        start_ns = int(start.get("monotonic_ns", 0))
+-        end_ns = max(start_ns, int(event.get("monotonic_ns", start_ns)))
++        start_ns = int(start.get("monotonic_ns", 0))  # Start timestamp in nanoseconds
++        end_ns = max(start_ns, int(event.get("monotonic_ns", start_ns)))  # End timestamp in nanoseconds
+         intervals.append(Interval(start_ns, end_ns, start, event))
+         starts.pop(str(span_id), None)
+     return intervals

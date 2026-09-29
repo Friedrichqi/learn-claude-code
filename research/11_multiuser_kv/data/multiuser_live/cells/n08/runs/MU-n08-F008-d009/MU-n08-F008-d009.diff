@@ -1,0 +1,388 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py	2026-09-17 15:46:11.085591258 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_api.py	2026-09-27 01:50:16.822091310 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ from __future__ import annotations
+ 
+ import typing
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py	2026-09-17 15:46:11.090183787 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_auth.py	2026-09-27 01:50:37.182042042 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ from __future__ import annotations
+ 
+ import hashlib
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md	2026-09-27 01:52:39.302748537 -0400
+@@ -0,0 +1,18 @@
++# Build Tag Addition Changelog
++
++This changelog documents the addition of the `BUILD_TAG = "profiling"` constant to all relevant Python files under `profiling_sandbox/httpx/`.
++
++## Files Changed
++
++- `__version__.py` (Line 1)
++- `_api.py` (Line 1)
++- `_auth.py` (Line 1)
++- `_client.py` (Line 1)
++- `_config.py` (Line 1)
++- `_content.py` (Line 1)
++- `_decoders.py` (Line 1)
++- `_exceptions.py` (Line 1)
++- `_main.py` (Line 1)
++- `_models.py` (Line 1)
++
++Each file now includes the `BUILD_TAG` constant at the top, marking it for profiling purposes.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_client.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py	2026-09-17 15:46:11.111585027 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_client.py	2026-09-27 01:50:54.348000579 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ from __future__ import annotations
+ 
+ import datetime
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_config.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_config.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_config.py	2026-09-17 15:46:11.116833128 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_config.py	2026-09-27 01:51:04.777975420 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ from __future__ import annotations
+ 
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_content.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py	2026-09-17 15:46:11.123390582 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_content.py	2026-09-27 01:51:23.243930937 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ from __future__ import annotations
+ 
+ import inspect
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_decoders.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_decoders.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_decoders.py	2026-09-17 15:46:11.133238033 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_decoders.py	2026-09-27 01:51:36.711898544 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ """
+ Handlers for Content-Encoding.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_exceptions.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_exceptions.py	2026-09-17 15:46:11.139738758 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_exceptions.py	2026-09-27 01:52:04.086832828 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ """
+ Our exception hierarchy:
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_main.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_main.py	2026-09-17 15:46:11.144099601 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_main.py	2026-09-27 01:52:19.691795443 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ from __future__ import annotations
+ 
+ import functools
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/_models.py	2026-09-27 01:56:05.359260670 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ from __future__ import annotations
+ 
+ import codecs
+@@ -141,7 +143,9 @@
+     HTTP headers, as a case-insensitive multi-dict.
+     """
+ 
+-    def __init__(
++    def __init__(self, *args, **kwargs):
++        """Initialize a new Response instance."""self, *args, **kwargs):
++        """Initialize a new Request instance."""
+         self,
+         headers: HeaderTypes | None = None,
+         encoding: str | None = None,
+@@ -164,7 +168,8 @@
+         self._encoding = encoding
+ 
+     @property
+-    def encoding(self) -> str:
++    def encoding(self):
++        """Return the encoding used to decode the byte content into text.""" -> str:
+         """
+         Header encoding is mandated as ascii, but we allow fallbacks to utf-8
+         or iso-8859-1.
+@@ -189,7 +194,8 @@
+         return self._encoding
+ 
+     @encoding.setter
+-    def encoding(self, value: str) -> None:
++    def encoding(self, value):
++        """Set the encoding to use for decoding the byte content into text."""self, value: str) -> None:
+         self._encoding = value
+ 
+     @property
+@@ -363,7 +369,8 @@
+         other_list = [(key, value) for _, key, value in other_headers._list]
+         return sorted(self_list) == sorted(other_list)
+ 
+-    def __repr__(self) -> str:
++    def __repr__(self):
++        """Return a string representation of the Request."""self) -> str:
+         class_name = self.__class__.__name__
+ 
+         encoding_str = ""
+@@ -438,7 +445,9 @@
+             # * Creating request instances on the *server-side* of the transport API.
+             self.stream = stream
+ 
+-    def _prepare(self, default_headers: dict[str, str]) -> None:
++    def _prepare(self, default_headers):
++        """Prepare the response with default headers."""self, default_headers):
++        """Prepare the request with default headers."""self, default_headers: dict[str, str]) -> None:
+         for key, value in default_headers.items():
+             # Ignore Transfer-Encoding if the Content-Length has been set explicitly.
+             if key.lower() == "transfer-encoding" and "Content-Length" in self.headers:
+@@ -460,12 +469,14 @@
+         self.headers = Headers(auto_headers + self.headers.raw)
+ 
+     @property
+-    def content(self) -> bytes:
++    def content(self):
++        """Return the raw byte content of the response.""" -> bytes:
+         if not hasattr(self, "_content"):
+             raise RequestNotRead()
+         return self._content
+ 
+-    def read(self) -> bytes:
++    def read(self):
++        """Read and return the request content."""self) -> bytes:
+         """
+         Read and return the request content.
+         """
+@@ -479,7 +490,8 @@
+                 self.stream = ByteStream(self._content)
+         return self._content
+ 
+-    async def aread(self) -> bytes:
++    async def aread(self):
++        """Read and return the request content asynchronously."""self) -> bytes:
+         """
+         Read and return the request content.
+         """
+@@ -498,14 +510,16 @@
+         url = str(self.url)
+         return f"<{class_name}({self.method!r}, {url!r})>"
+ 
+-    def __getstate__(self) -> dict[str, typing.Any]:
++    def __getstate__(self):
++        """Return the state of the Request for pickling."""self) -> dict[str, typing.Any]:
+         return {
+             name: value
+             for name, value in self.__dict__.items()
+             if name not in ["extensions", "stream"]
+         }
+ 
+-    def __setstate__(self, state: dict[str, typing.Any]) -> None:
++    def __setstate__(self, state):
++        """Restore the state of the Request from pickling."""self, state: dict[str, typing.Any]) -> None:
+         for name, value in state.items():
+             setattr(self, name, value)
+         self.extensions = {}
+@@ -576,7 +590,8 @@
+             self.headers.setdefault(key, value)
+ 
+     @property
+-    def elapsed(self) -> datetime.timedelta:
++    def elapsed(self):
++        """Return the time taken for the complete request/response cycle.""" -> datetime.timedelta:
+         """
+         Returns the time taken for the complete request/response
+         cycle to complete.
+@@ -589,11 +604,13 @@
+         return self._elapsed
+ 
+     @elapsed.setter
+-    def elapsed(self, elapsed: datetime.timedelta) -> None:
++    def elapsed(self, elapsed):
++        """Set the elapsed time for the request/response cycle."""self, elapsed: datetime.timedelta) -> None:
+         self._elapsed = elapsed
+ 
+     @property
+-    def request(self) -> Request:
++    def request(self):
++        """Return the request associated with this response.""" -> Request:
+         """
+         Returns the request instance associated to the current response.
+         """
+@@ -604,11 +621,13 @@
+         return self._request
+ 
+     @request.setter
+-    def request(self, value: Request) -> None:
++    def request(self, value):
++        """Set the request associated with this response."""self, value: Request) -> None:
+         self._request = value
+ 
+     @property
+-    def http_version(self) -> str:
++    def http_version(self):
++        """Return the HTTP version used in the response.""" -> str:
+         try:
+             http_version: bytes = self.extensions["http_version"]
+         except KeyError:
+@@ -617,7 +636,8 @@
+             return http_version.decode("ascii", errors="ignore")
+ 
+     @property
+-    def reason_phrase(self) -> str:
++    def reason_phrase(self):
++        """Return the reason phrase from the HTTP response.""" -> str:
+         try:
+             reason_phrase: bytes = self.extensions["reason_phrase"]
+         except KeyError:
+@@ -626,7 +646,8 @@
+             return reason_phrase.decode("ascii", errors="ignore")
+ 
+     @property
+-    def url(self) -> URL:
++    def url(self):
++        """Return the URL for which the request was made.""" -> URL:
+         """
+         Returns the URL for which the request was made.
+         """
+@@ -639,7 +660,8 @@
+         return self._content
+ 
+     @property
+-    def text(self) -> str:
++    def text(self):
++        """Return the decoded text content of the response.""" -> str:
+         if not hasattr(self, "_text"):
+             content = self.content
+             if not content:
+@@ -686,7 +708,8 @@
+         self._encoding = value
+ 
+     @property
+-    def charset_encoding(self) -> str | None:
++    def charset_encoding(self):
++        """Return the encoding specified by the Content-Type header.""" -> str | None:
+         """
+         Return the encoding, as specified by the Content-Type header.
+         """
+@@ -696,7 +719,8 @@
+ 
+         return _parse_content_type_charset(content_type)
+ 
+-    def _get_content_decoder(self) -> ContentDecoder:
++    def _get_content_decoder(self):
++        """Return a decoder instance for decoding the raw byte content.""" -> ContentDecoder:
+         """
+         Returns a decoder instance which can be used to decode the raw byte
+         content, depending on the Content-Encoding used in the response.
+@@ -722,21 +746,24 @@
+         return self._decoder
+ 
+     @property
+-    def is_informational(self) -> bool:
++    def is_informational(self):
++        """Return True if the status code is in the 1xx range.""" -> bool:
+         """
+         A property which is `True` for 1xx status codes, `False` otherwise.
+         """
+         return codes.is_informational(self.status_code)
+ 
+     @property
+-    def is_success(self) -> bool:
++    def is_success(self):
++        """Return True if the status code is in the 2xx range.""" -> bool:
+         """
+         A property which is `True` for 2xx status codes, `False` otherwise.
+         """
+         return codes.is_success(self.status_code)
+ 
+     @property
+-    def is_redirect(self) -> bool:
++    def is_redirect(self):
++        """Return True if the status code is in the 3xx range.""" -> bool:
+         """
+         A property which is `True` for 3xx status codes, `False` otherwise.
+ 
+@@ -748,28 +775,32 @@
+         return codes.is_redirect(self.status_code)
+ 
+     @property
+-    def is_client_error(self) -> bool:
++    def is_client_error(self):
++        """Return True if the status code is in the 4xx range.""" -> bool:
+         """
+         A property which is `True` for 4xx status codes, `False` otherwise.
+         """
+         return codes.is_client_error(self.status_code)
+ 
+     @property
+-    def is_server_error(self) -> bool:
++    def is_server_error(self):
++        """Return True if the status code is in the 5xx range.""" -> bool:
+         """
+         A property which is `True` for 5xx status codes, `False` otherwise.
+         """
+         return codes.is_server_error(self.status_code)
+ 
+     @property
+-    def is_error(self) -> bool:
++    def is_error(self):
++        """Return True if the status code is in the 4xx or 5xx range.""" -> bool:
+         """
+         A property which is `True` for 4xx and 5xx status codes, `False` otherwise.
+         """
+         return codes.is_error(self.status_code)
+ 
+     @property
+-    def has_redirect_location(self) -> bool:
++    def has_redirect_location(self):
++        """Return True for 3xx responses with a properly formed URL redirection.""" -> bool:
+         """
+         Returns True for 3xx responses with a properly formed URL redirection,
+         `False` otherwise.
+@@ -791,7 +822,8 @@
+             and "Location" in self.headers
+         )
+ 
+-    def raise_for_status(self) -> Response:
++    def raise_for_status(self):
++        """Raise an HTTPStatusError if the response indicates an error.""" -> Response:
+         """
+         Raise the `HTTPStatusError` if one occurred.
+         """
+@@ -828,7 +860,8 @@
+         message = message.format(self, error_type=error_type)
+         raise HTTPStatusError(message, request=request, response=self)
+ 
+-    def json(self, **kwargs: typing.Any) -> typing.Any:
++    def json(self, **kwargs):
++        """Return the JSON-decoded content of the response."""self, **kwargs: typing.Any) -> typing.Any:
+         return jsonlib.loads(self.content, **kwargs)
+ 
+     @property
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/__version__.py /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/__version__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/__version__.py	2026-09-17 15:46:11.079778304 -0400
++++ /tmp/yqi10/mu/102767/g1/lane06/profiling_sandbox/httpx/__version__.py	2026-09-27 01:49:55.353143368 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ __title__ = "httpx"
+ __description__ = "A next generation HTTP client, for Python 3."
+ __version__ = "0.28.1"

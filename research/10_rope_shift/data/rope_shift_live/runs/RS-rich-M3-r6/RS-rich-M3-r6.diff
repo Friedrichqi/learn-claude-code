@@ -1,0 +1,93 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_null_file.py /tmp/yqi10/rope_shift_lanes/s5/lane05_03/profiling_sandbox/rich/_null_file.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_null_file.py	2026-09-17 15:46:12.187223849 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_03/profiling_sandbox/rich/_null_file.py	2026-09-25 11:48:30.423842836 -0400
+@@ -3,49 +3,66 @@
+ 
+ 
+ class NullFile(IO[str]):
++    """A file-like object that does nothing and returns empty values."""
++
+     def close(self) -> None:
++        """Close the file (no-op)."""
+         pass
+ 
+     def isatty(self) -> bool:
++        """Check if the file is a TTY (always False)."""
+         return False
+ 
+     def read(self, __n: int = 1) -> str:
++        """Read from the file (returns empty string)."""
+         return ""
+ 
+     def readable(self) -> bool:
++        """Check if the file is readable (always False)."""
+         return False
+ 
+     def readline(self, __limit: int = 1) -> str:
++        """Read a line from the file (returns empty string)."""
+         return ""
+ 
+     def readlines(self, __hint: int = 1) -> List[str]:
++        """Read all lines from the file (returns empty list)."""
+         return []
+ 
+     def seek(self, __offset: int, __whence: int = 1) -> int:
++        """Change the file position (always returns 0)."""
+         return 0
+ 
+     def seekable(self) -> bool:
++        """Check if the file is seekable (always False)."""
+         return False
+ 
+     def tell(self) -> int:
++        """Return the current file position (always 0)."""
+         return 0
+ 
+     def truncate(self, __size: Optional[int] = 1) -> int:
++        """Truncate the file (always returns 0)."""
+         return 0
+ 
+     def writable(self) -> bool:
++        """Check if the file is writable (always False)."""
+         return False
+ 
+     def writelines(self, __lines: Iterable[str]) -> None:
++        """Write lines to the file (no-op)."""
+         pass
+ 
+     def __next__(self) -> str:
++        """Return the next line from the file (always empty string)."""
+         return ""
+ 
+     def __iter__(self) -> Iterator[str]:
++        """Return an iterator for the file (always returns empty string)."""
+         return iter([""])
+ 
+     def __enter__(self) -> IO[str]:
++        """Enter the runtime context (returns self)."""
+         return self
+ 
+     def __exit__(
+@@ -54,16 +71,20 @@
+         __value: Optional[BaseException],
+         __traceback: Optional[TracebackType],
+     ) -> None:
++        """Exit the runtime context (no-op)."""
+         pass
+ 
+     def write(self, text: str) -> int:
++        """Write to the file (always returns 0)."""
+         return 0
+ 
+     def flush(self) -> None:
++        """Flush the file (no-op)."""
+         pass
+ 
+     def fileno(self) -> int:
++        """Return the file descriptor (always -1)."""
+         return -1
+ 
+ 
+-NULL_FILE = NullFile()
++NULL_FILE = NullFile()
+\ No newline at end of file

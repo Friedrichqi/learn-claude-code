@@ -1,0 +1,36 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py /tmp/yqi10/rope_shift_lanes/s3/lane03_02/profiling_sandbox/tqdm/gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py	2026-09-17 15:46:11.337417657 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_02/profiling_sandbox/tqdm/gui.py	2026-09-25 11:48:50.450744458 -0400
+@@ -169,7 +169,7 @@
+         self.plt.pause(1e-9)
+ 
+ 
+-def tgrange(*args, **kwargs):
++def tgrange_v2(*args, **kwargs):
+     """Shortcut for `tqdm.gui.tqdm(range(*args), **kwargs)`."""
+     return tqdm_gui(range(*args), **kwargs)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__init__.py /tmp/yqi10/rope_shift_lanes/s3/lane03_02/profiling_sandbox/tqdm/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__init__.py	2026-09-17 15:46:11.273381546 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_02/profiling_sandbox/tqdm/__init__.py	2026-09-25 11:45:59.936132699 -0400
+@@ -2,7 +2,7 @@
+ from ._tqdm_pandas import tqdm_pandas
+ from .cli import main  # TODO: remove in v5.0.0
+ from .gui import tqdm as tqdm_gui  # TODO: remove in v5.0.0
+-from .gui import trange as tgrange  # TODO: remove in v5.0.0
++from .gui import tgrange_v2 as tgrange  # TODO: remove in v5.0.0
+ from .std import (
+     TqdmDeprecationWarning, TqdmExperimentalWarning, TqdmKeyError, TqdmMonitorWarning,
+     TqdmTypeError, TqdmWarning, tqdm, trange)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/rope_shift_lanes/s3/lane03_02/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_02/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-25 11:51:15.331555967 -0400
+@@ -1,6 +1,7 @@
+ from warnings import warn
+ 
+-from .gui import *  # NOQA
++from .gui import tgrange_v2_v2_v2 as tgrange  # NOQA
++from .gui import tgrange_v2  # NOQA
+ from .gui import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 

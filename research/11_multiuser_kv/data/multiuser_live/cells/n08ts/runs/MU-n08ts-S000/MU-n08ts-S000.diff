@@ -1,0 +1,32 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/core.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/typer/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/core.py	2026-09-17 15:46:11.599826507 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/typer/core.py	2026-09-27 11:58:45.722592920 -0400
+@@ -34,6 +34,7 @@
+ 
+ # Copy from _click.parser._split_opt
+ def _split_opt(opt: str) -> tuple[str, str]:
++    """Split an option string into its prefix and value."""
+     first = opt[:1]
+     if first.isalnum():
+         return "", opt
+@@ -42,7 +43,7 @@
+     return first, opt[1:]
+ 
+ 
+-def _typer_param_setup_autocompletion_compat(
++def _typer_param_setup_autocompletion_compat(\n    """Setup autocompletion compatibility for a parameter."""
+     self: _click.Parameter,
+     *,
+     autocompletion: Callable[
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/typer/_typing.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py	2026-09-17 15:46:11.573110818 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/typer/_typing.py	2026-09-27 11:56:10.482822913 -0400
+@@ -56,7 +56,7 @@
+     return get_origin(type_) is Literal
+ 
+ 
+-def literal_values(type_: type[Any]) -> tuple[Any, ...]:
++def literal_values_v2(type_: type[Any]) -> tuple[Any, ...]:
+     return get_args(type_)
+ 
+ 

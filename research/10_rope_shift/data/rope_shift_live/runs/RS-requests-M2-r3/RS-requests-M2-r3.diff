@@ -1,0 +1,63 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/requests/api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py	2026-09-17 15:46:10.978622109 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/requests/api.py	2026-09-25 12:33:10.300314146 -0400
+@@ -21,7 +21,7 @@
+     from . import _types as _t
+ 
+ 
+-def request(
++def options_v2(
+     method: str, url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]
+ ) -> Response:
+     """Constructs and sends a :class:`Request <Request>`.
+@@ -87,7 +87,7 @@
+     return request("get", url, params=params, **kwargs)
+ 
+ 
+-def options(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
++def options(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:  # deprecated, use options_v2
+     r"""Sends an OPTIONS request.
+ 
+     :param url: URL for the new :class:`Request` object.
+@@ -96,7 +96,7 @@
+     :rtype: requests.Response
+     """
+ 
+-    return request("options", url, **kwargs)
++    return options_v2("options", url, **kwargs)
+ 
+ 
+ def head(url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/requests/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py	2026-09-17 15:46:10.941532986 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/requests/__init__.py	2026-09-25 12:32:15.801386043 -0400
+@@ -168,7 +168,7 @@
+     __url__,
+     __version__,
+ )
+-from .api import delete, get, head, options, patch, post, put, request
++from .api import delete, get, head, options, options_v2, patch, post, put, request
+ from .exceptions import (
+     ConnectionError,
+     ConnectTimeout,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_08/profiling_sandbox/requests/sessions.py	2026-09-25 12:32:51.550338877 -0400
+@@ -670,7 +670,7 @@
+         kwargs.setdefault("allow_redirects", True)
+         return self.request("GET", url, params=params, **kwargs)
+ 
+-    def options(self, url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
++    def options_v2(self, url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+         r"""Sends a OPTIONS request. Returns :class:`Response` object.
+ 
+         :param url: URL for the new :class:`Request` object.
+@@ -679,7 +679,7 @@
+         """
+ 
+         kwargs.setdefault("allow_redirects", True)
+-        return self.request("OPTIONS", url, **kwargs)
++        return options_v2("OPTIONS", url, **kwargs)
+ 
+     def head(self, url: _t.UriType, **kwargs: Unpack[_t.RequestKwargs]) -> Response:
+         r"""Sends a HEAD request. Returns :class:`Response` object.

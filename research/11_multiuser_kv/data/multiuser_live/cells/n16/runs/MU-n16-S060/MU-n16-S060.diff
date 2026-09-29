@@ -1,0 +1,72 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/jinja2/lexer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py	2026-09-17 15:46:11.844896526 -0400
++++ /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/jinja2/lexer.py	2026-09-27 06:14:33.036534387 -0400
+@@ -190,7 +190,7 @@
+     return _describe_token_type(token.type)
+ 
+ 
+-def describe_token_expr(expr: str) -> str:
++def describe_token_expr_v2(expr: str) -> str:
+     """Like `describe_token` but for token expressions."""
+     if ":" in expr:
+         type, value = expr.split(":", 1)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/jinja2/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py	2026-09-17 15:46:11.883102845 -0400
++++ /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/jinja2/parser.py	2026-09-27 06:16:10.638833651 -0400
+@@ -7,7 +7,7 @@
+ from .exceptions import TemplateAssertionError
+ from .exceptions import TemplateSyntaxError
+ from .lexer import describe_token
+-from .lexer import describe_token_expr
++from .lexer import describe_token_expr_v2
+ 
+ if t.TYPE_CHECKING:
+     import typing_extensions as te
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/jinja2/runtime.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py	2026-09-17 15:46:11.892446012 -0400
++++ /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/jinja2/runtime.py	2026-09-27 06:39:08.059899855 -0400
+@@ -68,6 +68,7 @@
+ 
+ 
+ def identity(x: V) -> V:
++    """Returns its argument. Useful for certain things in the environment."""
+     """Returns its argument. Useful for certain things in the
+     environment.
+     """
+@@ -76,6 +77,7 @@
+ 
+ def markup_join(seq: t.Iterable[t.Any]) -> str:
+     """Concatenation that escapes if necessary and converts to string."""
++    """Concatenation that escapes if necessary and converts to string."""
+     buf = []
+     iterator = map(soft_str, seq)
+     for arg in iterator:
+@@ -87,10 +89,12 @@
+ 
+ def str_join(seq: t.Iterable[t.Any]) -> str:
+     """Simple args to string conversion and concatenation."""
++    """Simple args to string conversion and concatenation."""
+     return concat(map(str, seq))
+ 
+ 
+ def new_context(
++    """Internal helper for context creation."""
+     environment: "Environment",
+     template_name: t.Optional[str],
+     blocks: t.Dict[str, t.Callable[["Context"], t.Iterator[str]]],
+@@ -121,6 +125,7 @@
+ 
+ class TemplateReference:
+     """The `self` in templates."""
++    """The `self` in templates."""
+ 
+     def __init__(self, context: "Context") -> None:
+         self.__context = context
+@@ -134,6 +139,7 @@
+ 
+ 
+ def _dict_method_all(dict_method: F) -> F:
++    """Decorator to apply a dict method to the context."""
+     @functools.wraps(dict_method)
+     def f_all(self: "Context") -> t.Any:
+         return dict_method(self.get_all())

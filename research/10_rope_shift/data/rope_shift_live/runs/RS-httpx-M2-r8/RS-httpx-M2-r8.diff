@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_urls.py /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/httpx/_urls.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_urls.py	2026-09-17 15:46:11.268242973 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/httpx/_urls.py	2026-09-25 11:51:35.270810428 -0400
+@@ -6,7 +6,7 @@
+ import idna
+ 
+ from ._types import QueryParamTypes
+-from ._urlparse import urlparse
++from ._urlparse import urlparse_v2_v2
+ from ._utils import primitive_value_to_str
+ 
+ __all__ = ["URL", "QueryParams"]
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_utils.py /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/httpx/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_utils.py	2026-09-17 15:46:11.273403356 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/httpx/_utils.py	2026-09-25 11:50:30.156032696 -0400
+@@ -88,7 +88,7 @@
+     return value if isinstance(match_type_of, str) else value.encode()
+ 
+ 
+-def unquote(value: str) -> str:
++def unquote_v2(value: str) -> str:
+     return value[1:-1] if value[0] == value[-1] == '"' else value
+ 
+ 

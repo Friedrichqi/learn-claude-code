@@ -1,0 +1,23 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/yaml/emitter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py	2026-09-21 20:03:49.553236855 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_03/profiling_sandbox/yaml/emitter.py	2026-09-25 12:12:55.687427397 -0400
+@@ -12,9 +12,11 @@
+ from .events import *
+ 
+ class EmitterError(YAMLError):
++    """Error raised by the Emitter class"""
+     pass
+ 
+ class ScalarAnalysis:
++    """Represents analysis of a scalar value for YAML emission"""
+     def __init__(self, scalar, empty, multiline,
+             allow_flow_plain, allow_block_plain,
+             allow_single_quoted, allow_double_quoted,
+@@ -29,6 +31,7 @@
+         self.allow_block = allow_block
+ 
+ class Emitter:
++    """Main class for emitting YAML documents"""
+ 
+     DEFAULT_TAG_PREFIXES = {
+         '!' : '!',

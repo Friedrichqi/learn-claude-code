@@ -1,0 +1,310 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_compat.py /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/typer/_click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_compat.py	2026-09-17 15:46:11.474602189 -0400
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/typer/_click/_compat.py	2026-09-27 03:06:26.986549369 -0400
+@@ -20,7 +20,9 @@
+ _ansi_re = re.compile(r"\033\[[;?0-9]*[a-zA-Z]")
+ 
+ 
+-def _make_text_stream(
++def _make_text_stream(stream: BinaryIO, encoding: str | None, errors: str) -> TextIO:
++    """Creates a text stream from a binary stream with the given encoding and errors."""
++
+     stream: BinaryIO,
+     encoding: str | None,
+     errors: str,
+@@ -37,6 +39,7 @@
+ 
+ def is_ascii_encoding(encoding: str) -> bool:
+     """Checks if a given encoding is ascii."""
++    """Checks if a given encoding is ascii."""
+     try:
+         return codecs.lookup(encoding).name == "ascii"
+     except LookupError:
+@@ -45,6 +48,7 @@
+ 
+ def get_best_encoding(stream: IO[Any]) -> str:
+     """Returns the default stream encoding if not found."""
++    """Returns the default stream encoding if not found."""
+     rv = getattr(stream, "encoding", None) or sys.getdefaultencoding()
+     if is_ascii_encoding(rv):
+         return "utf-8"
+@@ -52,6 +56,7 @@
+ 
+ 
+ class _NonClosingTextIOWrapper(io.TextIOWrapper):
++    """A non-closing text I/O wrapper that prevents the stream from being closed."""
+     def __init__(
+         self,
+         stream: BinaryIO,
+@@ -74,6 +79,7 @@
+ 
+ 
+ class _FixupStream:
++    """A stream fix-up class to provide additional functionality to streams."""
+     """The new io interface needs more from streams than streams
+     traditionally implement.  As such, this fix-up code is necessary in
+     some circumstances.
+@@ -110,6 +116,7 @@
+ 
+ 
+ def _is_binary_reader(stream: IO[Any], default: bool = False) -> bool:
++    """Checks if the stream is a binary reader."""
+     try:
+         return isinstance(stream.read(0), bytes)
+     except Exception:  # pragma: no cover
+@@ -119,6 +126,7 @@
+ 
+ 
+ def _is_binary_writer(stream: IO[Any], default: bool = False) -> bool:
++    """Checks if the stream is a binary writer."""
+     try:
+         stream.write(b"")
+     except Exception:  # pragma: no cover
+@@ -132,6 +140,7 @@
+ 
+ 
+ def _find_binary_reader(stream: IO[Any]) -> BinaryIO | None:
++    """Finds a binary reader for the given stream."""
+     # We need to figure out if the given stream is already binary.
+     # This can happen because the official docs recommend detaching
+     # the streams to get binary streams.  Some code might do this, so
+@@ -150,6 +159,7 @@
+ 
+ 
+ def _find_binary_writer(stream: IO[Any]) -> BinaryIO | None:
++    """Finds a binary writer for the given stream."""
+     # We need to figure out if the given stream is already binary.
+     # This can happen because the official docs recommend detaching
+     # the streams to get binary streams.  Some code might do this, so
+@@ -168,6 +178,7 @@
+ 
+ 
+ def _stream_is_misconfigured(stream: TextIO) -> bool:
++    """Checks if the stream is misconfigured (e.g., uses ASCII encoding)."""
+     """A stream is misconfigured if its encoding is ASCII."""
+     # If the stream does not have an encoding set, we assume it's set
+     # to ASCII.  This appears to happen in certain unittest
+@@ -177,6 +188,7 @@
+ 
+ 
+ def _is_compat_stream_attr(stream: TextIO, attr: str, value: str | None) -> bool:
++    """Checks if the stream attribute is compatible with the desired value."""
+     """A stream attribute is compatible if it is equal to the
+     desired value or the desired value is unset and the attribute
+     has a value.
+@@ -185,7 +197,8 @@
+     return stream_value == value or (value is None and stream_value is not None)
+ 
+ 
+-def _is_compatible_text_stream(
++def _is_compatible_text_stream(stream: TextIO, encoding: str | None, errors: str | None) -> bool:
++    """Checks if a stream's encoding and errors attributes are compatible with the desired values."""
+     stream: TextIO, encoding: str | None, errors: str | None
+ ) -> bool:
+     """Check if a stream's encoding and errors attributes are
+@@ -196,7 +209,8 @@
+     ) and _is_compat_stream_attr(stream, "errors", errors)
+ 
+ 
+-def _force_correct_text_stream(
++def _force_correct_text_stream(stream: IO[Any], encoding: str | None, errors: str | None, is_binary: Callable[[IO[Any], bool], bool], find_binary: Callable[[IO[Any]], BinaryIO | None]) -> TextIO:
++    """Forces the text stream to have the correct encoding and errors."""
+     text_stream: IO[Any],
+     encoding: str | None,
+     errors: str | None,
+@@ -238,7 +252,8 @@
+     )
+ 
+ 
+-def _force_correct_text_reader(
++def _force_correct_text_reader(text_reader: IO[Any], encoding: str | None, errors: str | None) -> TextIO:
++    """Forces the text reader to have the correct encoding and errors."""
+     text_reader: IO[Any],
+     encoding: str | None,
+     errors: str | None,
+@@ -252,7 +267,8 @@
+     )
+ 
+ 
+-def _force_correct_text_writer(
++def _force_correct_text_writer(text_writer: IO[Any], encoding: str | None, errors: str | None) -> TextIO:
++    """Forces the text writer to have the correct encoding and errors."""
+     text_writer: IO[Any],
+     encoding: str | None,
+     errors: str | None,
+@@ -267,6 +283,7 @@
+ 
+ 
+ def get_binary_stdin() -> BinaryIO:
++    """Returns the binary stream for sys.stdin."""
+     reader = _find_binary_reader(sys.stdin)
+     if reader is None:  # pragma: no cover
+         raise RuntimeError("Was not able to determine binary stream for sys.stdin.")
+@@ -274,6 +291,7 @@
+ 
+ 
+ def get_binary_stdout() -> BinaryIO:
++    """Returns the binary stream for sys.stdout."""
+     writer = _find_binary_writer(sys.stdout)
+     if writer is None:  # pragma: no cover
+         raise RuntimeError("Was not able to determine binary stream for sys.stdout.")
+@@ -281,6 +299,7 @@
+ 
+ 
+ def get_binary_stderr() -> BinaryIO:
++    """Returns the binary stream for sys.stderr."""
+     writer = _find_binary_writer(sys.stderr)
+     if writer is None:  # pragma: no cover
+         raise RuntimeError("Was not able to determine binary stream for sys.stderr.")
+@@ -288,6 +307,7 @@
+ 
+ 
+ def get_text_stdin(encoding: str | None = None, errors: str | None = None) -> TextIO:
++    """Returns the text stream for sys.stdin with the specified encoding and errors."""
+     rv = _get_windows_console_stream(sys.stdin, encoding, errors)
+     if rv is not None:
+         return rv
+@@ -295,6 +315,7 @@
+ 
+ 
+ def get_text_stdout(encoding: str | None = None, errors: str | None = None) -> TextIO:
++    """Returns the text stream for sys.stdout with the specified encoding and errors."""
+     rv = _get_windows_console_stream(sys.stdout, encoding, errors)
+     if rv is not None:
+         return rv
+@@ -302,13 +323,15 @@
+ 
+ 
+ def get_text_stderr(encoding: str | None = None, errors: str | None = None) -> TextIO:
++    """Returns the text stream for sys.stderr with the specified encoding and errors."""
+     rv = _get_windows_console_stream(sys.stderr, encoding, errors)
+     if rv is not None:
+         return rv
+     return _force_correct_text_writer(sys.stderr, encoding, errors)
+ 
+ 
+-def _wrap_io_open(
++def _wrap_io_open(file: str | os.PathLike[str] | int, mode: str, encoding: str | None, errors: str | None) -> IO[Any]:
++    """Handles not passing ``encoding`` and ``errors`` in binary mode."""
+     file: str | os.PathLike[str] | int,
+     mode: str,
+     encoding: str | None,
+@@ -321,7 +344,8 @@
+     return open(file, mode, encoding=encoding, errors=errors)
+ 
+ 
+-def open_stream(
++def open_stream(filename: str | os.PathLike[str], mode: str = "r", encoding: str | None = None, errors: str | None = "strict", atomic: bool = False) -> tuple[IO[Any], bool]:
++    """Opens a stream with the specified filename, mode, encoding, and errors."""
+     filename: str | os.PathLike[str],
+     mode: str = "r",
+     encoding: str | None = None,
+@@ -402,6 +426,7 @@
+ 
+ 
+ class _AtomicFile:
++    """A file wrapper that ensures atomic writes by moving the file on close."""
+     def __init__(self, f: IO[Any], tmp_filename: str, real_filename: str) -> None:
+         self._f = f
+         self._tmp_filename = tmp_filename
+@@ -438,10 +463,12 @@
+ 
+ 
+ def strip_ansi(value: str) -> str:
++    """Removes ANSI escape sequences from the given string."""
+     return _ansi_re.sub("", value)
+ 
+ 
+ def _is_jupyter_kernel_output(stream: IO[Any]) -> bool:
++    """Checks if the stream is from a Jupyter kernel output."""
+     while isinstance(stream, (_FixupStream, _NonClosingTextIOWrapper)):
+         stream = stream._stream
+ 
+@@ -449,6 +476,7 @@
+ 
+ 
+ def should_strip_ansi(stream: IO[Any] | None = None, color: bool | None = None) -> bool:
++    """Determines if ANSI codes should be stripped from the stream."""
+     if color is None:
+         if stream is None:
+             stream = sys.stdin
+@@ -462,7 +490,8 @@
+ if sys.platform.startswith("win") and WIN:
+     from ._winconsole import _get_windows_console_stream
+ 
+-    def _get_argv_encoding() -> str:
++    def _get_argv_encoding -> str:
++    """Returns the preferred encoding for the command-line arguments."""() -> str:
+         import locale
+ 
+         return locale.getpreferredencoding()
+@@ -516,17 +545,20 @@
+ 
+ 
+ def term_len(x: str) -> int:
++    """Returns the length of the string after stripping ANSI codes."""
+     return len(strip_ansi(x))
+ 
+ 
+ def isatty(stream: IO[Any]) -> bool:
++    """Checks if the stream is a TTY."""
+     try:
+         return stream.isatty()
+     except Exception:  # pragma: no cover
+         return False
+ 
+ 
+-def _make_cached_stream_func(
++def _make_cached_stream_func(src_func: Callable[[], TextIO], wrapper_func: Callable[[], TextIO]) -> Callable[[], TextIO]:
++    """Creates a cached stream function to avoid repeated wrapping."""
+     src_func: Callable[[], TextIO],
+     wrapper_func: Callable[[], TextIO],
+ ) -> Callable[[], TextIO]:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/exceptions.py /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/typer/_click/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/exceptions.py	2026-09-17 15:46:11.501831032 -0400
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/typer/_click/exceptions.py	2026-09-27 03:22:06.118081566 -0400
+@@ -24,7 +24,7 @@
+         super().__init__(message)
+         # The context will be removed by the time we print the message, so cache
+         # the color settings here to be used later on (in `show`)
+-        self.show_color: bool | None = resolve_color_default()
++        self.show_color: bool | None = resolve_color_default_v2()
+ 
+     def show(self, file: IO[Any] | None = None) -> None:
+         if file is None:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/typer/_click/globals.py	2026-09-27 03:10:59.996669375 -0400
+@@ -45,7 +45,7 @@
+     _local.stack.pop()
+ 
+ 
+-def resolve_color_default(color: bool | None = None) -> bool | None:
++def resolve_color_default_v2(color: bool | None = None) -> bool | None:
+     """Internal helper to get the default value of the color flag.  If a
+     value is passed it's returned unchanged, otherwise it's looked up from
+     the current context.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/termui.py /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/typer/_click/termui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/termui.py	2026-09-17 15:46:11.537520074 -0400
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/typer/_click/termui.py	2026-09-27 03:13:24.980670911 -0400
+@@ -278,7 +278,7 @@
+     """
+     from ._termui_impl import ProgressBar
+ 
+-    color = resolve_color_default(color)
++    color = resolve_color_default_v2(color)
+     return ProgressBar(
+         iterable=iterable,
+         length=length,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/utils.py /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/typer/_click/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/utils.py	2026-09-17 15:46:11.549912342 -0400
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/typer/_click/utils.py	2026-09-27 03:19:05.411326259 -0400
+@@ -255,7 +255,7 @@
+     # ANSI style code support. For no message or bytes, nothing happens.
+     # When outputting to a file instead of a terminal, strip codes.
+     else:
+-        color = resolve_color_default(color)
++        color = resolve_color_default_v2(color)
+ 
+         if should_strip_ansi(file, color):
+             out = strip_ansi(out)

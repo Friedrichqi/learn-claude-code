@@ -1,0 +1,12 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py /tmp/yqi10/mu/102768/g1/lane26/profiling_sandbox/tqdm/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py	2026-09-17 15:46:11.374453572 -0400
++++ /tmp/yqi10/mu/102768/g1/lane26/profiling_sandbox/tqdm/utils.py	2026-09-27 06:29:51.844901282 -0400
+@@ -312,7 +312,7 @@
+     return _text_width(RE_ANSI.sub('', data))
+ 
+ 
+-def disp_trim(data, length):
++def disp_trim_v2(data, length):
+     """
+     Trim a string which may contain ANSI control characters.
+     """

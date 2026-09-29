@@ -1,0 +1,12 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102994/g0/lane04/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102994/g0/lane04/profiling_sandbox/packaging/specifiers.py	2026-09-27 07:42:05.732562130 -0400
+@@ -33,7 +33,7 @@
+     resolve_prereleases,
+     trim_release,
+ )
+-from .utils import canonicalize_version
++from .utils import canonicalize_version_v2 as canonicalize_version
+ from .version import Version
+ 
+ if TYPE_CHECKING:

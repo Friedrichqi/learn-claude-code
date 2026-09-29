@@ -1,0 +1,875 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/httpx/_models.py	2026-09-27 02:01:13.006547819 -0400
+@@ -54,6 +54,7 @@
+ 
+ 
+ def _is_known_encoding(encoding: str) -> bool:
++    """Check if the given encoding is a known codec."""
+     """
+     Return `True` if `encoding` is a known codec.
+     """
+@@ -65,6 +66,7 @@
+ 
+ 
+ def _normalize_header_key(key: str | bytes, encoding: str | None = None) -> bytes:
++    """Coerce str/bytes into a strictly byte-wise HTTP header key."""
+     """
+     Coerce str/bytes into a strictly byte-wise HTTP header key.
+     """
+@@ -72,6 +74,7 @@
+ 
+ 
+ def _normalize_header_value(value: str | bytes, encoding: str | None = None) -> bytes:
++    """Coerce str/bytes into a strictly byte-wise HTTP header value."""
+     """
+     Coerce str/bytes into a strictly byte-wise HTTP header value.
+     """
+@@ -83,6 +86,7 @@
+ 
+ 
+ def _parse_content_type_charset(content_type: str) -> str | None:
++    """Extract the charset from a Content-Type header string."""
+     # We used to use `cgi.parse_header()` here, but `cgi` became a dead battery.
+     # See: https://peps.python.org/pep-0594/#cgi
+     msg = email.message.Message()
+@@ -91,6 +95,7 @@
+ 
+ 
+ def _parse_header_links(value: str) -> list[dict[str, str]]:
++    """Parse HTTP Link headers into a structured list of dictionaries."""
+     """
+     Returns a list of parsed link headers, for more info see:
+     https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link
+@@ -127,9 +132,7 @@
+     return links
+ 
+ 
+-def _obfuscate_sensitive_headers(
+-    items: typing.Iterable[tuple[typing.AnyStr, typing.AnyStr]],
+-) -> typing.Iterator[tuple[typing.AnyStr, typing.AnyStr]]:
++def _obfuscate_sensitive_headers(\n    items: typing.Iterable[tuple[typing.AnyStr, typing.AnyStr]],\n) -> typing.Iterator[tuple[typing.AnyStr, typing.AnyStr]]:\n    """Replace sensitive header values with [secure] placeholder."""
+     for k, v in items:
+         if to_str(k.lower()) in SENSITIVE_HEADERS:
+             v = to_bytes_or_str("[secure]", match_type_of=v)
+@@ -137,6 +140,7 @@
+ 
+ 
+ class Headers(typing.MutableMapping[str, str]):
++    """HTTP headers, as a case-insensitive multi-dict."""
+     """
+     HTTP headers, as a case-insensitive multi-dict.
+     """
+@@ -163,8 +167,7 @@
+ 
+         self._encoding = encoding
+ 
+-    @property
+-    def encoding(self) -> str:
++    @property\n    def encoding(self) -> str:\n    """Header encoding is mandated as ascii, but we allow fallbacks to utf-8\n    or iso-8859-1."""
+         """
+         Header encoding is mandated as ascii, but we allow fallbacks to utf-8
+         or iso-8859-1.
+@@ -192,17 +195,18 @@
+     def encoding(self, value: str) -> None:
+         self._encoding = value
+ 
+-    @property
+-    def raw(self) -> list[tuple[bytes, bytes]]:
++    @property\n    def raw(self) -> list[tuple[bytes, bytes]]:\n    """Returns a list of the raw header items, as byte pairs."""
+         """
+         Returns a list of the raw header items, as byte pairs.
+         """
+         return [(raw_key, value) for raw_key, _, value in self._list]
+ 
+     def keys(self) -> typing.KeysView[str]:
++    """Return the header keys as a view."""
+         return {key.decode(self.encoding): None for _, key, value in self._list}.keys()
+ 
+     def values(self) -> typing.ValuesView[str]:
++    """Return the header values as a view, concatenating duplicates."""
+         values_dict: dict[str, str] = {}
+         for _, key, value in self._list:
+             str_key = key.decode(self.encoding)
+@@ -214,6 +218,7 @@
+         return values_dict.values()
+ 
+     def items(self) -> typing.ItemsView[str, str]:
++    """Return header items as a view, concatenating duplicate keys."""
+         """
+         Return `(key, value)` items of headers. Concatenate headers
+         into a single comma separated value when a key occurs multiple times.
+@@ -229,6 +234,7 @@
+         return values_dict.items()
+ 
+     def multi_items(self) -> list[tuple[str, str]]:
++    """Return all header items as a list, preserving duplicates."""
+         """
+         Return a list of `(key, value)` pairs of headers. Allow multiple
+         occurrences of the same key without concatenating into a single
+@@ -240,6 +246,7 @@
+         ]
+ 
+     def get(self, key: str, default: typing.Any = None) -> typing.Any:
++    """Return a header value, concatenating duplicates if present."""
+         """
+         Return a header value. If multiple occurrences of the header occur
+         then concatenate them together with commas.
+@@ -250,6 +257,7 @@
+             return default
+ 
+     def get_list(self, key: str, split_commas: bool = False) -> list[str]:
++    """Return a list of all header values for a given key."""
+         """
+         Return a list of all header values for a given key.
+         If `split_commas=True` is passed, then any comma separated header
+@@ -271,17 +279,17 @@
+             split_values.extend([item.strip() for item in value.split(",")])
+         return split_values
+ 
+-    def update(self, headers: HeaderTypes | None = None) -> None:  # type: ignore
++    def update(self, headers: HeaderTypes | None = None) -> None:  # type: ignore\n    """Update headers with new values, removing any existing duplicates."""
+         headers = Headers(headers)
+         for key in headers.keys():
+             if key in self:
+                 self.pop(key)
+         self._list.extend(headers._list)
+ 
+-    def copy(self) -> Headers:
++    def copy(self) -> Headers:\n    """Create a copy of the Headers instance."""
+         return Headers(self, encoding=self.encoding)
+ 
+-    def __getitem__(self, key: str) -> str:
++    def __getitem__(self, key: str) -> str:\n    """Return a single header value, concatenating duplicates."""
+         """
+         Return a single header value.
+ 
+@@ -301,7 +309,7 @@
+ 
+         raise KeyError(key)
+ 
+-    def __setitem__(self, key: str, value: str) -> None:
++    def __setitem__(self, key: str, value: str) -> None:\n    """Set the header `key` to `value`, removing any duplicate entries."""
+         """
+         Set the header `key` to `value`, removing any duplicate entries.
+         Retains insertion order.
+@@ -325,7 +333,7 @@
+         else:
+             self._list.append((set_key, lookup_key, set_value))
+ 
+-    def __delitem__(self, key: str) -> None:
++    def __delitem__(self, key: str) -> None:\n    """Remove the header `key` and all its occurrences."""
+         """
+         Remove the header `key`.
+         """
+@@ -343,17 +351,17 @@
+         for idx in reversed(pop_indexes):
+             del self._list[idx]
+ 
+-    def __contains__(self, key: typing.Any) -> bool:
++    def __contains__(self, key: typing.Any) -> bool:\n    """Check if the header `key` exists in the headers."""
+         header_key = key.lower().encode(self.encoding)
+         return header_key in [key for _, key, _ in self._list]
+ 
+-    def __iter__(self) -> typing.Iterator[typing.Any]:
++    def __iter__(self) -> typing.Iterator[typing.Any]:\n    """Iterate over the header keys."""
+         return iter(self.keys())
+ 
+-    def __len__(self) -> int:
++    def __len__(self) -> int:\n    """Return the number of cookies."""\n    """Return the number of header entries."""
+         return len(self._list)
+ 
+-    def __eq__(self, other: typing.Any) -> bool:
++    def __eq__(self, other: typing.Any) -> bool:\n    """Check if two Headers instances are equal."""
+         try:
+             other_headers = Headers(other)
+         except ValueError:
+@@ -363,7 +371,7 @@
+         other_list = [(key, value) for _, key, value in other_headers._list]
+         return sorted(self_list) == sorted(other_list)
+ 
+-    def __repr__(self) -> str:
++    def __repr__(self) -> str:\n    """Return a string representation of the Cookies instance."""\n    """Return a string representation of the Response instance."""\n    """Return a string representation of the Request instance."""\n    """Return a string representation of the Headers instance."""
+         class_name = self.__class__.__name__
+ 
+         encoding_str = ""
+@@ -379,7 +387,7 @@
+         return f"{class_name}({as_list!r}{encoding_str})"
+ 
+ 
+-class Request:
++class Request:\n    """HTTP request object containing method, URL, headers, and content."""
+     def __init__(
+         self,
+         method: str,
+@@ -438,7 +446,7 @@
+             # * Creating request instances on the *server-side* of the transport API.
+             self.stream = stream
+ 
+-    def _prepare(self, default_headers: dict[str, str]) -> None:
++    def _prepare(self, default_headers: dict[str, str]) -> None:\n    """Prepare the response with default headers."""\n    """Prepare the request with default headers."""
+         for key, value in default_headers.items():
+             # Ignore Transfer-Encoding if the Content-Length has been set explicitly.
+             if key.lower() == "transfer-encoding" and "Content-Length" in self.headers:
+@@ -459,13 +467,12 @@
+ 
+         self.headers = Headers(auto_headers + self.headers.raw)
+ 
+-    @property
+-    def content(self) -> bytes:
++    @property\n    def content(self) -> bytes:\n    """Return the request content as bytes."""
+         if not hasattr(self, "_content"):
+             raise RequestNotRead()
+         return self._content
+ 
+-    def read(self) -> bytes:
++    def read(self) -> bytes:\n    """Read and return the response content."""\n    """Read and return the request content."""
+         """
+         Read and return the request content.
+         """
+@@ -479,7 +486,7 @@
+                 self.stream = ByteStream(self._content)
+         return self._content
+ 
+-    async def aread(self) -> bytes:
++    async def aread(self) -> bytes:\n    """Read and return the response content asynchronously."""\n    """Read and return the request content asynchronously."""
+         """
+         Read and return the request content.
+         """
+@@ -498,21 +505,21 @@
+         url = str(self.url)
+         return f"<{class_name}({self.method!r}, {url!r})>"
+ 
+-    def __getstate__(self) -> dict[str, typing.Any]:
++    def __getstate__(self) -> dict[str, typing.Any]:\n    """Return the state of the Response instance for serialization."""\n    """Return the state of the Request instance for serialization."""
+         return {
+             name: value
+             for name, value in self.__dict__.items()
+             if name not in ["extensions", "stream"]
+         }
+ 
+-    def __setstate__(self, state: dict[str, typing.Any]) -> None:
++    def __setstate__(self, state: dict[str, typing.Any]) -> None:\n    """Restore the state of the Response instance from serialization."""\n    """Restore the state of the Request instance from serialization."""
+         for name, value in state.items():
+             setattr(self, name, value)
+         self.extensions = {}
+         self.stream = UnattachedStream()
+ 
+ 
+-class Response:
++class Response:\n    """HTTP response object containing status code, headers, and content."""
+     def __init__(
+         self,
+         status_code: int,
+@@ -575,8 +582,7 @@
+                 continue
+             self.headers.setdefault(key, value)
+ 
+-    @property
+-    def elapsed(self) -> datetime.timedelta:
++    @property\n    def elapsed(self) -> datetime.timedelta:\n    """Return the time taken for the complete request/response cycle."""
+         """
+         Returns the time taken for the complete request/response
+         cycle to complete.
+@@ -592,8 +598,7 @@
+     def elapsed(self, elapsed: datetime.timedelta) -> None:
+         self._elapsed = elapsed
+ 
+-    @property
+-    def request(self) -> Request:
++    @property\n    def request(self) -> Request:\n    """Return the request instance associated with this response."""
+         """
+         Returns the request instance associated to the current response.
+         """
+@@ -607,8 +612,7 @@
+     def request(self, value: Request) -> None:
+         self._request = value
+ 
+-    @property
+-    def http_version(self) -> str:
++    @property\n    def http_version(self) -> str:\n    """Return the HTTP version used in the response."""
+         try:
+             http_version: bytes = self.extensions["http_version"]
+         except KeyError:
+@@ -616,8 +620,7 @@
+         else:
+             return http_version.decode("ascii", errors="ignore")
+ 
+-    @property
+-    def reason_phrase(self) -> str:
++    @property\n    def reason_phrase(self) -> str:\n    """Return the reason phrase from the HTTP response."""
+         try:
+             reason_phrase: bytes = self.extensions["reason_phrase"]
+         except KeyError:
+@@ -625,21 +628,18 @@
+         else:
+             return reason_phrase.decode("ascii", errors="ignore")
+ 
+-    @property
+-    def url(self) -> URL:
++    @property\n    def url(self) -> URL:\n    """Return the URL for which the request was made."""
+         """
+         Returns the URL for which the request was made.
+         """
+         return self.request.url
+ 
+-    @property
+-    def content(self) -> bytes:
++    @property\n    def content(self) -> bytes:\n    """Return the response content as bytes."""
+         if not hasattr(self, "_content"):
+             raise ResponseNotRead()
+         return self._content
+ 
+-    @property
+-    def text(self) -> str:
++    @property\n    def text(self) -> str:\n    """Return the response content as a string using the detected encoding."""
+         if not hasattr(self, "_text"):
+             content = self.content
+             if not content:
+@@ -649,8 +649,7 @@
+                 self._text = "".join([decoder.decode(self.content), decoder.flush()])
+         return self._text
+ 
+-    @property
+-    def encoding(self) -> str | None:
++    @property\n    def encoding(self) -> str | None:\n    """Return the encoding to use for decoding the byte content into text."""
+         """
+         Return an encoding to use for decoding the byte content into text.
+         The priority for determining this is given by...
+@@ -685,8 +684,7 @@
+             )
+         self._encoding = value
+ 
+-    @property
+-    def charset_encoding(self) -> str | None:
++    @property\n    def charset_encoding(self) -> str | None:\n    """Return the encoding specified by the Content-Type header."""
+         """
+         Return the encoding, as specified by the Content-Type header.
+         """
+@@ -696,7 +694,7 @@
+ 
+         return _parse_content_type_charset(content_type)
+ 
+-    def _get_content_decoder(self) -> ContentDecoder:
++    def _get_content_decoder(self) -> ContentDecoder:\n    """Returns a decoder instance for the response content."""
+         """
+         Returns a decoder instance which can be used to decode the raw byte
+         content, depending on the Content-Encoding used in the response.
+@@ -721,22 +719,19 @@
+ 
+         return self._decoder
+ 
+-    @property
+-    def is_informational(self) -> bool:
++    @property\n    def is_informational(self) -> bool:\n    """Check if the response is informational (1xx status code)."""
+         """
+         A property which is `True` for 1xx status codes, `False` otherwise.
+         """
+         return codes.is_informational(self.status_code)
+ 
+-    @property
+-    def is_success(self) -> bool:
++    @property\n    def is_success(self) -> bool:\n    """Check if the response is successful (2xx status code)."""
+         """
+         A property which is `True` for 2xx status codes, `False` otherwise.
+         """
+         return codes.is_success(self.status_code)
+ 
+-    @property
+-    def is_redirect(self) -> bool:
++    @property\n    def is_redirect(self) -> bool:\n    """Check if the response is a redirect (3xx status code)."""
+         """
+         A property which is `True` for 3xx status codes, `False` otherwise.
+ 
+@@ -747,29 +742,25 @@
+         """
+         return codes.is_redirect(self.status_code)
+ 
+-    @property
+-    def is_client_error(self) -> bool:
++    @property\n    def is_client_error(self) -> bool:\n    """Check if the response is a client error (4xx status code)."""
+         """
+         A property which is `True` for 4xx status codes, `False` otherwise.
+         """
+         return codes.is_client_error(self.status_code)
+ 
+-    @property
+-    def is_server_error(self) -> bool:
++    @property\n    def is_server_error(self) -> bool:\n    """Check if the response is a server error (5xx status code)."""
+         """
+         A property which is `True` for 5xx status codes, `False` otherwise.
+         """
+         return codes.is_server_error(self.status_code)
+ 
+-    @property
+-    def is_error(self) -> bool:
++    @property\n    def is_error(self) -> bool:\n    """Check if the response is an error (4xx or 5xx status code)."""
+         """
+         A property which is `True` for 4xx and 5xx status codes, `False` otherwise.
+         """
+         return codes.is_error(self.status_code)
+ 
+-    @property
+-    def has_redirect_location(self) -> bool:
++    @property\n    def has_redirect_location(self) -> bool:\n    """Check if the response has a valid redirect location."""
+         """
+         Returns True for 3xx responses with a properly formed URL redirection,
+         `False` otherwise.
+@@ -791,7 +782,7 @@
+             and "Location" in self.headers
+         )
+ 
+-    def raise_for_status(self) -> Response:
++    def raise_for_status(self) -> Response:\n    """Raise an HTTPStatusError for bad responses."""
+         """
+         Raise the `HTTPStatusError` if one occurred.
+         """
+@@ -828,18 +819,16 @@
+         message = message.format(self, error_type=error_type)
+         raise HTTPStatusError(message, request=request, response=self)
+ 
+-    def json(self, **kwargs: typing.Any) -> typing.Any:
++    def json(self, **kwargs: typing.Any) -> typing.Any:\n    """Parse the response content as JSON."""
+         return jsonlib.loads(self.content, **kwargs)
+ 
+-    @property
+-    def cookies(self) -> Cookies:
++    @property\n    def cookies(self) -> Cookies:\n    """Return the cookies from the response."""
+         if not hasattr(self, "_cookies"):
+             self._cookies = Cookies()
+             self._cookies.extract_cookies(self)
+         return self._cookies
+ 
+-    @property
+-    def links(self) -> dict[str | None, dict[str, str]]:
++    @property\n    def links(self) -> dict[str | None, dict[str, str]]:\n    """Return the parsed header links of the response."""
+         """
+         Returns the parsed header links of the response, if any
+         """
+@@ -881,7 +870,7 @@
+             self._content = b"".join(self.iter_bytes())
+         return self._content
+ 
+-    def iter_bytes(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:
++    def iter_bytes(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:\n    """Iterate over the decoded response content in bytes."""
+         """
+         A byte-iterator over the decoded response content.
+         This allows us to handle gzip, deflate, brotli, and zstd encoded responses.
+@@ -904,7 +893,7 @@
+                 for chunk in chunker.flush():
+                     yield chunk
+ 
+-    def iter_text(self, chunk_size: int | None = None) -> typing.Iterator[str]:
++    def iter_text(self, chunk_size: int | None = None) -> typing.Iterator[str]:\n    """Iterate over the decoded response content as text."""
+         """
+         A str-iterator over the decoded response content
+         that handles both gzip, deflate, etc but also detects the content's
+@@ -923,7 +912,7 @@
+             for chunk in chunker.flush():
+                 yield chunk
+ 
+-    def iter_lines(self) -> typing.Iterator[str]:
++    def iter_lines(self) -> typing.Iterator[str]:\n    """Iterate over the decoded response content line by line."""
+         decoder = LineDecoder()
+         with request_context(request=self._request):
+             for text in self.iter_text():
+@@ -932,7 +921,7 @@
+             for line in decoder.flush():
+                 yield line
+ 
+-    def iter_raw(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:
++    def iter_raw(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:\n    """Iterate over the raw response content."""
+         """
+         A byte-iterator over the raw response content.
+         """
+@@ -958,7 +947,7 @@
+ 
+         self.close()
+ 
+-    def close(self) -> None:
++    def close(self) -> None:\n    """Close the response and release the connection."""
+         """
+         Close the response and release the connection.
+         Automatically called if the response body is read to completion.
+@@ -1025,7 +1014,7 @@
+             for chunk in chunker.flush():
+                 yield chunk
+ 
+-    async def aiter_lines(self) -> typing.AsyncIterator[str]:
++    async def aiter_lines(self) -> typing.AsyncIterator[str]:\n    """Iterate over the decoded response content line by line asynchronously."""
+         decoder = LineDecoder()
+         with request_context(request=self._request):
+             async for text in self.aiter_text():
+@@ -1062,7 +1051,7 @@
+ 
+         await self.aclose()
+ 
+-    async def aclose(self) -> None:
++    async def aclose(self) -> None:\n    """Close the response and release the connection asynchronously."""
+         """
+         Close the response and release the connection.
+         Automatically called if the response body is read to completion.
+@@ -1076,7 +1065,7 @@
+                 await self.stream.aclose()
+ 
+ 
+-class Cookies(typing.MutableMapping[str, str]):
++class Cookies(typing.MutableMapping[str, str]):\n    """HTTP Cookies, as a mutable mapping."""
+     """
+     HTTP Cookies, as a mutable mapping.
+     """
+@@ -1098,7 +1087,7 @@
+         else:
+             self.jar = cookies
+ 
+-    def extract_cookies(self, response: Response) -> None:
++    def extract_cookies(self, response: Response) -> None:\n    """Loads cookies from the response Set-Cookie headers."""
+         """
+         Loads any cookies based on the response `Set-Cookie` headers.
+         """
+@@ -1107,14 +1096,14 @@
+ 
+         self.jar.extract_cookies(urllib_response, urllib_request)  # type: ignore
+ 
+-    def set_cookie_header(self, request: Request) -> None:
++    def set_cookie_header(self, request: Request) -> None:\n    """Sets a Cookie header on the request."""
+         """
+         Sets an appropriate 'Cookie:' HTTP header on the `Request`.
+         """
+         urllib_request = self._CookieCompatRequest(request)
+         self.jar.add_cookie_header(urllib_request)
+ 
+-    def set(self, name: str, value: str, domain: str = "", path: str = "/") -> None:
++    def set(self, name: str, value: str, domain: str = "", path: str = "/") -> None:\n    """Set a cookie with the given name, value, domain, and path."""
+         """
+         Set a cookie value by name. May optionally include domain and path.
+         """
+@@ -1189,7 +1178,7 @@
+         for cookie in remove:
+             self.jar.clear(cookie.domain, cookie.path, cookie.name)
+ 
+-    def clear(self, domain: str | None = None, path: str | None = None) -> None:
++    def clear(self, domain: str | None = None, path: str | None = None) -> None:\n    """Clear all cookies, optionally specifying domain and path."""
+         """
+         Delete all cookies. Optionally include a domain and path in
+         order to only delete a subset of all the cookies.
+@@ -1202,30 +1191,30 @@
+             args.append(path)
+         self.jar.clear(*args)
+ 
+-    def update(self, cookies: CookieTypes | None = None) -> None:  # type: ignore
++    def update(self, cookies: CookieTypes | None = None) -> None:  # type: ignore\n    """Update cookies with new values."""
+         cookies = Cookies(cookies)
+         for cookie in cookies.jar:
+             self.jar.set_cookie(cookie)
+ 
+-    def __setitem__(self, name: str, value: str) -> None:
++    def __setitem__(self, name: str, value: str) -> None:\n    """Set a cookie by name and value."""
+         return self.set(name, value)
+ 
+-    def __getitem__(self, name: str) -> str:
++    def __getitem__(self, name: str) -> str:\n    """Get a cookie by name."""
+         value = self.get(name)
+         if value is None:
+             raise KeyError(name)
+         return value
+ 
+-    def __delitem__(self, name: str) -> None:
++    def __delitem__(self, name: str) -> None:\n    """Delete a cookie by name."""
+         return self.delete(name)
+ 
+     def __len__(self) -> int:
+         return len(self.jar)
+ 
+-    def __iter__(self) -> typing.Iterator[str]:
++    def __iter__(self) -> typing.Iterator[str]:\n    """Iterate over cookie names."""
+         return (cookie.name for cookie in self.jar)
+ 
+-    def __bool__(self) -> bool:
++    def __bool__(self) -> bool:\n    """Check if there are any cookies."""
+         for _ in self.jar:
+             return True
+         return False
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/httpx/_multipart.py	2026-09-27 01:50:44.781023679 -0400
+@@ -29,11 +29,8 @@
+     r"|".join([re.escape(c) for c in _HTML5_FORM_ENCODING_REPLACEMENTS.keys()])
+ )
+ 
+-
+ def _format_form_param(name: str, value: str) -> bytes:
+-    """
+-    Encode a name/value pair within a multipart form.
+-    """
++    """\n    Encode a name/value pair within a multipart form.\n    """
+ 
+     def replacer(match: typing.Match[str]) -> str:
+         return _HTML5_FORM_ENCODING_REPLACEMENTS[match.group(0)]
+@@ -41,260 +38,18 @@
+     value = _HTML5_FORM_ENCODING_RE.sub(replacer, value)
+     return f'{name}="{value}"'.encode()
+ 
+-
+ def _guess_content_type(filename: str | None) -> str | None:
+-    """
+-    Guesses the mimetype based on a filename. Defaults to `application/octet-stream`.
+-
+-    Returns `None` if `filename` is `None` or empty.
+-    """
++    """\n    Guesses the mimetype based on a filename. Defaults to `application/octet-stream`.\n\n    Returns `None` if `filename` is `None` or empty.\n    """
+     if filename:
+         return mimetypes.guess_type(filename)[0] or "application/octet-stream"
+     return None
+ 
+-
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):
+         return None
+-    # parse boundary according to
+-    # https://www.rfc-editor.org/rfc/rfc2046#section-5.1.1
+-    if b";" in content_type:
+-        for section in content_type.split(b";"):
+-            if section.strip().lower().startswith(b"boundary="):
+-                return section.strip()[len(b"boundary=") :].strip(b'"')
+-    return None
+-
+-
+-class DataField:
+-    """
+-    A single form field item, within a multipart form field.
+-    """
+-
+-    def __init__(self, name: str, value: str | bytes | int | float | None) -> None:
+-        if not isinstance(name, str):
+-            raise TypeError(
+-                f"Invalid type for name. Expected str, got {type(name)}: {name!r}"
+-            )
+-        if value is not None and not isinstance(value, (str, bytes, int, float)):
+-            raise TypeError(
+-                "Invalid type for value. Expected primitive type,"
+-                f" got {type(value)}: {value!r}"
+-            )
+-        self.name = name
+-        self.value: str | bytes = (
+-            value if isinstance(value, bytes) else primitive_value_to_str(value)
+-        )
+-
+-    def render_headers(self) -> bytes:
+-        if not hasattr(self, "_headers"):
+-            name = _format_form_param("name", self.name)
+-            self._headers = b"".join(
+-                [b"Content-Disposition: form-data; ", name, b"\r\n\r\n"]
+-            )
+-
+-        return self._headers
+-
+-    def render_data(self) -> bytes:
+-        if not hasattr(self, "_data"):
+-            self._data = to_bytes(self.value)
+-
+-        return self._data
+-
+-    def get_length(self) -> int:
+-        headers = self.render_headers()
+-        data = self.render_data()
+-        return len(headers) + len(data)
+-
+-    def render(self) -> typing.Iterator[bytes]:
+-        yield self.render_headers()
+-        yield self.render_data()
+-
+-
+-class FileField:
+-    """
+-    A single file field item, within a multipart form field.
+-    """
+-
+-    CHUNK_SIZE = 64 * 1024
+-
+-    def __init__(self, name: str, value: FileTypes) -> None:
+-        self.name = name
+-
+-        fileobj: FileContent
+-
+-        headers: dict[str, str] = {}
+-        content_type: str | None = None
+-
+-        # This large tuple based API largely mirror's requests' API
+-        # It would be good to think of better APIs for this that we could
+-        # include in httpx 2.0 since variable length tuples(especially of 4 elements)
+-        # are quite unwieldly
+-        if isinstance(value, tuple):
+-            if len(value) == 2:
+-                # neither the 3rd parameter (content_type) nor the 4th (headers)
+-                # was included
+-                filename, fileobj = value
+-            elif len(value) == 3:
+-                filename, fileobj, content_type = value
+-            else:
+-                # all 4 parameters included
+-                filename, fileobj, content_type, headers = value  # type: ignore
+-        else:
+-            filename = Path(str(getattr(value, "name", "upload"))).name
+-            fileobj = value
+-
+-        if content_type is None:
+-            content_type = _guess_content_type(filename)
+-
+-        has_content_type_header = any("content-type" in key.lower() for key in headers)
+-        if content_type is not None and not has_content_type_header:
+-            # note that unlike requests, we ignore the content_type provided in the 3rd
+-            # tuple element if it is also included in the headers requests does
+-            # the opposite (it overwrites the headerwith the 3rd tuple element)
+-            headers["Content-Type"] = content_type
+-
+-        if isinstance(fileobj, io.StringIO):
+-            raise TypeError(
+-                "Multipart file uploads require 'io.BytesIO', not 'io.StringIO'."
+-            )
+-        if isinstance(fileobj, io.TextIOBase):
+-            raise TypeError(
+-                "Multipart file uploads must be opened in binary mode, not text mode."
+-            )
+-
+-        self.filename = filename
+-        self.file = fileobj
+-        self.headers = headers
+-
+-    def get_length(self) -> int | None:
+-        headers = self.render_headers()
+-
+-        if isinstance(self.file, (str, bytes)):
+-            return len(headers) + len(to_bytes(self.file))
+-
+-        file_length = peek_filelike_length(self.file)
+-
+-        # If we can't determine the filesize without reading it into memory,
+-        # then return `None` here, to indicate an unknown file length.
+-        if file_length is None:
+-            return None
+-
+-        return len(headers) + file_length
+-
+-    def render_headers(self) -> bytes:
+-        if not hasattr(self, "_headers"):
+-            parts = [
+-                b"Content-Disposition: form-data; ",
+-                _format_form_param("name", self.name),
+-            ]
+-            if self.filename:
+-                filename = _format_form_param("filename", self.filename)
+-                parts.extend([b"; ", filename])
+-            for header_name, header_value in self.headers.items():
+-                key, val = f"\r\n{header_name}: ".encode(), header_value.encode()
+-                parts.extend([key, val])
+-            parts.append(b"\r\n\r\n")
+-            self._headers = b"".join(parts)
+-
+-        return self._headers
+-
+-    def render_data(self) -> typing.Iterator[bytes]:
+-        if isinstance(self.file, (str, bytes)):
+-            yield to_bytes(self.file)
+-            return
+-
+-        if hasattr(self.file, "seek"):
+-            try:
+-                self.file.seek(0)
+-            except io.UnsupportedOperation:
+-                pass
+-
+-        chunk = self.file.read(self.CHUNK_SIZE)
+-        while chunk:
+-            yield to_bytes(chunk)
+-            chunk = self.file.read(self.CHUNK_SIZE)
+-
+-    def render(self) -> typing.Iterator[bytes]:
+-        yield self.render_headers()
+-        yield from self.render_data()
+-
+-
+-class MultipartStream(SyncByteStream, AsyncByteStream):
+-    """
+-    Request content as streaming multipart encoded form data.
+-    """
+-
+-    def __init__(
+-        self,
+-        data: RequestData,
+-        files: RequestFiles,
+-        boundary: bytes | None = None,
+-    ) -> None:
+-        if boundary is None:
+-            boundary = os.urandom(16).hex().encode("ascii")
+-
+-        self.boundary = boundary
+-        self.content_type = "multipart/form-data; boundary=%s" % boundary.decode(
+-            "ascii"
+-        )
+-        self.fields = list(self._iter_fields(data, files))
+-
+-    def _iter_fields(
+-        self, data: RequestData, files: RequestFiles
+-    ) -> typing.Iterator[FileField | DataField]:
+-        for name, value in data.items():
+-            if isinstance(value, (tuple, list)):
+-                for item in value:
+-                    yield DataField(name=name, value=item)
+-            else:
+-                yield DataField(name=name, value=value)
+-
+-        file_items = files.items() if isinstance(files, typing.Mapping) else files
+-        for name, value in file_items:
+-            yield FileField(name=name, value=value)
+-
+-    def iter_chunks(self) -> typing.Iterator[bytes]:
+-        for field in self.fields:
+-            yield b"--%s\r\n" % self.boundary
+-            yield from field.render()
+-            yield b"\r\n"
+-        yield b"--%s--\r\n" % self.boundary
+-
+-    def get_content_length(self) -> int | None:
+-        """
+-        Return the length of the multipart encoded content, or `None` if
+-        any of the files have a length that cannot be determined upfront.
+-        """
+-        boundary_length = len(self.boundary)
+-        length = 0
+-
+-        for field in self.fields:
+-            field_length = field.get_length()
+-            if field_length is None:
+-                return None
+-
+-            length += 2 + boundary_length + 2  # b"--{boundary}\r\n"
+-            length += field_length
+-            length += 2  # b"\r\n"
+-
+-        length += 2 + boundary_length + 4  # b"--{boundary}--\r\n"
+-        return length
+-
+-    # Content stream interface.
+-
+-    def get_headers(self) -> dict[str, str]:
+-        content_length = self.get_content_length()
+-        content_type = self.content_type
+-        if content_length is None:
+-            return {"Transfer-Encoding": "chunked", "Content-Type": content_type}
+-        return {"Content-Length": str(content_length), "Content-Type": content_type}
+-
+-    def __iter__(self) -> typing.Iterator[bytes]:
+-        for chunk in self.iter_chunks():
+-            yield chunk
++    # parse boundary according to\n    # https://www.rfc-editor.org/rfc/rfc2046#section-5.1.1\n    if b";" in content_type:\n        for section in content_type.split(b";"):\n            if section.strip().lower().startswith(b"boundary="):\n                return section.strip()[len(b"boundary=") :].strip(b'"')\n    return None\n
+ 
+-    async def __aiter__(self) -> typing.AsyncIterator[bytes]:
+-        for chunk in self.iter_chunks():
+-            yield chunk
++class DataField:\n    """\n    A single form field item, within a multipart form field.\n    """\n
++    def __init__(self, name: str, value: str | bytes | int | float | None) -> None:\n        if not isinstance(name, str):\n            raise TypeError(\n                f"Invalid type for name. Expected str, got {type(name)}: {name!r}"\n            )\n        if value is not None and not isinstance(value, (str, bytes, int, float)):\n            raise TypeError(\n                "Invalid type for value. Expected primitive type,"\n                f" got {type(value)}: {value!r}"\n            )\n        self.name = name\n        self.value: str | bytes = (\n            value if isinstance(value, bytes) else primitive_value_to_str(value)\n        )\n\n    def render_headers(self) -> bytes:\n        if not hasattr(self, "_headers"):\n            name = _format_form_param("name", self.name)\n            self._headers = b"".join(\n                [b"Content-Disposition: form-data; ", name, b"\r\n\r\n"]\n            )\n\n        return self._headers\n\n    def render_data(self) -> bytes:\n        if not hasattr(self, "_data"):\n            self._data = to_bytes(self.value)\n\n        return self._data\n\n    def get_length(self) -> int:\n        headers = self.render_headers()\n        data = self.render_data()\n        return len(headers) + len(data)\n\n    def render(self) -> typing.Iterator[bytes]:\n        yield self.render_headers()\n        yield self.render_data()\n\nclass FileField:\n    """\n    A single file field item, within a multipart form field.\n    """\n\n    CHUNK_SIZE = 64 * 1024\n\n    def __init__(self, name: str, value: FileTypes) -> None:\n        self.name = name\n\n        fileobj: FileContent\n\n        headers: dict[str, str] = {}\n        content_type: str | None = None\n\n        # This large tuple based API largely mirror's requests' API\n        # It would be good to think of better APIs for this that we could\n        # include in httpx 2.0 since variable length tuples(especially of 4 elements)\n        # are quite unwieldly\n        if isinstance(value, tuple):\n            if len(value) == 2:\n                # neither the 3rd parameter (content_type) nor the 4th (headers)\n                # was included\n                filename, fileobj = value\n            elif len(value) == 3:\n                filename, fileobj, content_type = value\n            else:\n                # all 4 parameters included\n                filename, fileobj, content_type, headers = value  # type: ignore\n        else:\n            filename = Path(str(getattr(value, "name", "upload"))).name\n            fileobj = value\n\n        if content_type is None:\n            content_type = _guess_content_type(filename)\n\n        has_content_type_header = any("content-type" in key.lower() for key in headers)\n        if content_type is not None and not has_content_type_header:\n            # note that unlike requests, we ignore the content_type provided in the 3rd\n            # tuple element if it is also included in the headers requests does\n            # the opposite (it overwrites the headerwith the 3rd tuple element)\n            headers["Content-Type"] = content_type\n\n        if isinstance(fileobj, io.StringIO):\n            raise TypeError(\n                "Multipart file uploads require 'io.BytesIO', not 'io.StringIO'."\n            )\n        if isinstance(fileobj, io.TextIOBase):\n            raise TypeError(\n                "Multipart file uploads must be opened in binary mode, not text mode."\n            )\n\n        self.filename = filename\n        self.file = fileobj\n        self.headers = headers\n\n    def get_length(self) -> int | None:\n        headers = self.render_headers()\n\n        if isinstance(self.file, (str, bytes)):\n            return len(headers) + len(to_bytes(self.file))\n\n        file_length = peek_filelike_length(self.file)\n\n        # If we can't determine the filesize without reading it into memory,\n        # then return `None` here, to indicate an unknown file length.\n        if file_length is None:\n            return None\n\n        return len(headers) + file_length\n\n    def render_headers(self) -> bytes:\n        if not hasattr(self, "_headers"):\n            parts = [\n                b"Content-Disposition: form-data; ",\n                _format_form_param("name", self.name),\n            ]\n            if self.filename:\n                filename = _format_form_param("filename", self.filename)\n                parts.extend([b"; ", filename])\n            for header_name, header_value in self.headers.items():\n                key, val = f"\r\n{header_name}: ".encode(), header_value.encode()\n                parts.extend([key, val])\n            parts.append(b"\r\n\r\n")\n            self._headers = b"".join(parts)\n\n        return self._headers\n\n    def render_data(self) -> typing.Iterator[bytes]:\n        if isinstance(self.file, (str, bytes)):\n            yield to_bytes(self.file)\n            return\n\n        if hasattr(self.file, "seek"):\n            try:\n                self.file.seek(0)\n            except io.UnsupportedOperation:\n                pass\n\n        chunk = self.file.read(self.CHUNK_SIZE)\n        while chunk:\n            yield to_bytes(chunk)\n            chunk = self.file.read(self.CHUNK_SIZE)\n\n    def render(self) -> typing.Iterator[bytes]:\n        yield self.render_headers()\n        yield from self.render_data()\n\nclass MultipartStream(SyncByteStream, AsyncByteStream):\n    """\n    Request content as streaming multipart encoded form data.\n    """\n\n    def __init__(\n        self,\n        data: RequestData,\n        files: RequestFiles,\n        boundary: bytes | None = None,\n    ) -> None:\n        if boundary is None:\n            boundary = os.urandom(16).hex().encode("ascii")\n\n        self.boundary = boundary\n        self.content_type = "multipart/form-data; boundary=%s" % boundary.decode(\n            "ascii"\n        )\n        self.fields = list(self._iter_fields(data, files))\n\n    def _iter_fields(\n        self, data: RequestData, files: RequestFiles\n    ) -> typing.Iterator[FileField | DataField]:\n        for name, value in data.items():\n            if isinstance(value, (tuple, list)):\n                for item in value:\n                    yield DataField(name=name, value=item)\n            else:\n                yield DataField(name=name, value=value)\n\n        file_items = files.items() if isinstance(files, typing.Mapping) else files\n        for name, value in file_items:\n            yield FileField(name=name, value=value)\n\n    def iter_chunks(self) -> typing.Iterator[bytes]:\n        for field in self.fields:\n            yield b"--%s\r\n" % self.boundary\n            yield from field.render()\n            yield b"\r\n"\n        yield b"--%s--\r\n" % self.boundary\n\n    def get_content_length(self) -> int | None:\n        """\n        Return the length of the multipart encoded content, or `None` if\n        any of the files have a length that cannot be determined upfront.\n        """\n        boundary_length = len(self.boundary)\n        length = 0\n\n        for field in self.fields:\n            field_length = field.get_length()\n            if field_length is None:\n                return None\n\n            length += 2 + boundary_length + 2  # b"--{boundary}\r\n"\n            length += field_length\n            length += 2  # b"\r\n"\n\n        length += 2 + boundary_length + 4  # b"--{boundary}--\r\n"\n        return length\n\n    # Content stream interface.\n\n    def get_headers(self) -> dict[str, str]:\n        content_length = self.get_content_length()\n        content_type = self.content_type\n        if content_length is None:\n            return {"Transfer-Encoding": "chunked", "Content-Type": content_type}\n        return {"Content-Length": str(content_length), "Content-Type": content_type}\n\n    def __iter__(self) -> typing.Iterator[bytes]:\n        for chunk in self.iter_chunks():\n            yield chunk\n\n    async def __aiter__(self) -> typing.AsyncIterator[bytes]:\n        for chunk in self.iter_chunks():\n            yield chunk
+\ No newline at end of file

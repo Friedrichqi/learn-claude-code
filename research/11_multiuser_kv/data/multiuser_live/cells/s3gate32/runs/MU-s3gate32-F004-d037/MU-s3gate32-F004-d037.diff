@@ -1,0 +1,57 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/mu/103142/g1/lane04/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/mu/103142/g1/lane04/profiling_sandbox/packaging/pylock.py	2026-09-27 08:47:45.720301760 -0400
+@@ -916,7 +916,7 @@
+                 #    a lack of source for the project.
+                 best_wheel = next(
+                     compatible_tags_selector(
+-                        (wheel, parse_wheel_filename(wheel.filename)[-1])
++                        (wheel, parse_wheel_filename_v2(wheel.filename)[-1])
+                         for wheel in package.wheels
+                     ),
+                     None,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py /tmp/yqi10/mu/103142/g1/lane04/profiling_sandbox/packaging/requirements.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py	2026-09-17 15:46:11.755435528 -0400
++++ /tmp/yqi10/mu/103142/g1/lane04/profiling_sandbox/packaging/requirements.py	2026-09-27 08:44:44.404585518 -0400
+@@ -9,7 +9,7 @@
+ from ._tokenizer import ParserSyntaxError
+ from .markers import Marker, _normalize_extra_values
+ from .specifiers import InvalidSpecifier, SpecifierSet
+-from .utils import canonicalize_name
++from .utils import canonicalize_name, parse_wheel_filename_v2
+ 
+ if TYPE_CHECKING:
+     from collections.abc import Iterator
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/103142/g1/lane04/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/103142/g1/lane04/profiling_sandbox/packaging/specifiers.py	2026-09-27 08:44:39.605593025 -0400
+@@ -33,7 +33,7 @@
+     resolve_prereleases,
+     trim_release,
+ )
+-from .utils import canonicalize_version
++from .utils import canonicalize_version, parse_wheel_filename_v2
+ from .version import Version
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/103142/g1/lane04/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/103142/g1/lane04/profiling_sandbox/packaging/utils.py	2026-09-27 08:45:28.490516545 -0400
+@@ -20,7 +20,7 @@
+     "canonicalize_version",
+     "is_normalized_name",
+     "parse_sdist_filename",
+-    "parse_wheel_filename",
++    "parse_wheel_filename_v2",
+ ]
+ 
+ 
+@@ -197,7 +197,7 @@
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+ 
+-def parse_wheel_filename(
++def parse_wheel_filename_v2(
+     filename: str,
+     *,
+     validate_order: bool = False,

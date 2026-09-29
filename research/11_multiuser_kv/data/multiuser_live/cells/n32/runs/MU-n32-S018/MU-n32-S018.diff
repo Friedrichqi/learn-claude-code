@@ -1,0 +1,195 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py /tmp/yqi10/mu/102768/g1/lane23/profiling_sandbox/s15_harness/scripts/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py	2026-09-21 17:15:01.542703080 -0400
++++ /tmp/yqi10/mu/102768/g1/lane23/profiling_sandbox/s15_harness/scripts/trace_task_dag.py	2026-09-26 23:09:08.316033197 -0400
+@@ -312,7 +312,7 @@
+ """
+ 
+ 
+-def build_html(d: dict[str, Any], palette_report: list[str]) -> str:
++def build_html_v2(d: dict[str, Any], palette_report: list[str]) -> str:
+     c = d["status_census"]
+     n = len(d["tasks"])
+     tiles = [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/mu/102768/g1/lane23/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/mu/102768/g1/lane23/profiling_sandbox/s15_harness/trace_view.py	2026-09-27 00:00:14.097060171 -0400
+@@ -28,7 +28,7 @@
+ 
+ 
+ @dataclass(frozen=True)
+-class Interval:
++class Interval:  # Represents a time interval between start and end events
+     start_ns: int
+     end_ns: int
+     start_event: dict[str, Any]
+@@ -57,7 +57,7 @@
+         return data if isinstance(data, dict) else {}
+ 
+ 
+-def load_trace(path: Path) -> list[dict[str, Any]]:
++def load_trace(path: Path) -> list[dict[str, Any]]:  # Load and validate a JSONL trace file
+     records = []
+     with path.open("r", encoding="utf-8") as handle:
+         for line_number, line in enumerate(handle, start=1):
+@@ -76,7 +76,7 @@
+     return records
+ 
+ 
+-def pair_spans(events: Iterable[dict[str, Any]]) -> list[Interval]:
++def pair_spans(events: Iterable[dict[str, Any]]) -> list[Interval]:  # Pair start and end events into intervals
+     starts: dict[str, dict[str, Any]] = {}
+     intervals = []
+     for event in events:
+@@ -97,7 +97,7 @@
+     return intervals
+ 
+ 
+-def _ranges(intervals: Iterable[Interval]) -> list[tuple[int, int]]:
++def _ranges(intervals: Iterable[Interval]) -> list[tuple[int, int]]:  # Extract (start, end) pairs from intervals
+     return sorted(
+         (interval.start_ns, interval.end_ns)
+         for interval in intervals
+@@ -105,7 +105,7 @@
+     )
+ 
+ 
+-def _union_ns(intervals: Iterable[Interval]) -> int:
++def _union_ns(intervals: Iterable[Interval]) -> int:  # Calculate union of intervals in nanoseconds
+     total = 0
+     current_start = current_end = None
+     for start, end in _ranges(intervals):
+@@ -121,7 +121,7 @@
+     return total
+ 
+ 
+-def _merge_ranges(ranges: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
++def _merge_ranges(ranges: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:  # Merge overlapping time ranges
+     merged: list[list[int]] = []
+     for start, end in sorted(ranges):
+         if not merged or start > merged[-1][1]:
+@@ -131,7 +131,7 @@
+     return [(start, end) for start, end in merged]
+ 
+ 
+-def _agent_maps(events: Iterable[dict[str, Any]]):
++def _agent_maps(events: Iterable[dict[str, Any]]):  # Build agent info, parent relationships, and creation times
+     info: dict[str, dict[str, Any]] = {
+         "agent-root": {"role": "lead", "name": "Root Agent", "task": "interactive session"}
+     }
+@@ -159,7 +159,7 @@
+     return info, parents, created_at
+ 
+ 
+-def _depths(parents: dict[str, str | None]) -> dict[str, int]:
++def _depths(parents: dict[str, str | None]) -> dict[str, int]:  # Calculate agent hierarchy depths
+     memo: dict[str, int] = {}
+ 
+     def depth(agent_id: str, visiting: set[str]) -> int:
+@@ -177,7 +177,7 @@
+     return memo
+ 
+ 
+-def _tool_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
++def _tool_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:  # Filter tool execution intervals
+     work = []
+     for interval in intervals:
+         if interval.kind == "background_start":
+@@ -189,7 +189,7 @@
+     return work
+ 
+ 
+-def _active_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
++def _active_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:  # Filter active work intervals
+     return [
+         interval for interval in intervals
+         if interval.kind == "model_request"
+@@ -200,7 +200,7 @@
+     ] + _tool_work_intervals(intervals)
+ 
+ 
+-def _maximum_parallel_agents(intervals: Iterable[Interval]) -> int:
++def _maximum_parallel_agents(intervals: Iterable[Interval]) -> int:  # Calculate maximum parallel agents
+     per_agent: dict[str, list[tuple[int, int]]] = defaultdict(list)
+     for interval in intervals:
+         if interval.agent_id:
+@@ -218,7 +218,7 @@
+     return peak
+ 
+ 
+-def calculate_metrics(events: list[dict[str, Any]]) -> dict[str, Any]:
++def calculate_metrics(events: list[dict[str, Any]]) -> dict[str, Any]:  # Calculate performance and usage metrics
+     intervals = pair_spans(events)
+     info, parents, _created_at = _agent_maps(events)
+     depths = _depths(parents)
+@@ -336,7 +336,7 @@
+     }
+ 
+ 
+-def build_summary(path: Path, events: list[dict[str, Any]]) -> dict[str, Any]:
++def build_summary(path: Path, events: list[dict[str, Any]]) -> dict[str, Any]:  # Build summary of trace data
+     trace_files = sorted(path.parent.glob("run_*.jsonl"), key=lambda item: item.name)
+     summary: dict[str, Any] = {
+         "trace_file": str(path),
+@@ -374,7 +374,7 @@
+     return summary
+ 
+ 
+-def _short(value: Any, limit: int = 100) -> str:
++def _short(value: Any, limit: int = 100) -> str:  # Truncate and clean text
+     if isinstance(value, dict) and "preview" in value:
+         value = value.get("preview", "")
+     elif not isinstance(value, str):
+@@ -383,7 +383,7 @@
+     return value if len(value) <= limit else value[: max(0, limit - 3)] + "..."
+ 
+ 
+-def _agent_label(agent_id: str, info: dict[str, dict[str, Any]]) -> str:
++def _agent_label(agent_id: str, info: dict[str, dict[str, Any]]) -> str:  # Generate agent label
+     data = info.get(agent_id, {})
+     if agent_id == "agent-root":
+         return "Root Agent"
+@@ -391,7 +391,7 @@
+     return f"{role or 'Agent'} ({agent_id})"
+ 
+ 
+-def _event_label(event: dict[str, Any], starts: dict[str, dict[str, Any]]) -> str | None:
++def _event_label(event: dict[str, Any], starts: dict[str, dict[str, Any]]) -> str | None:  # Generate event label
+     name = event.get("event")
+     data = event.get("data", {})
+     data = data if isinstance(data, dict) else {}
+@@ -442,7 +442,7 @@
+     return None
+ 
+ 
+-def render_tree(events: list[dict[str, Any]]) -> str:
++def render_tree(events: list[dict[str, Any]]) -> str:  # Render agent execution tree
+     info, parents, created_at = _agent_maps(events)
+     children: dict[str | None, list[str]] = defaultdict(list)
+     for agent_id, parent in parents.items():
+@@ -502,7 +502,7 @@
+     return "\n".join(lines)
+ 
+ 
+-def render_timeline(events: list[dict[str, Any]], width: int = 90) -> str:
++def render_timeline(events: list[dict[str, Any]], width: int = 90) -> str:  # Render execution timeline
+     intervals = pair_spans(events)
+     info, _parents, _created = _agent_maps(events)
+     first_ns = int(events[0].get("monotonic_ns", 0))
+@@ -582,7 +582,7 @@
+     return "\n".join(lines)
+ 
+ 
+-def render_metrics(metrics: dict[str, Any]) -> str:
++def render_metrics(metrics: dict[str, Any]) -> str:  # Render metrics as text
+     ordered = [
+         "run_id", "total_runtime_ms", "total_model_calls", "model_errors",
+         "total_tool_calls", "tool_calls_by_type", "total_subagents", "total_agents",
+@@ -603,7 +603,7 @@
+     return "\n".join(lines)
+ 
+ 
+-def _latest_trace(directory: Path) -> Path:
++def _latest_trace(directory: Path) -> Path:  # Find latest trace file
+     candidates = sorted(directory.glob("run_*.jsonl"), key=lambda path: path.stat().st_mtime)
+     if not candidates:
+         raise ValueError(f"no run_*.jsonl files found in {directory}")

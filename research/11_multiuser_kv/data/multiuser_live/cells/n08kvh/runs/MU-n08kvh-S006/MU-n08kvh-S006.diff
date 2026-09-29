@@ -1,0 +1,220 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102994/g0/lane04/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102994/g0/lane04/profiling_sandbox/packaging/utils.py	2026-09-27 03:45:48.404872624 -0400
+@@ -13,14 +13,14 @@
+ __all__ = [
+     "BuildTag",
+     "InvalidName",
+-    "InvalidSdistFilename",
+     "InvalidWheelFilename",
++    "InvalidSdistFilename",
+     "NormalizedName",
+     "canonicalize_name",
+     "canonicalize_version",
+     "is_normalized_name",
+     "parse_sdist_filename",
+-    "parse_wheel_filename",
++    "parse_wheel_filename_v2",
+ ]
+ 
+ 
+@@ -42,7 +42,6 @@
+ .. versionadded:: 20.4
+ """
+ 
+-
+ class InvalidName(ValueError):
+     """
+     An invalid distribution name; users should refer to the packaging user guide.
+@@ -50,7 +49,6 @@
+     .. versionadded:: 23.2
+     """
+ 
+-
+ class InvalidWheelFilename(ValueError):
+     """
+     An invalid wheel filename was found, users should refer to PEP 427.
+@@ -58,7 +56,6 @@
+     .. versionadded:: 20.9
+     """
+ 
+-
+ class InvalidSdistFilename(ValueError):
+     """
+     An invalid sdist filename was found, users should refer to the packaging user guide.
+@@ -66,7 +63,6 @@
+     .. versionadded:: 20.9
+     """
+ 
+-
+ # Core metadata spec for `Name`
+ _validate_regex = re.compile(
+     r"[a-z0-9]|[a-z0-9][a-z0-9._-]*[a-z0-9]", re.IGNORECASE | re.ASCII
+@@ -76,8 +72,7 @@
+ _build_tag_regex = re.compile(r"(\d+)(.*)", re.ASCII)
+ # PEP 427: Valid characters for an escaped project name in a wheel filename.
+ # Requires at least one character so an empty project name is rejected.
+-_wheel_name_regex = re.compile(r"^[\w._]+\Z", re.UNICODE)
+-
++_wheel_name_regex = re.compile(r"^[$w._]+$", re.UNICODE)
+ 
+ def canonicalize_name(name: str, *, validate: bool = False) -> NormalizedName:
+     """
+@@ -123,7 +118,6 @@
+         value = value.replace("--", "-")
+     return cast("NormalizedName", value)
+ 
+-
+ def is_normalized_name(name: str) -> bool:
+     """
+     Check if a name is a normalized project name (i.e. a valid name that
+@@ -150,11 +144,11 @@
+     """
+     return _normalized_regex.fullmatch(name) is not None
+ 
+-
+ def canonicalize_version(
+     version: Version | str, *, strip_trailing_zero: bool = True
+ ) -> str:
+-    """Return a canonical form of a version as a string.
++    """
++    Return a canonical form of a version as a string.
+ 
+     This function takes a string representing a package version (or a
+     :class:`~packaging.version.Version` instance), and returns the
+@@ -196,8 +190,7 @@
+             return str(version)
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+-
+-def parse_wheel_filename(
++def parse_wheel_filename_v2(
+     filename: str,
+     *,
+     validate_order: bool = False,
+@@ -226,10 +219,10 @@
+         does not follow the :ref:`wheel specification
+         <pypug:binary-distribution-format>`.
+ 
+-    >>> from packaging.utils import parse_wheel_filename
++    >>> from packaging.utils import parse_wheel_filename_v2
+     >>> from packaging.tags import Tag
+     >>> from packaging.version import Version
+-    >>> name, ver, build, tags = parse_wheel_filename("foo-1.0-py3-none-any.whl")
++    >>> name, ver, build, tags = parse_wheel_filename_v2("foo-1.0-py3-none-any.whl")
+     >>> name
+     'foo'
+     >>> ver == Version('1.0')
+@@ -293,7 +286,7 @@
+         tags = parse_tag(tag_str, validate_order=validate_order)
+     except UnsortedTagsError:
+         raise InvalidWheelFilename(
+-            f"Invalid wheel filename (compressed tag set components must be in "
++            f"Invalid wheel filename (compressed tag set components must be in 
+             f"sorted order per PEP 425): {filename!r}"
+         ) from None
+     except InvalidTag:
+@@ -302,7 +295,6 @@
+         ) from None
+     return (name, version, build, tags)
+ 
+-
+ def parse_sdist_filename(filename: str) -> tuple[NormalizedName, Version]:
+     """
+     This function takes the filename of a sdist file (as specified
+@@ -344,7 +336,7 @@
+         file_stem = filename[: -len(".zip")]
+     else:
+         raise InvalidSdistFilename(
+-            f"Invalid sdist filename (extension must be '.tar.gz' or '.zip'):"
++            f"Invalid sdist filename (extension must be '.tar.gz' or '.zip'):
+             f" {filename!r}"
+         )
+ 
+@@ -367,4 +359,4 @@
+             f"Invalid sdist filename (invalid version): {filename!r}"
+         ) from e
+ 
+-    return (name, version)
++    return (name, version)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102994/g0/lane04/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102994/g0/lane04/profiling_sandbox/packaging/version.py	2026-09-27 04:31:12.978792245 -0400
+@@ -203,12 +203,9 @@
+         (?P<post>                                         # post release
+             (?:-(?P<post_n1>[0-9]+))
+             |
+-            (?:
+-                [._-]?
+-                (?P<post_l>post|rev|r)
+-                [._-]?
+-                (?P<post_n2>[0-9]+)?
+-            )
++            (?P<post_l>post|rev|r)
++            [._-]?+
++            (?P<post_n2>[0-9]+)?
+         )?+
+         (?P<dev>                                          # dev release
+             [._-]?+
+@@ -217,7 +214,7 @@
+             (?P<dev_n>[0-9]+)?
+         )?+
+     )
+-    (?a:\+
++    (?a:+
+         (?P<local>                                        # local version
+             [a-z0-9]+
+             (?:[._-][a-z0-9]+)*+
+@@ -1146,13 +1143,12 @@
+     return None
+ 
+ 
+-_local_version_separators = re.compile(r"[\._-]")
+-
++_local_version_separators = re.compile(r"[._-]")
+ 
+ def _parse_local_version(local: str | None) -> LocalType | None:
+     """
+-    Takes a string like ``"abc.1.twelve"`` and turns it into
+-    ``("abc", 1, "twelve")``.
++    Takes a string like "abc.1.twelve" and turns it into
++    ("abc", 1, "twelve").
+     """
+     if local is not None:
+         return tuple(
+@@ -1185,14 +1181,14 @@
+ ) -> CmpKey:
+     """Build a comparison key for PEP 440 ordering.
+ 
+-    Returns ``(epoch, release, suffix)`` or
+-    ``(epoch, release, suffix, local)`` so that plain tuple
++    Returns (epoch, release, suffix) or
++    (epoch, release, suffix, local) so that plain tuple
+     comparison gives the correct order.
+ 
+-    Trailing zeros are stripped from the release so that ``1.0.0 == 1``.
++    Trailing zeros are stripped from the release so that 1.0.0 == 1.
+ 
+     The suffix is a flat 6-int tuple that encodes pre/post/dev:
+-    ``(pre_rank, pre_n, post_rank, post_n, dev_rank, dev_n)``
++    (pre_rank, pre_n, post_rank, post_n, dev_rank, dev_n)
+ 
+     pre_rank: dev-only=-1, a=0, b=1, rc=2, no-pre=3
+         Dev-only releases (no pre or post) get -1 so they sort before
+@@ -1203,7 +1199,7 @@
+     dev_rank: dev=0, no-dev=1
+         Releases without a dev segment sort after those with one.
+ 
+-    Local segments use ``(n, "")`` for ints and ``(-1, s)`` for strings,
++    Local segments use (n, "") for ints and (-1, s) for strings,
+     following PEP 440: strings sort before ints, strings compare
+     lexicographically, ints compare numerically, and shorter segments
+     sort before longer when prefixes match.  Versions without a local
+@@ -1249,4 +1245,4 @@
+     cmp_local: CmpLocalType = tuple(
+         (seg, "") if isinstance(seg, int) else (_LOCAL_STR_RANK, seg) for seg in local
+     )
+-    return epoch, trimmed, suffix, cmp_local
++    return epoch, trimmed, suffix, cmp_local
+\ No newline at end of file

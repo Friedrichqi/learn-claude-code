@@ -1,0 +1,27 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/jinja2/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py	2026-09-17 15:46:11.883102845 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/jinja2/parser.py	2026-09-27 03:13:18.365399524 -0400
+@@ -73,7 +73,11 @@
+         self._tag_stack: t.List[str] = []
+         self._end_token_stack: t.List[t.Tuple[str, ...]] = []
+ 
+-    def fail(
++    def fail(self, msg: str, lineno: t.Optional[int] = None, exc: t.Type[TemplateSyntaxError] = TemplateSyntaxError) -> "te.NoReturn":
++        """Convenience method that raises `exc` with the message, passed
++        line number or last line number as well as the current name and
++        filename."""
++
+         self,
+         msg: str,
+         lineno: t.Optional[int] = None,
+@@ -87,7 +91,9 @@
+             lineno = self.stream.current.lineno
+         raise exc(msg, lineno, self.name, self.filename)
+ 
+-    def _fail_ut_eof(
++    def _fail_ut_eof(self, name: t.Optional[str], end_token_stack: t.List[t.Tuple[str, ...]], lineno: t.Optional[int]) -> "te.NoReturn":
++        """Internal helper for fail methods to handle unexpected end of template."""
++
+         self,
+         name: t.Optional[str],
+         end_token_stack: t.List[t.Tuple[str, ...]],

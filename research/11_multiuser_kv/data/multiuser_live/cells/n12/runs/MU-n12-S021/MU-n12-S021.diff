@@ -1,0 +1,251 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-27 05:09:42.181940489 -0400
+@@ -0,0 +1 @@
++# Files Modified with BUILD_TAG Constant\n\n- profiling_sandbox/packaging/_elffile.py\n- profiling_sandbox/packaging/_manylinux.py\n- profiling_sandbox/packaging/_musllinux.py\n- profiling_sandbox/packaging/_parser.py\n- profiling_sandbox/packaging/_ranges.py\n- profiling_sandbox/packaging/_structures.py\n- profiling_sandbox/packaging/_tokenizer.py\n- profiling_sandbox/packaging/dependency_groups.py\n- profiling_sandbox/packaging/direct_url.py\n- profiling_sandbox/packaging/errors.py\n- profiling_sandbox/packaging/markers.py\n- profiling_sandbox/packaging/metadata.py\n- profiling_sandbox/packaging/pylock.py\n- profiling_sandbox/packaging/ranges.py\n- profiling_sandbox/packaging/requirements.py\n- profiling_sandbox/packaging/specifiers.py\n- profiling_sandbox/packaging/tags.py\n- profiling_sandbox/packaging/utils.py\n- profiling_sandbox/packaging/version.py
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_CANONICALIZE.md /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/CHANGES_CANONICALIZE.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_CANONICALIZE.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/CHANGES_CANONICALIZE.md	2026-09-27 05:24:59.578788762 -0400
+@@ -0,0 +1 @@
++# Files Modified with canonicalize_version_v2 Changes\n\n- profiling_sandbox/packaging/_parser.py\n- profiling_sandbox/packaging/specifiers.py
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/dependency_groups.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/dependency_groups.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/dependency_groups.py	2026-09-17 15:46:11.692714040 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/dependency_groups.py	2026-09-27 05:10:03.249914612 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import re
+ from collections.abc import Mapping, Sequence
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/direct_url.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/direct_url.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/direct_url.py	2026-09-17 15:46:11.699086606 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/direct_url.py	2026-09-27 05:10:08.414908263 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import dataclasses
+ import re
+ import urllib.parse
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_elffile.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py	2026-09-17 15:46:11.629142343 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_elffile.py	2026-09-27 05:09:44.525937611 -0400
+@@ -9,6 +9,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import os
+ import struct
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/errors.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/errors.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/errors.py	2026-09-17 15:46:11.705572481 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/errors.py	2026-09-27 05:10:12.783902892 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import contextlib
+ import dataclasses
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_manylinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py	2026-09-17 15:46:11.633151751 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_manylinux.py	2026-09-27 05:09:46.944934641 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import collections
+ import contextlib
+ import functools
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/markers.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/markers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/markers.py	2026-09-17 15:46:11.726823943 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/markers.py	2026-09-27 05:10:20.553893336 -0400
+@@ -4,6 +4,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import functools
+ import operator
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/metadata.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/metadata.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/metadata.py	2026-09-17 15:46:11.733192659 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/metadata.py	2026-09-27 05:10:24.916887968 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import email.header
+ import email.message
+ import email.parser
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_musllinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py	2026-09-17 15:46:11.638075106 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_musllinux.py	2026-09-27 05:09:49.272931783 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import functools
+ import re
+ import subprocess
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py	2026-09-17 15:46:11.642860903 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_parser.py	2026-09-27 05:09:51.534929005 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import ast
+ from collections.abc import Sequence
+ from typing import Literal, NamedTuple, Union
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/pylock.py	2026-09-27 05:10:28.738883265 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import dataclasses
+ import logging
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_ranges.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py	2026-09-17 15:46:11.647379794 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_ranges.py	2026-09-27 05:09:54.182925752 -0400
+@@ -5,6 +5,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import functools
+ from typing import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/ranges.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/ranges.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/ranges.py	2026-09-17 15:46:11.749947570 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/ranges.py	2026-09-27 05:10:34.735875884 -0400
+@@ -19,6 +19,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import typing
+ from typing import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/requirements.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py	2026-09-17 15:46:11.755435528 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/requirements.py	2026-09-27 05:10:40.388868924 -0400
+@@ -3,6 +3,8 @@
+ # for complete details.
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ from typing import TYPE_CHECKING
+ 
+ from ._parser import parse_requirement as _parse_requirement
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/specifiers.py	2026-09-27 05:22:39.140968179 -0400
+@@ -10,6 +10,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import abc
+ import re
+ import typing
+@@ -33,7 +35,7 @@
+     resolve_prereleases,
+     trim_release,
+ )
+-from .utils import canonicalize_version
++from .utils import canonicalize_version_v2
+ from .version import Version
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_structures.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_structures.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_structures.py	2026-09-17 15:46:11.651729697 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_structures.py	2026-09-27 05:09:56.704922654 -0400
+@@ -14,6 +14,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ 
+ class InfinityType:
+     """Stand-in for the removed ``InfinityType`` used in old comparison keys."""
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/tags.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py	2026-09-17 15:46:11.805606681 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/tags.py	2026-09-27 05:11:08.456834337 -0400
+@@ -4,6 +4,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import logging
+ import operator
+ import platform
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_tokenizer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py	2026-09-17 15:46:11.688359887 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/_tokenizer.py	2026-09-27 05:09:59.962918651 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import contextlib
+ import re
+ from dataclasses import dataclass
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/utils.py	2026-09-27 05:20:15.892150089 -0400
+@@ -4,6 +4,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import re
+ from typing import NewType, Union, cast
+ 
+@@ -151,7 +153,7 @@
+     return _normalized_regex.fullmatch(name) is not None
+ 
+ 
+-def canonicalize_version(
++def canonicalize_version_v2(
+     version: Version | str, *, strip_trailing_zero: bool = True
+ ) -> str:
+     """Return a canonical form of a version as a string.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/packaging/version.py	2026-09-27 05:11:52.065780499 -0400
+@@ -9,6 +9,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import re
+ import sys
+ import typing

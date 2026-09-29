@@ -1,0 +1,412 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/CHANGES_BUILD_TAG.md	2026-09-27 08:00:37.801574290 -0400
+@@ -0,0 +1,20 @@
++# Files Modified with BUILD_TAG Constant
++
++The following files have been updated with the `BUILD_TAG` constant set to "profiling" near the top:
++
++1. `profiling_sandbox/click/_compat.py` - Line 10
++2. `profiling_sandbox/click/_termui_impl.py` - Line 10
++3. `profiling_sandbox/click/_textwrap.py` - Line 10
++4. `profiling_sandbox/click/_utils.py` - Line 10
++5. `profiling_sandbox/click/_winconsole.py` - Line 10
++6. `profiling_sandbox/click/core.py` - Line 10
++7. `profiling_sandbox/click/decorators.py` - Line 10
++8. `profiling_sandbox/click/exceptions.py` - Line 10
++9. `profiling_sandbox/click/formatting.py` - Line 10
++10. `profiling_sandbox/click/globals.py` - Line 10
++11. `profiling_sandbox/click/parser.py` - Line 10
++12. `profiling_sandbox/click/shell_completion.py` - Line 10
++13. `profiling_sandbox/click/termui.py` - Line 10
++14. `profiling_sandbox/click/testing.py` - Line 10
++15. `profiling_sandbox/click/types.py` - Line 10
++16. `profiling_sandbox/click/utils.py` - Line 10
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py	2026-09-17 15:46:11.414122732 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/_compat.py	2026-09-27 07:14:43.258383834 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import codecs
+@@ -26,6 +27,7 @@
+     force_readable: bool = False,
+     force_writable: bool = False,
+ ) -> t.TextIO:
++    """Create a text stream with the given encoding and errors."""
+     if encoding is None:
+         encoding = get_best_encoding(stream)
+     if errors is None:
+@@ -41,7 +43,7 @@
+ 
+ 
+ def is_ascii_encoding(encoding: str) -> bool:
+-    """Checks if a given encoding is ascii."""
++    """Check if a given encoding is ascii."""
+     try:
+         return codecs.lookup(encoding).name == "ascii"
+     except LookupError:
+@@ -49,7 +51,7 @@
+ 
+ 
+ def get_best_encoding(stream: t.IO[t.Any]) -> str:
+-    """Returns the default stream encoding if not found."""
++    """Return the default stream encoding if not found."""
+     rv = getattr(stream, "encoding", None) or sys.getdefaultencoding()
+     if is_ascii_encoding(rv):
+         return "utf-8"
+@@ -83,15 +85,9 @@
+ 
+ 
+ class _FixupStream:
+-    """The new io interface needs more from streams than streams
+-    traditionally implement.  As such, this fix-up code is necessary in
+-    some circumstances.
+-
+-    The forcing of readable and writable flags are there because some tools
+-    put badly patched objects on sys (one such offender are certain version
+-    of jupyter notebook).
++    """Fix-up code is necessary in some circumstances where the new io interface
++    needs more from streams than streams traditionally implement.
+     """
+-
+     def __init__(
+         self,
+         stream: t.BinaryIO,
+@@ -152,6 +148,7 @@
+ 
+ 
+ def _is_binary_reader(stream: t.IO[t.Any], default: bool = False) -> bool:
++    """Check if the given stream is a binary reader."""
+     try:
+         return isinstance(stream.read(0), bytes)
+     except Exception:
+@@ -161,6 +158,7 @@
+ 
+ 
+ def _is_binary_writer(stream: t.IO[t.Any], default: bool = False) -> bool:
++    """Check if the given stream is a binary writer."""
+     try:
+         stream.write(b"")
+     except Exception:
+@@ -174,10 +172,7 @@
+ 
+ 
+ def _find_binary_reader(stream: t.IO[t.Any]) -> t.BinaryIO | None:
+-    # We need to figure out if the given stream is already binary.
+-    # This can happen because the official docs recommend detaching
+-    # the streams to get binary streams.  Some code might do this, so
+-    # we need to deal with this case explicitly.
++    """Figure out if the given stream is already binary."""
+     if _is_binary_reader(stream, False):
+         return t.cast(t.BinaryIO, stream)
+ 
+@@ -192,10 +187,7 @@
+ 
+ 
+ def _find_binary_writer(stream: t.IO[t.Any]) -> t.BinaryIO | None:
+-    # We need to figure out if the given stream is already binary.
+-    # This can happen because the official docs recommend detaching
+-    # the streams to get binary streams.  Some code might do this, so
+-    # we need to deal with this case explicitly.
++    """Figure out if the given stream is already binary."""
+     if _is_binary_writer(stream, False):
+         return t.cast(t.BinaryIO, stream)
+ 
+@@ -219,9 +211,8 @@
+ 
+ 
+ def _is_compat_stream_attr(stream: t.TextIO, attr: str, value: str | None) -> bool:
+-    """A stream attribute is compatible if it is equal to the
+-    desired value or the desired value is unset and the attribute
+-    has a value.
++    """A stream attribute is compatible if it is equal to the desired value or
++    the desired value is unset and the attribute has a value.
+     """
+     stream_value = getattr(stream, attr, None)
+     return stream_value == value or (value is None and stream_value is not None)
+@@ -230,8 +221,8 @@
+ def _is_compatible_text_stream(
+     stream: t.TextIO, encoding: str | None, errors: str | None
+ ) -> bool:
+-    """Check if a stream's encoding and errors attributes are
+-    compatible with the desired values.
++    """Check if a stream's encoding and errors attributes are compatible with the
++    desired values.
+     """
+     return _is_compat_stream_attr(
+         stream, "encoding", encoding
+@@ -247,6 +238,7 @@
+     force_readable: bool = False,
+     force_writable: bool = False,
+ ) -> t.TextIO:
++    """Force a text stream to have the correct encoding and errors."""
+     if is_binary(text_stream, False):
+         binary_reader = t.cast(t.BinaryIO, text_stream)
+     else:
+@@ -290,6 +282,7 @@
+     errors: str | None,
+     force_readable: bool = False,
+ ) -> t.TextIO:
++    """Force a text reader to have the correct encoding and errors."""
+     return _force_correct_text_stream(
+         text_reader,
+         encoding,
+@@ -306,6 +299,7 @@
+     errors: str | None,
+     force_writable: bool = False,
+ ) -> t.TextIO:
++    """Force a text writer to have the correct encoding and errors."""
+     return _force_correct_text_stream(
+         text_writer,
+         encoding,
+@@ -317,6 +311,7 @@
+ 
+ 
+ def get_binary_stdin() -> t.BinaryIO:
++    """Get the binary stdin stream."""
+     reader = _find_binary_reader(sys.stdin)
+     if reader is None:
+         raise RuntimeError("Was not able to determine binary stream for sys.stdin.")
+@@ -324,6 +319,7 @@
+ 
+ 
+ def get_binary_stdout() -> t.BinaryIO:
++    """Get the binary stdout stream."""
+     writer = _find_binary_writer(sys.stdout)
+     if writer is None:
+         raise RuntimeError("Was not able to determine binary stream for sys.stdout.")
+@@ -331,6 +327,7 @@
+ 
+ 
+ def get_binary_stderr() -> t.BinaryIO:
++    """Get the binary stderr stream."""
+     writer = _find_binary_writer(sys.stderr)
+     if writer is None:
+         raise RuntimeError("Was not able to determine binary stream for sys.stderr.")
+@@ -338,6 +335,7 @@
+ 
+ 
+ def get_text_stdin(encoding: str | None = None, errors: str | None = None) -> t.TextIO:
++    """Get the text stdin stream with the given encoding and errors."""
+     rv = _get_windows_console_stream(sys.stdin, encoding, errors)
+     if rv is not None:
+         return rv
+@@ -345,6 +343,7 @@
+ 
+ 
+ def get_text_stdout(encoding: str | None = None, errors: str | None = None) -> t.TextIO:
++    """Get the text stdout stream with the given encoding and errors."""
+     rv = _get_windows_console_stream(sys.stdout, encoding, errors)
+     if rv is not None:
+         return rv
+@@ -352,6 +351,7 @@
+ 
+ 
+ def get_text_stderr(encoding: str | None = None, errors: str | None = None) -> t.TextIO:
++    """Get the text stderr stream with the given encoding and errors."""
+     rv = _get_windows_console_stream(sys.stderr, encoding, errors)
+     if rv is not None:
+         return rv
+@@ -364,7 +364,7 @@
+     encoding: str | None,
+     errors: str | None,
+ ) -> t.IO[t.Any]:
+-    """Handles not passing ``encoding`` and ``errors`` in binary mode."""
++    """Handle not passing encoding and errors in binary mode."""
+     if "b" in mode:
+         return open(file, mode)
+ 
+@@ -378,11 +378,12 @@
+     errors: str | None = "strict",
+     atomic: bool = False,
+ ) -> tuple[t.IO[t.Any], bool]:
++    """Open a stream with the given filename, mode, encoding, and errors."""
+     binary = "b" in mode
+     filename = os.fspath(filename)
+ 
+     # Standard streams first. These are simple because they ignore the
+-    # atomic flag. Use fsdecode to handle Path("-").
++    # atomic flag. Use fsdecode to handle Path("-).
+     if os.fsdecode(filename) == "-":
+         if any(m in mode for m in ["w", "a", "x"]):
+             if binary:
+@@ -453,6 +454,7 @@
+ 
+ 
+ class _AtomicFile:
++    """A file that is written atomically."""
+     def __init__(self, f: t.IO[t.Any], tmp_filename: str, real_filename: str) -> None:
+         self._f = f
+         self._tmp_filename = tmp_filename
+@@ -489,10 +491,12 @@
+ 
+ 
+ def strip_ansi(value: str) -> str:
++    """Strip ANSI escape sequences from a string."""
+     return _ansi_re.sub("", value)
+ 
+ 
+ def _is_jupyter_kernel_output(stream: t.IO[t.Any]) -> bool:
++    """Check if the stream is a Jupyter kernel output."""
+     while isinstance(stream, (_FixupStream, _NonClosingTextIOWrapper)):
+         stream = stream._stream
+ 
+@@ -502,6 +506,7 @@
+ def should_strip_ansi(
+     stream: t.IO[t.Any] | None = None, color: bool | None = None
+ ) -> bool:
++    """Determine if ANSI sequences should be stripped from the stream."""
+     if color is None:
+         if stream is None:
+             stream = sys.stdin
+@@ -534,10 +539,12 @@
+ 
+ 
+ def term_len(x: str) -> int:
++    """Get the terminal length of a string after stripping ANSI sequences."""
+     return len(strip_ansi(x))
+ 
+ 
+ def isatty(stream: t.IO[t.Any]) -> bool:
++    """Check if the stream is a TTY."""
+     try:
+         return stream.isatty()
+     except Exception:
+@@ -548,6 +555,7 @@
+     src_func: t.Callable[[], t.TextIO | None],
+     wrapper_func: t.Callable[[], t.TextIO],
+ ) -> t.Callable[[], t.TextIO | None]:
++    """Create a cached stream function."""
+     cache: cabc.MutableMapping[t.TextIO, t.TextIO] = WeakKeyDictionary()
+ 
+     def func() -> t.TextIO | None:
+@@ -587,4 +595,4 @@
+     "stdin": get_text_stdin,
+     "stdout": get_text_stdout,
+     "stderr": get_text_stderr,
+-}
++}
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/core.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/core.py	2026-09-17 15:46:11.448692588 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/core.py	2026-09-27 07:27:26.874861044 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import collections.abc as cabc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/decorators.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/decorators.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/decorators.py	2026-09-17 15:46:11.454087488 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/decorators.py	2026-09-27 07:30:54.258364325 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import inspect
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/exceptions.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/exceptions.py	2026-09-17 15:46:11.460338176 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/exceptions.py	2026-09-27 07:34:08.898960689 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import collections.abc as cabc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/formatting.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/formatting.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/formatting.py	2026-09-17 15:46:11.465278651 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/formatting.py	2026-09-27 07:37:45.638398900 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import collections.abc as cabc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/globals.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/globals.py	2026-09-17 15:46:11.470965867 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/globals.py	2026-09-27 07:41:22.093840365 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import typing as t
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/parser.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/parser.py	2026-09-17 15:46:11.477229005 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/parser.py	2026-09-27 07:44:40.995409236 -0400
+@@ -22,6 +22,7 @@
+ # maintained by the Python Software Foundation.
+ # Copyright 2001-2006 Gregory P. Ward
+ # Copyright 2002-2006 Python Software Foundation
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import collections.abc as cabc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/shell_completion.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/shell_completion.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/shell_completion.py	2026-09-17 15:46:11.486464453 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/shell_completion.py	2026-09-27 07:47:47.709069614 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import collections.abc as cabc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/_termui_impl.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py	2026-09-17 15:46:11.420759065 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/_termui_impl.py	2026-09-27 07:11:25.137824444 -0400
+@@ -4,6 +4,7 @@
+ placed in this module and only imported as needed.
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import collections.abc as cabc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/termui.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/termui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/termui.py	2026-09-17 15:46:11.490491941 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/termui.py	2026-09-27 07:50:47.709784822 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import collections.abc as cabc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/testing.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/testing.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/testing.py	2026-09-17 15:46:11.494787844 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/testing.py	2026-09-27 07:53:53.234460811 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import collections.abc as cabc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_textwrap.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/_textwrap.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_textwrap.py	2026-09-17 15:46:11.426856985 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/_textwrap.py	2026-09-27 07:17:31.575164818 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import collections.abc as cabc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/types.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/types.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/types.py	2026-09-17 15:46:11.500598138 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/types.py	2026-09-27 07:57:02.323111579 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import abc
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_utils.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_utils.py	2026-09-17 15:46:11.434835180 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/_utils.py	2026-09-27 07:20:41.339791645 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import enum
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_winconsole.py /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/_winconsole.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_winconsole.py	2026-09-17 15:46:11.441420254 -0400
++++ /tmp/yqi10/mu/102768/g1/lane21/profiling_sandbox/click/_winconsole.py	2026-09-27 07:24:01.388345346 -0400
+@@ -6,6 +6,7 @@
+ # compared to the original patches as we do not need to patch
+ # the entire interpreter but just work in our little world of
+ # echo and prompt.
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import collections.abc as cabc

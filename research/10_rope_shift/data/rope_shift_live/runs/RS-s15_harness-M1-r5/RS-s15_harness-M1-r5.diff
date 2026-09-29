@@ -1,0 +1,157 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md	2026-09-25 12:38:10.586918721 -0400
+@@ -0,0 +1,14 @@
++# BUILD_TAG Addition Changelog
++
++The following files had the `BUILD_TAG = 'profiling'` constant added near the top:
++
++1. code.py - Line 1
++2. examples/demo1_view_latest_trace.py - Line 1
++3. examples/demo2_validate_and_stats.py - Line 1
++4. examples/demo3_compare_all_traces.py - Line 1
++5. scripts/benchmark.py - Line 1
++6. scripts/trace_task_dag.py - Line 1
++7. scripts/trace_workflow_viz.py - Line 1
++8. trace_runtime.py - Line 1
++9. trace_stats.py - Line 1
++10. trace_view.py - Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/code.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py	2026-09-23 22:11:16.950193278 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/code.py	2026-09-25 12:36:58.456013596 -0400
+@@ -18,6 +18,8 @@
+     built-in tools      persistent teams      MCP tools
+ """
+ 
++BUILD_TAG = 'profiling'
++
+ import ast
+ import atexit
+ import fcntl
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo1_view_latest_trace.py /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/examples/demo1_view_latest_trace.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo1_view_latest_trace.py	2026-09-21 17:15:01.140858475 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/examples/demo1_view_latest_trace.py	2026-09-25 12:37:05.416004438 -0400
+@@ -32,7 +32,9 @@
+ Only the Python standard library is used.
+ """
+ 
+-from __future__ import annotations
++from __future__ BUILD_TAG = 'profiling'
++
++import annotations
+ 
+ import argparse
+ import shlex
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo2_validate_and_stats.py /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/examples/demo2_validate_and_stats.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo2_validate_and_stats.py	2026-09-21 17:15:01.143667133 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/examples/demo2_validate_and_stats.py	2026-09-25 12:37:12.759994776 -0400
+@@ -31,7 +31,9 @@
+ Only the Python standard library is used.
+ """
+ 
+-from __future__ import annotations
++from __future__ BUILD_TAG = 'profiling'
++
++import annotations
+ 
+ import shlex
+ import subprocess
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo3_compare_all_traces.py /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/examples/demo3_compare_all_traces.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo3_compare_all_traces.py	2026-09-21 17:15:01.147446164 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/examples/demo3_compare_all_traces.py	2026-09-25 12:37:18.069987790 -0400
+@@ -28,7 +28,9 @@
+ Only the Python standard library is used.
+ """
+ 
+-from __future__ import annotations
++from __future__ BUILD_TAG = 'profiling'
++
++import annotations
+ 
+ import json
+ import shlex
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/benchmark.py /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/scripts/benchmark.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/benchmark.py	2026-09-21 17:15:01.225043208 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/scripts/benchmark.py	2026-09-25 12:37:24.815978916 -0400
+@@ -19,7 +19,9 @@
+ validation/processing error (still timed), 2 = usage or setup error.
+ """
+ 
+-from __future__ import annotations
++from __future__ BUILD_TAG = 'profiling'
++
++import annotations
+ 
+ import argparse
+ import subprocess
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/scripts/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py	2026-09-21 17:15:01.542703080 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/scripts/trace_task_dag.py	2026-09-25 12:37:31.877969627 -0400
+@@ -17,7 +17,9 @@
+ views of a run look and read the same.
+ """
+ 
+-from __future__ import annotations
++from __future__ BUILD_TAG = 'profiling'
++
++import annotations
+ 
+ import argparse
+ import json
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_workflow_viz.py /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/scripts/trace_workflow_viz.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_workflow_viz.py	2026-09-21 17:15:01.547987263 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/scripts/trace_workflow_viz.py	2026-09-25 12:37:35.612964714 -0400
+@@ -17,7 +17,9 @@
+ are closed at the last observed event and marked "open at snapshot".
+ """
+ 
+-from __future__ import annotations
++from __future__ BUILD_TAG = 'profiling'
++
++import annotations
+ 
+ import argparse
+ import json
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/trace_runtime.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py	2026-09-21 17:15:01.589007324 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/trace_runtime.py	2026-09-25 12:37:42.636955476 -0400
+@@ -1,7 +1,9 @@
+ """Structured execution tracing for the integrated harness.
+ 
+ The module deliberately has no dependency on the harness implementation.  A
+-TraceRecorder is created only by a CLI entry point; importing a lesson keeps
++TraceRecorder is created only by a CLI entry point; BUILD_TAG = 'profiling'
++
++importing a lesson keeps
+ using NullTraceRecorder and therefore creates no files.
+ """
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_stats.py /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/trace_stats.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_stats.py	2026-09-21 17:15:01.593120839 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/trace_stats.py	2026-09-25 12:37:48.270948066 -0400
+@@ -18,7 +18,9 @@
+ 2 = usage or I/O error.
+ """
+ 
+-from __future__ import annotations
++from __future__ BUILD_TAG = 'profiling'
++
++import annotations
+ 
+ import argparse
+ import json
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_05/profiling_sandbox/s15_harness/trace_view.py	2026-09-25 12:37:53.208941572 -0400
+@@ -1,7 +1,9 @@
+ #!/usr/bin/env python3
+ """Render an integrated-harness JSONL trace as metrics, a tree, and a timeline."""
+ 
+-from __future__ import annotations
++from __future__ BUILD_TAG = 'profiling'
++
++import annotations
+ 
+ import argparse
+ import json

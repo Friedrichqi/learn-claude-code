@@ -1,0 +1,158 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/103142/g0/lane14/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/103142/g0/lane14/profiling_sandbox/httpx/_models.py	2026-09-27 06:51:53.303929097 -0400
+@@ -364,6 +364,8 @@
+         return sorted(self_list) == sorted(other_list)
+ 
+     def __repr__(self) -> str:
++        """Return a string representation of the response."""
++        """Return a string representation of the request."""
+         class_name = self.__class__.__name__
+ 
+         encoding_str = ""
+@@ -410,7 +412,7 @@
+                 data=data,
+                 files=files,
+                 json=json,
+-                boundary=get_multipart_boundary_from_content_type(
++                boundary=get_multipart_boundary_from_content_type_v2(
+                     content_type=content_type.encode(self.headers.encoding)
+                     if content_type
+                     else None
+@@ -439,6 +441,8 @@
+             self.stream = stream
+ 
+     def _prepare(self, default_headers: dict[str, str]) -> None:
++        """Prepare headers by setting default values."""
++        """Prepare headers by setting default values."""
+         for key, value in default_headers.items():
+             # Ignore Transfer-Encoding if the Content-Length has been set explicitly.
+             if key.lower() == "transfer-encoding" and "Content-Length" in self.headers:
+@@ -466,6 +470,8 @@
+         return self._content
+ 
+     def read(self) -> bytes:
++        """Read and return the response content."""
++        """Read and return the request content."""
+         """
+         Read and return the request content.
+         """
+@@ -480,6 +486,8 @@
+         return self._content
+ 
+     async def aread(self) -> bytes:
++        """Read and return the response content asynchronously."""
++        """Read and return the request content asynchronously."""
+         """
+         Read and return the request content.
+         """
+@@ -499,6 +507,8 @@
+         return f"<{class_name}({self.method!r}, {url!r})>"
+ 
+     def __getstate__(self) -> dict[str, typing.Any]:
++        """Return the state of the response for serialization."""
++        """Return the state of the request for serialization."""
+         return {
+             name: value
+             for name, value in self.__dict__.items()
+@@ -506,6 +516,8 @@
+         }
+ 
+     def __setstate__(self, state: dict[str, typing.Any]) -> None:
++        """Set the state of the response from serialized data."""
++        """Set the state of the request from serialized data."""
+         for name, value in state.items():
+             setattr(self, name, value)
+         self.extensions = {}
+@@ -882,6 +894,7 @@
+         return self._content
+ 
+     def iter_bytes(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:
++        """Iterate over the response content in byte chunks."""
+         """
+         A byte-iterator over the decoded response content.
+         This allows us to handle gzip, deflate, brotli, and zstd encoded responses.
+@@ -905,6 +918,7 @@
+                     yield chunk
+ 
+     def iter_text(self, chunk_size: int | None = None) -> typing.Iterator[str]:
++        """Iterate over the response content in text chunks."""
+         """
+         A str-iterator over the decoded response content
+         that handles both gzip, deflate, etc but also detects the content's
+@@ -924,6 +938,7 @@
+                 yield chunk
+ 
+     def iter_lines(self) -> typing.Iterator[str]:
++        """Iterate over the response content line by line."""
+         decoder = LineDecoder()
+         with request_context(request=self._request):
+             for text in self.iter_text():
+@@ -933,6 +948,7 @@
+                 yield line
+ 
+     def iter_raw(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:
++        """Iterate over the raw response content in byte chunks."""
+         """
+         A byte-iterator over the raw response content.
+         """
+@@ -959,6 +975,7 @@
+         self.close()
+ 
+     def close(self) -> None:
++        """Close the response and release the connection."""
+         """
+         Close the response and release the connection.
+         Automatically called if the response body is read to completion.
+@@ -982,6 +999,7 @@
+     async def aiter_bytes(
+         self, chunk_size: int | None = None
+     ) -> typing.AsyncIterator[bytes]:
++        """Iterate over the response content in byte chunks asynchronously."""
+         """
+         A byte-iterator over the decoded response content.
+         This allows us to handle gzip, deflate, brotli, and zstd encoded responses.
+@@ -1007,6 +1025,7 @@
+     async def aiter_text(
+         self, chunk_size: int | None = None
+     ) -> typing.AsyncIterator[str]:
++        """Iterate over the response content in text chunks asynchronously."""
+         """
+         A str-iterator over the decoded response content
+         that handles both gzip, deflate, etc but also detects the content's
+@@ -1026,6 +1045,7 @@
+                 yield chunk
+ 
+     async def aiter_lines(self) -> typing.AsyncIterator[str]:
++        """Iterate over the response content line by line asynchronously."""
+         decoder = LineDecoder()
+         with request_context(request=self._request):
+             async for text in self.aiter_text():
+@@ -1037,6 +1057,7 @@
+     async def aiter_raw(
+         self, chunk_size: int | None = None
+     ) -> typing.AsyncIterator[bytes]:
++        """Iterate over the raw response content in byte chunks asynchronously."""
+         """
+         A byte-iterator over the raw response content.
+         """
+@@ -1063,6 +1084,7 @@
+         await self.aclose()
+ 
+     async def aclose(self) -> None:
++        """Close the response and release the connection asynchronously."""
+         """
+         Close the response and release the connection.
+         Automatically called if the response body is read to completion.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/103142/g0/lane14/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/103142/g0/lane14/profiling_sandbox/httpx/_multipart.py	2026-09-27 06:51:45.651941599 -0400
+@@ -53,7 +53,7 @@
+     return None
+ 
+ 
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):

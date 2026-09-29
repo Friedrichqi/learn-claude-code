@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/httpx/_api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py	2026-09-17 15:46:11.085591258 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/httpx/_api.py	2026-09-27 02:28:34.400220284 -0400
+@@ -3,6 +3,8 @@
+ import typing
+ from contextlib import contextmanager
+ 
++BUILD_TAG = 'profiling'
++
+ from ._client import Client
+ from ._config import DEFAULT_TIMEOUT_CONFIG
+ from ._models import Response
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/httpx/_auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py	2026-09-17 15:46:11.090183787 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/httpx/_auth.py	2026-09-27 02:28:57.453166776 -0400
+@@ -8,6 +8,8 @@
+ from base64 import b64encode
+ from urllib.request import parse_http_list
+ 
++BUILD_TAG = 'profiling'
++
+ from ._exceptions import ProtocolError
+ from ._models import Cookies, Request, Response
+ from ._utils import to_bytes, to_str, unquote

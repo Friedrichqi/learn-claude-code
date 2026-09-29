@@ -1,0 +1,31 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py /tmp/yqi10/rope_shift_lanes/s5/lane05_03/profiling_sandbox/s15_harness/scripts/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py	2026-09-21 17:15:01.542703080 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_03/profiling_sandbox/s15_harness/scripts/trace_task_dag.py	2026-09-25 12:04:10.148116395 -0400
+@@ -312,7 +312,7 @@
+ """
+ 
+ 
+-def build_html(d: dict[str, Any], palette_report: list[str]) -> str:
++def build_html_v2(d: dict[str, Any], palette_report: list[str]) -> str:
+     c = d["status_census"]
+     n = len(d["tasks"])
+     tiles = [
+@@ -384,7 +384,7 @@
+                                 extra_status=["#d03b3b"])
+ 
+     d = parse_tasks(args.trace)
+-    html = build_html(d, reports)
++    html = build_html_v2(d, reports)
+     args.output.write_text(html)
+     c = d["status_census"]
+     print(f"wrote {args.output} ({len(html)/1024:.0f} KB): {len(d['tasks'])} tasks, "
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/todo.txt /tmp/yqi10/rope_shift_lanes/s5/lane05_03/profiling_sandbox/s15_harness/todo.txt
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/todo.txt	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_03/profiling_sandbox/s15_harness/todo.txt	2026-09-25 12:05:21.802983156 -0400
+@@ -0,0 +1,5 @@
++Rename function build_html to build_html_v2 in trace_task_dag.py and update references.
++Check if any other files reference the old function name.
++List all modified files and lines.
++Function build_html_v2 was successfully renamed in trace_task_dag.py.
++No other references to build_html were found in the directory.
+\ No newline at end of file

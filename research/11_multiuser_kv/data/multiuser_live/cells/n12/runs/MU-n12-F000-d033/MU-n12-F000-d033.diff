@@ -1,0 +1,43 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/tqdm/cli.py	2026-09-27 07:58:19.695978798 -0400
+@@ -153,7 +153,7 @@
+ """
+ 
+ 
+-def main(fp=sys.stderr, argv=None):
++def main_v2(fp=sys.stderr, argv=None):
+     """
+     Parameters (internal use only)
+     ---------
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/tqdm/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py	2026-09-17 15:46:11.277808878 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/tqdm/__main__.py	2026-09-27 07:59:30.896863992 -0400
+@@ -1,3 +1,3 @@
+-from .cli import main
++from .cli import main_v2
+ 
+-main()
++main_v2()
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/tqdm/std.py	2026-09-27 08:02:02.521619425 -0400
+@@ -239,7 +239,8 @@
+         return self.last / (1 - beta ** self.calls) if self.calls else self.last
+ 
+ 
+-class tqdm(Comparable):
++class tqdm(
++    """Main progress bar class."""Comparable):
+     """
+     Decorate an iterable object, returning an iterator which acts exactly
+     like the original iterable, but prints a dynamically updating
+@@ -1527,6 +1528,7 @@
+             yield CallbackIOWrapper(t.update, stream, method)
+ 
+ 
+-def trange(*args, **kwargs):
++def trange(
++    """Create a progress bar for a range."""*args, **kwargs):
+     """Shortcut for tqdm(range(*args), **kwargs)."""
+     return tqdm(range(*args), **kwargs)

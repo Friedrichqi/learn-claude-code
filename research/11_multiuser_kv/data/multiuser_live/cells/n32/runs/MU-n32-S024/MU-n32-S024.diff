@@ -1,0 +1,53 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/s15_harness/code.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py	2026-09-23 22:11:16.950193278 -0400
++++ /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/s15_harness/code.py	2026-09-26 22:45:28.962746939 -0400
+@@ -285,7 +285,7 @@
+     return path
+ 
+ 
+-def create_task(subject: str, description: str = "") -> Task:
++def create_task_v2(subject: str, description: str = "") -> Task:
+     subject = subject.strip()
+     if not subject:
+         raise ValueError("Task subject cannot be empty")
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_workflow_viz.py /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/s15_harness/scripts/trace_workflow_viz.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_workflow_viz.py	2026-09-21 17:15:01.547987263 -0400
++++ /tmp/yqi10/mu/102768/g1/lane15/profiling_sandbox/s15_harness/scripts/trace_workflow_viz.py	2026-09-26 23:07:36.336674756 -0400
+@@ -158,6 +158,7 @@
+ 
+ 
+ def fmt_compact(n: float) -> str:
++    """Format a number with SI-style compact notation (K/M/B)."""
+     for div, suf in ((1e9, "B"), (1e6, "M"), (1e3, "K")):
+         if abs(n) >= div:
+             v = n / div
+@@ -166,11 +167,13 @@
+ 
+ 
+ def fmt_clock(ms: float) -> str:
++    """Format milliseconds as MM:SS clock time."""
+     s = int(ms // 1000)
+     return f"{s // 60:02d}:{s % 60:02d}"
+ 
+ 
+ def parse_trace(path: Path) -> dict[str, Any]:
++    """Parse a trace file into a structured dictionary of run data."""
+     events: list[dict[str, Any]] = []
+     with path.open() as fh:
+         for line in fh:
+@@ -781,6 +784,7 @@
+ 
+ 
+ def build_html(d: dict[str, Any], palette_report: list[str]) -> str:
++    """Generate HTML visualization from parsed trace data and palette report."""
+     tiles = [
+         ("Wall time", fmt_clock(d["last_elapsed"]), f"{d['last_elapsed']/60000:.0f} min · snapshot {d['snapshot'][11:19]}Z"),
+         ("Teammates", str(len(d["agents"]) - 1), f"{sum(1 for a in d['agents'] if a['state'] != 'ended')} still running"),
+@@ -864,6 +868,7 @@
+ 
+ 
+ def main(argv: list[str] | None = None) -> int:
++    """Entry point for the trace visualization script."""
+     ap = argparse.ArgumentParser(description=__doc__)
+     ap.add_argument("trace", type=Path)
+     ap.add_argument("-o", "--output", type=Path, default=Path("trace_workflow_viz.html"))

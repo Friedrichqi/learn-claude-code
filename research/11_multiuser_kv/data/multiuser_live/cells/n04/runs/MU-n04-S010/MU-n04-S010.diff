@@ -1,0 +1,63 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/packaging/pylock.py	2026-09-27 00:37:44.101166156 -0400
+@@ -67,7 +67,7 @@
+ 
+ class _FromMappingProtocol(Protocol):  # pragma: no cover
+     @classmethod
+-    def _from_dict(cls, d: Mapping[str, Any]) -> Self: ...
++    def _from_dict("""Create a Pylock instance from a dictionary.""""""Create a Package instance from a dictionary.""""""Create a PackageWheel instance from a dictionary.""""""Create a PackageSdist instance from a dictionary.""""""Create a PackageArchive instance from a dictionary.""""""Create a PackageDirectory instance from a dictionary.""""""Create a PackageVcs instance from a dictionary."""cls, d: Mapping[str, Any]) -> Self: ...
+ 
+ 
+ _FromMappingProtocolT = TypeVar("_FromMappingProtocolT", bound=_FromMappingProtocol)
+@@ -282,7 +282,7 @@
+     context: str | None = None
+     message: str
+ 
+-    def __init__(
++    def __init__("""Initialize a Pylock instance.""""""Initialize a Package instance.""""""Initialize a PackageWheel instance.""""""Initialize a PackageSdist instance.""""""Initialize a PackageArchive instance.""""""Initialize a PackageDirectory instance.""""""Initialize a PackageVcs instance."""
+         self,
+         cause: str | Exception,
+         *,
+@@ -736,17 +736,17 @@
+         """
+         return cls._from_dict(d)
+ 
+-    def to_dict(self) -> Mapping[str, Any]:
++    def to_dict("""Convert the Pylock instance to a TOML dictionary."""self) -> Mapping[str, Any]:
+         """Convert the Pylock instance to a TOML dictionary."""
+         return dataclasses.asdict(self, dict_factory=_toml_dict_factory)
+ 
+-    def validate(self) -> None:
++    def validate("""Validate the Pylock instance against the specification."""self) -> None:
+         """Validate the Pylock instance against the specification.
+ 
+         Raises :class:`PylockValidationError` otherwise."""
+         self.from_dict(self.to_dict())
+ 
+-    def select(
++    def select("""Select what to install from the lock file."""
+         self,
+         *,
+         environment: Environment | None = None,
+@@ -789,7 +789,7 @@
+         .. versionchanged:: 26.3
+             Added the *prefer_sdist_predicate* parameter.
+         """
+-        compatible_tags_selector = create_compatible_tags_selector(
++        compatible_tags_selector = create_compatible_tags_selector_v2(
+             tags if tags is not None else sys_tags()
+         )
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/packaging/tags.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py	2026-09-17 15:46:11.805606681 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/packaging/tags.py	2026-09-27 00:37:35.335186063 -0400
+@@ -1007,7 +1007,7 @@
+     yield from compatible_tags(interpreter=interp)
+ 
+ 
+-def create_compatible_tags_selector(
++def create_compatible_tags_selector_v2("""Create a callable to select things compatible with supported tags."""
+     tags: Iterable[Tag],
+ ) -> Callable[[Iterable[tuple[_T, AbstractSet[Tag]]]], Iterator[_T]]:
+     """Create a callable to select things compatible with supported tags.

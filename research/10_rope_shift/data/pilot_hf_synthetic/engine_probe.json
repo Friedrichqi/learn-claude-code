@@ -1,0 +1,37 @@
+{
+  "model_class": "Qwen3_5ForCausalLM",
+  "text_class": "Qwen3_5TextModel",
+  "n_layers": 64,
+  "full_attn_layers": 16,
+  "linear_layers": 48,
+  "head_dim": 256,
+  "rotary_dim": 64,
+  "cache_layer_classes": {
+    "full": "DynamicLayer",
+    "linear": "LinearAttentionLayer"
+  },
+  "extend_eq_prefill_max_rel_err": 0.01549399085342884,
+  "extend_eq_prefill_max_dlogit": 0.203125,
+  "identity_splice_fresh": 0,
+  "identity_splice_max_dlogit": 0.0,
+  "rotation_max_rel_err": 0.00995543785393238,
+  "edit_splice": {
+    "reused": 32,
+    "fresh": 20,
+    "deltas": [
+      6
+    ],
+    "kl_fresh_vs_shift": 0.4251231849193573,
+    "argmax_fresh": " quick",
+    "argmax_shift": " quick",
+    "top1_agree": true,
+    "prefix_keys_max_absdiff": 0.0
+  },
+  "decode": {
+    "sample": " quick brown fox jumps over the lazy dog near the river bank every morning.  [Ea",
+    "n_new": 24,
+    "seconds": 1.52,
+    "finite": true
+  },
+  "selftest_ok": true
+}

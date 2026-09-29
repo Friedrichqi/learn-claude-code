@@ -1,0 +1,11 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/mu/102994/g1/lane00/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/mu/102994/g1/lane00/profiling_sandbox/tqdm/_main.py	2026-09-27 11:31:24.183041829 -0400
+@@ -1,6 +1,6 @@
+ from warnings import warn
+ 
+-from .cli import *  # NOQA
++from .cli import main, *  # NOQA
+ from .cli import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 

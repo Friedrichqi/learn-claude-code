@@ -1,0 +1,23 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/mu/102768/g1/lane27/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/mu/102768/g1/lane27/profiling_sandbox/yaml/parser.py	2026-09-27 09:12:57.691822674 -0400
+@@ -67,9 +67,11 @@
+ from .scanner import *
+ 
+ class ParserError(MarkedYAMLError):
++    """Custom error class for parser errors."""
+     pass
+ 
+ class Parser:
++    """Main parser class for YAML documents."""
+     # Since writing a recursive-descendant parser is a straightforward task, we
+     # do not give many comments here.
+ 
+@@ -79,6 +81,7 @@
+     }
+ 
+     def __init__(self):
++        """Initialize the parser."""
+         self.current_event = None
+         self.yaml_version = None
+         self.tag_handles = {}

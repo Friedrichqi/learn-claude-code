@@ -1,0 +1,269 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py	2026-09-17 15:46:11.085591258 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_api.py	2026-09-27 06:50:10.322097495 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import typing
+ from contextlib import contextmanager
+ 
+@@ -279,7 +281,7 @@
+     )
+ 
+ 
+-def post(
++def post_v2(
+     url: URL | str,
+     *,
+     content: RequestContent | None = None,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py	2026-09-17 15:46:11.090183787 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_auth.py	2026-09-27 06:44:27.111661061 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import hashlib
+ import os
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md	2026-09-27 06:49:28.899165320 -0400
+@@ -0,0 +1,23 @@
++# Build Tag Changelog
++
++The `BUILD_TAG` module-level constant was added to the following files to indicate the profiling build:
++
++- `profiling_sandbox/httpx/_api.py` (Line 2)
++- `profiling_sandbox/httpx/_auth.py` (Line 2)
++- `profiling_sandbox/httpx/_client.py` (Line 2)
++- `profiling_sandbox/httpx/_config.py` (Line 2)
++- `profiling_sandbox/httpx/_content.py` (Line 2)
++- `profiling_sandbox/httpx/_decoders.py` (Line 2)
++- `profiling_sandbox/httpx/_exceptions.py` (Line 2)
++- `profiling_sandbox/httpx/_main.py` (Line 2)
++- `profiling_sandbox/httpx/_models.py` (Line 2)
++- `profiling_sandbox/httpx/_multipart.py` (Line 2)
++- `profiling_sandbox/httpx/_status_codes.py` (Line 2)
++- `profiling_sandbox/httpx/_transports/asgi.py` (Line 2)
++- `profiling_sandbox/httpx/_transports/base.py` (Line 2)
++- `profiling_sandbox/httpx/_transports/default.py` (Line 2)
++- `profiling_sandbox/httpx/_transports/mock.py` (Line 2)
++- `profiling_sandbox/httpx/_transports/wsgi.py` (Line 2)
++- `profiling_sandbox/httpx/_urlparse.py` (Line 2)
++- `profiling_sandbox/httpx/_urls.py` (Line 2)
++- `profiling_sandbox/httpx/_utils.py` (Line 2)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_POST_TO_POST_V2.md /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/CHANGES_POST_TO_POST_V2.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_POST_TO_POST_V2.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/CHANGES_POST_TO_POST_V2.md	2026-09-27 06:51:48.293937282 -0400
+@@ -0,0 +1,7 @@
++# Function Renaming Changelog
++
++The function `post` has been renamed to `post_v2` across all relevant files in the `profiling_sandbox/httpx/` directory. Below is a list of all files and the line numbers where the renaming was applied:
++
++- `profiling_sandbox/httpx/_api.py` (Line 23)
++- `profiling_sandbox/httpx/_client.py` (Line 2679)
++- `profiling_sandbox/httpx/_main.py` (Line 202)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_client.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py	2026-09-17 15:46:11.111585027 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_client.py	2026-09-27 06:50:19.145083055 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import datetime
+ import enum
+ import logging
+@@ -1120,7 +1122,7 @@
+             extensions=extensions,
+         )
+ 
+-    def post(
++    def post_v2(
+         self,
+         url: URL | str,
+         *,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_config.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_config.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_config.py	2026-09-17 15:46:11.116833128 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_config.py	2026-09-27 06:45:22.423569985 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import os
+ import typing
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_content.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py	2026-09-17 15:46:11.123390582 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_content.py	2026-09-27 06:45:48.159527642 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import inspect
+ import warnings
+ from json import dumps as json_dumps
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_decoders.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_decoders.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_decoders.py	2026-09-17 15:46:11.133238033 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_decoders.py	2026-09-27 06:46:05.632498907 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import codecs
+ import io
+ import typing
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_exceptions.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_exceptions.py	2026-09-17 15:46:11.139738758 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_exceptions.py	2026-09-27 06:46:29.605459497 -0400
+@@ -33,6 +33,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import contextlib
+ import typing
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_main.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_main.py	2026-09-17 15:46:11.144099601 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_main.py	2026-09-27 06:51:20.278983066 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import functools
+ import json
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_models.py	2026-09-27 06:47:17.821380288 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import codecs
+ import datetime
+ import email.message
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_multipart.py	2026-09-27 06:47:42.143340359 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import io
+ import mimetypes
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_status_codes.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_status_codes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_status_codes.py	2026-09-17 15:46:11.160036232 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_status_codes.py	2026-09-27 06:48:01.155309161 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ from enum import IntEnum
+ 
+ __all__ = ["codes"]
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/asgi.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_transports/asgi.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/asgi.py	2026-09-17 15:46:11.287984465 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_transports/asgi.py	2026-09-27 06:48:21.111276426 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import typing
+ 
+ from .._models import Request, Response
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/base.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_transports/base.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/base.py	2026-09-17 15:46:11.292517015 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_transports/base.py	2026-09-27 06:48:45.944235708 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import typing
+ from types import TracebackType
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/default.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_transports/default.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/default.py	2026-09-17 15:46:11.295850152 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_transports/default.py	2026-09-27 06:48:55.208220522 -0400
+@@ -26,6 +26,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import contextlib
+ import typing
+ from types import TracebackType
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/mock.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_transports/mock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/mock.py	2026-09-17 15:46:11.299305697 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_transports/mock.py	2026-09-27 06:48:57.469216817 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import typing
+ 
+ from .._models import Request, Response
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/wsgi.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_transports/wsgi.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/wsgi.py	2026-09-17 15:46:11.303603530 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_transports/wsgi.py	2026-09-27 06:49:00.343212106 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import io
+ import itertools
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_urlparse.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_urlparse.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_urlparse.py	2026-09-17 15:46:11.263758062 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_urlparse.py	2026-09-27 06:49:05.282204012 -0400
+@@ -18,6 +18,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import ipaddress
+ import re
+ import typing
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_urls.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_urls.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_urls.py	2026-09-17 15:46:11.268242973 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_urls.py	2026-09-27 06:49:07.700200050 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import typing
+ from urllib.parse import parse_qs, unquote, urlencode
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_utils.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_utils.py	2026-09-17 15:46:11.273403356 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/httpx/_utils.py	2026-09-27 06:49:09.919196414 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import ipaddress
+ import os
+ import re

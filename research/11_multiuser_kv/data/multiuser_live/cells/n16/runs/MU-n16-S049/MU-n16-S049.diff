@@ -1,0 +1,80 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md	2026-09-27 03:52:34.578991830 -0400
+@@ -0,0 +1,15 @@
++## BUILD_TAG Addition Changelog
++
++The following files have had the `BUILD_TAG` module-level constant added near the top:
++
++1. **trace_runtime.py**
++   - Line 2: `BUILD_TAG = 'profiling'`
++
++2. **trace_stats.py**
++   - Line 2: `BUILD_TAG = 'profiling'`
++
++3. **trace_view.py**
++   - Line 2: `BUILD_TAG = 'profiling'`
++
++4. **code.py**
++   - Line 2: `BUILD_TAG = 'profiling'`
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/code.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py	2026-09-23 22:11:16.950193278 -0400
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/code.py	2026-09-27 03:49:15.988294822 -0400
+@@ -18,6 +18,8 @@
+     built-in tools      persistent teams      MCP tools
+ """
+ 
++BUILD_TAG = 'profiling'
++
+ import ast
+ import atexit
+ import fcntl
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/scripts/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py	2026-09-21 17:15:01.542703080 -0400
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/scripts/trace_task_dag.py	2026-09-27 03:38:27.575550493 -0400
+@@ -312,7 +312,7 @@
+ """
+ 
+ 
+-def build_html(d: dict[str, Any], palette_report: list[str]) -> str:
++def build_html_v2(d: dict[str, Any], palette_report: list[str]) -> str:
+     c = d["status_census"]
+     n = len(d["tasks"])
+     tiles = [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/trace_runtime.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py	2026-09-21 17:15:01.589007324 -0400
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/trace_runtime.py	2026-09-27 03:44:21.103225281 -0400
+@@ -7,6 +7,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import atexit
+ import contextlib
+ import contextvars
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_stats.py /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/trace_stats.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_stats.py	2026-09-21 17:15:01.593120839 -0400
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/trace_stats.py	2026-09-27 03:45:45.636672433 -0400
+@@ -20,6 +20,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import argparse
+ import json
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/mu/102768/g0/lane08/profiling_sandbox/s15_harness/trace_view.py	2026-09-27 03:47:01.540175644 -0400
+@@ -3,6 +3,9 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++from scripts.trace_task_dag import build_html_v2
++
+ import argparse
+ import json
+ import sys

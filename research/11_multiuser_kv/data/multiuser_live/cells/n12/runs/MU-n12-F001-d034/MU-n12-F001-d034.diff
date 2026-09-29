@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/s15_harness/code.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py	2026-09-23 22:11:16.950193278 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/s15_harness/code.py	2026-09-27 07:47:31.069023445 -0400
+@@ -324,7 +324,7 @@
+     return False
+ 
+ 
+-def update_task(task_id: str, addBlockedBy: list[str]) -> Task:
++def update_task_v2(task_id: str, addBlockedBy: list[str]) -> Task:
+     """Add dependency edges after create_task has returned real task IDs."""
+     if not isinstance(addBlockedBy, list):
+         raise ValueError("addBlockedBy must be a list of task IDs")
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_workflow_viz.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/s15_harness/scripts/trace_workflow_viz.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_workflow_viz.py	2026-09-21 17:15:01.547987263 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/s15_harness/scripts/trace_workflow_viz.py	2026-09-27 07:48:44.777904850 -0400
+@@ -849,7 +849,7 @@
+     <table id="tbl-agents"></table>
+   </div>
+ 
+-  <div class="card"><h2>Tasks <span class="n">· {len(d['tasks'])} created via create_task / updated via update_task</span></h2>
++  <div class="card"><h2>Tasks <span class="n">· {len(d['tasks'])} created via create_task / updated via update_task_v2</span></h2>
+     <table id="tbl-tasks"></table>
+   </div>
+ 

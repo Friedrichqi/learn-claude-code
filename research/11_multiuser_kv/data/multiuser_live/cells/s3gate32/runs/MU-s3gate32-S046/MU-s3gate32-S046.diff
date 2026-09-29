@@ -1,0 +1,502 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py /tmp/yqi10/mu/103142/g1/lane27/profiling_sandbox/jinja2/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py	2026-09-17 15:46:11.883102845 -0400
++++ /tmp/yqi10/mu/103142/g1/lane27/profiling_sandbox/jinja2/parser.py	2026-09-27 08:24:12.308481465 -0400
+@@ -73,7 +73,8 @@
+         self._tag_stack: t.List[str] = []
+         self._end_token_stack: t.List[t.Tuple[str, ...]] = []
+ 
+-    def fail(
++    def fail(self):
++        """Raise a TemplateSyntaxError with the given message."""
+         self,
+         msg: str,
+         lineno: t.Optional[int] = None,
+@@ -87,7 +88,8 @@
+             lineno = self.stream.current.lineno
+         raise exc(msg, lineno, self.name, self.filename)
+ 
+-    def _fail_ut_eof(
++    def _fail_ut_eof(self):
++        """Handle unexpected end of template or unknown tag."""
+         self,
+         name: t.Optional[str],
+         end_token_stack: t.List[t.Tuple[str, ...]],
+@@ -127,7 +129,8 @@
+ 
+         self.fail(" ".join(message), lineno)
+ 
+-    def fail_unknown_tag(
++    def fail_unknown_tag(self):
++        """Fail with a message for an unknown tag."""
+         self, name: str, lineno: t.Optional[int] = None
+     ) -> "te.NoReturn":
+         """Called if the parser encounters an unknown tag.  Tries to fail
+@@ -136,7 +139,8 @@
+         """
+         self._fail_ut_eof(name, self._end_token_stack, lineno)
+ 
+-    def fail_eof(
++    def fail_eof(self):
++        """Fail with a message for an unexpected end of template."""
+         self,
+         end_tokens: t.Optional[t.Tuple[str, ...]] = None,
+         lineno: t.Optional[int] = None,
+@@ -147,7 +151,8 @@
+             stack.append(end_tokens)
+         self._fail_ut_eof(None, stack, lineno)
+ 
+-    def is_tuple_end(
++    def is_tuple_end(self):
++        """Check if the current position is the end of a tuple."""
+         self, extra_end_rules: t.Optional[t.Tuple[str, ...]] = None
+     ) -> bool:
+         """Are we at the end of a tuple?"""
+@@ -157,14 +162,16 @@
+             return self.stream.current.test_any(extra_end_rules)  # type: ignore
+         return False
+ 
+-    def free_identifier(self, lineno: t.Optional[int] = None) -> nodes.InternalName:
++    def free_identifier(self):
++        """Generate a new unique identifier for internal use."""self, lineno: t.Optional[int] = None) -> nodes.InternalName:
+         """Return a new free identifier as :class:`~jinja2.nodes.InternalName`."""
+         self._last_identifier += 1
+         rv = object.__new__(nodes.InternalName)
+         nodes.Node.__init__(rv, f"fi{self._last_identifier}", lineno=lineno)
+         return rv
+ 
+-    def parse_statement(self) -> t.Union[nodes.Node, t.List[nodes.Node]]:
++    def parse_statement(self):
++        """Parse a single statement."""self) -> t.Union[nodes.Node, t.List[nodes.Node]]:
+         """Parse a single statement."""
+         token = self.stream.current
+         if token.type != "name":
+@@ -193,7 +200,8 @@
+             if pop_tag:
+                 self._tag_stack.pop()
+ 
+-    def parse_statements(
++    def parse_statements(self):
++        """Parse multiple statements until end tokens are reached."""
+         self, end_tokens: t.Tuple[str, ...], drop_needle: bool = False
+     ) -> t.List[nodes.Node]:
+         """Parse multiple statements into a list until one of the end tokens
+@@ -222,7 +230,8 @@
+             next(self.stream)
+         return result
+ 
+-    def parse_set(self) -> t.Union[nodes.Assign, nodes.AssignBlock]:
++    def parse_set(self):
++        """Parse an assign statement."""self) -> t.Union[nodes.Assign, nodes.AssignBlock]:
+         """Parse an assign statement."""
+         lineno = next(self.stream).lineno
+         target = self.parse_assign_target(with_namespace=True)
+@@ -233,7 +242,8 @@
+         body = self.parse_statements(("name:endset",), drop_needle=True)
+         return nodes.AssignBlock(target, filter_node, body, lineno=lineno)
+ 
+-    def parse_for(self) -> nodes.For:
++    def parse_for(self):
++        """Parse a for loop statement."""self) -> nodes.For:
+         """Parse a for loop."""
+         lineno = self.stream.expect("name:for").lineno
+         target = self.parse_assign_target(extra_end_rules=("name:in",))
+@@ -252,7 +262,8 @@
+             else_ = self.parse_statements(("name:endfor",), drop_needle=True)
+         return nodes.For(target, iter, body, else_, test, recursive, lineno=lineno)
+ 
+-    def parse_if(self) -> nodes.If:
++    def parse_if(self):
++        """Parse an if statement."""self) -> nodes.If:
+         """Parse an if construct."""
+         node = result = nodes.If(lineno=self.stream.expect("name:if").lineno)
+         while True:
+@@ -270,7 +281,8 @@
+             break
+         return result
+ 
+-    def parse_with(self) -> nodes.With:
++    def parse_with(self):
++        """Parse a with statement."""self) -> nodes.With:
+         node = nodes.With(lineno=next(self.stream).lineno)
+         targets: t.List[nodes.Expr] = []
+         values: t.List[nodes.Expr] = []
+@@ -287,13 +299,15 @@
+         node.body = self.parse_statements(("name:endwith",), drop_needle=True)
+         return node
+ 
+-    def parse_autoescape(self) -> nodes.Scope:
++    def parse_autoescape(self):
++        """Parse an autoescape statement."""self) -> nodes.Scope:
+         node = nodes.ScopedEvalContextModifier(lineno=next(self.stream).lineno)
+         node.options = [nodes.Keyword("autoescape", self.parse_expression())]
+         node.body = self.parse_statements(("name:endautoescape",), drop_needle=True)
+         return nodes.Scope([node])
+ 
+-    def parse_block(self) -> nodes.Block:
++    def parse_block(self):
++        """Parse a block statement."""self) -> nodes.Block:
+         node = nodes.Block(lineno=next(self.stream).lineno)
+         node.name = self.stream.expect("name").value
+         node.scoped = self.stream.skip_if("name:scoped")
+@@ -325,12 +339,14 @@
+         self.stream.skip_if("name:" + node.name)
+         return node
+ 
+-    def parse_extends(self) -> nodes.Extends:
++    def parse_extends(self):
++        """Parse an extends statement."""self) -> nodes.Extends:
+         node = nodes.Extends(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         return node
+ 
+-    def parse_import_context(
++    def parse_import_context(self):
++        """Adjust import context settings."""
+         self, node: _ImportInclude, default: bool
+     ) -> _ImportInclude:
+         if self.stream.current.test_any(
+@@ -342,7 +358,8 @@
+             node.with_context = default
+         return node
+ 
+-    def parse_include(self) -> nodes.Include:
++    def parse_include(self):
++        """Parse an include statement."""self) -> nodes.Include:
+         node = nodes.Include(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         if self.stream.current.test("name:ignore") and self.stream.look().test(
+@@ -354,14 +371,16 @@
+             node.ignore_missing = False
+         return self.parse_import_context(node, True)
+ 
+-    def parse_import(self) -> nodes.Import:
++    def parse_import(self):
++        """Parse an import statement."""self) -> nodes.Import:
+         node = nodes.Import(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         self.stream.expect("name:as")
+         node.target = self.parse_assign_target(name_only=True).name
+         return self.parse_import_context(node, False)
+ 
+-    def parse_from(self) -> nodes.FromImport:
++    def parse_from(self):
++        """Parse a from import statement."""self) -> nodes.FromImport:
+         node = nodes.FromImport(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         self.stream.expect("name:import")
+@@ -403,7 +422,8 @@
+             node.with_context = False
+         return node
+ 
+-    def parse_signature(self, node: _MacroCall) -> None:
++    def parse_signature(self):
++        """Parse macro or call block signature."""self, node: _MacroCall) -> None:
+         args = node.args = []
+         defaults = node.defaults = []
+         self.stream.expect("lparen")
+@@ -419,7 +439,8 @@
+             args.append(arg)
+         self.stream.expect("rparen")
+ 
+-    def parse_call_block(self) -> nodes.CallBlock:
++    def parse_call_block(self):
++        """Parse a call block statement."""self) -> nodes.CallBlock:
+         node = nodes.CallBlock(lineno=next(self.stream).lineno)
+         if self.stream.current.type == "lparen":
+             self.parse_signature(node)
+@@ -434,20 +455,23 @@
+         node.body = self.parse_statements(("name:endcall",), drop_needle=True)
+         return node
+ 
+-    def parse_filter_block(self) -> nodes.FilterBlock:
++    def parse_filter_block(self):
++        """Parse a filter block statement."""self) -> nodes.FilterBlock:
+         node = nodes.FilterBlock(lineno=next(self.stream).lineno)
+         node.filter = self.parse_filter(None, start_inline=True)  # type: ignore
+         node.body = self.parse_statements(("name:endfilter",), drop_needle=True)
+         return node
+ 
+-    def parse_macro(self) -> nodes.Macro:
++    def parse_macro(self):
++        """Parse a macro definition."""self) -> nodes.Macro:
+         node = nodes.Macro(lineno=next(self.stream).lineno)
+         node.name = self.parse_assign_target(name_only=True).name
+         self.parse_signature(node)
+         node.body = self.parse_statements(("name:endmacro",), drop_needle=True)
+         return node
+ 
+-    def parse_print(self) -> nodes.Output:
++    def parse_print(self):
++        """Parse a print statement."""self) -> nodes.Output:
+         node = nodes.Output(lineno=next(self.stream).lineno)
+         node.nodes = []
+         while self.stream.current.type != "block_end":
+@@ -457,7 +481,8 @@
+         return node
+ 
+     @typing.overload
+-    def parse_assign_target(
++    def parse_assign_target(self):
++        """Parse an assignment target."""
+         self, with_tuple: bool = ..., name_only: "te.Literal[True]" = ...
+     ) -> nodes.Name: ...
+ 
+@@ -509,7 +534,8 @@
+ 
+         return target  # type: ignore
+ 
+-    def parse_expression(self, with_condexpr: bool = True) -> nodes.Expr:
++    def parse_expression(self):
++        """Parse an expression."""self, with_condexpr: bool = True) -> nodes.Expr:
+         """Parse an expression.  Per default all expressions are parsed, if
+         the optional `with_condexpr` parameter is set to `False` conditional
+         expressions are not parsed.
+@@ -518,7 +544,8 @@
+             return self.parse_condexpr()
+         return self.parse_or()
+ 
+-    def parse_condexpr(self) -> nodes.Expr:
++    def parse_condexpr(self):
++        """Parse a conditional expression."""self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         expr1 = self.parse_or()
+         expr3: t.Optional[nodes.Expr]
+@@ -533,7 +560,8 @@
+             lineno = self.stream.current.lineno
+         return expr1
+ 
+-    def parse_or(self) -> nodes.Expr:
++    def parse_or(self):
++        """Parse an OR expression."""self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         left = self.parse_and()
+         while self.stream.skip_if("name:or"):
+@@ -542,7 +570,8 @@
+             lineno = self.stream.current.lineno
+         return left
+ 
+-    def parse_and(self) -> nodes.Expr:
++    def parse_and(self):
++        """Parse an AND expression."""self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         left = self.parse_not()
+         while self.stream.skip_if("name:and"):
+@@ -551,13 +580,15 @@
+             lineno = self.stream.current.lineno
+         return left
+ 
+-    def parse_not(self) -> nodes.Expr:
++    def parse_not(self):
++        """Parse a NOT expression."""self) -> nodes.Expr:
+         if self.stream.current.test("name:not"):
+             lineno = next(self.stream).lineno
+             return nodes.Not(self.parse_not(), lineno=lineno)
+         return self.parse_compare()
+ 
+-    def parse_compare(self) -> nodes.Expr:
++    def parse_compare(self):
++        """Parse a comparison expression."""self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         expr = self.parse_math1()
+         ops = []
+@@ -580,7 +611,8 @@
+             return expr
+         return nodes.Compare(expr, ops, lineno=lineno)
+ 
+-    def parse_math1(self) -> nodes.Expr:
++    def parse_math1(self):
++        """Parse addition and subtraction expressions."""self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         left = self.parse_concat()
+         while self.stream.current.type in ("add", "sub"):
+@@ -591,7 +623,8 @@
+             lineno = self.stream.current.lineno
+         return left
+ 
+-    def parse_concat(self) -> nodes.Expr:
++    def parse_concat(self):
++        """Parse string concatenation expressions."""self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         args = [self.parse_math2()]
+         while self.stream.current.type == "tilde":
+@@ -601,7 +634,8 @@
+             return args[0]
+         return nodes.Concat(args, lineno=lineno)
+ 
+-    def parse_math2(self) -> nodes.Expr:
++    def parse_math2(self):
++        """Parse multiplication and division expressions."""self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         left = self.parse_pow()
+         while self.stream.current.type in ("mul", "div", "floordiv", "mod"):
+@@ -612,7 +646,8 @@
+             lineno = self.stream.current.lineno
+         return left
+ 
+-    def parse_pow(self) -> nodes.Expr:
++    def parse_pow(self):
++        """Parse exponentiation expressions."""self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         left = self.parse_unary()
+         while self.stream.current.type == "pow":
+@@ -622,7 +657,8 @@
+             lineno = self.stream.current.lineno
+         return left
+ 
+-    def parse_unary(self, with_filter: bool = True) -> nodes.Expr:
++    def parse_unary(self):
++        """Parse unary expressions."""self, with_filter: bool = True) -> nodes.Expr:
+         token_type = self.stream.current.type
+         lineno = self.stream.current.lineno
+         node: nodes.Expr
+@@ -640,7 +676,8 @@
+             node = self.parse_filter_expr(node)
+         return node
+ 
+-    def parse_primary(self, with_namespace: bool = False) -> nodes.Expr:
++    def parse_primary(self):
++        """Parse primary expressions (names, literals, etc.)."""self, with_namespace: bool = False) -> nodes.Expr:
+         """Parse a name or literal value. If ``with_namespace`` is enabled, also
+         parse namespace attr refs, for use in assignments."""
+         token = self.stream.current
+@@ -682,7 +719,8 @@
+             self.fail(f"unexpected {describe_token(token)!r}", token.lineno)
+         return node
+ 
+-    def parse_tuple(
++    def parse_tuple(self):
++        """Parse a tuple expression."""
+         self,
+         simplified: bool = False,
+         with_condexpr: bool = True,
+@@ -712,7 +750,8 @@
+         lineno = self.stream.current.lineno
+         if simplified:
+ 
+-            def parse() -> nodes.Expr:
++            def parse(self):
++        """Parse the entire template into a Template node.""") -> nodes.Expr:
+                 return self.parse_primary(with_namespace=with_namespace)
+ 
+         else:
+@@ -751,7 +790,8 @@
+ 
+         return nodes.Tuple(args, "load", lineno=lineno)
+ 
+-    def parse_list(self) -> nodes.List:
++    def parse_list(self):
++        """Parse a list expression."""self) -> nodes.List:
+         token = self.stream.expect("lbracket")
+         items: t.List[nodes.Expr] = []
+         while self.stream.current.type != "rbracket":
+@@ -763,7 +803,8 @@
+         self.stream.expect("rbracket")
+         return nodes.List(items, lineno=token.lineno)
+ 
+-    def parse_dict(self) -> nodes.Dict:
++    def parse_dict(self):
++        """Parse a dictionary expression."""self) -> nodes.Dict:
+         token = self.stream.expect("lbrace")
+         items: t.List[nodes.Pair] = []
+         while self.stream.current.type != "rbrace":
+@@ -778,7 +819,8 @@
+         self.stream.expect("rbrace")
+         return nodes.Dict(items, lineno=token.lineno)
+ 
+-    def parse_postfix(self, node: nodes.Expr) -> nodes.Expr:
++    def parse_postfix(self):
++        """Parse postfix operations (subscripts, calls, etc.)."""self, node: nodes.Expr) -> nodes.Expr:
+         while True:
+             token_type = self.stream.current.type
+             if token_type == "dot" or token_type == "lbracket":
+@@ -791,7 +833,8 @@
+                 break
+         return node
+ 
+-    def parse_filter_expr(self, node: nodes.Expr) -> nodes.Expr:
++    def parse_filter_expr(self):
++        """Parse filter and test expressions."""self, node: nodes.Expr) -> nodes.Expr:
+         while True:
+             token_type = self.stream.current.type
+             if token_type == "pipe":
+@@ -806,7 +849,8 @@
+                 break
+         return node
+ 
+-    def parse_subscript(
++    def parse_subscript(self):
++        """Parse subscript expressions (getattr, getitem)."""
+         self, node: nodes.Expr
+     ) -> t.Union[nodes.Getattr, nodes.Getitem]:
+         token = next(self.stream)
+@@ -837,7 +881,8 @@
+             return nodes.Getitem(node, arg, "load", lineno=token.lineno)
+         self.fail("expected subscript expression", token.lineno)
+ 
+-    def parse_subscribed(self) -> nodes.Expr:
++    def parse_subscribed(self):
++        """Parse subscripted expressions (slices, etc.)."""self) -> nodes.Expr:
+         lineno = self.stream.current.lineno
+         args: t.List[t.Optional[nodes.Expr]]
+ 
+@@ -869,7 +914,8 @@
+ 
+         return nodes.Slice(lineno=lineno, *args)  # noqa: B026
+ 
+-    def parse_call_args(
++    def parse_call_args(self):
++        """Parse function call arguments."""
+         self,
+     ) -> t.Tuple[
+         t.List[nodes.Expr],
+@@ -925,14 +971,16 @@
+         self.stream.expect("rparen")
+         return args, kwargs, dyn_args, dyn_kwargs
+ 
+-    def parse_call(self, node: nodes.Expr) -> nodes.Call:
++    def parse_call(self):
++        """Parse a function call expression."""self, node: nodes.Expr) -> nodes.Call:
+         # The lparen will be expected in parse_call_args, but the lineno
+         # needs to be recorded before the stream is advanced.
+         token = self.stream.current
+         args, kwargs, dyn_args, dyn_kwargs = self.parse_call_args()
+         return nodes.Call(node, args, kwargs, dyn_args, dyn_kwargs, lineno=token.lineno)
+ 
+-    def parse_filter(
++    def parse_filter(self):
++        """Parse a filter expression."""
+         self, node: t.Optional[nodes.Expr], start_inline: bool = False
+     ) -> t.Optional[nodes.Expr]:
+         while self.stream.current.type == "pipe" or start_inline:
+@@ -955,7 +1003,8 @@
+             start_inline = False
+         return node
+ 
+-    def parse_test(self, node: nodes.Expr) -> nodes.Expr:
++    def parse_test(self):
++        """Parse a test expression."""self, node: nodes.Expr) -> nodes.Expr:
+         token = next(self.stream)
+         if self.stream.current.test("name:not"):
+             next(self.stream)
+@@ -993,7 +1042,8 @@
+             node = nodes.Not(node, lineno=token.lineno)
+         return node
+ 
+-    def subparse(
++    def subparse(self):
++        """Parse template content until end tokens are reached."""
+         self, end_tokens: t.Optional[t.Tuple[str, ...]] = None
+     ) -> t.List[nodes.Node]:
+         body: t.List[nodes.Node] = []
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/tests.py /tmp/yqi10/mu/103142/g1/lane27/profiling_sandbox/jinja2/tests.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/tests.py	2026-09-17 15:46:11.908166426 -0400
++++ /tmp/yqi10/mu/103142/g1/lane27/profiling_sandbox/jinja2/tests.py	2026-09-27 08:41:34.757882056 -0400
+@@ -89,7 +89,7 @@
+     return value in env.tests
+ 
+ 
+-def test_none(value: t.Any) -> bool:
++def test_none_v2(value: t.Any) -> bool:
+     """Return true if the variable is none."""
+     return value is None
+ 

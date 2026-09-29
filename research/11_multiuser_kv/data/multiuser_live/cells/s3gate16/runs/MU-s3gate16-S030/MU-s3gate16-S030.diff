@@ -1,0 +1,112 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/103142/g0/lane14/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/103142/g0/lane14/profiling_sandbox/httpx/_models.py	2026-09-27 07:51:32.031635629 -0400
+@@ -30,7 +30,7 @@
+     StreamConsumed,
+     request_context,
+ )
+-from ._multipart import get_multipart_boundary_from_content_type
++from ._multipart import get_multipart_boundary_from_content_type_v2
+ from ._status_codes import codes
+ from ._types import (
+     AsyncByteStream,
+@@ -142,6 +142,7 @@
+     """
+ 
+     def __init__(
++        """HTTP headers, as a case-insensitive multi-dict."""
+         self,
+         headers: HeaderTypes | None = None,
+         encoding: str | None = None,
+@@ -164,6 +165,7 @@
+         self._encoding = encoding
+ 
+     @property
++    """Returns a list of the raw header items, as byte pairs."""
+     def encoding(self) -> str:
+         """
+         Header encoding is mandated as ascii, but we allow fallbacks to utf-8
+@@ -200,9 +202,11 @@
+         return [(raw_key, value) for raw_key, _, value in self._list]
+ 
+     def keys(self) -> typing.KeysView[str]:
++        """Returns the keys of the headers as a view."""
+         return {key.decode(self.encoding): None for _, key, value in self._list}.keys()
+ 
+     def values(self) -> typing.ValuesView[str]:
++        """Returns the values of the headers as a view."""
+         values_dict: dict[str, str] = {}
+         for _, key, value in self._list:
+             str_key = key.decode(self.encoding)
+@@ -214,6 +218,7 @@
+         return values_dict.values()
+ 
+     def items(self) -> typing.ItemsView[str, str]:
++        """Returns the items of the headers as a view."""
+         """
+         Return `(key, value)` items of headers. Concatenate headers
+         into a single comma separated value when a key occurs multiple times.
+@@ -282,6 +287,7 @@
+         return Headers(self, encoding=self.encoding)
+ 
+     def __getitem__(self, key: str) -> str:
++        """Returns the first value for the given header key."""
+         """
+         Return a single header value.
+ 
+@@ -302,6 +308,7 @@
+         raise KeyError(key)
+ 
+     def __setitem__(self, key: str, value: str) -> None:
++        """Sets the value for the given header key."""
+         """
+         Set the header `key` to `value`, removing any duplicate entries.
+         Retains insertion order.
+@@ -326,6 +333,7 @@
+             self._list.append((set_key, lookup_key, set_value))
+ 
+     def __delitem__(self, key: str) -> None:
++        """Deletes the value for the given header key."""
+         """
+         Remove the header `key`.
+         """
+@@ -351,6 +359,7 @@
+         return iter(self.keys())
+ 
+     def __len__(self) -> int:
++        """Returns the number of header fields."""
+         return len(self._list)
+ 
+     def __eq__(self, other: typing.Any) -> bool:
+@@ -364,6 +373,7 @@
+         return sorted(self_list) == sorted(other_list)
+ 
+     def __repr__(self) -> str:
++        """Returns a string representation of the headers."""
+         class_name = self.__class__.__name__
+ 
+         encoding_str = ""
+@@ -1223,9 +1233,11 @@
+         return len(self.jar)
+ 
+     def __iter__(self) -> typing.Iterator[str]:
++        """Iterates over the header keys."""
+         return (cookie.name for cookie in self.jar)
+ 
+     def __bool__(self) -> bool:
++        """Returns `True` if the headers are non-empty."""
+         for _ in self.jar:
+             return True
+         return False
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/103142/g0/lane14/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/103142/g0/lane14/profiling_sandbox/httpx/_multipart.py	2026-09-27 07:40:26.850726224 -0400
+@@ -53,7 +53,7 @@
+     return None
+ 
+ 
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):

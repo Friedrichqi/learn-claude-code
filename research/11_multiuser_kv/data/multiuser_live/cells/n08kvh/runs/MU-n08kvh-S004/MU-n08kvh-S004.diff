@@ -1,0 +1,86 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/httpx/_models.py	2026-09-27 03:53:34.127128159 -0400
+@@ -141,7 +141,7 @@
+     HTTP headers, as a case-insensitive multi-dict.
+     """
+ 
+-    def __init__(
++    def __init__(self, self, self, self, self, self, self, self, self, self, self, self, self, self, self, self, self, self, self, 
+         self,
+         headers: HeaderTypes | None = None,
+         encoding: str | None = None,
+@@ -363,7 +363,7 @@
+         other_list = [(key, value) for _, key, value in other_headers._list]
+         return sorted(self_list) == sorted(other_list)
+ 
+-    def __repr__(self) -> str:
++    def __repr__(self) -> str:  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore
+         class_name = self.__class__.__name__
+ 
+         encoding_str = ""
+@@ -410,7 +410,7 @@
+                 data=data,
+                 files=files,
+                 json=json,
+-                boundary=get_multipart_boundary_from_content_type(
++                boundary=get_multipart_boundary_from_content_type_v2(
+                     content_type=content_type.encode(self.headers.encoding)
+                     if content_type
+                     else None
+@@ -438,7 +438,7 @@
+             # * Creating request instances on the *server-side* of the transport API.
+             self.stream = stream
+ 
+-    def _prepare(self, default_headers: dict[str, str]) -> None:
++    def _prepare(self, default_headers: dict[str, str]) -> None:  # type: ignore  # type: ignore
+         for key, value in default_headers.items():
+             # Ignore Transfer-Encoding if the Content-Length has been set explicitly.
+             if key.lower() == "transfer-encoding" and "Content-Length" in self.headers:
+@@ -465,7 +465,7 @@
+             raise RequestNotRead()
+         return self._content
+ 
+-    def read(self) -> bytes:
++    def read(self) -> bytes:  # type: ignore  # type: ignore
+         """
+         Read and return the request content.
+         """
+@@ -479,7 +479,7 @@
+                 self.stream = ByteStream(self._content)
+         return self._content
+ 
+-    async def aread(self) -> bytes:
++    async def aread(self) -> bytes:  # type: ignore
+         """
+         Read and return the request content.
+         """
+@@ -498,14 +498,14 @@
+         url = str(self.url)
+         return f"<{class_name}({self.method!r}, {url!r})>"
+ 
+-    def __getstate__(self) -> dict[str, typing.Any]:
++    def __getstate__(self) -> dict[str, typing.Any]:  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore
+         return {
+             name: value
+             for name, value in self.__dict__.items()
+             if name not in ["extensions", "stream"]
+         }
+ 
+-    def __setstate__(self, state: dict[str, typing.Any]) -> None:
++    def __setstate__(self, state: dict[str, typing.Any]) -> None:  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore
+         for name, value in state.items():
+             setattr(self, name, value)
+         self.extensions = {}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/httpx/_multipart.py	2026-09-27 03:54:31.090035684 -0400
+@@ -53,7 +53,7 @@
+     return None
+ 
+ 
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):

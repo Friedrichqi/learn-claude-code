@@ -1,0 +1,134 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py /tmp/yqi10/mu/103142/g1/lane17/profiling_sandbox/rich/markdown.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py	2026-09-17 15:46:12.551882609 -0400
++++ /tmp/yqi10/mu/103142/g1/lane17/profiling_sandbox/rich/markdown.py	2026-09-27 09:15:06.226725015 -0400
+@@ -27,6 +27,9 @@
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
++        """Factory to create an image item element."""
++        """Factory to create a link element."""
++        """Factory to create markdown element."""
+         """Factory to create markdown element,
+ 
+         Args:
+@@ -39,6 +42,10 @@
+         return cls()
+ 
+     def on_enter(self, context: MarkdownContext) -> None:
++        """Called when the node is entered."""
++        """Called when the node is entered."""
++        """Called when the node is entered."""
++        """Called when the node is entered."""
+         """Called when the node is entered.
+ 
+         Args:
+@@ -46,6 +53,9 @@
+         """
+ 
+     def on_text(self, context: MarkdownContext, text: TextType) -> None:
++        """Called when text is parsed."""
++        """Called when text is parsed."""
++        """Called when text is parsed."""
+         """Called when text is parsed.
+ 
+         Args:
+@@ -53,6 +63,9 @@
+         """
+ 
+     def on_leave(self, context: MarkdownContext) -> None:
++        """Called when the parser leaves the element."""
++        """Called when the parser leaves the element."""
++        """Called when the parser leaves the element."""
+         """Called when the parser leaves the element.
+ 
+         Args:
+@@ -60,6 +73,13 @@
+         """
+ 
+     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
++        """Called when a child element is closed."""
++        """Called when a child element is closed."""
++        """Called when a child element is closed."""
++        """Called when a child element is closed."""
++        """Called when a child element is closed."""
++        """Called when a child element is closed."""
++        """Called when a child element is closed."""
+         """Called when a child element is closed.
+ 
+         This method allows a parent element to take over rendering of its children.
+@@ -112,9 +132,11 @@
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> Paragraph:
++        """Factory to create a paragraph element."""
+         return cls(justify=markdown.justify or "left")
+ 
+     def __init__(self, justify: JustifyMethod) -> None:
++        """Initialize the paragraph with a justify method."""
+         self.justify = justify
+ 
+     def __rich_console__(
+@@ -144,6 +166,7 @@
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> Heading:
++        """Factory to create a heading element."""
+         return cls(token.tag)
+ 
+     def on_enter(self, context: MarkdownContext) -> None:
+@@ -151,6 +174,7 @@
+         context.enter_style(self.style_name)
+ 
+     def __init__(self, tag: str) -> None:
++        """Initialize the heading with a tag."""
+         self.tag = tag
+         self.style_name = f"markdown.{tag}"
+         super().__init__()
+@@ -171,6 +195,7 @@
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> CodeBlock:
++        """Factory to create a code block element."""
+         node_info = token.info or ""
+         lexer_name = node_info.partition(" ")[0]
+         return cls(lexer_name or "text", markdown.code_theme)
+@@ -195,6 +220,7 @@
+     style_name = "markdown.block_quote"
+ 
+     def __init__(self) -> None:
++        """Initialize the list item."""
+         self.elements: Renderables = Renderables()
+ 
+     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
+@@ -342,6 +368,7 @@
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> ListElement:
++        """Factory to create a list element."""
+         return cls(token.type, int(token.attrs.get("start", 1)))
+ 
+     def __init__(self, list_type: str, list_start: int | None) -> None:
+@@ -382,6 +409,7 @@
+         return False
+ 
+     def render_bullet(self, console: Console, options: ConsoleOptions) -> RenderResult:
++        """Render the list item as a bullet point."""
+         render_options = options.update(width=options.max_width - 3)
+         lines = console.render_lines(self.elements, render_options, style=self.style)
+         bullet_style = console.get_style("markdown.item.bullet", default="none")
+@@ -418,6 +446,7 @@
+         return cls(token.content, str(url))
+ 
+     def __init__(self, text: str, href: str):
++        """Initialize the link element with text and href."""
+         self.text = Text(text)
+         self.href = href
+ 
+@@ -441,6 +470,7 @@
+         return cls(str(token.attrs.get("src", "")), markdown.hyperlinks)
+ 
+     def __init__(self, destination: str, hyperlinks: bool) -> None:
++        """Initialize the image item with destination and hyperlink status."""
+         self.destination = destination
+         self.hyperlinks = hyperlinks
+         self.link: str | None = None

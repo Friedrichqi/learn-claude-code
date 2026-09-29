@@ -1,0 +1,114 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/bells.py /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/bells.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/bells.py	2026-09-17 15:46:11.398479427 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/bells.py	2026-09-25 12:48:38.324164468 -0400
+@@ -21,7 +21,7 @@
+ elif getenv("TQDM_DISCORD_TOKEN") and getenv("TQDM_DISCORD_CHANNEL_ID"):
+     from .discord import tqdm, trange
+ else:
+-    from ..auto import tqdm, trange
++    from ..auto import main_v2 as tqdm, main_v2 as trange
+ 
+ with warnings.catch_warnings():
+     warnings.simplefilter("ignore", category=FutureWarning)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/discord.py /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/discord.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/discord.py	2026-09-17 15:46:11.409577251 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/discord.py	2026-09-25 12:48:51.663092847 -0400
+@@ -13,7 +13,7 @@
+ from requests import Session
+ from requests.utils import default_user_agent
+ 
+-from ..auto import tqdm as tqdm_auto
++from ..auto import main_v2 as tqdm_auto
+ from ..std import TqdmWarning
+ from ..utils import envwrap
+ from ..version import __version__
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py	2026-09-17 15:46:11.390563310 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/__init__.py	2026-09-25 12:49:20.689936964 -0400
+@@ -5,7 +5,7 @@
+ """
+ from warnings import warn
+ 
+-from ..auto import tqdm as tqdm_auto
++from ..auto import main_v2 as tqdm_auto
+ from ..std import TqdmDeprecationWarning, tqdm
+ from ..utils import ObjectWrapper
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/itertools.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py	2026-09-17 15:46:11.415861929 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/itertools.py	2026-09-25 12:50:30.819560193 -0400
+@@ -4,7 +4,7 @@
+ import itertools
+ import math
+ 
+-from ..auto import tqdm as tqdm_auto
++from ..auto import main as tqdm_auto
+ 
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/slack.py /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/slack.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/slack.py	2026-09-17 15:46:11.427216150 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/slack.py	2026-09-25 12:49:04.905021739 -0400
+@@ -15,7 +15,7 @@
+ except ImportError:
+     raise ImportError("Please `pip install slack-sdk`")
+ 
+-from ..auto import tqdm as tqdm_auto
++from ..auto import main_v2 as tqdm_auto
+ from ..utils import envwrap
+ from .utils_worker import MonoWorker
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/telegram.py /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/telegram.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/telegram.py	2026-09-17 15:46:11.434842670 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/telegram.py	2026-09-25 12:50:21.110612367 -0400
+@@ -12,7 +12,7 @@
+ 
+ from requests import Session
+ 
+-from ..auto import tqdm as tqdm_auto
++from ..auto import main as tqdm_auto
+ from ..std import TqdmWarning
+ from ..utils import envwrap
+ from .utils_worker import MonoWorker
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/utils_worker.py /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/utils_worker.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/utils_worker.py	2026-09-17 15:46:11.441504323 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/contrib/utils_worker.py	2026-09-25 12:50:41.408503285 -0400
+@@ -4,7 +4,7 @@
+ from collections import deque
+ from concurrent.futures import ThreadPoolExecutor
+ 
+-from ..auto import tqdm as tqdm_auto
++from ..auto import main as tqdm_auto
+ 
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = ['MonoWorker']
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__init__.py /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__init__.py	2026-09-17 15:46:11.273381546 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/__init__.py	2026-09-25 12:46:30.626849712 -0400
+@@ -1,6 +1,6 @@
+ from ._monitor import TMonitor, TqdmSynchronisationWarning
+ from ._tqdm_pandas import tqdm_pandas
+-from .cli import main  # TODO: remove in v5.0.0
++from .cli import main_v2 as main  # TODO: remove in v5.0.0
+ from .gui import tqdm as tqdm_gui  # TODO: remove in v5.0.0
+ from .gui import trange as tgrange  # TODO: remove in v5.0.0
+ from .std import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py	2026-09-17 15:46:11.277808878 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/__main__.py	2026-09-25 12:46:47.458759432 -0400
+@@ -1,3 +1,3 @@
+-from .cli import main
++from .cli import main as main_v2
+ 
+ main()
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_09/profiling_sandbox/tqdm/_main.py	2026-09-25 12:46:39.597801597 -0400
+@@ -1,6 +1,6 @@
+ from warnings import warn
+ 
+-from .cli import *  # NOQA
++from .cli import main as main_v2, *  # NOQA
+ from .cli import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 

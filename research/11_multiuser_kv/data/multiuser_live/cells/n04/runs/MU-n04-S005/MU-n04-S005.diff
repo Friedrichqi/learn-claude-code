@@ -1,0 +1,53 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/tqdm/autonotebook.py	2026-09-27 00:13:41.422126120 -0400
+@@ -7,6 +7,7 @@
+ ...     ...
+ """
+ import os
++BUILD_TAG = 'profiling'
+ import sys
+ from warnings import warn
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/tqdm/cli.py	2026-09-27 00:13:42.963123311 -0400
+@@ -3,6 +3,7 @@
+ """
+ import logging
+ import re
++BUILD_TAG = 'profiling'
+ import sys
+ from ast import literal_eval
+ from textwrap import indent
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/tqdm/std.py	2026-09-27 00:12:29.227258027 -0400
+@@ -30,6 +30,19 @@
+ 
+ 
+ class TqdmTypeError(TypeError):
++    """Exponential moving average: smoothing to give progressively lower weights to older values."""
++    """Static method to format a number (greater than unity) with SI Order of Magnitude prefixes."""
++    """Static method to format a number of seconds as a clock time, [H:]MM:SS."""
++    """Static method to intelligently format a number with scientific notation (.3g)."""
++    """Static method to manage printing and in-place updating of a line of characters."""
++    """Static method to return a string-based progress bar given some parameters."""
++    """Static method to get a free position for the progress bar."""
++    """Static method to decrement instances and reposition another unfixed bar."""
++    """Class method to print a message via tqdm (without overlap with bars)."""
++    """Class method to disable tqdm within context and refresh tqdm when exits."""
++    """Class method to set the global lock."""
++    """Class method to get the global lock. Construct it if it does not exist."""
++    """Class method to register the current `tqdm` class with pandas for progress_apply."""
+     pass
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-27 00:13:32.226142889 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import sys
+ 
+ __author__ = "github.com/casperdcl"

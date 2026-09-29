@@ -1,0 +1,263 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md	2026-09-27 03:46:41.313789130 -0400
+@@ -0,0 +1,18 @@
++# Build Tag Changelog
++
++## Version 1.0
++
++### Files Modified
++- `code.py` (Line 2)
++- `trace_runtime.py` (Line 2)
++- `trace_stats.py` (Line 2)
++- `trace_view.py` (Line 2)
++- `examples/demo1_view_latest_trace.py` (Line 2)
++- `examples/demo2_validate_and_stats.py` (Line 2)
++- `examples/demo3_compare_all_traces.py` (Line 2)
++- `scripts/benchmark.py` (Line 2)
++- `scripts/trace_task_dag.py` (Line 2)
++- `scripts/trace_workflow_viz.py` (Line 2)
++
++### Changes
++- Added a module-level constant `BUILD_TAG` set to the string `'profiling'` to each of the above files.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/code.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py	2026-09-23 22:11:16.950193278 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/code.py	2026-09-27 03:35:12.714926084 -0400
+@@ -1,4 +1,6 @@
+ #!/usr/bin/env python3
++
++BUILD_TAG = 'profiling'
+ """
+ s15: Integrated Harness - combine the course mechanisms in one runtime.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo1_view_latest_trace.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/examples/demo1_view_latest_trace.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo1_view_latest_trace.py	2026-09-21 17:15:01.140858475 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/examples/demo1_view_latest_trace.py	2026-09-27 03:39:44.900443398 -0400
+@@ -34,6 +34,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import argparse
+ import shlex
+ import subprocess
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo2_validate_and_stats.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/examples/demo2_validate_and_stats.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo2_validate_and_stats.py	2026-09-21 17:15:01.143667133 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/examples/demo2_validate_and_stats.py	2026-09-27 03:40:40.058353349 -0400
+@@ -33,6 +33,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import shlex
+ import subprocess
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo3_compare_all_traces.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/examples/demo3_compare_all_traces.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/examples/demo3_compare_all_traces.py	2026-09-21 17:15:01.147446164 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/examples/demo3_compare_all_traces.py	2026-09-27 03:41:32.769271899 -0400
+@@ -30,6 +30,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import json
+ import shlex
+ import subprocess
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/benchmark.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/scripts/benchmark.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/benchmark.py	2026-09-21 17:15:01.225043208 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/scripts/benchmark.py	2026-09-27 03:42:18.381201172 -0400
+@@ -21,6 +21,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import argparse
+ import subprocess
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/scripts/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py	2026-09-21 17:15:01.542703080 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/scripts/trace_task_dag.py	2026-09-27 03:43:15.368112489 -0400
+@@ -19,6 +19,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import argparse
+ import json
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_workflow_viz.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/scripts/trace_workflow_viz.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_workflow_viz.py	2026-09-21 17:15:01.547987263 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/scripts/trace_workflow_viz.py	2026-09-27 03:44:09.677027649 -0400
+@@ -19,6 +19,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import argparse
+ import json
+ import math
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/trace_runtime.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py	2026-09-21 17:15:01.589007324 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/trace_runtime.py	2026-09-27 04:04:30.424045600 -0400
+@@ -7,6 +7,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import atexit
+ import contextlib
+ import contextvars
+@@ -111,6 +113,7 @@
+     _token: contextvars.Token | None = None
+ 
+     def finish(self, **data: Any) -> None:
++        """Updates the end_data with the provided data."""
+         self.end_data.update(data)
+ 
+ 
+@@ -120,13 +123,16 @@
+     path: Path | None = None
+ 
+     def new_id(self, prefix: str) -> str:
++        """Generates a new ID with the given prefix."""
+         return f"{prefix}_000000"
+ 
+     def emit(self, event: str, data: dict[str, Any] | None = None, **_: Any) -> str:
++        """Emits an event with the given data."""
+         return "evt_000000"
+ 
+     @contextlib.contextmanager
+     def span(
++        """Context manager for a span of execution."""
+         self,
+         start_event: str,
+         end_event: str,
+@@ -136,11 +142,13 @@
+         yield SpanHandle(self, start_event, end_event)
+ 
+     @contextlib.contextmanager
+-    def turn_scope(self, _turn_id: str | None) -> Iterator[None]:
++    def turn_scope(
++        """Context manager for a turn scope."""self, _turn_id: str | None) -> Iterator[None]:
+         yield
+ 
+     @contextlib.contextmanager
+     def agent_scope(
++        """Context manager for an agent scope."""
+         self,
+         _agent_id: str | None,
+         _parent_agent_id: str | None = None,
+@@ -149,35 +157,45 @@
+         yield
+ 
+     @contextlib.contextmanager
+-    def model_scope(self, _purpose: str) -> Iterator[None]:
++    def model_scope(
++        """Context manager for a model scope."""self, _purpose: str) -> Iterator[None]:
+         yield
+ 
+     @contextlib.contextmanager
+-    def restore_context(self, _context: dict[str, Any]) -> Iterator[None]:
++    def restore_context(
++        """Context manager to restore a previously captured context."""self, _context: dict[str, Any]) -> Iterator[None]:
+         yield
+ 
+     def capture_context(self) -> dict[str, Any]:
++        """Captures the current context variables."""
+         return {}
+ 
+     def current_agent_id(self) -> str | None:
++        """Returns the current agent ID."""
+         return None
+ 
+     def current_parent_agent_id(self) -> str | None:
++        """Returns the current parent agent ID."""
+         return None
+ 
+     def current_turn_id(self) -> str | None:
++        """Returns the current turn ID."""
+         return None
+ 
+     def current_span_id(self) -> str | None:
++        """Returns the current span ID."""
+         return None
+ 
+     def safe_value(self, value: Any, max_chars: int | None = None) -> Any:
++        """Converts a value to a safe, JSON-serializable form with redaction."""
+         return value
+ 
+     def summarize_output(self, value: Any) -> dict[str, Any]:
++        """Summarizes the output value for tracing."""
+         return {}
+ 
+     def finish_run(self, status: str = "completed", **data: Any) -> None:
++        """Finalizes the trace run with the given status and data."""
+         return None
+ 
+ 
+@@ -446,6 +464,7 @@
+         return self._span_id.get()
+ 
+     def model_purpose(self) -> str:
++        """Returns the current model purpose."""
+         return self._model_purpose.get()
+ 
+     def safe_value(self, value: Any, max_chars: int | None = None) -> Any:
+@@ -507,13 +526,17 @@
+ 
+ class TracedMessages:
+     def __init__(self, raw_messages: Any, recorder: BaseTraceRecorder):
++        """Initializes a TracedMessages instance."""
+         self._raw_messages = raw_messages
+         self._recorder = recorder
+ 
+     def __getattr__(self, name: str) -> Any:
++        """Delegates attribute access to the raw client."""
++        """Delegates attribute access to the raw messages."""
+         return getattr(self._raw_messages, name)
+ 
+     def create(self, **kwargs: Any) -> Any:
++        """Creates a traced model request."""
+         recorder = self._recorder
+         messages = kwargs.get("messages", [])
+         system = kwargs.get("system", "")
+@@ -593,6 +616,7 @@
+     """Delegate every client attribute except the traced messages API."""
+ 
+     def __init__(self, raw_client: Any, recorder: BaseTraceRecorder):
++        """Initializes a TracedClient instance."""
+         self._raw_client = raw_client
+         self.messages = TracedMessages(raw_client.messages, recorder)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_stats.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/trace_stats.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_stats.py	2026-09-21 17:15:01.593120839 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/trace_stats.py	2026-09-27 03:38:06.449618472 -0400
+@@ -20,6 +20,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import argparse
+ import json
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/mu/102994/g1/lane11/profiling_sandbox/s15_harness/trace_view.py	2026-09-27 03:38:51.992537550 -0400
+@@ -3,6 +3,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import argparse
+ import json
+ import sys

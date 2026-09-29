@@ -1,0 +1,30 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/packaging/utils.py	2026-09-27 12:05:13.114019130 -0400
+@@ -197,7 +197,7 @@
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+ 
+-def parse_wheel_filename(
++def parse_wheel_filename_v2(
+     filename: str,
+     *,
+     validate_order: bool = False,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102994/g1/lane03/profiling_sandbox/packaging/version.py	2026-09-27 12:07:54.963779461 -0400
+@@ -143,12 +143,14 @@
+         def _key(self) -> tuple[Any, ...]: ...
+ 
+     def __hash__(self) -> int:
++        """Return the hash value of the Version instance."""
+         return hash(self._key)
+ 
+     # Please keep the duplicated `isinstance` check
+     # in the six comparisons hereunder
+     # unless you find a way to avoid adding overhead function calls.
+     def __lt__(self, other: _BaseVersion) -> bool:
++        """Check if this Version is less than another."""
+         if not isinstance(other, _BaseVersion):
+             return NotImplemented
+ 

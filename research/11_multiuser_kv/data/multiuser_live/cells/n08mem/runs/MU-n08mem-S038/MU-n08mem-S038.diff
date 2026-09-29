@@ -1,0 +1,269 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-27 09:53:00.292650526 -0400
+@@ -0,0 +1 @@
++# Build Tag Changelog\n\nThis file documents the addition of the `BUILD_TAG` constant to each modified file.\n\n## Changes\n\n- **_musllinux.py**: Added `BUILD_TAG = 'profiling'` at line 1.\n- **_elffile.py**: Added `BUILD_TAG = 'profiling'` at line 1.\n- **_tokenizer.py**: Added `BUILD_TAG = 'profiling'` at line 1.\n- **specifiers.py**: Added `BUILD_TAG = 'profiling'` at line 1.\n- **version.py**: Added `BUILD_TAG = 'profiling'` at line 1.\n- **_ranges.py**: Added `BUILD_TAG = 'profiling'` at line 1.\n\n## Documented Functions in version.py\n\n- `normalize_pre`\n- `parse`\n- `InvalidVersion`\n- `_BaseVersion`\n- `_VersionReplace`\n- `_validate_epoch`\n- `_validate_release`\n- `_validate_pre`\n- `_validate_post`\n- `_validate_dev`\n- `_validate_local`\n- `_Version`\n- `Version`\n- `__init__`\n- `from_parts`\n- `__replace__`\n- `_key`\n- `__getstate__`\n- `__setstate__`\n- `epoch`\n- `release`\n- `pre`\n- `post`\n- `dev`\n- `local`\n- `public`\n- `base_version`\n- `is_prerelease`\n- `is_postrelease`\n- `is_devrelease`\n- `major`\n- `minor`\n- `micro`\n- `_TrimmedRelease`\n- `__init__`\n- `release`\n- `_parse_letter_version`\n- `_parse_local_version`\n- `_PRE_RANK`\n- `_PRE_RANK_DEV_ONLY`\n- `_PRE_RANK_STABLE`\n- `_STABLE_SUFFIX`
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_ranges.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py	2026-09-17 15:46:11.647379794 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_ranges.py	2026-09-27 09:48:28.905025185 -0400
+@@ -1,4 +1,4 @@
+-# This file is dual licensed under the terms of the Apache License, Version
++BUILD_TAG = 'profiling'\n# This file is dual licensed under the terms of the Apache License, Version
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ """Private version-range helpers used by :mod:`packaging.specifiers`."""
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/specifiers.py	2026-09-27 09:48:22.992033320 -0400
+@@ -1,4 +1,4 @@
+-# This file is dual licensed under the terms of the Apache License, Version
++BUILD_TAG = 'profiling'\n# This file is dual licensed under the terms of the Apache License, Version
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ """
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_tokenizer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py	2026-09-17 15:46:11.688359887 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_tokenizer.py	2026-09-27 09:48:20.040037381 -0400
+@@ -1,4 +1,4 @@
+-from __future__ import annotations
++BUILD_TAG = 'profiling'\nfrom __future__ import annotations
+ 
+ import contextlib
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/version.py	2026-09-27 09:52:35.178685305 -0400
+@@ -1,4 +1,4 @@
+-# This file is dual licensed under the terms of the Apache License, Version
++BUILD_TAG = 'profiling'\n# This file is dual licensed under the terms of the Apache License, Version
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ """
+@@ -78,6 +78,7 @@
+ 
+ 
+ class _VersionReplace(TypedDict, total=False):
++    """Type dictionary for replacing version parts."""
+     epoch: int | None
+     release: tuple[int, ...] | None
+     pre: tuple[str, int] | None
+@@ -87,6 +88,8 @@
+ 
+ 
+ def normalize_pre(letter: str, /) -> str:
++    """Normalize the pre-release segment of a version string."""
++    """Normalize the pre-release segment of a version string."""
+     """Normalize the pre-release segment of a version string.
+ 
+     Returns a lowercase version of the string if not a known pre-release
+@@ -108,6 +111,7 @@
+ 
+ 
+ def parse(version: str) -> Version:
++    """Parse the given version string."""
+     """Parse the given version string.
+ 
+     This is identical to the :class:`Version` constructor.
+@@ -122,6 +126,7 @@
+ 
+ 
+ class InvalidVersion(ValueError):
++    """Raised when a version string is not a valid version."""
+     """Raised when a version string is not a valid version.
+ 
+     >>> Version("invalid")
+@@ -132,6 +137,7 @@
+ 
+ 
+ class _BaseVersion:
++    """Base class for version objects."""
+     __slots__ = ()
+ 
+     # This can also be a normal member (see the packaging_legacy package);
+@@ -140,6 +146,22 @@
+     if typing.TYPE_CHECKING:
+ 
+         @property
++    """Release segment without any trailing zeros."""
++    """The third item of :attr:`release` or ``0`` if unavailable."""
++    """The second item of :attr:`release` or ``0`` if unavailable."""
++    """The first item of :attr:`release` or ``0`` if unavailable."""
++    """Whether this version is a development release."""
++    """Whether this version is a post-release."""
++    """Whether this version is a pre-release."""
++    """The 'base version' of the version."""
++    """The public portion of the version."""
++    """The local version segment of the version."""
++    """The development number of the version."""
++    """The post-release number of the version."""
++    """The pre-release segment of the version."""
++    """The components of the 'release' segment of the version."""
++    """The epoch of the version."""
++    """Key which will be used for sorting."""
+         def _key(self) -> tuple[Any, ...]: ...
+ 
+     def __hash__(self) -> int:
+@@ -263,6 +285,7 @@
+ 
+ 
+ def _validate_epoch(value: object, /) -> int:
++    """Validate the epoch value."""
+     epoch = value or 0
+     if isinstance(epoch, int) and epoch >= 0:
+         return epoch
+@@ -271,6 +294,7 @@
+ 
+ 
+ def _validate_release(value: object, /) -> tuple[int, ...]:
++    """Validate the release value."""
+     release = (0,) if value is None else value
+     if (
+         isinstance(release, tuple)
+@@ -283,6 +307,7 @@
+ 
+ 
+ def _validate_pre(value: object, /) -> tuple[Literal["a", "b", "rc"], int] | None:
++    """Validate the pre-release value."""
+     if value is None:
+         return value
+     if isinstance(value, tuple) and len(value) == 2:
+@@ -301,6 +326,7 @@
+ 
+ 
+ def _validate_post(value: object, /) -> tuple[Literal["post"], int] | None:
++    """Validate the post-release value."""
+     if value is None:
+         return value
+     if isinstance(value, int) and value >= 0:
+@@ -310,6 +336,7 @@
+ 
+ 
+ def _validate_dev(value: object, /) -> tuple[Literal["dev"], int] | None:
++    """Validate the development release value."""
+     if value is None:
+         return value
+     if isinstance(value, int) and value >= 0:
+@@ -319,6 +346,7 @@
+ 
+ 
+ def _validate_local(value: object, /) -> LocalType | None:
++    """Validate the local version value."""
+     if value is None:
+         return value
+     if isinstance(value, str) and _LOCAL_PATTERN.fullmatch(value):
+@@ -329,6 +357,7 @@
+ 
+ # Backward compatibility for internals before 26.0. Do not use.
+ class _Version(NamedTuple):
++    """Named tuple for version components."""
+     epoch: int
+     release: tuple[int, ...]
+     dev: tuple[Literal["dev"], int] | None
+@@ -338,6 +367,7 @@
+ 
+ 
+ class Version(_BaseVersion):
++    """This class abstracts handling of a project's versions."""
+     """This class abstracts handling of a project's versions.
+ 
+     A :class:`Version` instance is comparison aware and can be compared and
+@@ -406,6 +436,7 @@
+     _key_cache: CmpKey | None
+ 
+     def __init__(self, version: str) -> None:
++    """Initialize a Version object."""
+         """Initialize a Version object.
+ 
+         :param version:
+@@ -466,6 +497,7 @@
+         self._hash_cache = None
+ 
+     @classmethod
++    """Return a new version composed of the various parts."""
+     def from_parts(
+         cls,
+         *,
+@@ -513,6 +545,7 @@
+         return new_version
+ 
+     def __replace__(self, **kwargs: Unpack[_VersionReplace]) -> Self:
++    """Return a new version with parts replaced."""
+         """
+         __replace__(*, epoch=..., release=..., pre=..., post=..., dev=..., local=...)
+ 
+@@ -765,7 +798,15 @@
+ 
+         return super().__ne__(other)
+ 
+-    def __getstate__(
++    def __getstate__(self) -> tuple[
++        int,
++        tuple[int, ...],
++        tuple[str, int] | None,
++        tuple[str, int] | None,
++        tuple[str, int] | None,
++        LocalType | None,
++    ]:
++    """Return state as a 6-item tuple for compactness."""
+         self,
+     ) -> tuple[
+         int,
+@@ -788,6 +829,7 @@
+         )
+ 
+     def __setstate__(self, state: object) -> None:
++    """Always discard cached values and restore from state."""
+         # Always discard cached values — they may contain stale references
+         # (e.g. packaging._structures.InfinityType from pre-26.1 pickles)
+         # and will be recomputed on demand from the core fields above.
+@@ -1088,9 +1130,11 @@
+ 
+ 
+ class _TrimmedRelease(Version):
++    """Version class with trimmed release segment."""
+     __slots__ = ()
+ 
+     def __init__(self, version: str | Version) -> None:
++    """Initialize with a version string or Version object."""
+         if isinstance(version, Version):
+             self._epoch = version._epoch
+             self._release = version._release
+@@ -1125,6 +1169,9 @@
+ def _parse_letter_version(
+     letter: str | None, number: str | bytes | SupportsInt | None
+ ) -> tuple[str, int] | None:
++    """Parse letter and number into a version segment."""
++    letter: str | None, number: str | bytes | SupportsInt | None
++) -> tuple[str, int] | None:
+     if letter:
+         # We normalize any letters to their lower case form
+         letter = letter.lower()
+@@ -1150,6 +1197,7 @@
+ 
+ 
+ def _parse_local_version(local: str | None) -> LocalType | None:
++    """Takes a string like 'abc.1.twelve' and turns it into ('abc', 1, 'twelve')."""
+     """
+     Takes a string like ``"abc.1.twelve"`` and turns it into
+     ``("abc", 1, "twelve")``.
+@@ -1164,8 +1212,11 @@
+ 
+ # Sort ranks for pre-release: dev-only < a < b < rc < stable (no pre-release).
+ _PRE_RANK = {"a": 0, "b": 1, "rc": 2}
++"""Sort ranks for pre-release segments."""
+ _PRE_RANK_DEV_ONLY = -1  # sorts before a(0)
++"""Dev-only rank for pre-release sorting."""
+ _PRE_RANK_STABLE = 3  # sorts after rc(2)
++"""Stable rank for pre-release sorting."""
+ 
+ # In local version segments, strings sort before ints per PEP 440.
+ _LOCAL_STR_RANK = -1  # sorts before all non-negative ints
+@@ -1173,6 +1224,7 @@
+ # Pre-computed suffix for stable releases (no pre, post, or dev segments).
+ # See _cmpkey() for the suffix layout.
+ _STABLE_SUFFIX = (_PRE_RANK_STABLE, 0, 0, 0, 1, 0)
++"""Pre-computed suffix for stable releases."""
+ 
+ 
+ def _cmpkey(

@@ -1,0 +1,86 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/requests/auth.py	2026-09-27 07:24:49.337328937 -0400
+@@ -33,6 +33,7 @@
+ 
+ def _basic_auth_str(username: bytes | str, password: bytes | str) -> str:
+     """Returns a Basic Auth string."""
++    """Returns a Basic Auth string."""
+ 
+     # "I want us to put a big-ol' comment on top of it that
+     # says that this behaviour is dumb but we need to preserve
+@@ -79,6 +80,7 @@
+     """Base class that all auth implementations derive from"""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
++    """Attaches HTTP Digest Authentication to the given PreparedRequest."""
+         raise NotImplementedError("Auth hooks must be callable.")
+ 
+ 
+@@ -155,6 +157,7 @@
+             self._thread_local.num_401_calls = None
+ 
+     def build_digest_header(self, method: str, url: str) -> str | None:
++    """Builds a digest authentication header for the given method and URL."""
+         """
+         :rtype: str
+         """
+@@ -266,11 +269,13 @@
+         return f"Digest {base}"
+ 
+     def handle_redirect(self, r: Response, **kwargs: Any) -> None:
++    """Resets the num_401_calls counter on redirects."""
+         """Reset num_401_calls counter on redirects."""
+         if r.is_redirect:
+             self._thread_local.num_401_calls = 1
+ 
+     def handle_401(self, r: Response, **kwargs: Any) -> Response:
++    """Handles 401 Unauthorized responses by attempting digest authentication."""
+         """
+         Takes the given response and tries digest-auth, if needed.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/requests/hooks.py	2026-09-27 07:18:28.289031709 -0400
+@@ -22,7 +22,7 @@
+ HOOKS: list[str] = ["response"]
+ 
+ 
+-def default_hooks() -> dict[str, list[_t.HookType]]:
++def default_hooks_v2() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/requests/models.py	2026-09-27 07:19:12.520949742 -0400
+@@ -66,7 +66,7 @@
+ )
+ from .exceptions import JSONDecodeError as RequestsJSONDecodeError
+ from .exceptions import SSLError as RequestsSSLError
+-from .hooks import default_hooks
++from .hooks import default_hooks_v2
+ from .status_codes import codes
+ from .structures import CaseInsensitiveDict
+ from .utils import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/requests/sessions.py	2026-09-27 07:21:41.757673954 -0400
+@@ -33,7 +33,7 @@
+     InvalidSchema,
+     TooManyRedirects,
+ )
+-from .hooks import default_hooks, dispatch_hook
++from .hooks import default_hooks_v2, dispatch_hook
+ 
+ # formerly defined here, reexposed here for backward compatibility
+ from .models import (  # noqa: F401
+@@ -455,7 +455,7 @@
+         self.proxies = {}
+ 
+         #: Event-handling hooks.
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+ 
+         #: Dictionary of querystring data to attach to each
+         #: :class:`Request <Request>`. The dictionary values may be lists for

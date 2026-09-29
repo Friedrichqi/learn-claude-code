@@ -1,0 +1,111 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/httpx/_client.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py	2026-09-17 15:46:11.111585027 -0400
++++ /tmp/yqi10/mu/102768/g1/lane07/profiling_sandbox/httpx/_client.py	2026-09-27 07:41:54.455607452 -0400
+@@ -768,7 +768,7 @@
+ 
+         return self._transport
+ 
+-    def request(
++    def request(  """Build and send a request."""
+         self,
+         method: str,
+         url: URL | str,
+@@ -825,7 +825,7 @@
+         return self.send(request, auth=auth, follow_redirects=follow_redirects)
+ 
+     @contextmanager
+-    def stream(
++    def stream(  """Alternative to `httpx.request()` that streams the response body."""
+         self,
+         method: str,
+         url: URL | str,
+@@ -876,7 +876,7 @@
+         finally:
+             response.close()
+ 
+-    def send(
++    def send(  """Send a request."""
+         self,
+         request: Request,
+         *,
+@@ -927,7 +927,7 @@
+             response.close()
+             raise exc
+ 
+-    def _send_handling_auth(
++    def _send_handling_auth(  """Handle authentication for a request."""
+         self,
+         request: Request,
+         auth: Auth,
+@@ -961,7 +961,7 @@
+         finally:
+             auth_flow.close()
+ 
+-    def _send_handling_redirects(
++    def _send_handling_redirects(  """Handle redirects for a request."""
+         self,
+         request: Request,
+         follow_redirects: bool,
+@@ -1033,7 +1033,7 @@
+ 
+         return response
+ 
+-    def get(
++    def get(  """Send an HTTP GET request to the specified URL."""
+         self,
+         url: URL | str,
+         *,
+@@ -1062,7 +1062,7 @@
+             extensions=extensions,
+         )
+ 
+-    def options(
++    def options(  """Send an HTTP OPTIONS request to the specified URL."""
+         self,
+         url: URL | str,
+         *,
+@@ -1091,7 +1091,7 @@
+             extensions=extensions,
+         )
+ 
+-    def head(
++    def head(  """Send an HTTP HEAD request to the specified URL."""
+         self,
+         url: URL | str,
+         *,
+@@ -1120,7 +1120,7 @@
+             extensions=extensions,
+         )
+ 
+-    def post(
++    def post(  """Send an HTTP POST request to the specified URL."""
+         self,
+         url: URL | str,
+         *,
+@@ -1157,7 +1157,7 @@
+             extensions=extensions,
+         )
+ 
+-    def put(
++    def put(  """Send an HTTP PUT request to the specified URL."""
+         self,
+         url: URL | str,
+         *,
+@@ -1194,7 +1194,7 @@
+             extensions=extensions,
+         )
+ 
+-    def patch(
++    def patch(  """Send an HTTP PATCH request to the specified URL."""
+         self,
+         url: URL | str,
+         *,
+@@ -1231,7 +1231,7 @@
+             extensions=extensions,
+         )
+ 
+-    def delete(
++    def delete(  """Send an HTTP DELETE request to the specified URL."""
+         self,
+         url: URL | str,
+         *,

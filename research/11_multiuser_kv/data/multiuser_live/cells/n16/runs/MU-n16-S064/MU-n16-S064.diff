@@ -1,0 +1,38 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/rich/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py	2026-09-17 15:46:12.127567061 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/rich/__init__.py	2026-09-27 07:21:38.398378994 -0400
+@@ -74,7 +74,7 @@
+     return write_console.print(*objects, sep=sep, end=end)
+ 
+ 
+-def print_json(
++def print_json_v2(
+     json: Optional[str] = None,
+     *,
+     data: Any = None,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/orientation_note.md /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/rich/orientation_note.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/orientation_note.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/rich/orientation_note.md	2026-09-27 05:35:05.210985271 -0400
+@@ -0,0 +1,21 @@
++# Orientation Note for profiling_sandbox/rich/
++
++## Main Entry Points
++- **console.py**: This file is the core of the module and contains the `Console` class, which is central to the functionality of the rich library. The main entry point is the `Console` class, which is instantiated and used throughout the codebase. Key methods include `print`, `log`, and `rule`, which provide the primary interface for outputting rich text and structured data to the console.
++
++## Core Data Structures
++- **Console class (console.py: line 115)**: The `Console` class is the primary data structure, encapsulating the state and behavior of the console output. It manages options like color, style, and formatting.
++- **ConsoleOptions (console.py: line 150)**: This class holds the options for rendering, such as width, height, and justification.
++- **Segment (segment.py)**: Represents a segment of text with styling information. It is used extensively in rendering text with different styles and colors.
++- **Text (text.py)**: A class for handling styled text, which is used to create and manipulate text with rich formatting.
++
++## Error Handling
++- **errors.py**: This file defines several exceptions that are raised when errors occur during console operations. The main exceptions include:
++  - `ConsoleError`: Base class for all console-related errors.
++  - `StyleError`: Raised when there is an issue with styles, such as a badly formatted style or a missing style.
++  - `NotRenderableError`: Raised when an object is not renderable by the console.
++  - `MarkupError`: Raised when markup is badly formatted.
++  - `LiveError`: Raised for errors related to the Live display feature.
++  - `NoAltScreen`: Raised when the alt screen mode is required but not available.
++
++These exceptions are used throughout the codebase to handle and report errors in a structured and consistent manner.
+\ No newline at end of file

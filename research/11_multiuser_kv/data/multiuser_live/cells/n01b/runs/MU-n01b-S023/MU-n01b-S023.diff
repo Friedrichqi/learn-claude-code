@@ -1,0 +1,114 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py	2026-09-17 15:46:11.414122732 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/click/_compat.py	2026-09-26 23:18:14.034756663 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import codecs
+@@ -429,7 +431,7 @@
+     while True:
+         tmp_filename = os.path.join(
+             os.path.dirname(filename),
+-            f".__atomic-write{random.randrange(1 << 32):08x}",
++            f".\__atomic-write{random.randrange(1 << 32):08x}",
+         )
+         try:
+             fd = os.open(tmp_filename, flags, 0o666 if perm is None else perm)
+@@ -498,93 +500,4 @@
+ 
+     return stream.__class__.__module__.startswith("ipykernel.")
+ 
+-
+-def should_strip_ansi(
+-    stream: t.IO[t.Any] | None = None, color: bool | None = None
+-) -> bool:
+-    if color is None:
+-        if stream is None:
+-            stream = sys.stdin
+-        elif hasattr(stream, "color"):
+-            # ._termui_impl._PagerWriter handles stripping ansi itself,
+-            # so we don't need to strip it here
+-            return False
+-        return not isatty(stream) and not _is_jupyter_kernel_output(stream)
+-    return not color
+-
+-
+-# Double check is needed so mypy does not analyze this on Linux.
+-if sys.platform.startswith("win") and WIN:
+-    from ._winconsole import _get_windows_console_stream
+-
+-    def _get_argv_encoding() -> str:
+-        import locale
+-
+-        return locale.getpreferredencoding()
+-
+-else:
+-
+-    def _get_argv_encoding() -> str:
+-        return getattr(sys.stdin, "encoding", None) or sys.getfilesystemencoding()
+-
+-    def _get_windows_console_stream(
+-        f: t.TextIO, encoding: str | None, errors: str | None
+-    ) -> t.TextIO | None:
+-        return None
+-
+-
+-def term_len(x: str) -> int:
+-    return len(strip_ansi(x))
+-
+-
+-def isatty(stream: t.IO[t.Any]) -> bool:
+-    try:
+-        return stream.isatty()
+-    except Exception:
+-        return False
+-
+-
+-def _make_cached_stream_func(
+-    src_func: t.Callable[[], t.TextIO | None],
+-    wrapper_func: t.Callable[[], t.TextIO],
+-) -> t.Callable[[], t.TextIO | None]:
+-    cache: cabc.MutableMapping[t.TextIO, t.TextIO] = WeakKeyDictionary()
+-
+-    def func() -> t.TextIO | None:
+-        stream = src_func()
+-
+-        if stream is None:
+-            return None
+-
+-        try:
+-            rv = cache.get(stream)
+-        except Exception:
+-            rv = None
+-        if rv is not None:
+-            return rv
+-        rv = wrapper_func()
+-        try:
+-            cache[stream] = rv
+-        except Exception:
+-            pass
+-        return rv
+-
+-    return func
+-
+-
+-_default_text_stdin = _make_cached_stream_func(lambda: sys.stdin, get_text_stdin)
+-_default_text_stdout = _make_cached_stream_func(lambda: sys.stdout, get_text_stdout)
+-_default_text_stderr = _make_cached_stream_func(lambda: sys.stderr, get_text_stderr)
+-
+-
+-binary_streams: cabc.Mapping[str, t.Callable[[], t.BinaryIO]] = {
+-    "stdin": get_binary_stdin,
+-    "stdout": get_binary_stdout,
+-    "stderr": get_binary_stderr,
+-}
+-
+-text_streams: cabc.Mapping[str, t.Callable[[str | None, str | None], t.TextIO]] = {
+-    "stdin": get_text_stdin,
+-    "stdout": get_text_stdout,
+-    "stderr": get_text_stderr,
+-}
++... (90 more lines)
+\ No newline at end of file

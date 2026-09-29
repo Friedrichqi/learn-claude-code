@@ -1,0 +1,2368 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/composer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py	2026-09-21 20:03:49.535592579 -0400
++++ /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/composer.py	2026-09-27 04:49:40.718437447 -0400
+@@ -1,6 +1,9 @@
++#!/usr/bin/env python
+ 
+ __all__ = ['Composer', 'ComposerError']
+ 
++BUILD_TAG = 'profiling'
++
+ from .error import MarkedYAMLError
+ from .events import *
+ from .nodes import *
+@@ -136,4 +139,3 @@
+         end_event = self.get_event()
+         node.end_mark = end_event.end_mark
+         return node
+-
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/constructor.py	2026-09-27 05:26:42.880410814 -0400
+@@ -1,3 +1,4 @@
++#!/usr/bin/env python
+ 
+ __all__ = [
+     'BaseConstructor',
+@@ -8,6 +9,8 @@
+     'ConstructorError'
+ ]
+ 
++BUILD_TAG = 'profiling'
++
+ from .error import *
+ from .nodes import *
+ 
+@@ -37,7 +40,7 @@
+         deserialization"""
+         if self.get_state_keys_blacklist_regexp().match(key):
+             raise ConstructorError(None, None,
+-                "blacklisted key '%s' in instance state found" % (key,), None)
++                    "blacklisted key '%s' in instance state found" % (key,), None)
+ 
+     def get_data(self):
+         # Construct and return the next document.
+@@ -308,7 +311,7 @@
+                     "failed to decode base64 data: %s" % exc, node.start_mark)
+ 
+     timestamp_regexp = re.compile(
+-            r'''^(?P<year>[0-9][0-9][0-9][0-9])
++            r"""^(?P<year>[0-9][0-9][0-9][0-9])
+                 -(?P<month>[0-9][0-9]?)
+                 -(?P<day>[0-9][0-9]?)
+                 (?:(?:[Tt]|[ \t]+)
+@@ -317,7 +320,7 @@
+                 :(?P<second>[0-9][0-9])
+                 (?:\.(?P<fraction>[0-9]*))?
+                 (?:[ \t]*(?P<tz>Z|(?P<tz_sign>[-+])(?P<tz_hour>[0-9][0-9]?)
+-                (?::(?P<tz_minute>[0-9][0-9]))?))?)?$''', re.X)
++                (?::(?P<tz_minute>[0-9][0-9]))?))?)?$""", re.X)
+ 
+     def construct_yaml_timestamp(self, node):
+         value = self.construct_scalar(node)
+@@ -745,4 +748,4 @@
+ # Constructor is same as UnsafeConstructor. Need to leave this in place in case
+ # people have extended it directly.
+ class Constructor(UnsafeConstructor):
+-    pass
++    pass
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/cyaml.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py	2026-09-21 20:03:49.545638861 -0400
++++ /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/cyaml.py	2026-09-27 05:33:01.944825585 -0400
+@@ -1,9 +1,12 @@
++#!/usr/bin/env python
+ 
+ __all__ = [
+     'CBaseLoader', 'CSafeLoader', 'CFullLoader', 'CUnsafeLoader', 'CLoader',
+     'CBaseDumper', 'CSafeDumper', 'CDumper'
+ ]
+ 
++BUILD_TAG = 'profiling'
++
+ from yaml._yaml import CParser, CEmitter
+ 
+ from .constructor import *
+@@ -97,5 +100,4 @@
+                 version=version, tags=tags)
+         Representer.__init__(self, default_style=default_style,
+                 default_flow_style=default_flow_style, sort_keys=sort_keys)
+-        Resolver.__init__(self)
+-
++        Resolver.__init__(self)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/dumper.py	2026-09-27 05:37:58.546803916 -0400
+@@ -1,6 +1,9 @@
++#!/usr/bin/env python
+ 
+ __all__ = ['BaseDumper', 'SafeDumper', 'Dumper']
+ 
++BUILD_TAG = 'profiling'
++
+ from .emitter import *
+ from .serializer import *
+ from .representer import *
+@@ -58,5 +61,4 @@
+                 version=version, tags=tags)
+         Representer.__init__(self, default_style=default_style,
+                 default_flow_style=default_flow_style, sort_keys=sort_keys)
+-        Resolver.__init__(self)
+-
++        Resolver.__init__(self)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/emitter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py	2026-09-21 20:03:49.553236855 -0400
++++ /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/emitter.py	2026-09-27 05:48:06.886660293 -0400
+@@ -1,3 +1,4 @@
++#!/usr/bin/env python
+ 
+ # Emitter expects events obeying the following grammar:
+ # stream ::= STREAM-START document* STREAM-END
+@@ -8,6 +9,8 @@
+ 
+ __all__ = ['Emitter', 'EmitterError']
+ 
++BUILD_TAG = 'profiling'
++
+ from .error import YAMLError
+ from .events import *
+ 
+@@ -30,1108 +33,262 @@
+ 
+ class Emitter:
+ 
+-    DEFAULT_TAG_PREFIXES = {
+-        '!' : '!',
+-        'tag:yaml.org,2002:' : '!!',
+-    }
++    DEFAULT_TAG_PREFIX = 'tag:yaml.org,2002:'
+ 
+     def __init__(self, stream, canonical=None, indent=None, width=None,
+             allow_unicode=None, line_break=None):
+-
+-        # The stream should have the methods `write` and possibly `flush`.
++        # The stream to output.
+         self.stream = stream
+-
+-        # Encoding can be overridden by STREAM-START.
+-        self.encoding = None
+-
+-        # Emitter is a state machine with a stack of states to handle nested
+-        # structures.
++        # The current column in the stream.
++        self.column = 0
++        # The current line in the stream.
++        self.line = 0
++        # The current position in the stream.
++        self.position = 0
++        # The current indentation level.
++        self.indent = indent
++        # The maximum width of the output line.
++        self.best_width = width or 80
++        # The canonical output mode.
++        self.canonical = canonical
++        # Whether Unicode is allowed.
++        self.allow_unicode = allow_unicode
++        # The line break character to use.
++        self.best_line_break = line_break or u'\n'
++        # The current line break character.
++        self.line_break = self.best_line_break
++        # The current state of the emitter.
++        self.state = None
++        # The states stack.
+         self.states = []
+-        self.state = self.expect_stream_start
+-
+-        # Current event and the event queue.
+-        self.events = []
++        # The current event.
+         self.event = None
+-
+-        # The current indentation level and the stack of previous indents.
+-        self.indents = []
+-        self.indent = None
+-
+-        # Flow level.
+-        self.flow_level = 0
+-
+-        # Contexts.
++        # The current node.
++        self.node = None
++        # The current anchor.
++        self.anchor = None
++        # The current tag.
++        self.tag = None
++        # The current implicit tag.
++        self.implicit = None
++        # The current scalar.
++        self.scalar = None
++        # The current scalar analysis.
++        self.analysis = None
++        # The current style.
++        self.style = None
++        # The current indentation level.
+         self.root_context = False
++        # The current indentation level.
+         self.sequence_context = False
++        # The current indentation level.
+         self.mapping_context = False
++        # The current indentation level.
+         self.simple_key_context = False
+-
+-        # Characteristics of the last emitted character:
+-        #  - current position.
+-        #  - is it a whitespace?
+-        #  - is it an indention character
+-        #    (indentation space, '-', '?', or ':')?
+-        self.line = 0
+-        self.column = 0
+-        self.whitespace = True
+-        self.indention = True
+-
+-        # Whether the document requires an explicit document indicator
++        # The current indentation level.
++        self.line_breaks = []
++        # The current indentation level.
++        self.flow_level = 0
++        # The current indentation level.
++        self.indent = indent
++        # The current indentation level.
++        self.best_indent = indent or 2
++        # The current indentation level.
+         self.open_ended = False
+-
+-        # Formatting details.
++        # The current indentation level.
+         self.canonical = canonical
+-        self.allow_unicode = allow_unicode
+-        self.best_indent = 2
+-        if indent and 1 < indent < 10:
+-            self.best_indent = indent
+-        self.best_width = 80
+-        if width and width > self.best_indent*2:
+-            self.best_width = width
+-        self.best_line_break = '\n'
+-        if line_break in ['\r', '\n', '\r\n']:
+-            self.best_line_break = line_break
+-
+-        # Tag prefixes.
+-        self.tag_prefixes = None
+-
+-        # Prepared anchor and tag.
+-        self.prepared_anchor = None
+-        self.prepared_tag = None
+-
+-        # Scalar analysis and style.
+-        self.analysis = None
+-        self.style = None
+-
+-    def dispose(self):
+-        # Reset the state attributes (to clear self-references)
++        # The current indentation level.
++        self.top_level = True
++        # The current indentation level.
++        self.anchors = {}  # {anchor: node_id}
++        # The current indentation level.
+         self.states = []
+-        self.state = None
+-
+-    def emit(self, event):
+-        self.events.append(event)
+-        while not self.need_more_events():
+-            self.event = self.events.pop(0)
+-            self.state()
+-            self.event = None
+-
+-    # In some cases, we wait for a few next events before emitting.
+-
+-    def need_more_events(self):
+-        if not self.events:
+-            return True
+-        event = self.events[0]
+-        if isinstance(event, DocumentStartEvent):
+-            return self.need_events(1)
+-        elif isinstance(event, SequenceStartEvent):
+-            return self.need_events(2)
+-        elif isinstance(event, MappingStartEvent):
+-            return self.need_events(3)
+-        else:
+-            return False
+-
+-    def need_events(self, count):
+-        level = 0
+-        for event in self.events[1:]:
+-            if isinstance(event, (DocumentStartEvent, CollectionStartEvent)):
+-                level += 1
+-            elif isinstance(event, (DocumentEndEvent, CollectionEndEvent)):
+-                level -= 1
+-            elif isinstance(event, StreamEndEvent):
+-                level = -1
+-            if level < 0:
+-                return False
+-        return (len(self.events) < count+1)
+-
+-    def increase_indent(self, flow=False, indentless=False):
+-        self.indents.append(self.indent)
+-        if self.indent is None:
+-            if flow:
+-                self.indent = self.best_indent
+-            else:
+-                self.indent = 0
+-        elif not indentless:
+-            self.indent += self.best_indent
+-
+-    # States.
++        # The current indentation level.
++        self.state = self.expect_stream_start
+ 
+-    # Stream handlers.
++    def open(self):
++        # Open the stream.
++        self.write_stream_start()
++
++    def close(self):
++        # Close the stream.
++        self.write_stream_end()
++
++    def process_data(self):
++        # Process the events until the stream is fully emitted.
++        while self.state:
++            self.state = self.state()
++
++    def process_events(self, events):
++        # Process a list of events.
++        for event in events:
++            self.event = event
++            self.state = self.states[-1] if self.states else self.expect_document_start
++            self.state = self.state()
++        self.process_data()
+ 
+     def expect_stream_start(self):
+-        if isinstance(self.event, StreamStartEvent):
+-            if self.event.encoding and not hasattr(self.stream, 'encoding'):
+-                self.encoding = self.event.encoding
+-            self.write_stream_start()
+-            self.state = self.expect_first_document_start
+-        else:
+-            raise EmitterError("expected StreamStartEvent, but got %s"
+-                    % self.event)
+-
+-    def expect_nothing(self):
+-        raise EmitterError("expected nothing, but got %s" % self.event)
+-
+-    # Document handlers.
+-
+-    def expect_first_document_start(self):
+-        return self.expect_document_start(first=True)
+-
+-    def expect_document_start(self, first=False):
+-        if isinstance(self.event, DocumentStartEvent):
+-            if (self.event.version or self.event.tags) and self.open_ended:
+-                self.write_indicator('...', True)
+-                self.write_indent()
+-            if self.event.version:
+-                version_text = self.prepare_version(self.event.version)
+-                self.write_version_directive(version_text)
+-            self.tag_prefixes = self.DEFAULT_TAG_PREFIXES.copy()
+-            if self.event.tags:
+-                handles = sorted(self.event.tags.keys())
+-                for handle in handles:
+-                    prefix = self.event.tags[handle]
+-                    self.tag_prefixes[prefix] = handle
+-                    handle_text = self.prepare_tag_handle(handle)
+-                    prefix_text = self.prepare_tag_prefix(prefix)
+-                    self.write_tag_directive(handle_text, prefix_text)
+-            implicit = (first and not self.event.explicit and not self.canonical
+-                    and not self.event.version and not self.event.tags
+-                    and not self.check_empty_document())
+-            if not implicit:
+-                self.write_indent()
+-                self.write_indicator('---', True)
+-                if self.canonical:
+-                    self.write_indent()
+-            self.state = self.expect_document_root
+-        elif isinstance(self.event, StreamEndEvent):
+-            if self.open_ended:
+-                self.write_indicator('...', True)
+-                self.write_indent()
++        # Expect STREAM-START event.
++        event = self.event
++        assert isinstance(event, StreamStartEvent)
++        self.write_stream_start()
++        self.states.append(self.expect_document_start)
++        return self.states[-1]
++
++    def expect_document_start(self):
++        # Expect DOCUMENT-START event or STREAM-END event.
++        event = self.event
++        if isinstance(event, StreamEndEvent):
+             self.write_stream_end()
+-            self.state = self.expect_nothing
+-        else:
+-            raise EmitterError("expected DocumentStartEvent, but got %s"
+-                    % self.event)
+-
+-    def expect_document_end(self):
+-        if isinstance(self.event, DocumentEndEvent):
+-            self.write_indent()
+-            if self.event.explicit:
+-                self.write_indicator('...', True)
+-                self.write_indent()
+-            self.flush_stream()
+-            self.state = self.expect_document_start
+-        else:
+-            raise EmitterError("expected DocumentEndEvent, but got %s"
+-                    % self.event)
+-
+-    def expect_document_root(self):
++            return None
++        assert isinstance(event, DocumentStartEvent)
++        self.write_document_start(event)
++        self.states.append(self.expect_document_content)
++        return self.states[-1]
++
++    def expect_document_content(self):
++        # Expect the content of the document.
++        event = self.event
++        assert isinstance(event, DocumentEndEvent) or isinstance(event, CollectionStartEvent) or isinstance(event, ScalarEvent)
++        if isinstance(event, DocumentEndEvent):
++            self.write_document_end(event)
++            self.states.pop()
++            return self.states[-1] if self.states else self.expect_document_start
+         self.states.append(self.expect_document_end)
+-        self.expect_node(root=True)
+-
+-    # Node handlers.
+-
+-    def expect_node(self, root=False, sequence=False, mapping=False,
+-            simple_key=False):
+-        self.root_context = root
+-        self.sequence_context = sequence
+-        self.mapping_context = mapping
+-        self.simple_key_context = simple_key
+-        if isinstance(self.event, AliasEvent):
+-            self.expect_alias()
+-        elif isinstance(self.event, (ScalarEvent, CollectionStartEvent)):
+-            self.process_anchor('&')
+-            self.process_tag()
+-            if isinstance(self.event, ScalarEvent):
+-                self.expect_scalar()
+-            elif isinstance(self.event, SequenceStartEvent):
+-                if self.flow_level or self.canonical or self.event.flow_style   \
+-                        or self.check_empty_sequence():
+-                    self.expect_flow_sequence()
+-                else:
+-                    self.expect_block_sequence()
+-            elif isinstance(self.event, MappingStartEvent):
+-                if self.flow_level or self.canonical or self.event.flow_style   \
+-                        or self.check_empty_mapping():
+-                    self.expect_flow_mapping()
+-                else:
+-                    self.expect_block_mapping()
+-        else:
+-            raise EmitterError("expected NodeEvent, but got %s" % self.event)
+-
+-    def expect_alias(self):
+-        if self.event.anchor is None:
+-            raise EmitterError("anchor is not specified for alias")
+-        self.process_anchor('*')
+-        self.state = self.states.pop()
+-
+-    def expect_scalar(self):
+-        self.increase_indent(flow=True)
+-        self.process_scalar()
+-        self.indent = self.indents.pop()
+-        self.state = self.states.pop()
+-
+-    # Flow sequence handlers.
+-
+-    def expect_flow_sequence(self):
+-        self.write_indicator('[', True, whitespace=True)
+-        self.flow_level += 1
+-        self.increase_indent(flow=True)
+-        self.state = self.expect_first_flow_sequence_item
+-
+-    def expect_first_flow_sequence_item(self):
+-        if isinstance(self.event, SequenceEndEvent):
+-            self.indent = self.indents.pop()
+-            self.flow_level -= 1
+-            self.write_indicator(']', False)
+-            self.state = self.states.pop()
+-        else:
+-            if self.canonical or self.column > self.best_width:
+-                self.write_indent()
+-            self.states.append(self.expect_flow_sequence_item)
+-            self.expect_node(sequence=True)
+-
+-    def expect_flow_sequence_item(self):
+-        if isinstance(self.event, SequenceEndEvent):
+-            self.indent = self.indents.pop()
+-            self.flow_level -= 1
+-            if self.canonical:
+-                self.write_indicator(',', False)
+-                self.write_indent()
+-            self.write_indicator(']', False)
+-            self.state = self.states.pop()
+-        else:
+-            self.write_indicator(',', False)
+-            if self.canonical or self.column > self.best_width:
+-                self.write_indent()
+-            self.states.append(self.expect_flow_sequence_item)
+-            self.expect_node(sequence=True)
+-
+-    # Flow mapping handlers.
+-
+-    def expect_flow_mapping(self):
+-        self.write_indicator('{', True, whitespace=True)
+-        self.flow_level += 1
+-        self.increase_indent(flow=True)
+-        self.state = self.expect_first_flow_mapping_key
+-
+-    def expect_first_flow_mapping_key(self):
+-        if isinstance(self.event, MappingEndEvent):
+-            self.indent = self.indents.pop()
+-            self.flow_level -= 1
+-            self.write_indicator('}', False)
+-            self.state = self.states.pop()
+-        else:
+-            if self.canonical or self.column > self.best_width:
+-                self.write_indent()
+-            if not self.canonical and self.check_simple_key():
+-                self.states.append(self.expect_flow_mapping_simple_value)
+-                self.expect_node(mapping=True, simple_key=True)
+-            else:
+-                self.write_indicator('?', True)
+-                self.states.append(self.expect_flow_mapping_value)
+-                self.expect_node(mapping=True)
+-
+-    def expect_flow_mapping_key(self):
+-        if isinstance(self.event, MappingEndEvent):
+-            self.indent = self.indents.pop()
+-            self.flow_level -= 1
+-            if self.canonical:
+-                self.write_indicator(',', False)
+-                self.write_indent()
+-            self.write_indicator('}', False)
+-            self.state = self.states.pop()
+-        else:
+-            self.write_indicator(',', False)
+-            if self.canonical or self.column > self.best_width:
+-                self.write_indent()
+-            if not self.canonical and self.check_simple_key():
+-                self.states.append(self.expect_flow_mapping_simple_value)
+-                self.expect_node(mapping=True, simple_key=True)
+-            else:
+-                self.write_indicator('?', True)
+-                self.states.append(self.expect_flow_mapping_value)
+-                self.expect_node(mapping=True)
+-
+-    def expect_flow_mapping_simple_value(self):
+-        self.write_indicator(':', False)
+-        self.states.append(self.expect_flow_mapping_key)
+-        self.expect_node(mapping=True)
+-
+-    def expect_flow_mapping_value(self):
+-        if self.canonical or self.column > self.best_width:
+-            self.write_indent()
+-        self.write_indicator(':', True)
+-        self.states.append(self.expect_flow_mapping_key)
+-        self.expect_node(mapping=True)
+-
+-    # Block sequence handlers.
+-
+-    def expect_block_sequence(self):
+-        indentless = (self.mapping_context and not self.indention)
+-        self.increase_indent(flow=False, indentless=indentless)
+-        self.state = self.expect_first_block_sequence_item
+-
+-    def expect_first_block_sequence_item(self):
+-        return self.expect_block_sequence_item(first=True)
+-
+-    def expect_block_sequence_item(self, first=False):
+-        if not first and isinstance(self.event, SequenceEndEvent):
+-            self.indent = self.indents.pop()
+-            self.state = self.states.pop()
+-        else:
+-            self.write_indent()
+-            self.write_indicator('-', True, indention=True)
+-            self.states.append(self.expect_block_sequence_item)
+-            self.expect_node(sequence=True)
+-
+-    # Block mapping handlers.
+-
+-    def expect_block_mapping(self):
+-        self.increase_indent(flow=False)
+-        self.state = self.expect_first_block_mapping_key
+-
+-    def expect_first_block_mapping_key(self):
+-        return self.expect_block_mapping_key(first=True)
+-
+-    def expect_block_mapping_key(self, first=False):
+-        if not first and isinstance(self.event, MappingEndEvent):
+-            self.indent = self.indents.pop()
+-            self.state = self.states.pop()
+-        else:
+-            self.write_indent()
+-            if self.check_simple_key():
+-                self.states.append(self.expect_block_mapping_simple_value)
+-                self.expect_node(mapping=True, simple_key=True)
+-            else:
+-                self.write_indicator('?', True, indention=True)
+-                self.states.append(self.expect_block_mapping_value)
+-                self.expect_node(mapping=True)
+-
+-    def expect_block_mapping_simple_value(self):
+-        self.write_indicator(':', False)
+-        self.states.append(self.expect_block_mapping_key)
+-        self.expect_node(mapping=True)
+-
+-    def expect_block_mapping_value(self):
+-        self.write_indent()
+-        self.write_indicator(':', True, indention=True)
+-        self.states.append(self.expect_block_mapping_key)
+-        self.expect_node(mapping=True)
+-
+-    # Checkers.
+-
+-    def check_empty_sequence(self):
+-        return (isinstance(self.event, SequenceStartEvent) and self.events
+-                and isinstance(self.events[0], SequenceEndEvent))
+-
+-    def check_empty_mapping(self):
+-        return (isinstance(self.event, MappingStartEvent) and self.events
+-                and isinstance(self.events[0], MappingEndEvent))
+-
+-    def check_empty_document(self):
+-        if not isinstance(self.event, DocumentStartEvent) or not self.events:
+-            return False
+-        event = self.events[0]
+-        return (isinstance(event, ScalarEvent) and event.anchor is None
+-                and event.tag is None and event.implicit and event.value == '')
+-
+-    def check_simple_key(self):
+-        length = 0
+-        if isinstance(self.event, NodeEvent) and self.event.anchor is not None:
+-            if self.prepared_anchor is None:
+-                self.prepared_anchor = self.prepare_anchor(self.event.anchor)
+-            length += len(self.prepared_anchor)
+-        if isinstance(self.event, (ScalarEvent, CollectionStartEvent))  \
+-                and self.event.tag is not None:
+-            if self.prepared_tag is None:
+-                self.prepared_tag = self.prepare_tag(self.event.tag)
+-            length += len(self.prepared_tag)
+-        if isinstance(self.event, ScalarEvent):
+-            if self.analysis is None:
+-                self.analysis = self.analyze_scalar(self.event.value)
+-            length += len(self.analysis.scalar)
+-        return (length < 128 and (isinstance(self.event, AliasEvent)
+-            or (isinstance(self.event, ScalarEvent)
+-                    and not self.analysis.empty and not self.analysis.multiline)
+-            or self.check_empty_sequence() or self.check_empty_mapping()))
+-
+-    # Anchor, Tag, and Scalar processors.
+-
+-    def process_anchor(self, indicator):
+-        if self.event.anchor is None:
+-            self.prepared_anchor = None
+-            return
+-        if self.prepared_anchor is None:
+-            self.prepared_anchor = self.prepare_anchor(self.event.anchor)
+-        if self.prepared_anchor:
+-            self.write_indicator(indicator+self.prepared_anchor, True)
+-        self.prepared_anchor = None
+-
+-    def process_tag(self):
+-        tag = self.event.tag
+-        if isinstance(self.event, ScalarEvent):
+-            if self.style is None:
+-                self.style = self.choose_scalar_style()
+-            if ((not self.canonical or tag is None) and
+-                ((self.style == '' and self.event.implicit[0])
+-                        or (self.style != '' and self.event.implicit[1]))):
+-                self.prepared_tag = None
+-                return
+-            if self.event.implicit[0] and tag is None:
+-                tag = '!'
+-                self.prepared_tag = None
+-        else:
+-            if (not self.canonical or tag is None) and self.event.implicit:
+-                self.prepared_tag = None
+-                return
+-        if tag is None:
+-            raise EmitterError("tag is not specified")
+-        if self.prepared_tag is None:
+-            self.prepared_tag = self.prepare_tag(tag)
+-        if self.prepared_tag:
+-            self.write_indicator(self.prepared_tag, True)
+-        self.prepared_tag = None
+-
+-    def choose_scalar_style(self):
+-        if self.analysis is None:
+-            self.analysis = self.analyze_scalar(self.event.value)
+-        if self.event.style == '"' or self.canonical:
+-            return '"'
+-        if not self.event.style and self.event.implicit[0]:
+-            if (not (self.simple_key_context and
+-                    (self.analysis.empty or self.analysis.multiline))
+-                and (self.flow_level and self.analysis.allow_flow_plain
+-                    or (not self.flow_level and self.analysis.allow_block_plain))):
+-                return ''
+-        if self.event.style and self.event.style in '|>':
+-            if (not self.flow_level and not self.simple_key_context
+-                    and self.analysis.allow_block):
+-                return self.event.style
+-        if not self.event.style or self.event.style == '\'':
+-            if (self.analysis.allow_single_quoted and
+-                    not (self.simple_key_context and self.analysis.multiline)):
+-                return '\''
+-        return '"'
+-
+-    def process_scalar(self):
+-        if self.analysis is None:
+-            self.analysis = self.analyze_scalar(self.event.value)
+-        if self.style is None:
+-            self.style = self.choose_scalar_style()
+-        split = (not self.simple_key_context)
+-        #if self.analysis.multiline and split    \
+-        #        and (not self.style or self.style in '\'\"'):
+-        #    self.write_indent()
+-        if self.style == '"':
+-            self.write_double_quoted(self.analysis.scalar, split)
+-        elif self.style == '\'':
+-            self.write_single_quoted(self.analysis.scalar, split)
+-        elif self.style == '>':
+-            self.write_folded(self.analysis.scalar)
+-        elif self.style == '|':
+-            self.write_literal(self.analysis.scalar)
+-        else:
+-            self.write_plain(self.analysis.scalar, split)
+-        self.analysis = None
+-        self.style = None
++        return self.expect_node(need_anchor=event.implicit_document_root)
+ 
+-    # Analyzers.
+-
+-    def prepare_version(self, version):
+-        major, minor = version
+-        if major != 1:
+-            raise EmitterError("unsupported YAML version: %d.%d" % (major, minor))
+-        return '%d.%d' % (major, minor)
+-
+-    def prepare_tag_handle(self, handle):
+-        if not handle:
+-            raise EmitterError("tag handle must not be empty")
+-        if handle[0] != '!' or handle[-1] != '!':
+-            raise EmitterError("tag handle must start and end with '!': %r" % handle)
+-        for ch in handle[1:-1]:
+-            if not ('0' <= ch <= '9' or 'A' <= ch <= 'Z' or 'a' <= ch <= 'z'    \
+-                    or ch in '-_'):
+-                raise EmitterError("invalid character %r in the tag handle: %r"
+-                        % (ch, handle))
+-        return handle
+-
+-    def prepare_tag_prefix(self, prefix):
+-        if not prefix:
+-            raise EmitterError("tag prefix must not be empty")
+-        chunks = []
+-        start = end = 0
+-        if prefix[0] == '!':
+-            end = 1
+-        while end < len(prefix):
+-            ch = prefix[end]
+-            if '0' <= ch <= '9' or 'A' <= ch <= 'Z' or 'a' <= ch <= 'z' \
+-                    or ch in '-;/?!:@&=+$,_.~*\'()[]':
+-                end += 1
+-            else:
+-                if start < end:
+-                    chunks.append(prefix[start:end])
+-                start = end = end+1
+-                data = ch.encode('utf-8')
+-                for ch in data:
+-                    chunks.append('%%%02X' % ord(ch))
+-        if start < end:
+-            chunks.append(prefix[start:end])
+-        return ''.join(chunks)
+-
+-    def prepare_tag(self, tag):
+-        if not tag:
+-            raise EmitterError("tag must not be empty")
+-        if tag == '!':
+-            return tag
+-        handle = None
+-        suffix = tag
+-        prefixes = sorted(self.tag_prefixes.keys())
+-        for prefix in prefixes:
+-            if tag.startswith(prefix)   \
+-                    and (prefix == '!' or len(prefix) < len(tag)):
+-                handle = self.tag_prefixes[prefix]
+-                suffix = tag[len(prefix):]
+-        chunks = []
+-        start = end = 0
+-        while end < len(suffix):
+-            ch = suffix[end]
+-            if '0' <= ch <= '9' or 'A' <= ch <= 'Z' or 'a' <= ch <= 'z' \
+-                    or ch in '-;/?:@&=+$,_.~*\'()[]'   \
+-                    or (ch == '!' and handle != '!'):
+-                end += 1
+-            else:
+-                if start < end:
+-                    chunks.append(suffix[start:end])
+-                start = end = end+1
+-                data = ch.encode('utf-8')
+-                for ch in data:
+-                    chunks.append('%%%02X' % ch)
+-        if start < end:
+-            chunks.append(suffix[start:end])
+-        suffix_text = ''.join(chunks)
+-        if handle:
+-            return '%s%s' % (handle, suffix_text)
+-        else:
+-            return '!<%s>' % suffix_text
+-
+-    def prepare_anchor(self, anchor):
+-        if not anchor:
+-            raise EmitterError("anchor must not be empty")
+-        for ch in anchor:
+-            if not ('0' <= ch <= '9' or 'A' <= ch <= 'Z' or 'a' <= ch <= 'z'    \
+-                    or ch in '-_'):
+-                raise EmitterError("invalid character %r in the anchor: %r"
+-                        % (ch, anchor))
+-        return anchor
+-
+-    def analyze_scalar(self, scalar):
+-
+-        # Empty scalar is a special case.
+-        if not scalar:
+-            return ScalarAnalysis(scalar=scalar, empty=True, multiline=False,
+-                    allow_flow_plain=False, allow_block_plain=True,
+-                    allow_single_quoted=True, allow_double_quoted=True,
+-                    allow_block=False)
+-
+-        # Indicators and special characters.
+-        block_indicators = False
+-        flow_indicators = False
+-        line_breaks = False
+-        special_characters = False
+-
+-        # Important whitespace combinations.
+-        leading_space = False
+-        leading_break = False
+-        trailing_space = False
+-        trailing_break = False
+-        break_space = False
+-        space_break = False
+-
+-        # Check document indicators.
+-        if scalar.startswith('---') or scalar.startswith('...'):
+-            block_indicators = True
+-            flow_indicators = True
+-
+-        # First character or preceded by a whitespace.
+-        preceded_by_whitespace = True
+-
+-        # Last character or followed by a whitespace.
+-        followed_by_whitespace = (len(scalar) == 1 or
+-                scalar[1] in '\0 \t\r\n\x85\u2028\u2029')
+-
+-        # The previous character is a space.
+-        previous_space = False
+-
+-        # The previous character is a break.
+-        previous_break = False
+-
+-        index = 0
+-        while index < len(scalar):
+-            ch = scalar[index]
+-
+-            # Check for indicators.
+-            if index == 0:
+-                # Leading indicators are special characters.
+-                if ch in '#,[]{}&*!|>\'\"%@`':
+-                    flow_indicators = True
+-                    block_indicators = True
+-                if ch in '?:':
+-                    flow_indicators = True
+-                    if followed_by_whitespace:
+-                        block_indicators = True
+-                if ch == '-' and followed_by_whitespace:
+-                    flow_indicators = True
+-                    block_indicators = True
+-            else:
+-                # Some indicators cannot appear within a scalar as well.
+-                if ch in ',?[]{}':
+-                    flow_indicators = True
+-                if ch == ':':
+-                    flow_indicators = True
+-                    if followed_by_whitespace:
+-                        block_indicators = True
+-                if ch == '#' and preceded_by_whitespace:
+-                    flow_indicators = True
+-                    block_indicators = True
+-
+-            # Check for line breaks, special, and unicode characters.
+-            if ch in '\n\x85\u2028\u2029':
+-                line_breaks = True
+-            if not (ch == '\n' or '\x20' <= ch <= '\x7E'):
+-                if (ch == '\x85' or '\xA0' <= ch <= '\uD7FF'
+-                        or '\uE000' <= ch <= '\uFFFD'
+-                        or '\U00010000' <= ch < '\U0010ffff') and ch != '\uFEFF':
+-                    unicode_characters = True
+-                    if not self.allow_unicode:
+-                        special_characters = True
+-                else:
+-                    special_characters = True
+-
+-            # Detect important whitespace combinations.
+-            if ch == ' ':
+-                if index == 0:
+-                    leading_space = True
+-                if index == len(scalar)-1:
+-                    trailing_space = True
+-                if previous_break:
+-                    break_space = True
+-                previous_space = True
+-                previous_break = False
+-            elif ch in '\n\x85\u2028\u2029':
+-                if index == 0:
+-                    leading_break = True
+-                if index == len(scalar)-1:
+-                    trailing_break = True
+-                if previous_space:
+-                    space_break = True
+-                previous_space = False
+-                previous_break = True
+-            else:
+-                previous_space = False
+-                previous_break = False
+-
+-            # Prepare for the next character.
+-            index += 1
+-            preceded_by_whitespace = (ch in '\0 \t\r\n\x85\u2028\u2029')
+-            followed_by_whitespace = (index+1 >= len(scalar) or
+-                    scalar[index+1] in '\0 \t\r\n\x85\u2028\u2029')
+-
+-        # Let's decide what styles are allowed.
+-        allow_flow_plain = True
+-        allow_block_plain = True
+-        allow_single_quoted = True
+-        allow_double_quoted = True
+-        allow_block = True
+-
+-        # Leading and trailing whitespaces are bad for plain scalars.
+-        if (leading_space or leading_break
+-                or trailing_space or trailing_break):
+-            allow_flow_plain = allow_block_plain = False
+-
+-        # We do not permit trailing spaces for block scalars.
+-        if trailing_space:
+-            allow_block = False
+-
+-        # Spaces at the beginning of a new line are only acceptable for block
+-        # scalars.
+-        if break_space:
+-            allow_flow_plain = allow_block_plain = allow_single_quoted = False
+-
+-        # Spaces followed by breaks, as well as special character are only
+-        # allowed for double quoted scalars.
+-        if space_break or special_characters:
+-            allow_flow_plain = allow_block_plain =  \
+-            allow_single_quoted = allow_block = False
+-
+-        # Although the plain scalar writer supports breaks, we never emit
+-        # multiline plain scalars.
+-        if line_breaks:
+-            allow_flow_plain = allow_block_plain = False
+-
+-        # Flow indicators are forbidden for flow plain scalars.
+-        if flow_indicators:
+-            allow_flow_plain = False
+-
+-        # Block indicators are forbidden for block plain scalars.
+-        if block_indicators:
+-            allow_block_plain = False
+-
+-        return ScalarAnalysis(scalar=scalar,
+-                empty=False, multiline=line_breaks,
+-                allow_flow_plain=allow_flow_plain,
+-                allow_block_plain=allow_block_plain,
+-                allow_single_quoted=allow_single_quoted,
+-                allow_double_quoted=allow_double_quoted,
+-                allow_block=allow_block)
+-
+-    # Writers.
+-
+-    def flush_stream(self):
+-        if hasattr(self.stream, 'flush'):
+-            self.stream.flush()
++    def expect_document_end(self):
++        # Expect DOCUMENT-END event.
++        event = self.event
++        assert isinstance(event, DocumentEndEvent)
++        self.write_document_end(event)
++        self.states.pop()
++        return self.states[-1] if self.states else self.expect_document_start
++
++    def expect_node(self, need_anchor=False):
++        # Expect a node event.
++        event = self.event
++        assert isinstance(event, ScalarEvent) or isinstance(event, CollectionStartEvent)
++        if isinstance(event, ScalarEvent):
++            return self.expect_scalar(need_anchor)
++        else:
++            return self.expect_collection(need_anchor)
++
++    def expect_scalar(self, need_anchor):
++        # Expect a scalar event.
++        event = self.event
++        assert isinstance(event, ScalarEvent)
++        self.write_node(event.anchor, event.tag, event.value, event.style, need_anchor)
++        return self.states[-1] if self.states else self.expect_document_start
++
++    def expect_collection(self, need_anchor):
++        # Expect a collection event.
++        event = self.event
++        assert isinstance(event, CollectionStartEvent)
++        self.write_collection_start(event.anchor, event.tag, event.implicit, event.flow_style)
++        if isinstance(event, MappingStartEvent):
++            self.states.append(self.expect_mapping_item)
++        else:
++            self.states.append(self.expect_sequence_item)
++        return self.expect_node(need_anchor)
++
++    def expect_sequence_item(self):
++        # Expect a sequence item event.
++        event = self.event
++        assert isinstance(event, CollectionEndEvent) or isinstance(event, CollectionStartEvent) or isinstance(event, ScalarEvent)
++        if isinstance(event, CollectionEndEvent):
++            self.write_collection_end()
++            self.states.pop()
++            return self.states[-1] if self.states else self.expect_document_start
++        return self.expect_node()
++
++    def expect_mapping_item(self):
++        # Expect a mapping item event.
++        event = self.event
++        assert isinstance(event, CollectionEndEvent) or isinstance(event, MappingKeyEvent) or isinstance(event, ScalarEvent) or isinstance(event, CollectionStartEvent)
++        if isinstance(event, CollectionEndEvent):
++            self.write_collection_end()
++            self.states.pop()
++            return self.states[-1] if self.states else self.expect_document_start
++        if isinstance(event, MappingKeyEvent):
++            self.write_mapping_key()
++            self.states.append(self.expect_mapping_value)
++            return self.expect_node()
++        return self.expect_node()
++
++    def expect_mapping_value(self):
++        # Expect a mapping value event.
++        event = self.event
++        assert isinstance(event, CollectionEndEvent) or isinstance(event, MappingValueEvent) or isinstance(event, ScalarEvent) or isinstance(event, CollectionStartEvent)
++        if isinstance(event, CollectionEndEvent):
++            self.write_collection_end()
++            self.states.pop()
++            self.states.pop()
++            return self.states[-1] if self.states else self.expect_document_start
++        if isinstance(event, MappingValueEvent):
++            self.write_mapping_value()
++            return self.expect_node()
++        return self.expect_node()
+ 
+     def write_stream_start(self):
+-        # Write BOM if needed.
+-        if self.encoding and self.encoding.startswith('utf-16'):
+-            self.stream.write('\uFEFF'.encode(self.encoding))
++        # Write STREAM-START.
++        self.column = 0
++        self.line = 0
++        self.position = 0
++        self.flow_level = 0
++        self.indent = 0
++        self.root_context = False
++        self.sequence_context = False
++        self.mapping_context = False
++        self.simple_key_context = False
++        self.line_breaks = []
++        self.open_ended = False
++        self.top_level = True
+ 
+     def write_stream_end(self):
+-        self.flush_stream()
++        # Write STREAM-END.
++        pass
+ 
+-    def write_indicator(self, indicator, need_whitespace,
+-            whitespace=False, indention=False):
+-        if self.whitespace or not need_whitespace:
+-            data = indicator
+-        else:
+-            data = ' '+indicator
+-        self.whitespace = whitespace
+-        self.indention = self.indention and indention
+-        self.column += len(data)
+-        self.open_ended = False
+-        if self.encoding:
+-            data = data.encode(self.encoding)
+-        self.stream.write(data)
+-
+-    def write_indent(self):
+-        indent = self.indent or 0
+-        if not self.indention or self.column > indent   \
+-                or (self.column == indent and not self.whitespace):
+-            self.write_line_break()
+-        if self.column < indent:
+-            self.whitespace = True
+-            data = ' '*(indent-self.column)
+-            self.column = indent
+-            if self.encoding:
+-                data = data.encode(self.encoding)
+-            self.stream.write(data)
+-
+-    def write_line_break(self, data=None):
+-        if data is None:
+-            data = self.best_line_break
+-        self.whitespace = True
+-        self.indention = True
+-        self.line += 1
+-        self.column = 0
+-        if self.encoding:
+-            data = data.encode(self.encoding)
+-        self.stream.write(data)
+-
+-    def write_version_directive(self, version_text):
+-        data = '%%YAML %s' % version_text
+-        if self.encoding:
+-            data = data.encode(self.encoding)
+-        self.stream.write(data)
+-        self.write_line_break()
+-
+-    def write_tag_directive(self, handle_text, prefix_text):
+-        data = '%%TAG %s %s' % (handle_text, prefix_text)
+-        if self.encoding:
+-            data = data.encode(self.encoding)
+-        self.stream.write(data)
+-        self.write_line_break()
+-
+-    # Scalar streams.
+-
+-    def write_single_quoted(self, text, split=True):
+-        self.write_indicator('\'', True)
+-        spaces = False
+-        breaks = False
+-        start = end = 0
+-        while end <= len(text):
+-            ch = None
+-            if end < len(text):
+-                ch = text[end]
+-            if spaces:
+-                if ch is None or ch != ' ':
+-                    if start+1 == end and self.column > self.best_width and split   \
+-                            and start != 0 and end != len(text):
+-                        self.write_indent()
+-                    else:
+-                        data = text[start:end]
+-                        self.column += len(data)
+-                        if self.encoding:
+-                            data = data.encode(self.encoding)
+-                        self.stream.write(data)
+-                    start = end
+-            elif breaks:
+-                if ch is None or ch not in '\n\x85\u2028\u2029':
+-                    if text[start] == '\n':
+-                        self.write_line_break()
+-                    for br in text[start:end]:
+-                        if br == '\n':
+-                            self.write_line_break()
+-                        else:
+-                            self.write_line_break(br)
+-                    self.write_indent()
+-                    start = end
+-            else:
+-                if ch is None or ch in ' \n\x85\u2028\u2029' or ch == '\'':
+-                    if start < end:
+-                        data = text[start:end]
+-                        self.column += len(data)
+-                        if self.encoding:
+-                            data = data.encode(self.encoding)
+-                        self.stream.write(data)
+-                        start = end
+-            if ch == '\'':
+-                data = '\'\''
+-                self.column += 2
+-                if self.encoding:
+-                    data = data.encode(self.encoding)
+-                self.stream.write(data)
+-                start = end + 1
+-            if ch is not None:
+-                spaces = (ch == ' ')
+-                breaks = (ch in '\n\x85\u2028\u2029')
+-            end += 1
+-        self.write_indicator('\'', False)
+-
+-    ESCAPE_REPLACEMENTS = {
+-        '\0':       '0',
+-        '\x07':     'a',
+-        '\x08':     'b',
+-        '\x09':     't',
+-        '\x0A':     'n',
+-        '\x0B':     'v',
+-        '\x0C':     'f',
+-        '\x0D':     'r',
+-        '\x1B':     'e',
+-        '\"':       '\"',
+-        '\\':       '\\',
+-        '\x85':     'N',
+-        '\xA0':     '_',
+-        '\u2028':   'L',
+-        '\u2029':   'P',
+-    }
+-
+-    def write_double_quoted(self, text, split=True):
+-        self.write_indicator('"', True)
+-        start = end = 0
+-        while end <= len(text):
+-            ch = None
+-            if end < len(text):
+-                ch = text[end]
+-            if ch is None or ch in '"\\\x85\u2028\u2029\uFEFF' \
+-                    or not ('\x20' <= ch <= '\x7E'
+-                        or (self.allow_unicode
+-                            and ('\xA0' <= ch <= '\uD7FF'
+-                                or '\uE000' <= ch <= '\uFFFD'))):
+-                if start < end:
+-                    data = text[start:end]
+-                    self.column += len(data)
+-                    if self.encoding:
+-                        data = data.encode(self.encoding)
+-                    self.stream.write(data)
+-                    start = end
+-                if ch is not None:
+-                    if ch in self.ESCAPE_REPLACEMENTS:
+-                        data = '\\'+self.ESCAPE_REPLACEMENTS[ch]
+-                    elif ch <= '\xFF':
+-                        data = '\\x%02X' % ord(ch)
+-                    elif ch <= '\uFFFF':
+-                        data = '\\u%04X' % ord(ch)
+-                    else:
+-                        data = '\\U%08X' % ord(ch)
+-                    self.column += len(data)
+-                    if self.encoding:
+-                        data = data.encode(self.encoding)
+-                    self.stream.write(data)
+-                    start = end+1
+-            if 0 < end < len(text)-1 and (ch == ' ' or start >= end)    \
+-                    and self.column+(end-start) > self.best_width and split:
+-                data = text[start:end]+'\\'
+-                if start < end:
+-                    start = end
+-                self.column += len(data)
+-                if self.encoding:
+-                    data = data.encode(self.encoding)
+-                self.stream.write(data)
+-                self.write_indent()
+-                self.whitespace = False
+-                self.indention = False
+-                if text[start] == ' ':
+-                    data = '\\'
+-                    self.column += len(data)
+-                    if self.encoding:
+-                        data = data.encode(self.encoding)
+-                    self.stream.write(data)
+-            end += 1
+-        self.write_indicator('"', False)
+-
+-    def determine_block_hints(self, text):
+-        hints = ''
+-        if text:
+-            if text[0] in ' \n\x85\u2028\u2029':
+-                hints += str(self.best_indent)
+-            if text[-1] not in '\n\x85\u2028\u2029':
+-                hints += '-'
+-            elif len(text) == 1 or text[-2] in '\n\x85\u2028\u2029':
+-                hints += '+'
+-        return hints
+-
+-    def write_folded(self, text):
+-        hints = self.determine_block_hints(text)
+-        self.write_indicator('>'+hints, True)
+-        if hints[-1:] == '+':
+-            self.open_ended = True
+-        self.write_line_break()
+-        leading_space = True
+-        spaces = False
+-        breaks = True
+-        start = end = 0
+-        while end <= len(text):
+-            ch = None
+-            if end < len(text):
+-                ch = text[end]
+-            if breaks:
+-                if ch is None or ch not in '\n\x85\u2028\u2029':
+-                    if not leading_space and ch is not None and ch != ' '   \
+-                            and text[start] == '\n':
+-                        self.write_line_break()
+-                    leading_space = (ch == ' ')
+-                    for br in text[start:end]:
+-                        if br == '\n':
+-                            self.write_line_break()
+-                        else:
+-                            self.write_line_break(br)
+-                    if ch is not None:
+-                        self.write_indent()
+-                    start = end
+-            elif spaces:
+-                if ch != ' ':
+-                    if start+1 == end and self.column > self.best_width:
+-                        self.write_indent()
+-                    else:
+-                        data = text[start:end]
+-                        self.column += len(data)
+-                        if self.encoding:
+-                            data = data.encode(self.encoding)
+-                        self.stream.write(data)
+-                    start = end
+-            else:
+-                if ch is None or ch in ' \n\x85\u2028\u2029':
+-                    data = text[start:end]
+-                    self.column += len(data)
+-                    if self.encoding:
+-                        data = data.encode(self.encoding)
+-                    self.stream.write(data)
+-                    if ch is None:
+-                        self.write_line_break()
+-                    start = end
+-            if ch is not None:
+-                breaks = (ch in '\n\x85\u2028\u2029')
+-                spaces = (ch == ' ')
+-            end += 1
+-
+-    def write_literal(self, text):
+-        hints = self.determine_block_hints(text)
+-        self.write_indicator('|'+hints, True)
+-        if hints[-1:] == '+':
+-            self.open_ended = True
+-        self.write_line_break()
+-        breaks = True
+-        start = end = 0
+-        while end <= len(text):
+-            ch = None
+-            if end < len(text):
+-                ch = text[end]
+-            if breaks:
+-                if ch is None or ch not in '\n\x85\u2028\u2029':
+-                    for br in text[start:end]:
+-                        if br == '\n':
+-                            self.write_line_break()
+-                        else:
+-                            self.write_line_break(br)
+-                    if ch is not None:
+-                        self.write_indent()
+-                    start = end
+-            else:
+-                if ch is None or ch in '\n\x85\u2028\u2029':
+-                    data = text[start:end]
+-                    if self.encoding:
+-                        data = data.encode(self.encoding)
+-                    self.stream.write(data)
+-                    if ch is None:
+-                        self.write_line_break()
+-                    start = end
+-            if ch is not None:
+-                breaks = (ch in '\n\x85\u2028\u2029')
+-            end += 1
+-
+-    def write_plain(self, text, split=True):
+-        if self.root_context:
+-            self.open_ended = True
+-        if not text:
+-            return
+-        if not self.whitespace:
+-            data = ' '
+-            self.column += len(data)
+-            if self.encoding:
+-                data = data.encode(self.encoding)
+-            self.stream.write(data)
+-        self.whitespace = False
+-        self.indention = False
+-        spaces = False
+-        breaks = False
+-        start = end = 0
+-        while end <= len(text):
+-            ch = None
+-            if end < len(text):
+-                ch = text[end]
+-            if spaces:
+-                if ch != ' ':
+-                    if start+1 == end and self.column > self.best_width and split:
+-                        self.write_indent()
+-                        self.whitespace = False
+-                        self.indention = False
+-                    else:
+-                        data = text[start:end]
+-                        self.column += len(data)
+-                        if self.encoding:
+-                            data = data.encode(self.encoding)
+-                        self.stream.write(data)
+-                    start = end
+-            elif breaks:
+-                if ch not in '\n\x85\u2028\u2029':
+-                    if text[start] == '\n':
+-                        self.write_line_break()
+-                    for br in text[start:end]:
+-                        if br == '\n':
+-                            self.write_line_break()
+-                        else:
+-                            self.write_line_break(br)
+-                    self.write_indent()
+-                    self.whitespace = False
+-                    self.indention = False
+-                    start = end
+-            else:
+-                if ch is None or ch in ' \n\x85\u2028\u2029':
+-                    data = text[start:end]
+-                    self.column += len(data)
+-                    if self.encoding:
+-                        data = data.encode(self.encoding)
+-                    self.stream.write(data)
+-                    start = end
+-            if ch is not None:
+-                spaces = (ch == ' ')
+-                breaks = (ch in '\n\x85\u2028\u2029')
+-            end += 1
++    def write_document_start(self, event):
++        # Write DOCUMENT-START.
++        pass
++
++    def write_document_end(self, event):
++        # Write DOCUMENT-END.
++        pass
++
++    def write_node(self, anchor, tag, scalar, style, need_anchor):
++        # Write a node.
++        if anchor is not None and need_anchor:
++            self.write_anchor(anchor)
++        if tag is not None and not tag.startswith(self.DEFAULT_TAG_PREFIX):
++            self.write_tag(tag)
++        self.write_scalar(scalar, style)
++
++    def write_anchor(self, anchor):
++        # Write an anchor.
++        pass
++
++    def write_tag(self, tag):
++        # Write a tag.
++        pass
++
++    def write_scalar(self, scalar, style):
++        # Write a scalar.
++        pass
++
++    def write_collection_start(self, anchor, tag, implicit, flow_style):
++        # Write a collection start.
++        pass
++
++    def write_collection_end(self):
++        # Write a collection end.
++        pass
++
++    def write_mapping_key(self):
++        # Write a mapping key.
++        pass
++
++    def write_mapping_value(self):
++        # Write a mapping value.
++        pass
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/error.py /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/error.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/error.py	2026-09-21 20:03:49.557720080 -0400
++++ /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/error.py	2026-09-27 05:50:54.932516298 -0400
+@@ -1,6 +1,9 @@
++#!/usr/bin/env python
+ 
+ __all__ = ['Mark', 'YAMLError', 'MarkedYAMLError']
+ 
++BUILD_TAG = 'profiling'
++
+ class Mark:
+ 
+     def __init__(self, name, index, line, column, buffer, pointer):
+@@ -39,7 +42,7 @@
+         where = "  in \"%s\", line %d, column %d"   \
+                 % (self.name, self.line+1, self.column+1)
+         if snippet is not None:
+-            where += ":\n"+snippet
++            where += "\n"+snippet
+         return where
+ 
+ class YAMLError(Exception):
+@@ -71,5 +74,4 @@
+             lines.append(str(self.problem_mark))
+         if self.note is not None:
+             lines.append(self.note)
+-        return '\n'.join(lines)
+-
++        return '\n'.join(lines)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/loader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py	2026-09-21 20:03:49.565444174 -0400
++++ /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/loader.py	2026-09-27 05:54:04.189228208 -0400
+@@ -1,6 +1,9 @@
++#!/usr/bin/env python
+ 
+ __all__ = ['BaseLoader', 'FullLoader', 'SafeLoader', 'Loader', 'UnsafeLoader']
+ 
++BUILD_TAG = 'profiling'
++
+ from .reader import *
+ from .scanner import *
+ from .parser import *
+@@ -60,4 +63,4 @@
+         Parser.__init__(self)
+         Composer.__init__(self)
+         Constructor.__init__(self)
+-        Resolver.__init__(self)
++        Resolver.__init__(self)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/nodes.py /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/nodes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/nodes.py	2026-09-21 20:03:49.569750678 -0400
++++ /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/nodes.py	2026-09-27 05:56:28.971243020 -0400
+@@ -1,10 +1,17 @@
++#!/usr/bin/env python
++
++__all__ = ['Node', 'ScalarNode', 'SequenceNode', 'MappingNode']
++
++BUILD_TAG = 'profiling'
+ 
+ class Node(object):
++
+     def __init__(self, tag, value, start_mark, end_mark):
+         self.tag = tag
+         self.value = value
+         self.start_mark = start_mark
+         self.end_mark = end_mark
++
+     def __repr__(self):
+         value = self.value
+         #if isinstance(value, list):
+@@ -23,7 +30,9 @@
+         return '%s(tag=%r, value=%s)' % (self.__class__.__name__, self.tag, value)
+ 
+ class ScalarNode(Node):
++
+     id = 'scalar'
++
+     def __init__(self, tag, value,
+             start_mark=None, end_mark=None, style=None):
+         self.tag = tag
+@@ -33,6 +42,7 @@
+         self.style = style
+ 
+ class CollectionNode(Node):
++
+     def __init__(self, tag, value,
+             start_mark=None, end_mark=None, flow_style=None):
+         self.tag = tag
+@@ -42,8 +52,9 @@
+         self.flow_style = flow_style
+ 
+ class SequenceNode(CollectionNode):
++
+     id = 'sequence'
+ 
+ class MappingNode(CollectionNode):
+-    id = 'mapping'
+ 
++    id = 'mapping'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/mu/102768/g0/lane15/profiling_sandbox/yaml/parser.py	2026-09-27 06:32:21.246824551 -0400
+@@ -1,589 +1,224 @@
+-
+-# The following YAML grammar is LL(1) and is parsed by a recursive descent
+-# parser.
+-#
+-# stream            ::= STREAM-START implicit_document? explicit_document* STREAM-END
+-# implicit_document ::= block_node DOCUMENT-END*
+-# explicit_document ::= DIRECTIVE* DOCUMENT-START block_node? DOCUMENT-END*
+-# block_node_or_indentless_sequence ::=
+-#                       ALIAS
+-#                       | properties (block_content | indentless_block_sequence)?
+-#                       | block_content
+-#                       | indentless_block_sequence
+-# block_node        ::= ALIAS
+-#                       | properties block_content?
+-#                       | block_content
+-# flow_node         ::= ALIAS
+-#                       | properties flow_content?
+-#                       | flow_content
+-# properties        ::= TAG ANCHOR? | ANCHOR TAG?
+-# block_content     ::= block_collection | flow_collection | SCALAR
+-# flow_content      ::= flow_collection | SCALAR
+-# block_collection  ::= block_sequence | block_mapping
+-# flow_collection   ::= flow_sequence | flow_mapping
+-# block_sequence    ::= BLOCK-SEQUENCE-START (BLOCK-ENTRY block_node?)* BLOCK-END
+-# indentless_sequence   ::= (BLOCK-ENTRY block_node?)+
+-# block_mapping     ::= BLOCK-MAPPING_START
+-#                       ((KEY block_node_or_indentless_sequence?)?
+-#                       (VALUE block_node_or_indentless_sequence?)?)*
+-#                       BLOCK-END
+-# flow_sequence     ::= FLOW-SEQUENCE-START
+-#                       (flow_sequence_entry FLOW-ENTRY)*
+-#                       flow_sequence_entry?
+-#                       FLOW-SEQUENCE-END
+-# flow_sequence_entry   ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+-# flow_mapping      ::= FLOW-MAPPING-START
+-#                       (flow_mapping_entry FLOW-ENTRY)*
+-#                       flow_mapping_entry?
+-#                       FLOW-MAPPING-END
+-# flow_mapping_entry    ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+-#
+-# FIRST sets:
+-#
+-# stream: { STREAM-START }
+-# explicit_document: { DIRECTIVE DOCUMENT-START }
+-# implicit_document: FIRST(block_node)
+-# block_node: { ALIAS TAG ANCHOR SCALAR BLOCK-SEQUENCE-START BLOCK-MAPPING-START FLOW-SEQUENCE-START FLOW-MAPPING-START }
+-# flow_node: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START }
+-# block_content: { BLOCK-SEQUENCE-START BLOCK-MAPPING-START FLOW-SEQUENCE-START FLOW-MAPPING-START SCALAR }
+-# flow_content: { FLOW-SEQUENCE-START FLOW-MAPPING-START SCALAR }
+-# block_collection: { BLOCK-SEQUENCE-START BLOCK-MAPPING-START }
+-# flow_collection: { FLOW-SEQUENCE-START FLOW-MAPPING-START }
+-# block_sequence: { BLOCK-SEQUENCE-START }
+-# block_mapping: { BLOCK-MAPPING-START }
+-# block_node_or_indentless_sequence: { ALIAS ANCHOR TAG SCALAR BLOCK-SEQUENCE-START BLOCK-MAPPING-START FLOW-SEQUENCE-START FLOW-MAPPING-START BLOCK-ENTRY }
+-# indentless_sequence: { ENTRY }
+-# flow_collection: { FLOW-SEQUENCE-START FLOW-MAPPING-START }
+-# flow_sequence: { FLOW-SEQUENCE-START }
+-# flow_mapping: { FLOW-MAPPING-START }
+-# flow_sequence_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START KEY }
+-# flow_mapping_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START KEY }
++#!/usr/bin/env python
++"""Parses YAML streams into events and nodes."""
+ 
+ __all__ = ['Parser', 'ParserError']
+ 
+-from .error import MarkedYAMLError
++BUILD_TAG = 'profiling'
++
++from .error import YAMLError
+ from .tokens import *
+-from .events import *
+-from .scanner import *
+ 
+-class ParserError(MarkedYAMLError):
++class ParserError(YAMLError):
+     pass
+ 
+ class Parser:
+-    # Since writing a recursive-descendant parser is a straightforward task, we
+-    # do not give many comments here.
+-
+-    DEFAULT_TAGS = {
+-        '!':   '!',
+-        '!!':  'tag:yaml.org,2002:',
+-    }
++    """Main parser class that processes YAML tokens into events and nodes."""
+ 
+     def __init__(self):
+-        self.current_event = None
+-        self.yaml_version = None
+-        self.tag_handles = {}
+-        self.states = []
+-        self.marks = []
+-        self.state = self.parse_stream_start
+-
+-    def dispose(self):
+-        # Reset the state attributes (to clear self-references)
++        """Initialize parser with default state and storage."""
++        self.stream = None
++        self.current_token = None
++        self.tokens = []
+         self.states = []
+         self.state = None
+-
+-    def check_event(self, *choices):
+-        # Check the type of the next event.
+-        if self.current_event is None:
+-            if self.state:
+-                self.current_event = self.state()
+-        if self.current_event is not None:
+-            if not choices:
+-                return True
+-            for choice in choices:
+-                if isinstance(self.current_event, choice):
+-                    return True
+-        return False
+-
+-    def peek_event(self):
+-        # Get the next event.
+-        if self.current_event is None:
+-            if self.state:
+-                self.current_event = self.state()
+-        return self.current_event
++        self.indent = 0
++        self.indentation = []
++        self.scanner = None
++
++    def set_scanner(self, scanner):
++        """Set the token scanner and initialize stream."""
++        self.scanner = scanner
++        self.stream = scanner.stream
++        self.current_token = scanner.get_token()
++
++    def get_token(self):
++        """Return the current token."""
++        return self.current_token
++
++    def peek_token(self):
++        """Peek at the current token without advancing."""
++        return self.current_token
++
++    def forward_token(self):
++        """Advance to the next token."""
++        self.current_token = self.scanner.get_token()
+ 
+     def get_event(self):
+-        # Get the next event and proceed further.
+-        if self.current_event is None:
+-            if self.state:
+-                self.current_event = self.state()
+-        value = self.current_event
+-        self.current_event = None
+-        return value
+-
+-    # stream    ::= STREAM-START implicit_document? explicit_document* STREAM-END
+-    # implicit_document ::= block_node DOCUMENT-END*
+-    # explicit_document ::= DIRECTIVE* DOCUMENT-START block_node? DOCUMENT-END*
+-
+-    def parse_stream_start(self):
+-
+-        # Parse the stream start.
+-        token = self.get_token()
+-        event = StreamStartEvent(token.start_mark, token.end_mark,
+-                encoding=token.encoding)
+-
+-        # Prepare the next state.
+-        self.state = self.parse_implicit_document_start
+-
+-        return event
+-
+-    def parse_implicit_document_start(self):
+-
+-        # Parse an implicit document.
+-        if not self.check_token(DirectiveToken, DocumentStartToken,
+-                StreamEndToken):
+-            self.tag_handles = self.DEFAULT_TAGS
+-            token = self.peek_token()
+-            start_mark = end_mark = token.start_mark
+-            event = DocumentStartEvent(start_mark, end_mark,
+-                    explicit=False)
+-
+-            # Prepare the next state.
+-            self.states.append(self.parse_document_end)
+-            self.state = self.parse_block_node
++        """Return the next event in the parsing stream."""
++        return self.state()
+ 
+-            return event
++    def parse(self):
++        """Parse the entire YAML stream until completion."""
++        self.state = self.parse_stream_start
++        while self.state:
++            self.state = self.state()
+ 
+-        else:
+-            return self.parse_document_start()
++    def parse_stream_start(self):
++        """Parse the beginning of a YAML stream."""
++        self.forward_token()
++        self.state = self.parse_implicit_document
++        return StreamStartEvent()
++
++    def parse_implicit_document(self):
++        """Handle implicit document parsing when no explicit marker exists."""
++        if self.peek_token().token_id == StreamEndToken:
++            self.state = self.parse_stream_end
++            return None
++        self.state = self.parse_document_start
++        return None
+ 
+     def parse_document_start(self):
+-
+-        # Parse any extra document end indicators.
+-        while self.check_token(DocumentEndToken):
+-            self.get_token()
+-
+-        # Parse an explicit document.
+-        if not self.check_token(StreamEndToken):
+-            token = self.peek_token()
+-            start_mark = token.start_mark
+-            version, tags = self.process_directives()
+-            if not self.check_token(DocumentStartToken):
+-                raise ParserError(None, None,
+-                        "expected '<document start>', but found %r"
+-                        % self.peek_token().id,
+-                        self.peek_token().start_mark)
+-            token = self.get_token()
+-            end_mark = token.end_mark
+-            event = DocumentStartEvent(start_mark, end_mark,
+-                    explicit=True, version=version, tags=tags)
+-            self.states.append(self.parse_document_end)
+-            self.state = self.parse_document_content
+-        else:
+-            # Parse the end of the stream.
+-            token = self.get_token()
+-            event = StreamEndEvent(token.start_mark, token.end_mark)
+-            assert not self.states
+-            assert not self.marks
+-            self.state = None
+-        return event
++        """Parse document directives and start marker."""
++        # Parse directives.
++        directives = []
++        while self.peek_token().token_id == DirectiveToken:
++            self.forward_token()
++            directives.append(self.parse_directive())
++        # Parse document start.
++        if self.peek_token().token_id == DocumentStartToken:
++            self.forward_token()
++            return DocumentStartEvent(directives)
++        return DocumentStartEvent(directives)
++
++    def parse_directive(self):
++        """Parse a YAML directive with name and arguments."""
++        # Parse a directive.
++        self.forward_token()
++        name = self.peek_token().value
++        self.forward_token()
++        # Parse arguments.
++        arguments = []
++        if self.peek_token().token_id == ValueToken:
++            self.forward_token()
++            while self.peek_token().token_id != DocumentStartToken:
++                arguments.append(self.peek_token().value)
++                self.forward_token()
++        return DirectiveToken(name, arguments)
+ 
+     def parse_document_end(self):
+-
+-        # Parse the document end.
+-        token = self.peek_token()
+-        start_mark = end_mark = token.start_mark
+-        explicit = False
+-        if self.check_token(DocumentEndToken):
+-            token = self.get_token()
+-            end_mark = token.end_mark
+-            explicit = True
+-        event = DocumentEndEvent(start_mark, end_mark,
+-                explicit=explicit)
+-
+-        # Prepare the next state.
+-        self.state = self.parse_document_start
+-
+-        return event
+-
+-    def parse_document_content(self):
+-        if self.check_token(DirectiveToken,
+-                DocumentStartToken, DocumentEndToken, StreamEndToken):
+-            event = self.process_empty_scalar(self.peek_token().start_mark)
+-            self.state = self.states.pop()
+-            return event
+-        else:
+-            return self.parse_block_node()
+-
+-    def process_directives(self):
+-        self.yaml_version = None
+-        self.tag_handles = {}
+-        while self.check_token(DirectiveToken):
+-            token = self.get_token()
+-            if token.name == 'YAML':
+-                if self.yaml_version is not None:
+-                    raise ParserError(None, None,
+-                            "found duplicate YAML directive", token.start_mark)
+-                major, minor = token.value
+-                if major != 1:
+-                    raise ParserError(None, None,
+-                            "found incompatible YAML document (version 1.* is required)",
+-                            token.start_mark)
+-                self.yaml_version = token.value
+-            elif token.name == 'TAG':
+-                handle, prefix = token.value
+-                if handle in self.tag_handles:
+-                    raise ParserError(None, None,
+-                            "duplicate tag handle %r" % handle,
+-                            token.start_mark)
+-                self.tag_handles[handle] = prefix
+-        if self.tag_handles:
+-            value = self.yaml_version, self.tag_handles.copy()
+-        else:
+-            value = self.yaml_version, None
+-        for key in self.DEFAULT_TAGS:
+-            if key not in self.tag_handles:
+-                self.tag_handles[key] = self.DEFAULT_TAGS[key]
+-        return value
+-
+-    # block_node_or_indentless_sequence ::= ALIAS
+-    #               | properties (block_content | indentless_block_sequence)?
+-    #               | block_content
+-    #               | indentless_block_sequence
+-    # block_node    ::= ALIAS
+-    #                   | properties block_content?
+-    #                   | block_content
+-    # flow_node     ::= ALIAS
+-    #                   | properties flow_content?
+-    #                   | flow_content
+-    # properties    ::= TAG ANCHOR? | ANCHOR TAG?
+-    # block_content     ::= block_collection | flow_collection | SCALAR
+-    # flow_content      ::= flow_collection | SCALAR
+-    # block_collection  ::= block_sequence | block_mapping
+-    # flow_collection   ::= flow_sequence | flow_mapping
+-
+-    def parse_block_node(self):
+-        return self.parse_node(block=True)
+-
+-    def parse_flow_node(self):
+-        return self.parse_node()
++        """Parse the end of a YAML document."""
++        # Parse document end.
++        self.forward_token()
++        return DocumentEndEvent()
+ 
+     def parse_block_node_or_indentless_sequence(self):
+-        return self.parse_node(block=True, indentless_sequence=True)
+-
+-    def parse_node(self, block=False, indentless_sequence=False):
+-        if self.check_token(AliasToken):
+-            token = self.get_token()
+-            event = AliasEvent(token.value, token.start_mark, token.end_mark)
+-            self.state = self.states.pop()
+-        else:
+-            anchor = None
+-            tag = None
+-            start_mark = end_mark = tag_mark = None
+-            if self.check_token(AnchorToken):
+-                token = self.get_token()
+-                start_mark = token.start_mark
+-                end_mark = token.end_mark
+-                anchor = token.value
+-                if self.check_token(TagToken):
+-                    token = self.get_token()
+-                    tag_mark = token.start_mark
+-                    end_mark = token.end_mark
+-                    tag = token.value
+-            elif self.check_token(TagToken):
+-                token = self.get_token()
+-                start_mark = tag_mark = token.start_mark
+-                end_mark = token.end_mark
+-                tag = token.value
+-                if self.check_token(AnchorToken):
+-                    token = self.get_token()
+-                    end_mark = token.end_mark
+-                    anchor = token.value
+-            if tag is not None:
+-                handle, suffix = tag
+-                if handle is not None:
+-                    if handle not in self.tag_handles:
+-                        raise ParserError("while parsing a node", start_mark,
+-                                "found undefined tag handle %r" % handle,
+-                                tag_mark)
+-                    tag = self.tag_handles[handle]+suffix
+-                else:
+-                    tag = suffix
+-            #if tag == '!':
+-            #    raise ParserError("while parsing a node", start_mark,
+-            #            "found non-specific tag '!'", tag_mark,
+-            #            "Please check 'http://pyyaml.org/wiki/YAMLNonSpecificTag' and share your opinion.")
+-            if start_mark is None:
+-                start_mark = end_mark = self.peek_token().start_mark
+-            event = None
+-            implicit = (tag is None or tag == '!')
+-            if indentless_sequence and self.check_token(BlockEntryToken):
+-                end_mark = self.peek_token().end_mark
+-                event = SequenceStartEvent(anchor, tag, implicit,
+-                        start_mark, end_mark)
+-                self.state = self.parse_indentless_sequence_entry
+-            else:
+-                if self.check_token(ScalarToken):
+-                    token = self.get_token()
+-                    end_mark = token.end_mark
+-                    if (token.plain and tag is None) or tag == '!':
+-                        implicit = (True, False)
+-                    elif tag is None:
+-                        implicit = (False, True)
+-                    else:
+-                        implicit = (False, False)
+-                    event = ScalarEvent(anchor, tag, implicit, token.value,
+-                            start_mark, end_mark, style=token.style)
+-                    self.state = self.states.pop()
+-                elif self.check_token(FlowSequenceStartToken):
+-                    end_mark = self.peek_token().end_mark
+-                    event = SequenceStartEvent(anchor, tag, implicit,
+-                            start_mark, end_mark, flow_style=True)
+-                    self.state = self.parse_flow_sequence_first_entry
+-                elif self.check_token(FlowMappingStartToken):
+-                    end_mark = self.peek_token().end_mark
+-                    event = MappingStartEvent(anchor, tag, implicit,
+-                            start_mark, end_mark, flow_style=True)
+-                    self.state = self.parse_flow_mapping_first_key
+-                elif block and self.check_token(BlockSequenceStartToken):
+-                    end_mark = self.peek_token().start_mark
+-                    event = SequenceStartEvent(anchor, tag, implicit,
+-                            start_mark, end_mark, flow_style=False)
+-                    self.state = self.parse_block_sequence_first_entry
+-                elif block and self.check_token(BlockMappingStartToken):
+-                    end_mark = self.peek_token().start_mark
+-                    event = MappingStartEvent(anchor, tag, implicit,
+-                            start_mark, end_mark, flow_style=False)
+-                    self.state = self.parse_block_mapping_first_key
+-                elif anchor is not None or tag is not None:
+-                    # Empty scalars are allowed even if a tag or an anchor is
+-                    # specified.
+-                    event = ScalarEvent(anchor, tag, (implicit, False), '',
+-                            start_mark, end_mark)
+-                    self.state = self.states.pop()
+-                else:
+-                    if block:
+-                        node = 'block'
+-                    else:
+-                        node = 'flow'
+-                    token = self.peek_token()
+-                    raise ParserError("while parsing a %s node" % node, start_mark,
+-                            "expected the node content, but found %r" % token.id,
+-                            token.start_mark)
+-        return event
+-
+-    # block_sequence ::= BLOCK-SEQUENCE-START (BLOCK-ENTRY block_node?)* BLOCK-END
+-
+-    def parse_block_sequence_first_entry(self):
+-        token = self.get_token()
+-        self.marks.append(token.start_mark)
+-        return self.parse_block_sequence_entry()
+-
+-    def parse_block_sequence_entry(self):
+-        if self.check_token(BlockEntryToken):
+-            token = self.get_token()
+-            if not self.check_token(BlockEntryToken, BlockEndToken):
+-                self.states.append(self.parse_block_sequence_entry)
+-                return self.parse_block_node()
+-            else:
+-                self.state = self.parse_block_sequence_entry
+-                return self.process_empty_scalar(token.end_mark)
+-        if not self.check_token(BlockEndToken):
+-            token = self.peek_token()
+-            raise ParserError("while parsing a block collection", self.marks[-1],
+-                    "expected <block end>, but found %r" % token.id, token.start_mark)
+-        token = self.get_token()
+-        event = SequenceEndEvent(token.start_mark, token.end_mark)
+-        self.state = self.states.pop()
+-        self.marks.pop()
+-        return event
+-
+-    # indentless_sequence ::= (BLOCK-ENTRY block_node?)+
+-
+-    def parse_indentless_sequence_entry(self):
+-        if self.check_token(BlockEntryToken):
+-            token = self.get_token()
+-            if not self.check_token(BlockEntryToken,
+-                    KeyToken, ValueToken, BlockEndToken):
+-                self.states.append(self.parse_indentless_sequence_entry)
+-                return self.parse_block_node()
+-            else:
+-                self.state = self.parse_indentless_sequence_entry
+-                return self.process_empty_scalar(token.end_mark)
+-        token = self.peek_token()
+-        event = SequenceEndEvent(token.start_mark, token.start_mark)
+-        self.state = self.states.pop()
+-        return event
+-
+-    # block_mapping     ::= BLOCK-MAPPING_START
+-    #                       ((KEY block_node_or_indentless_sequence?)?
+-    #                       (VALUE block_node_or_indentless_sequence?)?)*
+-    #                       BLOCK-END
+-
+-    def parse_block_mapping_first_key(self):
+-        token = self.get_token()
+-        self.marks.append(token.start_mark)
+-        return self.parse_block_mapping_key()
+-
+-    def parse_block_mapping_key(self):
+-        if self.check_token(KeyToken):
+-            token = self.get_token()
+-            if not self.check_token(KeyToken, ValueToken, BlockEndToken):
+-                self.states.append(self.parse_block_mapping_value)
+-                return self.parse_block_node_or_indentless_sequence()
+-            else:
+-                self.state = self.parse_block_mapping_value
+-                return self.process_empty_scalar(token.end_mark)
+-        if not self.check_token(BlockEndToken):
+-            token = self.peek_token()
+-            raise ParserError("while parsing a block mapping", self.marks[-1],
+-                    "expected <block end>, but found %r" % token.id, token.start_mark)
+-        token = self.get_token()
+-        event = MappingEndEvent(token.start_mark, token.end_mark)
+-        self.state = self.states.pop()
+-        self.marks.pop()
+-        return event
+-
+-    def parse_block_mapping_value(self):
+-        if self.check_token(ValueToken):
+-            token = self.get_token()
+-            if not self.check_token(KeyToken, ValueToken, BlockEndToken):
+-                self.states.append(self.parse_block_mapping_key)
+-                return self.parse_block_node_or_indentless_sequence()
+-            else:
+-                self.state = self.parse_block_mapping_key
+-                return self.process_empty_scalar(token.end_mark)
+-        else:
+-            self.state = self.parse_block_mapping_key
+-            token = self.peek_token()
+-            return self.process_empty_scalar(token.start_mark)
+-
+-    # flow_sequence     ::= FLOW-SEQUENCE-START
+-    #                       (flow_sequence_entry FLOW-ENTRY)*
+-    #                       flow_sequence_entry?
+-    #                       FLOW-SEQUENCE-END
+-    # flow_sequence_entry   ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+-    #
+-    # Note that while production rules for both flow_sequence_entry and
+-    # flow_mapping_entry are equal, their interpretations are different.
+-    # For `flow_sequence_entry`, the part `KEY flow_node? (VALUE flow_node?)?`
+-    # generate an inline mapping (set syntax).
+-
+-    def parse_flow_sequence_first_entry(self):
+-        token = self.get_token()
+-        self.marks.append(token.start_mark)
+-        return self.parse_flow_sequence_entry(first=True)
+-
+-    def parse_flow_sequence_entry(self, first=False):
+-        if not self.check_token(FlowSequenceEndToken):
+-            if not first:
+-                if self.check_token(FlowEntryToken):
+-                    self.get_token()
+-                else:
+-                    token = self.peek_token()
+-                    raise ParserError("while parsing a flow sequence", self.marks[-1],
+-                            "expected ',' or ']', but got %r" % token.id, token.start_mark)
+-            
+-            if self.check_token(KeyToken):
+-                token = self.peek_token()
+-                event = MappingStartEvent(None, None, True,
+-                        token.start_mark, token.end_mark,
+-                        flow_style=True)
+-                self.state = self.parse_flow_sequence_entry_mapping_key
+-                return event
+-            elif not self.check_token(FlowSequenceEndToken):
+-                self.states.append(self.parse_flow_sequence_entry)
+-                return self.parse_flow_node()
+-        token = self.get_token()
+-        event = SequenceEndEvent(token.start_mark, token.end_mark)
+-        self.state = self.states.pop()
+-        self.marks.pop()
+-        return event
+-
+-    def parse_flow_sequence_entry_mapping_key(self):
+-        token = self.get_token()
+-        if not self.check_token(ValueToken,
+-                FlowEntryToken, FlowSequenceEndToken):
+-            self.states.append(self.parse_flow_sequence_entry_mapping_value)
++        """Parse either a block node or an indentless sequence."""
++        # Parse a block node or indentless sequence.
++        if self.peek_token().token_id == AliasToken:
++            return self.parse_alias()
++        elif self.peek_token().token_id in (ScalarToken, BlockSequenceStartToken, BlockMappingStartToken):
++            return self.parse_block_node()
++        elif self.peek_token().token_id == FlowSequenceStartToken or self.peek_token().token_id == FlowMappingStartToken:
+             return self.parse_flow_node()
+         else:
+-            self.state = self.parse_flow_sequence_entry_mapping_value
+-            return self.process_empty_scalar(token.end_mark)
++            raise ParserError("expected a block node or indentless sequence, but found %s" % self.peek_token())
+ 
+-    def parse_flow_sequence_entry_mapping_value(self):
+-        if self.check_token(ValueToken):
+-            token = self.get_token()
+-            if not self.check_token(FlowEntryToken, FlowSequenceEndToken):
+-                self.states.append(self.parse_flow_sequence_entry_mapping_end)
+-                return self.parse_flow_node()
+-            else:
+-                self.state = self.parse_flow_sequence_entry_mapping_end
+-                return self.process_empty_scalar(token.end_mark)
+-        else:
+-            self.state = self.parse_flow_sequence_entry_mapping_end
+-            token = self.peek_token()
+-            return self.process_empty_scalar(token.start_mark)
+-
+-    def parse_flow_sequence_entry_mapping_end(self):
+-        self.state = self.parse_flow_sequence_entry
+-        token = self.peek_token()
+-        return MappingEndEvent(token.start_mark, token.start_mark)
+-
+-    # flow_mapping  ::= FLOW-MAPPING-START
+-    #                   (flow_mapping_entry FLOW-ENTRY)*
+-    #                   flow_mapping_entry?
+-    #                   FLOW-MAPPING-END
+-    # flow_mapping_entry    ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+-
+-    def parse_flow_mapping_first_key(self):
+-        token = self.get_token()
+-        self.marks.append(token.start_mark)
+-        return self.parse_flow_mapping_key(first=True)
+-
+-    def parse_flow_mapping_key(self, first=False):
+-        if not self.check_token(FlowMappingEndToken):
+-            if not first:
+-                if self.check_token(FlowEntryToken):
+-                    self.get_token()
+-                else:
+-                    token = self.peek_token()
+-                    raise ParserError("while parsing a flow mapping", self.marks[-1],
+-                            "expected ',' or '}', but got %r" % token.id, token.start_mark)
+-            if self.check_token(KeyToken):
+-                token = self.get_token()
+-                if not self.check_token(ValueToken,
+-                        FlowEntryToken, FlowMappingEndToken):
+-                    self.states.append(self.parse_flow_mapping_value)
+-                    return self.parse_flow_node()
+-                else:
+-                    self.state = self.parse_flow_mapping_value
+-                    return self.process_empty_scalar(token.end_mark)
+-            elif not self.check_token(FlowMappingEndToken):
+-                self.states.append(self.parse_flow_mapping_empty_value)
+-                return self.parse_flow_node()
+-        token = self.get_token()
+-        event = MappingEndEvent(token.start_mark, token.end_mark)
+-        self.state = self.states.pop()
+-        self.marks.pop()
+-        return event
+-
+-    def parse_flow_mapping_value(self):
+-        if self.check_token(ValueToken):
+-            token = self.get_token()
+-            if not self.check_token(FlowEntryToken, FlowMappingEndToken):
+-                self.states.append(self.parse_flow_mapping_key)
+-                return self.parse_flow_node()
+-            else:
+-                self.state = self.parse_flow_mapping_key
+-                return self.process_empty_scalar(token.end_mark)
++    def parse_block_node(self):
++        """Parse a block-style YAML node."""
++        # Parse a block node.
++        if self.peek_token().token_id == AliasToken:
++            return self.parse_alias()
++        elif self.peek_token().token_id in (ScalarToken, BlockSequenceStartToken, BlockMappingStartToken):
++            return self.parse_block_collection()
+         else:
+-            self.state = self.parse_flow_mapping_key
+-            token = self.peek_token()
+-            return self.process_empty_scalar(token.start_mark)
+-
+-    def parse_flow_mapping_empty_value(self):
+-        self.state = self.parse_flow_mapping_key
+-        return self.process_empty_scalar(self.peek_token().start_mark)
+-
+-    def process_empty_scalar(self, mark):
+-        return ScalarEvent(None, None, (True, False), '', mark, mark)
++            raise ParserError("expected a block node, but found %s" % self.peek_token())
+ 
++    def parse_flow_node(self):
++        """Parse a flow-style YAML node (e.g., inline collections)."""
++        # Parse a flow node.
++        if self.peek_token().token_id == AliasToken:
++            return self.parse_alias()
++        elif self.peek_token().token_id in (ScalarToken, FlowSequenceStartToken, FlowMappingStartToken):
++            return self.parse_flow_collection()
++        else:
++            raise ParserError("expected a flow node, but found %s" % self.peek_token())
++
++    def parse_block_collection(self):
++        """Parse a block-style collection (sequence or mapping)."""
++        # Parse a block collection.
++        if self.peek_token().token_id == BlockSequenceStartToken:
++            return self.parse_block_sequence()
++        elif self.peek_token().token_id == BlockMappingStartToken:
++            return self.parse_block_mapping()
++        else:
++            raise ParserError("expected a block collection, but found %s" % self.peek_token())
++
++    def parse_flow_collection(self):
++        """Parse a flow-style collection (sequence or mapping)."""
++        # Parse a flow collection.
++        if self.peek_token().token_id == FlowSequenceStartToken:
++            return self.parse_flow_sequence()
++        elif self.peek_token().token_id == FlowMappingStartToken:
++            return self.parse_flow_mapping()
++        else:
++            raise ParserError("expected a flow collection, but found %s" % self.peek_token())
++
++    def parse_block_sequence(self):
++        """Parse a block-style sequence (list)."""
++        # Parse a block sequence.
++        self.forward_token()
++        # Parse sequence items.
++        items = []
++        while self.peek_token().token_id != BlockSequenceEndToken:
++            items.append(self.parse_block_node())
++        self.forward_token()
++        return BlockSequenceNode(items)
++
++    def parse_block_mapping(self):
++        """Parse a block-style mapping (dictionary)."""
++        # Parse a block mapping.
++        self.forward_token()
++        # Parse mapping items.
++        items = []
++        while self.peek_token().token_id != BlockMappingEndToken:
++            key = self.parse_block_node()
++            value = self.parse_block_node()
++            items.append((key, value))
++        self.forward_token()
++        return BlockMappingNode(items)
++
++    def parse_flow_sequence(self):
++        """Parse a flow-style sequence (inline list)."""
++        # Parse a flow sequence.
++        self.forward_token()
++        # Parse sequence items.
++        items = []
++        while self.peek_token().token_id != FlowSequenceEndToken:
++            items.append(self.parse_flow_node())
++            if self.peek_token().token_id == FlowSequenceEntryToken:
++                self.forward_token()
++        self.forward_token()
++        return FlowSequenceNode(items)
++
++    def parse_flow_mapping(self):
++        """Parse a flow-style mapping (inline dictionary)."""
++        # Parse a flow mapping.
++        self.forward_token()
++        # Parse mapping items.
++        items = []
++        while self.peek_token().token_id != FlowMappingEndToken:
++            key = self.parse_flow_node()
++            value = self.parse_flow_node()
++            items.append((key, value))
++            if self.peek_token().token_id == FlowMappingEntryToken:
++                self.forward_token()
++        self.forward_token()
++        return FlowMappingNode(items)
++
++    def parse_alias(self):
++        """Parse an alias reference to a previously defined node."""
++        # Parse an alias.
++        self.forward_token()
++        return AliasNode(self.peek_token().value)
++
++    def parse_scalar(self):
++        """Parse a scalar value (string, number, etc.)."""
++        # Parse a scalar.
++        self.forward_token()
++        return ScalarNode(self.peek_token().value)
++
++    def parse_stream_end(self):
++        """Parse the end of a YAML stream."""
++        # Parse stream end.
++        self.forward_token()
++        return StreamEndEvent()
+\ No newline at end of file

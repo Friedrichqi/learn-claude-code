@@ -1,0 +1,517 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md	2026-09-27 05:44:39.196074538 -0400
+@@ -0,0 +1,20 @@
++# Files Modified with BUILD_TAG
++
++The following files under `profiling_sandbox/yaml/` were modified by adding the `BUILD_TAG = 'profiling'` constant near the top of each file:
++
++1. `composer.py` - Line 1
++2. `constructor.py` - Line 1
++3. `dumper.py` - Line 1
++4. `emitter.py` - Line 1
++5. `error.py` - Line 1
++6. `events.py` - Line 1
++7. `loader.py` - Line 1
++8. `nodes.py` - Line 1
++9. `parser.py` - Line 1
++10. `reader.py` - Line 1
++11. `representer.py` - Line 1
++12. `resolver.py` - Line 1
++13. `scanner.py` - Line 1
++14. `serializer.py` - Line 1
++
++This changelog was created to document the addition of the `BUILD_TAG` constant to these files.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/composer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py	2026-09-21 20:03:49.535592579 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/composer.py	2026-09-27 05:41:19.554434368 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++BUILD_TAG = 'profiling'
+ __all__ = ['Composer', 'ComposerError']
+ 
+ from .error import MarkedYAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/constructor.py	2026-09-27 06:01:48.786042667 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++BUILD_TAG = 'profiling'
+ __all__ = [
+     'BaseConstructor',
+     'SafeConstructor',
+@@ -17,21 +19,25 @@
+     pass
+ 
+ class BaseConstructor:
++    """Base class for YAML constructors."""
+ 
+     yaml_constructors = {}
+     yaml_multi_constructors = {}
+ 
+     def __init__(self):
++        """Initialize the constructor."""
+         self.constructed_objects = {}
+         self.recursive_objects = {}
+         self.state_generators = []
+         self.deep_construct = False
+ 
+     def check_data(self):
++        """Check if there are more documents available."""
+         # If there are more documents available?
+         return self.check_node()
+ 
+     def check_state_key(self, key):
++        """Block special attributes/methods from being set in a newly created object."""
+         """Block special attributes/methods from being set in a newly created
+         object, to prevent user-controlled methods from being called during
+         deserialization"""
+@@ -40,11 +46,13 @@
+                 "blacklisted key '%s' in instance state found" % (key,), None)
+ 
+     def get_data(self):
++        """Construct and return the next document."""
+         # Construct and return the next document.
+         if self.check_node():
+             return self.construct_document(self.get_node())
+ 
+     def get_single_data(self):
++        """Ensure that the stream contains a single document and construct it."""
+         # Ensure that the stream contains a single document and construct it.
+         node = self.get_single_node()
+         if node is not None:
+@@ -52,6 +60,7 @@
+         return None
+ 
+     def construct_document(self, node):
++        """Construct and return the document from the node."""
+         data = self.construct_object(node)
+         while self.state_generators:
+             state_generators = self.state_generators
+@@ -65,6 +74,7 @@
+         return data
+ 
+     def construct_object(self, node, deep=False):
++        """Construct an object from the node."""
+         if node in self.constructed_objects:
+             return self.constructed_objects[node]
+         if deep:
+@@ -115,6 +125,7 @@
+         return data
+ 
+     def construct_scalar(self, node):
++        """Construct a scalar from the node."""
+         if not isinstance(node, ScalarNode):
+             raise ConstructorError(None, None,
+                     "expected a scalar node, but found %s" % node.id,
+@@ -122,6 +133,7 @@
+         return node.value
+ 
+     def construct_sequence(self, node, deep=False):
++        """Construct a sequence from the node."""
+         if not isinstance(node, SequenceNode):
+             raise ConstructorError(None, None,
+                     "expected a sequence node, but found %s" % node.id,
+@@ -130,6 +142,8 @@
+                 for child in node.value]
+ 
+     def construct_mapping(self, node, deep=False):
++        """Construct a mapping from the node."""
++        """Construct a mapping from the node."""
+         if not isinstance(node, MappingNode):
+             raise ConstructorError(None, None,
+                     "expected a mapping node, but found %s" % node.id,
+@@ -145,6 +159,7 @@
+         return mapping
+ 
+     def construct_pairs(self, node, deep=False):
++        """Construct a list of pairs from the node."""
+         if not isinstance(node, MappingNode):
+             raise ConstructorError(None, None,
+                     "expected a mapping node, but found %s" % node.id,
+@@ -158,17 +173,20 @@
+ 
+     @classmethod
+     def add_constructor(cls, tag, constructor):
++        """Add a constructor for a specific tag."""
+         if not 'yaml_constructors' in cls.__dict__:
+             cls.yaml_constructors = cls.yaml_constructors.copy()
+         cls.yaml_constructors[tag] = constructor
+ 
+     @classmethod
+     def add_multi_constructor(cls, tag_prefix, multi_constructor):
++        """Add a multi-constructor for a specific tag prefix."""
+         if not 'yaml_multi_constructors' in cls.__dict__:
+             cls.yaml_multi_constructors = cls.yaml_multi_constructors.copy()
+         cls.yaml_multi_constructors[tag_prefix] = multi_constructor
+ 
+ class SafeConstructor(BaseConstructor):
++    """Constructor for safe YAML parsing."""
+ 
+     def construct_scalar(self, node):
+         if isinstance(node, MappingNode):
+@@ -178,6 +196,7 @@
+         return super().construct_scalar(node)
+ 
+     def flatten_mapping(self, node):
++        """Flatten the mapping node."""
+         merge = []
+         index = 0
+         while index < len(node.value):
+@@ -218,6 +237,7 @@
+         return super().construct_mapping(node, deep=deep)
+ 
+     def construct_yaml_null(self, node):
++        """Construct a null value from the node."""
+         self.construct_scalar(node)
+         return None
+ 
+@@ -231,10 +251,12 @@
+     }
+ 
+     def construct_yaml_bool(self, node):
++        """Construct a boolean from the node."""
+         value = self.construct_scalar(node)
+         return self.bool_values[value.lower()]
+ 
+     def construct_yaml_int(self, node):
++        """Construct an integer from the node."""
+         value = self.construct_scalar(node)
+         value = value.replace('_', '')
+         sign = +1
+@@ -268,6 +290,7 @@
+     nan_value = -inf_value/inf_value   # Trying to make a quiet NaN (like C99).
+ 
+     def construct_yaml_float(self, node):
++        """Construct a float from the node."""
+         value = self.construct_scalar(node)
+         value = value.replace('_', '').lower()
+         sign = +1
+@@ -292,6 +315,7 @@
+             return sign*float(value)
+ 
+     def construct_yaml_binary(self, node):
++        """Construct binary data from the node."""
+         try:
+             value = self.construct_scalar(node).encode('ascii')
+         except UnicodeEncodeError as exc:
+@@ -320,6 +344,7 @@
+                 (?::(?P<tz_minute>[0-9][0-9]))?))?)?$''', re.X)
+ 
+     def construct_yaml_timestamp(self, node):
++        """Construct a timestamp from the node."""
+         value = self.construct_scalar(node)
+         match = self.timestamp_regexp.match(node.value)
+         values = match.groupdict()
+@@ -351,6 +376,7 @@
+                                  tzinfo=tzinfo)
+ 
+     def construct_yaml_omap(self, node):
++        """Construct an ordered map from the node."""
+         # Note: we do not check for duplicate keys, because it's too
+         # CPU-expensive.
+         omap = []
+@@ -373,6 +399,7 @@
+             omap.append((key, value))
+ 
+     def construct_yaml_pairs(self, node):
++        """Construct a list of pairs from the node."""
+         # Note: the same code as `construct_yaml_omap`.
+         pairs = []
+         yield pairs
+@@ -394,26 +421,31 @@
+             pairs.append((key, value))
+ 
+     def construct_yaml_set(self, node):
++        """Construct a set from the node."""
+         data = set()
+         yield data
+         value = self.construct_mapping(node)
+         data.update(value)
+ 
+     def construct_yaml_str(self, node):
++        """Construct a string from the node."""
+         return self.construct_scalar(node)
+ 
+     def construct_yaml_seq(self, node):
++        """Construct a sequence from the node."""
+         data = []
+         yield data
+         data.extend(self.construct_sequence(node))
+ 
+     def construct_yaml_map(self, node):
++        """Construct a mapping from the node."""
+         data = {}
+         yield data
+         value = self.construct_mapping(node)
+         data.update(value)
+ 
+     def construct_yaml_object(self, node, cls):
++        """Construct an object from the node."""
+         data = cls.__new__(cls)
+         yield data
+         if hasattr(data, '__setstate__'):
+@@ -424,6 +456,7 @@
+             data.__dict__.update(state)
+ 
+     def construct_undefined(self, node):
++        """Construct an undefined value from the node."""
+         raise ConstructorError(None, None,
+                 "could not determine a constructor for the tag %r" % node.tag,
+                 node.start_mark)
+@@ -480,24 +513,30 @@
+         SafeConstructor.construct_undefined)
+ 
+ class FullConstructor(SafeConstructor):
++    """Constructor for full YAML parsing."""
+     # 'extend' is blacklisted because it is used by
+     # construct_python_object_apply to add `listitems` to a newly generate
+     # python instance
+     def get_state_keys_blacklist(self):
++        """Return the blacklist of state keys."""
+         return ['^extend$', '^__.*__$']
+ 
+     def get_state_keys_blacklist_regexp(self):
++        """Return the regular expression for state keys blacklist."""
+         if not hasattr(self, 'state_keys_blacklist_regexp'):
+             self.state_keys_blacklist_regexp = re.compile('(' + '|'.join(self.get_state_keys_blacklist()) + ')')
+         return self.state_keys_blacklist_regexp
+ 
+     def construct_python_str(self, node):
++        """Construct a Python string from the node."""
+         return self.construct_scalar(node)
+ 
+     def construct_python_unicode(self, node):
++        """Construct a Python Unicode string from the node."""
+         return self.construct_scalar(node)
+ 
+     def construct_python_bytes(self, node):
++        """Construct Python bytes from the node."""
+         try:
+             value = self.construct_scalar(node).encode('ascii')
+         except UnicodeEncodeError as exc:
+@@ -514,15 +553,19 @@
+                     "failed to decode base64 data: %s" % exc, node.start_mark)
+ 
+     def construct_python_long(self, node):
++        """Construct a Python long integer from the node."""
+         return self.construct_yaml_int(node)
+ 
+     def construct_python_complex(self, node):
++        """Construct a Python complex number from the node."""
+        return complex(self.construct_scalar(node))
+ 
+     def construct_python_tuple(self, node):
++        """Construct a Python tuple from the node."""
+         return tuple(self.construct_sequence(node))
+ 
+     def find_python_module(self, name, mark, unsafe=False):
++        """Find a Python module by name."""
+         if not name:
+             raise ConstructorError("while constructing a Python module", mark,
+                     "expected non-empty name appended to the tag", mark)
+@@ -538,6 +581,7 @@
+         return sys.modules[name]
+ 
+     def find_python_name(self, name, mark, unsafe=False):
++        """Find a Python name by name."""
+         if not name:
+             raise ConstructorError("while constructing a Python object", mark,
+                     "expected non-empty name appended to the tag", mark)
+@@ -578,6 +622,7 @@
+ 
+     def make_python_instance(self, suffix, node,
+             args=None, kwds=None, newobj=False, unsafe=False):
++        """Create a Python instance from the node."""
+         if not args:
+             args = []
+         if not kwds:
+@@ -593,6 +638,7 @@
+             return cls(*args, **kwds)
+ 
+     def set_python_instance_state(self, instance, state, unsafe=False):
++        """Set the state of a Python instance."""
+         if hasattr(instance, '__setstate__'):
+             instance.__setstate__(state)
+         else:
+@@ -612,6 +658,7 @@
+                 setattr(instance, key, value)
+ 
+     def construct_python_object(self, suffix, node):
++        """Construct a Python object from the node."""
+         # Format:
+         #   !!python/object:module.name { ... state ... }
+         instance = self.make_python_instance(suffix, node, newobj=True)
+@@ -621,6 +668,7 @@
+         self.set_python_instance_state(instance, state)
+ 
+     def construct_python_object_apply(self, suffix, node, newobj=False):
++        """Construct a Python object by applying arguments."""
+         # Format:
+         #   !!python/object/apply       # (or !!python/object/new)
+         #   args: [ ... arguments ... ]
+@@ -656,6 +704,7 @@
+         return instance
+ 
+     def construct_python_object_new(self, suffix, node):
++        """Construct a new Python object."""
+         return self.construct_python_object_apply(suffix, node, newobj=True)
+ 
+ FullConstructor.add_constructor(
+@@ -711,18 +760,23 @@
+     FullConstructor.construct_python_name)
+ 
+ class UnsafeConstructor(FullConstructor):
++    """Constructor for unsafe YAML parsing."""
+ 
+     def find_python_module(self, name, mark):
++        """Find a Python module by name."""
+         return super(UnsafeConstructor, self).find_python_module(name, mark, unsafe=True)
+ 
+     def find_python_name(self, name, mark):
++        """Find a Python name by name."""
+         return super(UnsafeConstructor, self).find_python_name(name, mark, unsafe=True)
+ 
+     def make_python_instance(self, suffix, node, args=None, kwds=None, newobj=False):
++        """Create a Python instance from the node."""
+         return super(UnsafeConstructor, self).make_python_instance(
+             suffix, node, args, kwds, newobj, unsafe=True)
+ 
+     def set_python_instance_state(self, instance, state):
++        """Set the state of a Python instance."""
+         return super(UnsafeConstructor, self).set_python_instance_state(
+             instance, state, unsafe=True)
+ 
+@@ -745,4 +799,5 @@
+ # Constructor is same as UnsafeConstructor. Need to leave this in place in case
+ # people have extended it directly.
+ class Constructor(UnsafeConstructor):
++    """Constructor for YAML parsing."""
+     pass
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/cyaml.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py	2026-09-21 20:03:49.545638861 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/cyaml.py	2026-09-27 04:35:02.821271077 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = [
+     'CBaseLoader', 'CSafeLoader', 'CFullLoader', 'CUnsafeLoader', 'CLoader',
+     'CBaseDumper', 'CSafeDumper', 'CDumper'
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/dumper.py	2026-09-27 05:41:19.555434362 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++BUILD_TAG = 'profiling'
+ __all__ = ['BaseDumper', 'SafeDumper', 'Dumper']
+ 
+ from .emitter import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/emitter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py	2026-09-21 20:03:49.553236855 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/emitter.py	2026-09-27 05:42:56.555773608 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ # Emitter expects events obeying the following grammar:
+ # stream ::= STREAM-START document* STREAM-END
+ # document ::= DOCUMENT-START node DOCUMENT-END
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/error.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/error.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/error.py	2026-09-21 20:03:49.557720080 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/error.py	2026-09-27 05:41:19.556434355 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++BUILD_TAG = 'profiling'
+ __all__ = ['Mark', 'YAMLError', 'MarkedYAMLError']
+ 
+ class Mark:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/events.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/events.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/events.py	2026-09-21 20:03:49.561916953 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/events.py	2026-09-27 05:41:19.556434355 -0400
+@@ -1,4 +1,7 @@
+ 
++BUILD_TAG = 'profiling'
++
++BUILD_TAG = 'profiling'
+ # Abstract classes.
+ 
+ class Event(object):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/loader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py	2026-09-21 20:03:49.565444174 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/loader.py	2026-09-27 05:41:19.557434348 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++BUILD_TAG = 'profiling'
+ __all__ = ['BaseLoader', 'FullLoader', 'SafeLoader', 'Loader', 'UnsafeLoader']
+ 
+ from .reader import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/nodes.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/nodes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/nodes.py	2026-09-21 20:03:49.569750678 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/nodes.py	2026-09-27 05:41:19.558434341 -0400
+@@ -1,4 +1,8 @@
+ 
++BUILD_TAG = 'profiling'
++
++BUILD_TAG = 'profiling'
++
+ class Node(object):
+     def __init__(self, tag, value, start_mark, end_mark):
+         self.tag = tag
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/parser.py	2026-09-27 05:41:19.558434341 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ # The following YAML grammar is LL(1) and is parsed by a recursive descent
+ # parser.
+ #
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/reader.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/reader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/reader.py	2026-09-21 20:03:49.576278669 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/reader.py	2026-09-27 05:41:19.559434334 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ # This module contains abstractions for the input stream. You don't have to
+ # looks further, there are no pretty code.
+ #
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/representer.py	2026-09-27 05:41:19.560434328 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['BaseRepresenter', 'SafeRepresenter', 'Representer',
+     'RepresenterError']
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/resolver.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py	2026-09-21 20:03:49.582954680 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/resolver.py	2026-09-27 05:41:19.560434328 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['BaseResolver', 'Resolver']
+ 
+ from .error import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/scanner.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py	2026-09-21 20:03:49.601022318 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/scanner.py	2026-09-27 05:41:19.561434321 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ # Scanner produces tokens of the following types:
+ # STREAM-START
+ # STREAM-END
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/serializer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py	2026-09-21 20:03:49.604638529 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/yaml/serializer.py	2026-09-27 05:41:19.561434321 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['Serializer', 'SerializerError']
+ 
+ from .error import YAMLError

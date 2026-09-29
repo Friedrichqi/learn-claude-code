@@ -1,0 +1,432 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/asyncio.py	2026-09-25 12:25:47.093787110 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ Asynchronous progress bar decorator for iterators.
+ Includes a default `range` iterator printing to `stderr`.
+@@ -15,7 +16,6 @@
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = ['tqdm_asyncio', 'tarange', 'tqdm', 'trange']
+ 
+-
+ class tqdm_asyncio(std_tqdm):
+     """
+     Asynchronous-friendly version of tqdm.
+@@ -90,14 +90,12 @@
+                                                  total=total, **tqdm_kwargs)]
+         return [i for _, i in sorted(res)]
+ 
+-
+ def tarange(*args, **kwargs):
+     """
+     A shortcut for `tqdm.asyncio.tqdm(range(*args), **kwargs)`.
+     """
+     return tqdm_asyncio(range(*args), **kwargs)
+ 
+-
+ # Aliases
+ tqdm = tqdm_asyncio
+-trange = tarange
++trange = tarange
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/autonotebook.py	2026-09-25 12:27:00.817535067 -0400
+@@ -7,6 +7,7 @@
+ ...     ...
+ """
+ import os
++BUILD_TAG = 'profiling'
+ import sys
+ from warnings import warn
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/auto.py	2026-09-25 12:26:37.846613601 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ Enables multiple commonly used features.
+ 
+@@ -29,12 +30,10 @@
+ else:
+     tqdm = asyncio_tqdm
+ 
+-
+ def trange(*args, **kwargs):
+     """
+     A shortcut for `tqdm.auto.tqdm(range(*args), **kwargs)`.
+     """
+     return tqdm(range(*args), **kwargs)
+ 
+-
+-__all__ = ["tqdm", "trange"]
++__all__ = ["tqdm", "trange"]
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md	2026-09-25 12:19:06.310156839 -0400
+@@ -0,0 +1,3 @@
++# Build Tag Constant Addition
++
++The following files have had a module-level constant named `BUILD_TAG` added and set to the string 'profiling':
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/cli.py	2026-09-25 12:27:30.150434778 -0400
+@@ -3,6 +3,7 @@
+ """
+ import logging
+ import re
++BUILD_TAG = 'profiling'
+ import sys
+ from ast import literal_eval
+ from textwrap import indent
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/bells.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/bells.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/bells.py	2026-09-17 15:46:11.398479427 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/bells.py	2026-09-25 12:29:03.802114557 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ Even more features than `tqdm.auto` (all the bells & whistles):
+ 
+@@ -25,4 +26,4 @@
+ 
+ with warnings.catch_warnings():
+     warnings.simplefilter("ignore", category=FutureWarning)
+-    tqdm.pandas()
++    tqdm.pandas()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/concurrent.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py	2026-09-17 15:46:11.404865043 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/concurrent.py	2026-09-25 12:29:30.146024473 -0400
+@@ -1,6 +1,7 @@
+ """
+ Thin wrappers around `concurrent.futures`.
+ """
++BUILD_TAG = 'profiling'
+ import sys
+ from contextlib import contextmanager
+ from operator import length_hint
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/discord.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/discord.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/discord.py	2026-09-17 15:46:11.409577251 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/discord.py	2026-09-25 12:31:26.672625972 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ Sends updates to a Discord bot.
+ 
+@@ -22,7 +23,6 @@
+ __author__ = {"github.com/": ["casperdcl", "guigoruiz1"]}
+ __all__ = ['DiscordIO', 'tqdm_discord', 'tdrange', 'tqdm', 'trange']
+ 
+-
+ class DiscordIO(MonoWorker):
+     """Non-blocking file-like IO using a Discord Bot."""
+     API = 'https://discord.com/api/v10'
+@@ -92,7 +92,6 @@
+         else:
+             return future
+ 
+-
+ class tqdm_discord(tqdm_auto):  # pylint: disable=inconsistent-mro
+     """
+     Standard `tqdm.auto.tqdm` but also sends updates to a Discord Bot.
+@@ -144,12 +143,10 @@
+         if not (self.leave or (self.leave is None and self.pos == 0)):
+             self.dio.delete()
+ 
+-
+ def tdrange(*args, **kwargs):
+     """Shortcut for `tqdm.contrib.discord.tqdm(range(*args), **kwargs)`."""
+     return tqdm_discord(range(*args), **kwargs)
+ 
+-
+ # Aliases
+ tqdm = tqdm_discord
+-trange = tdrange
++trange = tdrange
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py	2026-09-17 15:46:11.390563310 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/__init__.py	2026-09-25 12:28:24.291249661 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ Thin wrappers around common functions.
+ 
+@@ -12,7 +13,6 @@
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = ['tenumerate', 'tzip', 'tmap']
+ 
+-
+ class DummyTqdmFile(ObjectWrapper):
+     """Dummy file-like that will write to tqdm"""
+ 
+@@ -39,14 +39,12 @@
+             except (OSError, ValueError):
+                 pass
+ 
+-
+ def builtin_iterable(func):
+     """Returns `func`"""
+     warn("This function has no effect, and will be removed in tqdm==5.0.0",
+          TqdmDeprecationWarning, stacklevel=2)
+     return func
+ 
+-
+ def tenumerate(iterable, start=0, total=None, tqdm_class=tqdm_auto, **tqdm_kwargs):
+     """
+     Equivalent of `numpy.ndenumerate` or builtin `enumerate`.
+@@ -65,7 +63,6 @@
+                               **tqdm_kwargs)
+     return enumerate(tqdm_class(iterable, total=total, **tqdm_kwargs), start)
+ 
+-
+ def tzip(iter1, *iter2plus, **tqdm_kwargs):
+     """
+     Equivalent of builtin `zip`.
+@@ -78,7 +75,6 @@
+     tqdm_class = kwargs.pop("tqdm_class", tqdm_auto)
+     yield from zip(tqdm_class(iter1, **kwargs), *iter2plus)
+ 
+-
+ def tmap(function, *sequences, **tqdm_kwargs):
+     """
+     Equivalent of builtin `map`.
+@@ -88,4 +84,4 @@
+     tqdm_class  : [default: tqdm.auto.tqdm].
+     """
+     for i in tzip(*sequences, **tqdm_kwargs):
+-        yield function(*i)
++        yield function(*i)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/itertools.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py	2026-09-17 15:46:11.415861929 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/itertools.py	2026-09-25 12:32:32.269401617 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ Thin wrappers around `itertools`.
+ """
+@@ -10,7 +11,6 @@
+ __all__ = [
+     'chain', 'product', 'permutations', 'combinations', 'combinations_with_replacement', 'batched']
+ 
+-
+ def chain(*iterables, total=None, tqdm_class=tqdm_auto, **kwargs):
+     """Equivalent of `itertools.chain`."""
+     if total is None:
+@@ -20,7 +20,6 @@
+             pass
+     return tqdm_class(itertools.chain(*iterables), total=total, **kwargs)
+ 
+-
+ def product(*iterables, repeat=1, total=None, tqdm_class=tqdm_auto, **kwargs):
+     """Equivalent of `itertools.product`."""
+     if total is None:
+@@ -32,7 +31,6 @@
+             total = math.prod(lens) ** repeat
+     yield from tqdm_class(itertools.product(*iterables, repeat=repeat), total=total, **kwargs)
+ 
+-
+ def permutations(iterable, r=None, total=None, tqdm_class=tqdm_auto, **kwargs):
+     """Equivalent of `itertools.permutations`."""
+     if total is None:
+@@ -48,7 +46,6 @@
+                 total = math.perm(n, r)
+     return tqdm_class(itertools.permutations(iterable, r), total=total, **kwargs)
+ 
+-
+ def combinations(iterable, r, total=None, tqdm_class=tqdm_auto, **kwargs):
+     """Equivalent of `itertools.combinations`."""
+     if total is None:
+@@ -63,7 +60,6 @@
+                 total = math.comb(n, r)
+     return tqdm_class(itertools.combinations(iterable, r), total=total, **kwargs)
+ 
+-
+ def combinations_with_replacement(iterable, r, total=None, tqdm_class=tqdm_auto, **kwargs):
+     """Equivalent of `itertools.combinations_with_replacement`."""
+     if total is None:
+@@ -79,7 +75,6 @@
+                 total //= i
+     return tqdm_class(itertools.combinations_with_replacement(iterable, r), total=total, **kwargs)
+ 
+-
+ def batched(iterable, n, total=None, tqdm_class=tqdm_auto, **kwargs):
+     """Equivalent of `itertools.batched`."""
+     if total is None:
+@@ -89,4 +84,4 @@
+             pass
+     return tqdm_class(itertools.batched(iterable, n), unit_scale=n,
+                       total=(total+n-1) // n if total is not None else None,
+-                      **kwargs)
++                      **kwargs)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/logging.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/logging.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/logging.py	2026-09-17 15:46:11.421909169 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/logging.py	2026-09-25 12:33:03.573294544 -0400
+@@ -2,6 +2,7 @@
+ Helper functionality for interoperability with stdlib `logging`.
+ """
+ import logging
++BUILD_TAG = 'profiling'
+ import sys
+ from contextlib import contextmanager
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/slack.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/slack.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/slack.py	2026-09-17 15:46:11.427216150 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/contrib/slack.py	2026-09-25 12:34:54.614914702 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ Sends updates to a Slack app.
+ 
+@@ -22,7 +23,6 @@
+ __author__ = {"github.com/": ["0x2b3bfa0", "casperdcl"]}
+ __all__ = ['SlackIO', 'tqdm_slack', 'tsrange', 'tqdm', 'trange']
+ 
+-
+ class SlackIO(MonoWorker):
+     """Non-blocking file-like IO using a Slack app."""
+     def __init__(self, token, channel):
+@@ -55,7 +55,6 @@
+         else:
+             return future
+ 
+-
+ class tqdm_slack(tqdm_auto):  # pylint: disable=inconsistent-mro
+     """
+     Standard `tqdm.auto.tqdm` but also sends updates to a Slack app.
+@@ -108,12 +107,10 @@
+         if not self.disable:
+             self.sio.write("")
+ 
+-
+ def tsrange(*args, **kwargs):
+     """Shortcut for `tqdm.contrib.slack.tqdm(range(*args), **kwargs)`."""
+     return tqdm_slack(range(*args), **kwargs)
+ 
+-
+ # Aliases
+ tqdm = tqdm_slack
+-trange = tsrange
++trange = tsrange
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py	2026-09-17 15:46:11.277808878 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/__main__.py	2026-09-25 12:19:24.780093733 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from .cli import main
+ 
+-main()
++main()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_main.py	2026-09-25 12:19:50.215006827 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .cli import *  # NOQA
+@@ -6,4 +8,4 @@
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.cli.*` instead of `tqdm._main.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_monitor.py	2026-09-25 12:21:26.562677598 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import atexit
+ from threading import Event, Thread, current_thread
+ from time import time
+@@ -101,4 +103,4 @@
+                 del instances
+ 
+     def report(self):
+-        return not self.was_killed.is_set()
++        return not self.was_killed.is_set()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-25 12:22:34.557445225 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .gui import *  # NOQA
+@@ -6,4 +8,4 @@
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.gui.*` instead of `tqdm._tqdm_gui.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-25 12:23:12.374315976 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .notebook import *  # NOQA
+@@ -6,4 +8,4 @@
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.notebook.*` instead of `tqdm._tqdm_notebook.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-25 12:23:34.306241015 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import sys
+ 
+ __author__ = "github.com/casperdcl"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_tqdm.py	2026-09-25 12:21:59.273565811 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .std import *  # NOQA
+@@ -6,4 +8,4 @@
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.std.*` instead of `tqdm._tqdm.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py	2026-09-17 15:46:11.306303155 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/tqdm/_utils.py	2026-09-25 12:24:15.084101633 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .std import TqdmDeprecationWarning
+@@ -8,4 +10,4 @@
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.utils.*` instead of `tqdm._utils.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++     TqdmDeprecationWarning, stacklevel=2)
+\ No newline at end of file

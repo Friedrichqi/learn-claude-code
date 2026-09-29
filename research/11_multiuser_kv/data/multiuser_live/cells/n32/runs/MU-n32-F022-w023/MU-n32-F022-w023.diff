@@ -1,0 +1,73 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py /tmp/yqi10/mu/102768/g1/lane22/profiling_sandbox/click/_termui_impl.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py	2026-09-17 15:46:11.420759065 -0400
++++ /tmp/yqi10/mu/102768/g1/lane22/profiling_sandbox/click/_termui_impl.py	2026-09-26 22:38:05.442692246 -0400
+@@ -41,7 +41,7 @@
+ 
+ 
+ class ProgressBar(t.Generic[V]):
+-    def __init__(
++    def __init__(self) -> None:  # Initialize progress bar\n
+         self,
+         iterable: cabc.Iterable[V] | None,
+         length: int | None = None,
+@@ -112,7 +112,7 @@
+         self._is_atty = isatty(self.file)
+         self._last_line: str | None = None
+ 
+-    def __enter__(self) -> ProgressBar[V]:
++    def __enter__(self) -> ProgressBar[V]:  # Context manager entry\n
+         self.entered = True
+         self.render_progress()
+         return self
+@@ -125,13 +125,13 @@
+     ) -> None:
+         self.render_finish()
+ 
+-    def __iter__(self) -> cabc.Iterator[V]:
++    def __iter__(self) -> cabc.Iterator[V]:  # Make iterable\n
+         if not self.entered:
+             raise RuntimeError("You need to use progress bars in a with block.")
+         self.render_progress()
+         return self.generator()
+ 
+-    def __next__(self) -> V:
++    def __next__(self) -> V:  # Iteration step\n
+         # Iteration is defined in terms of a generator function,
+         # returned by iter(self); use that to define next(). This works
+         # because `self.iter` is an iterable consumed by that generator,
+@@ -139,7 +139,7 @@
+         # twice works and does "what you want".
+         return next(iter(self))
+ 
+-    def render_finish(self) -> None:
++    def render_finish(self) -> None:  # Finalize progress rendering\n
+         # Steps stay pending until they add up to update_min_steps, so a length
+         # that is not a multiple of it keeps a sub-threshold remainder that
+         # never reaches pos. Apply it so the bar settles on its true position.
+@@ -153,7 +153,7 @@
+         self.file.write(AFTER_BAR)
+         self.file.flush()
+ 
+-    @property
++    @property\n    def eta(self) -> float:  # Calculate estimated time remaining\n\n    def time_per_iteration(self) -> float:  # Calculate average time per iteration\n\n    def pct(self) -> float:  # Calculate progress percentage\n
+     def pct(self) -> float:
+         if self.finished:
+             return 1.0
+@@ -171,7 +171,7 @@
+             return self.time_per_iteration * (self.length - self.pos)
+         return 0.0
+ 
+-    def format_eta(self) -> str:
++    def format_eta(self) -> str:  # Format ETA as readable string\n
+         if self.eta_known:
+             t = int(self.eta)
+             seconds = t % 60
+@@ -192,7 +192,7 @@
+                 return f"{hours:02}:{minutes:02}:{seconds:02}"
+         return ""
+ 
+-    def format_pos(self) -> str:
++    def format_pos(self) -> str:  # Format position counter\n
+         pos = str(self.pos)
+         if self.length is not None:
+             pos += f"/{self.length}"

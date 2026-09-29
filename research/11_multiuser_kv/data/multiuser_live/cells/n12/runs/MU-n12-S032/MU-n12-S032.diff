@@ -1,0 +1,361 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/autonotebook.py	2026-09-27 10:43:17.379352309 -0400
+@@ -7,6 +7,7 @@
+ ...     ...
+ """
+ import os
++BUILD_TAG = 'profiling'
+ import sys
+ from warnings import warn
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md	2026-09-27 10:46:33.631061184 -0400
+@@ -0,0 +1,14 @@
++# Changelog for BUILD_TAG Addition
++
++The `BUILD_TAG = 'profiling'` constant was added to the following files:
++
++1. `profiling_sandbox/tqdm/autonotebook.py` - Line 1
++2. `profiling_sandbox/tqdm/cli.py` - Line 1
++3. `profiling_sandbox/tqdm/dask.py` - Line 1
++4. `profiling_sandbox/tqdm/gui.py` - Line 1
++5. `profiling_sandbox/tqdm/keras.py` - Line 1
++6. `profiling_sandbox/tqdm/notebook.py` - Line 1
++7. `profiling_sandbox/tqdm/rich.py` - Line 1
++8. `profiling_sandbox/tqdm/std.py` - Line 1
++9. `profiling_sandbox/tqdm/tk.py` - Line 1
++10. `profiling_sandbox/tqdm/utils.py` - Line 1
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/cli.py	2026-09-27 10:43:26.659338639 -0400
+@@ -3,6 +3,7 @@
+ """
+ import logging
+ import re
++BUILD_TAG = 'profiling'
+ import sys
+ from ast import literal_eval
+ from textwrap import indent
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/dask.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py	2026-09-17 15:46:11.332330664 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/dask.py	2026-09-27 10:43:42.495315313 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from functools import partial
+ 
+ from dask.callbacks import Callback
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py	2026-09-17 15:46:11.337417657 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/gui.py	2026-09-27 10:43:47.343308172 -0400
+@@ -8,6 +8,7 @@
+ """
+ # future division is important to divide integers and get as
+ # a result precise floating numbers (instead of truncated int)
++BUILD_TAG = 'profiling'
+ import re
+ from warnings import warn
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/keras.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py	2026-09-17 15:46:11.341185437 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/keras.py	2026-09-27 10:43:56.690294369 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from copy import copy
+ from functools import partial
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py	2026-09-17 15:46:11.345714888 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/notebook.py	2026-09-27 10:44:03.240284634 -0400
+@@ -9,6 +9,7 @@
+ """
+ # import compatibility functions and utilities
+ import re
++BUILD_TAG = 'profiling'
+ import sys
+ from html import escape
+ from weakref import proxy
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/rich.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py	2026-09-17 15:46:11.351142577 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/rich.py	2026-09-27 10:44:28.102247686 -0400
+@@ -6,6 +6,7 @@
+ >>> for i in trange(10):
+ ...     ...
+ """
++BUILD_TAG = 'profiling'
+ from warnings import warn
+ 
+ from rich.progress import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/std.py	2026-09-27 11:38:06.958440742 -0400
+@@ -7,6 +7,7 @@
+ >>> for i in trange(10):
+ ...     ...
+ """
++BUILD_TAG = 'profiling'
+ import sys
+ from collections import OrderedDict, defaultdict
+ from contextlib import contextmanager
+@@ -29,14 +30,20 @@
+            'TqdmMonitorWarning']
+ 
+ 
++"""Base class for type-related errors in tqdm."""
++
+ class TqdmTypeError(TypeError):
+     pass
+ 
+ 
++"""Base class for key-related errors in tqdm."""
++
+ class TqdmKeyError(KeyError):
+     pass
+ 
+ 
++"""Base class for all tqdm warnings."""
++
+ class TqdmWarning(Warning):
+     """base class for all tqdm warnings.
+ 
+@@ -49,19 +56,27 @@
+             super().__init__(msg)
+ 
+ 
++"""Warning for experimental features with unstable APIs."""
++
+ class TqdmExperimentalWarning(TqdmWarning, FutureWarning):
+     """beta feature, unstable API and behaviour"""
+ 
+ 
++"""Warning for features that may be removed in future releases."""
++
+ class TqdmDeprecationWarning(TqdmWarning, DeprecationWarning):
+     """may be removed in a future release"""
+     # not suppressed if raised
+ 
+ 
++"""Warning related to tqdm monitor errors that do not affect external functionality."""
++
+ class TqdmMonitorWarning(TqdmWarning, RuntimeWarning):
+     """tqdm monitor errors which do not affect external functionality"""
+ 
+ 
++"""Return a threading RLock if available, otherwise None."""
++
+ def TRLock(*args, **kwargs):
+     """threading RLock"""
+     try:
+@@ -71,6 +86,8 @@
+         pass
+ 
+ 
++"""Provide a default write lock for thread and multiprocessing safety."""
++
+ class TqdmDefaultWriteLock:
+     """
+     Provide a default write lock for thread and multiprocessing safety.
+@@ -105,12 +122,28 @@
+         for lock in self.locks[::-1]:  # Release in inverse order of acquisition
+             lock.release()
+ 
+-    def __enter__(self):
++    """Context manager entry: return self."""
++
++def __enter__(self):
+         self.acquire()
+ 
+     def __exit__(self, *exc):
+         self.release()
+ 
++        """Determine a free position for progress bar display."""
++
++        """Remove instance from tracking and reposition other bars."""
++
++        """Print a message without overlapping with progress bars."""
++
++        """Context manager to disable tqdm during external writing."""
++
++        """Set the global lock for thread/multiprocessing safety."""
++
++        """Get the global lock, creating it if necessary."""
++
++        """Register tqdm with pandas for progress_apply functionality."""
++
+     @classmethod
+     def create_mp_lock(cls):
+         if not hasattr(cls, 'mp_lock'):
+@@ -126,6 +159,8 @@
+         warn("create_th_lock not needed anymore", TqdmDeprecationWarning, stacklevel=2)
+ 
+ 
++"""A `str.format`-able bar with format specifiers for progress visualization."""
++
+ class Bar:
+     """
+     `str.format`-able bar with format specifiers: `[width][type]`
+@@ -158,6 +193,8 @@
+         self.charset = charset
+         self.colour = colour
+ 
++        """Return comparable position value for sorting."""
++
+     @property
+     def colour(self):
+         return self._colour
+@@ -208,6 +245,8 @@
+         return self.colour + res + self.COLOUR_RESET if self.colour else res
+ 
+ 
++"""Exponential moving average for smoothing progress metrics."""
++
+ class EMA:
+     """
+     Exponential moving average: smoothing to give progressively lower
+@@ -239,6 +278,8 @@
+         return self.last / (1 - beta ** self.calls) if self.calls else self.last
+ 
+ 
++"""Decorator for iterables to show a dynamically updating progress bar."""
++
+ class tqdm(Comparable):
+     """
+     Decorate an iterable object, returning an iterator which acts exactly
+@@ -364,6 +405,16 @@
+     monitor = None
+     _instances = WeakSet()
+ 
++        """Format a number with SI Order of Magnitude prefixes."""
++
++        """Format a number of seconds as a clock time [H:]MM:SS."""
++
++        """Intelligent scientific notation formatting for numbers."""
++
++        """Manage in-place printing and updating of progress bar display."""
++
++        """Return a formatted progress bar string given parameters."""
++
+     @staticmethod
+     def format_sizeof(num, suffix='', divisor=1000):
+         """
+@@ -661,7 +712,9 @@
+                    f'{n_fmt}{unit} [{elapsed_str}, {rate_fmt}{postfix}]')
+             return disp_trim(res, ncols) if ncols else res
+ 
+-    def __new__(cls, *_, **__):
++    """Create a new instance and initialize monitoring thread."""
++
++def __new__(cls, *_, **__):
+         instance = object.__new__(cls)
+         with cls.get_lock():  # also constructs lock if non-existent
+             cls._instances.add(instance)
+@@ -1107,14 +1160,18 @@
+         # NB: Avoid race conditions by setting start_t at the very end of init
+         self.start_t = self.last_print_t
+ 
+-    def __bool__(self):
++    """Return True if total iterations are greater than zero."""
++
++def __bool__(self):
+         if self.total is not None:
+             return self.total > 0
+         if self.iterable is None:
+             raise TypeError('bool() undefined when iterable == total == None')
+         return bool(self.iterable)
+ 
+-    def __len__(self):
++    """Return the total number of iterations or length of iterable."""
++
++def __len__(self):
+         return (
+             self.total if self.iterable is None
+             else self.iterable.shape[0] if hasattr(self.iterable, "shape")
+@@ -1122,7 +1179,9 @@
+             else self.iterable.__length_hint__() if hasattr(self.iterable, "__length_hint__")
+             else getattr(self, "total", None))
+ 
+-    def __reversed__(self):
++    """Return a reversed iterator of the progress bar."""
++
++def __reversed__(self):
+         try:
+             orig = self.iterable
+         except AttributeError:
+@@ -1133,7 +1192,9 @@
+         finally:
+             self.iterable = orig
+ 
+-    def __contains__(self, item):
++    """Check if an item is present in the iterable."""
++
++def __contains__(self, item):
+         contains = getattr(self.iterable, '__contains__', None)
+         return (contains(item) if contains is not None  # pylint: disable=not-callable
+                 else item in self.__iter__())
+@@ -1141,7 +1202,9 @@
+     def __enter__(self):
+         return self
+ 
+-    def __exit__(self, exc_type, exc_value, traceback):
++    """Context manager exit: close the progress bar."""
++
++def __exit__(self, exc_type, exc_value, traceback):
+         try:
+             self.close()
+         except AttributeError:
+@@ -1150,20 +1213,28 @@
+                 raise
+             warn("AttributeError ignored", TqdmWarning, stacklevel=2)
+ 
+-    def __del__(self):
++    """Cleanup resources when instance is deleted."""
++
++def __del__(self):
+         self.close()
+ 
+-    def __str__(self):
++    """Return formatted progress bar string."""
++
++def __str__(self):
+         return self.format_meter(**self.format_dict)
+ 
+     @property
+     def _comparable(self):
+         return abs(getattr(self, "pos", 1 << 31))
+ 
+-    def __hash__(self):
++    """Return hash based on instance identity."""
++
++def __hash__(self):
+         return id(self)
+ 
+-    def __iter__(self):
++    """Iterate over the decorated iterable with progress updates."""
++
++def __iter__(self):
+         """Backward-compatibility to use: for x in tqdm(iterable)"""
+ 
+         # Inlining instance variables as locals (speed optimisation)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/tk.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/tk.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/tk.py	2026-09-17 15:46:11.364945066 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/tk.py	2026-09-27 10:44:45.453221902 -0400
+@@ -7,6 +7,7 @@
+ ...     ...
+ """
+ import re
++BUILD_TAG = 'profiling'
+ import sys
+ import tkinter
+ import tkinter.ttk as ttk
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py	2026-09-17 15:46:11.374453572 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/tqdm/utils.py	2026-09-27 10:44:47.695218570 -0400
+@@ -3,6 +3,7 @@
+ """
+ import os
+ import re
++BUILD_TAG = 'profiling'
+ import sys
+ from functools import partial, partialmethod, wraps
+ from inspect import signature

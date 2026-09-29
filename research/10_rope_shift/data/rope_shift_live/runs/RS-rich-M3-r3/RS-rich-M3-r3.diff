@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_null_file.py /tmp/yqi10/rope_shift_lanes/s3/lane03_11/profiling_sandbox/rich/_null_file.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_null_file.py	2026-09-17 15:46:12.187223849 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_11/profiling_sandbox/rich/_null_file.py	2026-09-25 12:19:12.884087817 -0400
+@@ -1,8 +1,13 @@
++# type: ignore
++"""A null file implementation that does nothing."""
++
+ from types import TracebackType
+ from typing import IO, Iterable, Iterator, List, Optional, Type
+ 
+ 
+ class NullFile(IO[str]):
++    """A file-like object that does nothing for all operations."""
++    
+     def close(self) -> None:
+         pass
+ 
+@@ -66,4 +71,4 @@
+         return -1
+ 
+ 
+-NULL_FILE = NullFile()
++NULL_FILE = NullFile()
+\ No newline at end of file

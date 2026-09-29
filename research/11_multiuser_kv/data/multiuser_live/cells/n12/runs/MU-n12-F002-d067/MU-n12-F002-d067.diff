@@ -1,0 +1,103 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py	2026-09-17 15:46:11.414122732 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_compat.py	2026-09-27 11:33:10.517883223 -0400
+@@ -6,6 +6,8 @@
+ import os
+ import re
+ import sys
++
++BUILD_TAG = 'profiling'
+ import typing as t
+ from types import TracebackType
+ from weakref import WeakKeyDictionary
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/core.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/core.py	2026-09-17 15:46:11.448692588 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/core.py	2026-09-27 11:37:27.357500018 -0400
+@@ -6,6 +6,8 @@
+ import inspect
+ import os
+ import sys
++
++BUILD_TAG = 'profiling'
+ import typing as t
+ from abc import ABC
+ from abc import abstractmethod
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/decorators.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/decorators.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/decorators.py	2026-09-17 15:46:11.454087488 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/decorators.py	2026-09-27 11:37:37.501484833 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import inspect
+ import typing as t
+ from functools import update_wrapper
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/exceptions.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/exceptions.py	2026-09-17 15:46:11.460338176 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/exceptions.py	2026-09-27 11:37:50.432465478 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import collections.abc as cabc
+ import typing as t
+ from gettext import gettext as _
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/formatting.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/formatting.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/formatting.py	2026-09-17 15:46:11.465278651 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/formatting.py	2026-09-27 11:38:00.851449883 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import collections.abc as cabc
+ from contextlib import contextmanager
+ from gettext import gettext as _
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_termui_impl.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py	2026-09-17 15:46:11.420759065 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_termui_impl.py	2026-09-27 11:33:41.672836767 -0400
+@@ -12,6 +12,8 @@
+ import os
+ import shlex
+ import sys
++
++BUILD_TAG = 'profiling'
+ import time
+ import typing as t
+ from gettext import gettext as _
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_textwrap.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_textwrap.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_textwrap.py	2026-09-17 15:46:11.426856985 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_textwrap.py	2026-09-27 11:35:03.793714345 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import collections.abc as cabc
+ import textwrap
+ from contextlib import contextmanager
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_utils.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_utils.py	2026-09-17 15:46:11.434835180 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_utils.py	2026-09-27 11:36:45.337562923 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import typing as t
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_winconsole.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_winconsole.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_winconsole.py	2026-09-17 15:46:11.441420254 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_winconsole.py	2026-09-27 11:37:07.563529649 -0400
+@@ -11,6 +11,8 @@
+ import collections.abc as cabc
+ import io
+ import sys
++
++BUILD_TAG = 'profiling'
+ import time
+ import typing as t
+ from ctypes import Array

@@ -1,0 +1,11 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py /tmp/yqi10/mu/102768/g1/lane04/profiling_sandbox/typer/main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py	2026-09-17 15:46:11.608868099 -0400
++++ /tmp/yqi10/mu/102768/g1/lane04/profiling_sandbox/typer/main.py	2026-09-27 03:06:31.594517639 -0400
+@@ -61,6 +61,7 @@
+ def except_hook(
+     exc_type: type[BaseException], exc_value: BaseException, tb: TracebackType | None
+ ) -> None:
++    """Handles uncaught exceptions and formats the traceback based on developer exception configuration."""
+     exception_config: DeveloperExceptionConfig | None = getattr(
+         exc_value, _typer_developer_exception_attr_name, None
+     )

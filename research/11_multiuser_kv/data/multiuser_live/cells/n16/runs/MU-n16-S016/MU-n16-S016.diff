@@ -1,0 +1,185 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/tqdm/std.py	2026-09-26 23:53:47.684958925 -0400
+@@ -630,7 +630,7 @@
+             full_bar = FormatReplace()
+             nobar = bar_format.format(bar=full_bar, **format_dict)  # no `{bar}`
+             if not full_bar.format_called:
+-                return disp_trim(nobar, ncols) if ncols else nobar
++                return disp_trim_v2(nobar, ncols) if ncols else nobar
+ 
+             # Formatting progress bar space available for bar's display
+             full_bar = Bar(frac,
+@@ -640,7 +640,7 @@
+             if not _is_ascii(full_bar.charset) and _is_ascii(bar_format):
+                 bar_format = str(bar_format)
+             res = bar_format.format(bar=full_bar, **format_dict)
+-            return disp_trim(res, ncols) if ncols else res
++            return disp_trim_v2(res, ncols) if ncols else res
+ 
+         elif bar_format:
+             # user-specified bar_format but no total
+@@ -649,7 +649,7 @@
+             full_bar = FormatReplace()
+             nobar = bar_format.format(bar=full_bar, **format_dict)
+             if not full_bar.format_called:
+-                return disp_trim(nobar, ncols) if ncols else nobar
++                return disp_trim_v2(nobar, ncols) if ncols else nobar
+             full_bar = Bar(0,
+                            max(1, ncols - disp_len(nobar)) if ncols else 10,
+                            charset=Bar.BLANK, colour=colour)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/tqdm/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py	2026-09-17 15:46:11.374453572 -0400
++++ /tmp/yqi10/mu/102768/g0/lane05/profiling_sandbox/tqdm/utils.py	2026-09-26 23:50:15.310542162 -0400
+@@ -126,19 +126,23 @@
+         return setattr(self._wrapped, name, value)
+ 
+     def wrapper_getattr(self, name):
+-        """Actual `self.getattr` rather than self._wrapped.getattr"""
++        """
++        Get the attribute from the wrapper rather than the wrapped object.
++        """
+         try:
+             return object.__getattr__(self, name)
+         except AttributeError:  # py2
+             return getattr(self, name)
+ 
+     def wrapper_setattr(self, name, value):
+-        """Actual `self.setattr` rather than self._wrapped.setattr"""
++        """
++        Set the attribute on the wrapper rather than the wrapped object.
++        """
+         return object.__setattr__(self, name, value)
+ 
+     def __init__(self, wrapped):
+         """
+-        Thin wrapper around a given object
++        Initialize the ObjectWrapper with the given object.
+         """
+         self.wrapper_setattr('_wrapped', wrapped)
+ 
+@@ -150,6 +154,9 @@
+     """
+     # pylint: disable=too-few-public-methods
+     def __init__(self, wrapped, encoding):
++        """
++        Initialize the SimpleTextIOWrapper with the given object and encoding.
++        """
+         super().__init__(wrapped)
+         self.wrapper_setattr('encoding', encoding)
+ 
+@@ -160,6 +167,9 @@
+         return self._wrapped.write(s.encode(self.wrapper_getattr('encoding')))
+ 
+     def __eq__(self, other):
++        """
++        Compare the wrapped object with another object.
++        """
+         return self._wrapped == getattr(other, '_wrapped', other)
+ 
+ 
+@@ -194,6 +204,9 @@
+         return inner
+ 
+     def __init__(self, wrapped, tqdm_instance):  # noqa: B042
++        """
++        Initialize the DisableOnWriteError wrapper with the given object and tqdm instance.
++        """
+         super().__init__(wrapped)
+         if hasattr(wrapped, 'write'):
+             self.wrapper_setattr(
+@@ -210,7 +223,7 @@
+     def __init__(self, callback, stream, method="read"):
+         """
+         Wrap a given `file`-like object's `read()` or `write()` to report
+-        lengths to the given `callback`
++        lengths to the given `callback`.
+         """
+         super().__init__(stream)
+         func = getattr(stream, method)
+@@ -233,6 +246,9 @@
+ 
+ 
+ def _is_utf(encoding):
++    """
++    Check if the given encoding is UTF-based.
++    """
+     try:
+         '\u2588\u2589'.encode(encoding)
+     except UnicodeEncodeError:
+@@ -247,6 +263,9 @@
+ 
+ 
+ def _supports_unicode(fp):
++    """
++    Check if the given file-like object supports Unicode.
++    """
+     try:
+         return _is_utf(fp.encoding)
+     except AttributeError:
+@@ -254,6 +273,9 @@
+ 
+ 
+ def _is_ascii(s):
++    """
++    Check if the given string is ASCII.
++    """
+     if isinstance(s, str):
+         for c in s:
+             if ord(c) > 255:
+@@ -265,6 +287,9 @@
+ def _screen_shape_wrapper():  # pragma: no cover
+     """
+     Return a function which returns console dimensions (width, height).
++    """
++    """
++    Return a function which returns console dimensions (width, height).
+     Supported: linux, osx, windows, cygwin.
+     """
+     def inner(fp):
+@@ -281,6 +306,9 @@
+ def _environ_cols_wrapper():  # pragma: no cover
+     """
+     Return a function which returns console width.
++    """
++    """
++    Return a function which returns console width.
+     Supported: linux, osx, windows, cygwin.
+     """
+     warn("Use `_screen_shape_wrapper()(file)[0]` instead of"
+@@ -297,10 +325,16 @@
+ 
+ 
+ def _term_move_up():  # pragma: no cover
++    """
++    Return the terminal move-up escape sequence.
++    """
+     return '' if (os.name == 'nt') and (colorama is None) else '\x1b[A'
+ 
+ 
+ def _text_width(s):
++    """
++    Calculate the on-screen width of a string, accounting for wide characters.
++    """
+     return sum(2 if east_asian_width(ch) in 'FW' else 1 for ch in str(s))
+ 
+ 
+@@ -309,10 +343,17 @@
+     Returns the real on-screen length of a string which may contain
+     ANSI control codes and wide chars.
+     """
++    """
++    Returns the real on-screen length of a string which may contain
++    ANSI control codes and wide chars.
++    """
+     return _text_width(RE_ANSI.sub('', data))
+ 
+ 
+-def disp_trim(data, length):
++def disp_trim_v2(data, length):
++    """
++    Trim a string which may contain ANSI control characters to the given length.
++    """
+     """
+     Trim a string which may contain ANSI control characters.
+     """

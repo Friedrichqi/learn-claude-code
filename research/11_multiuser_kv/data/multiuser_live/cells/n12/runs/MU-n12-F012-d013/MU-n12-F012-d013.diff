@@ -1,0 +1,221 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/constructor.py	2026-09-27 06:27:16.221378299 -0400
+@@ -17,21 +17,26 @@
+     pass
+ 
+ class BaseConstructor:
++    def serialize(self, node):
++        return self.serialize_v2(node)
+ 
+     yaml_constructors = {}
+     yaml_multi_constructors = {}
+ 
+     def __init__(self):
++        """Initialize the BaseConstructor."""
+         self.constructed_objects = {}
+         self.recursive_objects = {}
+         self.state_generators = []
+         self.deep_construct = False
+ 
+     def check_data(self):
++        """Check if there are more documents available."""
+         # If there are more documents available?
+         return self.check_node()
+ 
+     def check_state_key(self, key):
++        """Block special attributes/methods from being set in a newly created object."""
+         """Block special attributes/methods from being set in a newly created
+         object, to prevent user-controlled methods from being called during
+         deserialization"""
+@@ -40,11 +45,13 @@
+                 "blacklisted key '%s' in instance state found" % (key,), None)
+ 
+     def get_data(self):
++        """Construct and return the next document."""
+         # Construct and return the next document.
+         if self.check_node():
+             return self.construct_document(self.get_node())
+ 
+     def get_single_data(self):
++        """Ensure that the stream contains a single document and construct it."""
+         # Ensure that the stream contains a single document and construct it.
+         node = self.get_single_node()
+         if node is not None:
+@@ -52,6 +59,7 @@
+         return None
+ 
+     def construct_document(self, node):
++        """Construct the document from the given node."""
+         data = self.construct_object(node)
+         while self.state_generators:
+             state_generators = self.state_generators
+@@ -65,6 +73,7 @@
+         return data
+ 
+     def construct_object(self, node, deep=False):
++        """Construct an object from the given node."""
+         if node in self.constructed_objects:
+             return self.constructed_objects[node]
+         if deep:
+@@ -115,6 +124,7 @@
+         return data
+ 
+     def construct_scalar(self, node):
++        """Construct a scalar value from the given node."""
+         if not isinstance(node, ScalarNode):
+             raise ConstructorError(None, None,
+                     "expected a scalar node, but found %s" % node.id,
+@@ -122,6 +132,7 @@
+         return node.value
+ 
+     def construct_sequence(self, node, deep=False):
++        """Construct a sequence from the given node."""
+         if not isinstance(node, SequenceNode):
+             raise ConstructorError(None, None,
+                     "expected a sequence node, but found %s" % node.id,
+@@ -130,6 +141,7 @@
+                 for child in node.value]
+ 
+     def construct_mapping(self, node, deep=False):
++        """Construct a mapping from the given node."""
+         if not isinstance(node, MappingNode):
+             raise ConstructorError(None, None,
+                     "expected a mapping node, but found %s" % node.id,
+@@ -145,6 +157,7 @@
+         return mapping
+ 
+     def construct_pairs(self, node, deep=False):
++        """Construct a list of key-value pairs from the given node."""
+         if not isinstance(node, MappingNode):
+             raise ConstructorError(None, None,
+                     "expected a mapping node, but found %s" % node.id,
+@@ -158,12 +171,14 @@
+ 
+     @classmethod
+     def add_constructor(cls, tag, constructor):
++        """Add a constructor for the specified tag."""
+         if not 'yaml_constructors' in cls.__dict__:
+             cls.yaml_constructors = cls.yaml_constructors.copy()
+         cls.yaml_constructors[tag] = constructor
+ 
+     @classmethod
+     def add_multi_constructor(cls, tag_prefix, multi_constructor):
++        """Add a multi-constructor for the specified tag prefix."""
+         if not 'yaml_multi_constructors' in cls.__dict__:
+             cls.yaml_multi_constructors = cls.yaml_multi_constructors.copy()
+         cls.yaml_multi_constructors[tag_prefix] = multi_constructor
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/dumper.py	2026-09-27 06:09:36.749086834 -0400
+@@ -7,6 +7,8 @@
+ from .resolver import *
+ 
+ class BaseDumper(Emitter, Serializer, BaseRepresenter, BaseResolver):
++    def serialize(self, node):
++        return self.serialize_v2(node)
+ 
+     def __init__(self, stream,
+             default_style=None, default_flow_style=False,
+@@ -25,6 +27,8 @@
+         Resolver.__init__(self)
+ 
+ class SafeDumper(Emitter, Serializer, SafeRepresenter, Resolver):
++    def serialize(self, node):
++        return self.serialize_v2(node)
+ 
+     def __init__(self, stream,
+             default_style=None, default_flow_style=False,
+@@ -43,6 +47,8 @@
+         Resolver.__init__(self)
+ 
+ class Dumper(Emitter, Serializer, Representer, Resolver):
++    def serialize(self, node):
++        return self.serialize_v2(node)
+ 
+     def __init__(self, stream,
+             default_style=None, default_flow_style=False,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/emitter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py	2026-09-21 20:03:49.553236855 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/emitter.py	2026-09-27 06:10:49.816974049 -0400
+@@ -109,6 +109,8 @@
+         self.state = None
+ 
+     def emit(self, event):
++        if hasattr(event, 'serialize'):
++            event.serialize = event.serialize_v2
+         self.events.append(event)
+         while not self.need_more_events():
+             self.event = self.events.pop(0)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/__init__.py	2026-09-27 06:07:20.505297251 -0400
+@@ -205,7 +205,7 @@
+     if getvalue:
+         return getvalue()
+ 
+-def serialize(node, stream=None, Dumper=Dumper, **kwds):
++def serialize_v2(node, stream=None, Dumper=Dumper, **kwds):
+     """
+     Serialize a representation tree into a YAML stream.
+     If stream is None, return the produced string instead.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/loader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py	2026-09-21 20:03:49.565444174 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/loader.py	2026-09-27 06:14:49.550604296 -0400
+@@ -9,6 +9,8 @@
+ from .resolver import *
+ 
+ class BaseLoader(Reader, Scanner, Parser, Composer, BaseConstructor, BaseResolver):
++    def serialize(self, node):
++        return self.serialize_v2(node)
+ 
+     def __init__(self, stream):
+         Reader.__init__(self, stream)
+@@ -19,6 +21,8 @@
+         BaseResolver.__init__(self)
+ 
+ class FullLoader(Reader, Scanner, Parser, Composer, FullConstructor, Resolver):
++    def serialize(self, node):
++        return self.serialize_v2(node)
+ 
+     def __init__(self, stream):
+         Reader.__init__(self, stream)
+@@ -29,6 +33,8 @@
+         Resolver.__init__(self)
+ 
+ class SafeLoader(Reader, Scanner, Parser, Composer, SafeConstructor, Resolver):
++    def serialize(self, node):
++        return self.serialize_v2(node)
+ 
+     def __init__(self, stream):
+         Reader.__init__(self, stream)
+@@ -39,6 +45,8 @@
+         Resolver.__init__(self)
+ 
+ class Loader(Reader, Scanner, Parser, Composer, Constructor, Resolver):
++    def serialize(self, node):
++        return self.serialize_v2(node)
+ 
+     def __init__(self, stream):
+         Reader.__init__(self, stream)
+@@ -53,6 +61,8 @@
+ # FullLoad should be able to load almost all YAML safely. Loader is left intact
+ # to ensure backwards compatibility.
+ class UnsafeLoader(Reader, Scanner, Parser, Composer, Constructor, Resolver):
++    def serialize(self, node):
++        return self.serialize_v2(node)
+ 
+     def __init__(self, stream):
+         Reader.__init__(self, stream)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/serializer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py	2026-09-21 20:03:49.604638529 -0400
++++ /tmp/yqi10/mu/102994/g1/lane01/profiling_sandbox/yaml/serializer.py	2026-09-27 06:09:53.145061522 -0400
+@@ -43,7 +43,7 @@
+     #def __del__(self):
+     #    self.close()
+ 
+-    def serialize(self, node):
++    def serialize_v2(self, node):
+         if self.closed is None:
+             raise SerializerError("serializer is not opened")
+         elif self.closed:

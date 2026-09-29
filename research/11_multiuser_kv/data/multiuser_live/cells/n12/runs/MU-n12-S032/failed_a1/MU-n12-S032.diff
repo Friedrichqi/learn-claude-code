@@ -1,0 +1,2942 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/asyncio.py	2026-09-27 06:51:47.608938401 -0400
+@@ -1,103 +1,104 @@
+-"""
+-Asynchronous progress bar decorator for iterators.
+-Includes a default `range` iterator printing to `stderr`.
+-
+-Usage:
+->>> from tqdm.asyncio import trange, tqdm
+->>> async for i in trange(10):
+-...     ...
+-"""
+-import asyncio
+-from sys import version_info
++BUILD_TAG = 'profiling'
+ 
++from .std import TqdmExperimentalWarning
+ from .std import tqdm as std_tqdm
+ 
+-__author__ = {"github.com/": ["casperdcl"]}
+-__all__ = ['tqdm_asyncio', 'tarange', 'tqdm', 'trange']
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_asyncio', 'tqdm', 'trange']
+ 
++class tqdm_asyncio(std_tqdm):  # pragma: no cover
++    """Asynchronous-friendly version of tqdm for asyncio coroutines."""
++    # TODO: @classmethod: write() on asyncio?
++    def __init__(self, *args, **kwargs):
++        from collections import deque
++        from asyncio import iscoroutineiterator
++
++        import asyncio
++        import tqdm
++        kwargs = kwargs.copy()
++        kwargs['gui'] = False
++        colour = kwargs.pop('colour', None)
++        super().__init__(*args, **kwargs)
++
++        if self.disable:
++            return
++
++        warn("asyncio is experimental/alpha", TqdmExperimentalWarning, stacklevel=2)
++        self.loop = asyncio.get_event_loop()
++        self._futures = deque()
+ 
+-class tqdm_asyncio(std_tqdm):
+-    """
+-    Asynchronous-friendly version of tqdm.
+-    """
+-    def __init__(self, iterable=None, *args, **kwargs):
+-        super().__init__(iterable, *args, **kwargs)
+-        self.iterable_awaitable = False
+-        if iterable is not None:
+-            if hasattr(iterable, "__anext__"):
+-                self.iterable_next = iterable.__anext__
+-                self.iterable_awaitable = True
+-            elif hasattr(iterable, "__aiter__"):
+-                self.iterable_iterator = iterable.__aiter__()
+-                self.iterable_next = self.iterable_iterator.__anext__
+-                self.iterable_awaitable = True
+-            elif hasattr(iterable, "__next__"):
+-                self.iterable_next = iterable.__next__
+-            else:
+-                self.iterable_iterator = iter(iterable)
+-                self.iterable_next = self.iterable_iterator.__next__
++        if colour:
++            self.colour = colour
++
++    def __iter__(self):
++        """Make this class iterable."""
++        return self
+ 
+     def __aiter__(self):
++        """Make this class async iterable."""
+         return self
+ 
+     async def __anext__(self):
+-        try:
+-            if self.iterable_awaitable:
+-                res = await self.iterable_next()
+-            else:
+-                res = self.iterable_next()
+-            self.update()
+-            return res
+-        except StopIteration:
+-            self.close()
++        """Async next."""
++        if not self._total:
++            raise StopAsyncIteration
++        if self.n >= self.total:
+             raise StopAsyncIteration
+-        except BaseException:
+-            self.close()
+-            raise
+-
+-    def send(self, *args, **kwargs):
+-        return self.iterable.send(*args, **kwargs)
+-
+-    @classmethod
+-    def as_completed(cls, fs, *, loop=None, timeout=None, total=None, **tqdm_kwargs):
+-        """
+-        Wrapper for `asyncio.as_completed`.
+-        """
+-        if total is None:
+-            total = len(fs)
+-        kwargs = {}
+-        if version_info[:2] < (3, 10):
+-            kwargs['loop'] = loop
+-        yield from cls(asyncio.as_completed(fs, timeout=timeout, **kwargs),
+-                       total=total, **tqdm_kwargs)
+-
+-    @classmethod
+-    async def gather(cls, *fs, loop=None, timeout=None, total=None, return_exceptions=False,
+-                     **tqdm_kwargs):
+-        """
+-        Wrapper for `asyncio.gather`.
+-        """
+-        async def wrap_awaitable(i, f):
++        self.update(1)
++        return self.n
++
++    def update(self, n=1):
++        """Update the progress bar."""
++        super().update(n)
++        self._futures.append(self._loop.create_future())
++
++    def close(self):
++        """Close the progress bar."""
++        super().close()
++        for future in self._futures:
++            future.set_result(None)
++
++    def __enter__(self):
++        """Enter the context manager."""
++        return self
++
++    def __exit__(self, exc_type, exc_val, exc_tb):
++        """Exit the context manager."""
++        self.close()
++
++    def __aenter__(self):
++        """Enter the async context manager."""
++        return self
++
++    async def __aexit__(self, exc_type, exc_val, exc_tb):
++        """Exit the async context manager."""
++        self.close()
++        await self._futures.popleft()
++
++    def __del__(self):
++        """Delete the progress bar."""
++        self.close()
++
++    def __call__(self, func):
++        """Decorate a function."""
++        @wraps(func)
++        async def wrapper(*args, **kwargs):
++            self.__enter__()
+             try:
+-                return i, await f
+-            except Exception as e:  # noqa: BLE001
+-                if return_exceptions:
+-                    return i, e
+-                raise
+-
+-        ifs = [wrap_awaitable(i, f) for i, f in enumerate(fs)]
+-        res = [await f for f in cls.as_completed(ifs, loop=loop, timeout=timeout,
+-                                                 total=total, **tqdm_kwargs)]
+-        return [i for _, i in sorted(res)]
+-
+-
+-def tarange(*args, **kwargs):
+-    """
+-    A shortcut for `tqdm.asyncio.tqdm(range(*args), **kwargs)`.
+-    """
+-    return tqdm_asyncio(range(*args), **kwargs)
+-
+-
+-# Aliases
+-tqdm = tqdm_asyncio
+-trange = tarange
++                result = await func(*args, **kwargs)
++            finally:
++                self.__exit__(None, None, None)
++            return result
++        return wrapper
++
++    def __getstate__(self):
++        """Get the state for pickling."""
++        return self.__dict__
++
++    def __setstate__(self, state):
++        """Set the state for pickling."""
++        self.__dict__.update(state)
++
++    def __repr__(self):
++        """Return a string representation of the object."""
++        return f"<tqdm_asyncio {self.__dict__}>"
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/autonotebook.py	2026-09-27 06:52:50.758835281 -0400
+@@ -1,38 +1,72 @@
+-"""
+-Automatically choose between `tqdm.notebook` and `tqdm.std`.
++BUILD_TAG = 'profiling'
+ 
+-Usage:
+->>> from tqdm.autonotebook import trange, tqdm
+->>> for i in trange(10):
+-...     ...
+-"""
+-import os
+-import sys
+-from warnings import warn
+-
+-try:
+-    if 'ipykernel.zmqshell' in sys.modules:
+-        if any(i == 'QT_API' or i.startswith('SPYDER') for i in os.environ):
+-            raise ImportError("console")  # jupyter-qtconsole/spyder
+-        ipy = sys.modules['IPython'].get_ipython().__class__.__name__.lower()
+-        if 'qt' in ipy or 'spyder' in ipy:
+-            raise ImportError("console")  # older jupyter-qtconsole/spyder
+-        # jupyter-notebook/jupyterlab/vscode/binder/colab
+-    elif 'IPython.utils._process_emscripten' in sys.modules:
+-        pass  # jupyterlite (pyodide)/jupyterlite-xeus
+-    else:
+-        raise ImportError("console")  # ipython/jupyter-console
+-    from .notebook import WARN_NOIPYW, IProgress
+-    if IProgress is None:
+-        from .std import TqdmWarning
+-        warn(WARN_NOIPYW, TqdmWarning, stacklevel=2)
+-        raise ImportError('ipywidgets')
+-except Exception:
+-    from .std import tqdm, trange
+-else:  # pragma: no cover
+-    from .notebook import tqdm, trange
+-    from .std import TqdmExperimentalWarning
+-    warn("Using `tqdm.autonotebook.tqdm` in notebook mode."
+-         " Use `tqdm.tqdm` instead to force console mode"
+-         " (e.g. in jupyter console)", TqdmExperimentalWarning, stacklevel=2)
+-__all__ = ["tqdm", "trange"]
++from .std import TqdmExperimentalWarning
++from .std import tqdm as std_tqdm
++
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm', 'trange']
++
++class tqdm(std_tqdm):  # pragma: no cover
++    """Automatically selects between `tqdm.notebook` and `tqdm.std` depending on environment."""
++    def __init__(self, *args, **kwargs):
++        from IPython import get_ipython
++        from ipywidgets import widgets
++
++        kwargs = kwargs.copy()
++        kwargs['gui'] = True
++        colour = kwargs.pop('colour', None)
++        super().__init__(*args, **kwargs)
++
++        if self.disable:
++            return
++
++        warn("Autonotebook is experimental/alpha", TqdmExperimentalWarning, stacklevel=2)
++        self.ipython = get_ipython()
++        self.widget = widgets.IntProgress(value=0, min=0, max=self.total, description=self.desc, bar_style=self.colour or 'info')
++        self.ipython.display(self.widget)
++
++    def update(self, n=1):
++        """Update the progress bar."""
++        super().update(n)
++        self.widget.value = self.n
++
++    def close(self):
++        """Close the progress bar."""
++        super().close()
++        self.widget.close()
++
++    def __enter__(self):
++        """Enter the context manager."""
++        return self
++
++    def __exit__(self, exc_type, exc_val, exc_tb):
++        """Exit the context manager."""
++        self.close()
++
++    def __del__(self):
++        """Delete the progress bar."""
++        self.close()
++
++    def __call__(self, func):
++        """Decorate a function."""
++        @wraps(func)
++        def wrapper(*args, **kwargs):
++            self.__enter__()
++            try:
++                result = func(*args, **kwargs)
++            finally:
++                self.__exit__(None, None, None)
++            return result
++        return wrapper
++
++    def __getstate__(self):
++        """Get the state for pickling."""
++        return self.__dict__
++
++    def __setstate__(self, state):
++        """Set the state for pickling."""
++        self.__dict__.update(state)
++
++    def __repr__(self):
++        """Return a string representation of the object."""
++        return f"<tqdm_autonotebook {self.__dict__}>"
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/auto.py	2026-09-27 06:54:35.897660705 -0400
+@@ -1,40 +1,71 @@
+-"""
+-Enables multiple commonly used features.
+-
+-Method resolution order:
+-
+-- `tqdm.autonotebook` without import warnings
+-- `tqdm.asyncio`
+-- `tqdm.std` base class
+-
+-Usage:
+->>> from tqdm.auto import trange, tqdm
+->>> for i in trange(10):
+-...     ...
+-"""
+-import warnings
++BUILD_TAG = 'profiling'
+ 
+ from .std import TqdmExperimentalWarning
+ 
+-with warnings.catch_warnings():
+-    warnings.simplefilter("ignore", category=TqdmExperimentalWarning)
+-    from .autonotebook import tqdm as notebook_tqdm
+-
+-from .asyncio import tqdm as asyncio_tqdm
+-from .std import tqdm as std_tqdm
+-
+-if notebook_tqdm != std_tqdm:
+-    class tqdm(notebook_tqdm, asyncio_tqdm):  # pylint: disable=inconsistent-mro
+-        pass
+-else:
+-    tqdm = asyncio_tqdm
+-
+-
+-def trange(*args, **kwargs):
+-    """
+-    A shortcut for `tqdm.auto.tqdm(range(*args), **kwargs)`.
+-    """
+-    return tqdm(range(*args), **kwargs)
+-
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm', 'trange']
+ 
+-__all__ = ["tqdm", "trange"]
++class tqdm(std_tqdm):  # pragma: no cover
++    """Enables multiple commonly used features by combining `tqdm.autonotebook`, `tqdm.asyncio`, and `tqdm.std`."""
++    def __init__(self, *args, **kwargs):
++        from IPython import get_ipython
++        from ipywidgets import widgets
++
++        kwargs = kwargs.copy()
++        kwargs['gui'] = True
++        colour = kwargs.pop('colour', None)
++        super().__init__(*args, **kwargs)
++
++        if self.disable:
++            return
++
++        warn("Auto is experimental/alpha", TqdmExperimentalWarning, stacklevel=2)
++        self.ipython = get_ipython()
++        self.widget = widgets.IntProgress(value=0, min=0, max=self.total, description=self.desc, bar_style=self.colour or 'info')
++        self.ipython.display(self.widget)
++
++    def update(self, n=1):
++        """Update the progress bar."""
++        super().update(n)
++        self.widget.value = self.n
++
++    def close(self):
++        """Close the progress bar."""
++        super().close()
++        self.widget.close()
++
++    def __enter__(self):
++        """Enter the context manager."""
++        return self
++
++    def __exit__(self, exc_type, exc_val, exc_tb):
++        """Exit the context manager."""
++        self.close()
++
++    def __del__(self):
++        """Delete the progress bar."""
++        self.close()
++
++    def __call__(self, func):
++        """Decorate a function."""
++        @wraps(func)
++        def wrapper(*args, **kwargs):
++            self.__enter__()
++            try:
++                result = func(*args, **kwargs)
++            finally:
++                self.__exit__(None, None, None)
++            return result
++        return wrapper
++
++    def __getstate__(self):
++        """Get the state for pickling."""
++        return self.__dict__
++
++    def __setstate__(self, state):
++        """Set the state for pickling."""
++        self.__dict__.update(state)
++
++    def __repr__(self):
++        """Return a string representation of the object."""
++        return f"<tqdm_auto {self.__dict__}>"
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/cli.py	2026-09-27 06:55:17.083584571 -0400
+@@ -1,324 +1,60 @@
+-"""
+-Module version for monitoring CLI pipes (`... | python -m tqdm | ...`).
+-"""
+-import logging
+-import re
+-import sys
+-from ast import literal_eval
+-from textwrap import indent
++BUILD_TAG = 'profiling'
+ 
+ from .std import TqdmKeyError, TqdmTypeError, tqdm
+-from .version import __version__
+ 
+-__all__ = ["main"]
+-log = logging.getLogger(__name__)
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['main']
+ 
+-
+-def cast(val, typ):
+-    log.debug((val, typ))
+-    if " or " in typ:
+-        for t in typ.split(" or "):
+-            try:
+-                return cast(val, t)
+-            except TqdmTypeError:
+-                pass
+-        raise TqdmTypeError(f"{val} : {typ}")
+-
+-    # sys.stderr.write('\ndebug | `val:type`: `' + val + ':' + typ + '`.\n')
+-    if typ == 'bool':
+-        if (val == 'True') or (val == ''):
+-            return True
+-        if val == 'False':
+-            return False
+-        raise TqdmTypeError(val + ' : ' + typ)
+-    if typ == 'chr':
+-        if len(val) == 1:
+-            return val.encode()
+-        if re.match(r"^\\\w+$", val):
+-            return literal_eval(f'"{val}"').encode()
+-        raise TqdmTypeError(f"{val} : {typ}")
+-    if typ == 'str':
+-        return val
+-    if typ == 'int':
+-        try:
+-            return int(val)
+-        except ValueError as exc:
+-            raise TqdmTypeError(f"{val} : {typ}") from exc
+-    if typ == 'float':
+-        try:
+-            return float(val)
+-        except ValueError as exc:
+-            raise TqdmTypeError(f"{val} : {typ}") from exc
+-    raise TqdmTypeError(f"{val} : {typ}")
+-
+-
+-def posix_pipe(fin, fout, delim=b'\\n', buf_size=256,
+-               callback=lambda float: None, callback_len=True):
+-    """
+-    Params
+-    ------
+-    fin  : binary file with `read(buf_size : int)` method
+-    fout  : binary file with `write` (and optionally `flush`) methods.
+-    callback  : function(float), e.g.: `tqdm.update`
+-    callback_len  : If (default: True) do `callback(len(buffer))`.
+-      Otherwise, do `callback(data) for data in buffer.split(delim)`.
+-    """
+-    fp_write = fout.write
+-
+-    if not delim:
+-        while True:
+-            tmp = fin.read(buf_size)
+-
+-            # flush at EOF
+-            if not tmp:
+-                getattr(fout, 'flush', lambda: None)()
+-                return
+-
+-            fp_write(tmp)
+-            callback(len(tmp))
+-        # return
+-
+-    buf = b''
+-    len_delim = len(delim)
+-    # n = 0
+-    while True:
+-        tmp = fin.read(buf_size)
+-
+-        # flush at EOF
+-        if not tmp:
+-            if buf:
+-                fp_write(buf)
+-                if callback_len:
+-                    # n += 1 + buf.count(delim)
+-                    callback(1 + buf.count(delim))
+-                else:
+-                    for i in buf.split(delim):
+-                        callback(i)
+-            getattr(fout, 'flush', lambda: None)()
+-            return  # n
+-
+-        while True:
+-            i = tmp.find(delim)
+-            if i < 0:
+-                buf += tmp
+-                break
+-            fp_write(buf + tmp[:i + len(delim)])
+-            # n += 1
+-            callback(1 if callback_len else (buf + tmp[:i]))
+-            buf = b''
+-            tmp = tmp[i + len_delim:]
+-
+-
+-# ((opt, type), ... )
+-RE_OPTS = re.compile(r'\n {4}(\S+)\s{2,}:\s*([^,]+)')
+-# better split method assuming no positional args
+-RE_SHLEX = re.compile(r'\s*(?<!\S)--?([^\s=]+)(\s+|=|$)')
+-
+-# TODO: add custom support for some of the following?
+-UNSUPPORTED_OPTS = ('iterable', 'gui', 'out', 'file')
+-
+-# The 8 leading spaces are required for consistency
+-CLI_EXTRA_DOC = r"""
+-    Extra CLI Options
+-    -----------------
+-    name  : type, optional
+-        TODO: find out why this is needed.
+-    delim  : chr, optional
+-        Delimiting character [default: '\n']. Use '\0' for null.
+-        N.B.: on Windows systems, Python converts '\n' to '\r\n'.
+-    buf_size  : int, optional
+-        String buffer size in bytes [default: 256]
+-        used when `delim` is specified.
+-    bytes  : bool, optional
+-        If true, will count bytes, ignore `delim`, and default
+-        `unit_scale` to True, `unit_divisor` to 1024, and `unit` to 'B'.
+-    tee  : bool, optional
+-        If true, passes `stdin` to both `stderr` and `stdout`.
+-    update  : bool, optional
+-        If true, will treat input as newly elapsed iterations,
+-        i.e. numbers to pass to `update()`. Note that this is slow
+-        (~2e5 it/s) since every input must be decoded as a number.
+-    update_to  : bool, optional
+-        If true, will treat input as total elapsed iterations,
+-        i.e. numbers to assign to `self.n`. Note that this is slow
+-        (~2e5 it/s) since every input must be decoded as a number.
+-    null  : bool, optional
+-        If true, will discard input (no stdout).
+-    manpath  : str, optional
+-        Directory in which to install tqdm man pages.
+-    comppath  : str, optional
+-        Directory in which to place tqdm completion.
+-    log  : str, optional
+-        CRITICAL|FATAL|ERROR|WARN(ING)|[default: 'INFO']|DEBUG|NOTSET.
+-"""
+-
+-
+-def main(fp=sys.stderr, argv=None):
+-    """
+-    Parameters (internal use only)
+-    ---------
+-    fp  : file-like object for tqdm
+-    argv  : list (default: sys.argv[1:])
+-    """
+-    if argv is None:
+-        argv = sys.argv[1:]
+-    try:
+-        log_idx = argv.index('--log')
+-    except ValueError:
+-        for i in argv:
+-            if i.startswith('--log='):
+-                logLevel = i[len('--log='):]
+-                break
+-        else:
+-            logLevel = 'INFO'
+-    else:
+-        # argv.pop(log_idx)
+-        # logLevel = argv.pop(log_idx)
+-        logLevel = argv[log_idx + 1]
+-    logging.basicConfig(level=getattr(logging, logLevel),
+-                        format="%(levelname)s:%(module)s:%(lineno)d:%(message)s")
+-
+-    # py<3.13 doesn't dedent docstrings
+-    d = (tqdm.__doc__ if sys.version_info < (3, 13)
+-         else indent(tqdm.__doc__, "    ")) + CLI_EXTRA_DOC
+-
+-    opt_types = dict(RE_OPTS.findall(d))
+-    # opt_types['delim'] = 'chr'
+-
+-    for o in UNSUPPORTED_OPTS:
+-        opt_types.pop(o)
+-
+-    log.debug(sorted(opt_types.items()))
+-
+-    # d = RE_OPTS.sub(r'  --\1=<\1>  : \2', d)
+-    split = RE_OPTS.split(d)
+-    opt_types_desc = zip(split[1::3], split[2::3], split[3::3])
+-    d = ''.join(('\n  --{0}  : {2}{3}' if otd[1] == 'bool' else
+-                 '\n  --{0}=<{1}>  : {2}{3}').format(
+-                     otd[0].replace('_', '-'), otd[0], *otd[1:])
+-                for otd in opt_types_desc if otd[0] not in UNSUPPORTED_OPTS)
+-
+-    help_short = "Usage:\n  tqdm [--help | options]\n"
+-    d = help_short + """
+-Options:
+-  -h, --help     Print this help and exit.
+-  -v, --version  Print version and exit.
+-""" + d.strip('\n') + '\n'
+-
+-    # opts = docopt(d, version=__version__)
+-    if any(v in argv for v in ('-v', '--version')):
+-        sys.stdout.write(__version__ + '\n')
+-        sys.exit(0)
+-    elif any(v in argv for v in ('-h', '--help')):
+-        sys.stdout.write(d + '\n')
+-        sys.exit(0)
+-    elif argv and argv[0][:2] != '--':
+-        sys.stderr.write(f"Error:Unknown argument:{argv[0]}\n{help_short}")
+-
+-    argv = RE_SHLEX.split(' '.join(["tqdm"] + argv))
+-    opts = dict(zip(argv[1::3], argv[3::3]))
+-
+-    log.debug(opts)
+-    opts.pop('log', True)
+-
+-    tqdm_args = {'file': fp}
+-    try:
+-        for (o, v) in opts.items():
+-            o = o.replace('-', '_')
+-            try:
+-                tqdm_args[o] = cast(v, opt_types[o])
+-            except KeyError as e:
+-                raise TqdmKeyError(str(e))
+-        log.debug('args:' + str(tqdm_args))
+-
+-        delim_per_char = tqdm_args.pop('bytes', False)
+-        update = tqdm_args.pop('update', False)
+-        update_to = tqdm_args.pop('update_to', False)
+-        if sum((delim_per_char, update, update_to)) > 1:
+-            raise TqdmKeyError("Can only have one of --bytes --update --update_to")
+-    except Exception:
+-        fp.write("\nError:\n" + help_short)
+-        stdin, stdout_write = sys.stdin, sys.stdout.write
+-        for i in stdin:
+-            stdout_write(i)
+-        raise
++def main():
++    """Command-line interface for tqdm."""
++    import argparse
++    import sys
++
++    parser = argparse.ArgumentParser(description='tqdm CLI')
++    parser.add_argument('input', nargs='?', type=argparse.FileType('r'), default=sys.stdin, help='input file')
++    parser.add_argument('--output', '-o', type=argparse.FileType('w'), default=sys.stdout, help='output file')
++    parser.add_argument('--total', '-t', type=int, help='total number of lines')
++    parser.add_argument('--desc', '-d', type=str, help='description')
++    parser.add_argument('--unit', '-u', type=str, default='it', help='unit of measurement')
++    parser.add_argument('--unit_scale', '-s', action='store_true', help='scale unit')
++    parser.add_argument('--dynamic_ncols', '-n', action='store_true', help='dynamic ncols')
++    parser.add_argument('--ascii', '-a', action='store_true', help='use ASCII')
++    parser.add_argument('--colour', '-c', type=str, help='colour')
++    parser.add_argument('--leave', '-l', action='store_true', help='leave progress bar')
++    parser.add_argument('--position', '-p', type=int, help='position')
++    parser.add_argument('--file', '-f', type=str, default='stdout', help='file to write to')
++    parser.add_argument('--disable', '-D', action='store_true', help='disable progress bar')
++    parser.add_argument('--quiet', '-q', action='store_true', help='quiet mode')
++    parser.add_argument('--version', '-v', action='version', version='%(prog)s 4.64.1')
++
++    args = parser.parse_args()
++
++    if args.quiet:
++        args.file = 'none'
++
++    if args.file == 'stdout':
++        file = sys.stdout
++    elif args.file == 'stderr':
++        file = sys.stderr
+     else:
+-        buf_size = tqdm_args.pop('buf_size', 256)
+-        delim = tqdm_args.pop('delim', b'\\n')
+-        tee = tqdm_args.pop('tee', False)
+-        manpath = tqdm_args.pop('manpath', None)
+-        comppath = tqdm_args.pop('comppath', None)
+-        if tqdm_args.pop('null', False):
+-            class stdout:
+-                @staticmethod
+-                def write(_):
+-                    pass
+-        else:
+-            stdout = sys.stdout
+-            stdout = getattr(stdout, 'buffer', stdout)
+-        stdin = getattr(sys.stdin, 'buffer', sys.stdin)
+-        if manpath or comppath:
+-            try:  # py<3.9
+-                import importlib_resources as resources
+-            except ImportError:
+-                from importlib import resources
+-            from pathlib import Path
+-
+-            def cp(name, dst):
+-                """copy resource `name` to `dst`"""
+-                fi = resources.files('tqdm') / name
+-                dst.write_bytes(fi.read_bytes())
+-                log.info("written:%s", dst)
+-            if manpath is not None:
+-                cp('tqdm.1', Path(manpath) / 'tqdm.1')
+-            if comppath is not None:
+-                cp('completion.sh', Path(comppath) / 'tqdm_completion.sh')
+-            sys.exit(0)
+-        if tee:
+-            stdout_write = stdout.write
+-            fp_write = getattr(fp, 'buffer', fp).write
+-
+-            class stdout:  # pylint: disable=function-redefined
+-                @staticmethod
+-                def write(x):
+-                    with tqdm.external_write_mode(file=fp):
+-                        fp_write(x)
+-                    stdout_write(x)
+-        if delim_per_char:
+-            tqdm_args.setdefault('unit', 'B')
+-            tqdm_args.setdefault('unit_scale', True)
+-            tqdm_args.setdefault('unit_divisor', 1024)
+-            log.debug(tqdm_args)
+-            with tqdm(**tqdm_args) as t:
+-                posix_pipe(stdin, stdout, '', buf_size, t.update)
+-        elif delim == b'\\n':
+-            log.debug(tqdm_args)
+-            write = stdout.write
+-            if update or update_to:
+-                with tqdm(**tqdm_args) as t:
+-                    if update:
+-                        def callback(i):
+-                            t.update(literal_eval(i.decode()))
+-                    else:  # update_to
+-                        def callback(i):
+-                            t.update(literal_eval(i.decode()) - t.n)
+-                    for i in stdin:
+-                        write(i)
+-                        callback(i)
+-            else:
+-                for i in tqdm(stdin, **tqdm_args):
+-                    write(i)
+-        else:
+-            log.debug(tqdm_args)
+-            with tqdm(**tqdm_args) as t:
+-                callback_len = False
+-                if update:
+-                    def callback(i):
+-                        t.update(literal_eval(i.decode()))
+-                elif update_to:
+-                    def callback(i):
+-                        t.update(literal_eval(i.decode()) - t.n)
+-                else:
+-                    callback = t.update
+-                    callback_len = True
+-                posix_pipe(stdin, stdout, delim, buf_size, callback, callback_len)
++        file = open(args.file, 'w')
++
++    if args.disable:
++        args.file = 'none'
++
++    if args.total is None:
++        args.total = sum(1 for _ in args.input)
++
++    if args.total == 0:
++        print('Total is zero', file=sys.stderr)
++        sys.exit(1)
++
++    with tqdm(total=args.total, desc=args.desc, unit=args.unit, unit_scale=args.unit_scale,
++              dynamic_ncols=args.dynamic_ncols, ascii=args.ascii, colour=args.colour,
++              leave=args.leave, position=args.position, file=file, disable=args.disable) as pbar:
++        for line in args.input:
++            pbar.update(1)
++            args.output.write(line)
++
++    if args.file != 'none':
++        file.close()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/bells.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/bells.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/bells.py	2026-09-17 15:46:11.398479427 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/bells.py	2026-09-27 06:56:21.626465443 -0400
+@@ -1,28 +1,54 @@
+-"""
+-Even more features than `tqdm.auto` (all the bells & whistles):
++BUILD_TAG = 'profiling'
+ 
+-- `tqdm.auto`
+-- `tqdm.tqdm.pandas`
+-- `tqdm.contrib.slack`
+-    + uses `${TQDM_SLACK_TOKEN}` and `${TQDM_SLACK_CHANNEL}`
+-- `tqdm.contrib.telegram`
+-    + uses `${TQDM_TELEGRAM_TOKEN}` and `${TQDM_TELEGRAM_CHAT_ID}`
+-- `tqdm.contrib.discord`
+-    + uses `${TQDM_DISCORD_TOKEN}` and `${TQDM_DISCORD_CHANNEL_ID}`
+-"""
+-__all__ = ['tqdm', 'trange']
+-import warnings
+-from os import getenv
+-
+-if getenv("TQDM_SLACK_TOKEN") and getenv("TQDM_SLACK_CHANNEL"):
+-    from .slack import tqdm, trange
+-elif getenv("TQDM_TELEGRAM_TOKEN") and getenv("TQDM_TELEGRAM_CHAT_ID"):
+-    from .telegram import tqdm, trange
+-elif getenv("TQDM_DISCORD_TOKEN") and getenv("TQDM_DISCORD_CHANNEL_ID"):
+-    from .discord import tqdm, trange
+-else:
+-    from ..auto import tqdm, trange
+-
+-with warnings.catch_warnings():
+-    warnings.simplefilter("ignore", category=FutureWarning)
+-    tqdm.pandas()
++from ..auto import tqdm as tqdm_auto
++
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_pandas', 'tqdm_slack', 'tqdm_telegram', 'tqdm_discord']
++
++def tqdm_pandas(tclass, **tqdm_kwargs):
++    """Registers the given `tqdm` instance with pandas."""
++    from tqdm import TqdmDeprecationWarning
++
++    if isinstance(tclass, type) or (getattr(tclass, '__name__', '').startswith('tqdm_')):
++        TqdmDeprecationWarning(
++            "Please use `tqdm.pandas(...)` instead of `tqdm_pandas(tqdm, ...)`.",
++            fp_write=getattr(tqdm_kwargs.get('file', None), 'write', sys.stderr.write))
++        tclass.pandas(**tqdm_kwargs)
++    else:
++        TqdmDeprecationWarning(
++            "Please use `tqdm.pandas(...)` instead of `tqdm_pandas(tqdm(...))`.",
++            fp_write=getattr(tclass.fp, 'write', sys.stderr.write))
++        type(tclass).pandas(deprecated_t=tclass)
++
++def tqdm_slack(token, channel, username, icon_emoji, **kwargs):
++    """Sends progress updates to a Slack app."""
++    from slack_sdk import WebClient
++
++    client = WebClient(token=token)
++    client.chat_postMessage(channel=channel, text=f"Progress: {kwargs.get('desc', '')} {kwargs.get('n', 0)}/{kwargs.get('total', 0)}")
++
++    return tqdm_auto(**kwargs)
++
++def tqdm_telegram(bot_token, chat_id, **kwargs):
++    """Sends progress updates to a Telegram bot."""
++    import requests
++
++    url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
++    data = {
++        'chat_id': chat_id,
++        'text': f"Progress: {kwargs.get('desc', '')} {kwargs.get('n', 0)}/{kwargs.get('total', 0)}"
++    }
++    requests.post(url, data=data)
++
++    return tqdm_auto(**kwargs)
++
++def tqdm_discord(webhook_url, **kwargs):
++    """Sends progress updates to a Discord bot."""
++    import requests
++
++    data = {
++        'content': f"Progress: {kwargs.get('desc', '')} {kwargs.get('n', 0)}/{kwargs.get('total', 0)}"
++    }
++    requests.post(webhook_url, data=data)
++
++    return tqdm_auto(**kwargs)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/concurrent.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py	2026-09-17 15:46:11.404865043 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/concurrent.py	2026-09-27 06:57:32.211335414 -0400
+@@ -1,259 +1,32 @@
+-"""
+-Thin wrappers around `concurrent.futures`.
+-"""
+-import sys
+-from contextlib import contextmanager
+-from operator import length_hint
++BUILD_TAG = 'profiling'
+ 
+ from ..auto import tqdm as tqdm_auto
+-from ..std import TqdmWarning
+ 
+-__author__ = {"github.com/": ["casperdcl"]}
+-__all__ = ['thread_map', 'process_map', 'interpreter_map']
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_thread', 'tqdm_process']
+ 
+-
+-class _InterpreterLock:
+-    """Reentrant lock backed by a cross-interpreter queue."""
+-    from threading import get_ident
+-    from time import monotonic as _time
+-
+-    def __init__(self, queue):
+-        from threading import RLock
+-        self._queue = queue
+-        self._lock = RLock()
+-        self._owner = None
+-        self._depth = 0
+-
+-    def acquire(self, blocking=True, timeout=-1):
+-        from queue import Empty
+-        start = self._time()
+-        if timeout == -1:
+-            acquired = self._lock.acquire(blocking)
+-        else:
+-            acquired = self._lock.acquire(blocking, timeout)
+-        if not acquired:
+-            return False
+-        if self._depth:
+-            self._depth += 1
+-            return True
+-        try:
+-            if not blocking:
+-                self._queue.get_nowait()
+-            elif timeout == -1:
+-                self._queue.get()
+-            else:
+-                remaining = max(0, timeout - (self._time() - start))
+-                self._queue.get(timeout=remaining)
+-        except Empty:
+-            self._lock.release()
+-            return False
+-        self._owner = self.get_ident()
+-        self._depth = 1
+-        return True
+-
+-    def release(self):
+-        if self._owner != self.get_ident():
+-            raise RuntimeError("cannot release un-acquired lock")
+-        self._depth -= 1
+-        if not self._depth:
+-            self._owner = None
+-            self._queue.put(None)
+-        self._lock.release()
+-
+-    def __enter__(self):
+-        self.acquire()
+-        return self
+-
+-    def __exit__(self, *exc):
+-        self.release()
+-
+-
+-@contextmanager
+-def ensure_lock(tqdm_class, lock_name="", lock=None):
+-    """get (create if necessary) and then restore `tqdm_class`'s lock"""
+-    old_lock = getattr(tqdm_class, '_lock', None)  # don't create a new lock
+-    if lock is None:
+-        lock = old_lock or tqdm_class.get_lock()  # maybe create a new lock
+-    lock = getattr(lock, lock_name, lock)  # maybe subtype
+-    tqdm_class.set_lock(lock)
+-    yield lock
+-    if old_lock is None:
+-        del tqdm_class._lock
+-    else:
+-        tqdm_class.set_lock(old_lock)
+-
+-
+-def _get_interpreter_init(tqdm_class, lock_queue_id):
+-    """Return an initializer which bootstraps the parent import path and lock."""
+-    code = (
+-        "import sys\n"
+-        f"sys.path[:] = {sys.path!r}\n"
+-        "from concurrent import interpreters\n"
+-        "from importlib import import_module\n"
+-        "from tqdm.contrib.concurrent import _InterpreterLock\n"
+-        f"tqdm_class = import_module({tqdm_class.__module__!r})\n"
+-        f"for name in {tqdm_class.__qualname__.split('.')!r}:\n"
+-        "    tqdm_class = getattr(tqdm_class, name)\n"
+-        "tqdm_class.monitor_interval = 0\n"
+-        f"tqdm_class.set_lock(_InterpreterLock(interpreters.Queue({lock_queue_id!r})))")
+-    return exec, (code,)
+-
+-
+-def _min_map_len(iterables):
+-    """min(map(length_hint, iterables), default=0)"""
+-    return min((n for it in iterables if (n := length_hint(it, -1)) >= 0), default=0)
+-
+-
+-def _executor_map(
+-    PoolExecutor, fn, *iterables, max_workers=None, timeout=None, chunksize=1, lock_name="",
+-    tqdm_class=tqdm_auto, smoothing=0.0, _lock=None, _initializer=None, _initargs=None,
+-    **tqdm_kwargs
+-):
+-    """
+-    Implementation of `thread_map`, `process_map` and `interpreter_map`.
+-
+-    Parameters
+-    ----------
+-    max_workers  : int
+-    timeout  : int
+-    buffersize  : int
+-        Requires Python>=3.14.
+-    thread_name_prefix  : str
+-    max_tasks_per_child  : int
+-    mp_context  : str
+-    """
+-    kwargs = tqdm_kwargs.copy()
+-    if 'total' not in kwargs:
+-        kwargs['total'] = _min_map_len(iterables)
+-    map_kwargs = {}
+-    if 'buffersize' in kwargs:
+-        map_kwargs['buffersize'] = kwargs.pop('buffersize')
+-    pool_kwargs = {}
+-    for k in ('thread_name_prefix', 'max_tasks_per_child', 'mp_context'):
+-        if k in kwargs:
+-            pool_kwargs[k] = kwargs.pop(k)
+-    dynamic_miniters = None
+-    if kwargs['total'] and 'miniters' not in kwargs:
+-        try:
+-            from os import process_cpu_count as cpu_count
+-        except ImportError:
+-            from os import cpu_count
+-        # thread & process pools have different default workers, but we KISS here
+-        rough_max = max_workers or min(32, (cpu_count() or 1) + 4)
+-        if kwargs['total'] > rough_max:
+-            kwargs['miniters'] = rough_max
+-            dynamic_miniters = True
+-    with ensure_lock(tqdm_class, lock_name=lock_name, lock=_lock) as lk:
+-        # share lock in case workers are already using `tqdm`
+-        if _initializer is None:
+-            _initializer = tqdm_class.set_lock
+-            _initargs = (lk,)
+-        with PoolExecutor(max_workers=max_workers, initializer=_initializer, initargs=_initargs,
+-                          **pool_kwargs) as ex:
+-            with tqdm_class(smoothing=smoothing, **kwargs) as pbar:
+-                if dynamic_miniters is not None:
+-                    pbar.dynamic_miniters = True
+-                orisubmit = ex.submit
+-
+-                def patchsubmit(*args, **kwargs):
+-                    fut = orisubmit(*args, **kwargs)
+-                    fut.add_done_callback(lambda _: pbar.update())
+-                    return fut
+-                ex.submit = patchsubmit
+-                return list(ex.map(
+-                    fn, *iterables, timeout=timeout, chunksize=chunksize, **map_kwargs))
+-
+-
+-def thread_map(fn, *iterables, **tqdm_kwargs):
+-    """
+-    Equivalent of `list(map(fn, *iterables))`
+-    driven by `concurrent.futures.ThreadPoolExecutor`.
+-
+-    Parameters
+-    ----------
+-    max_workers  : int, optional
+-        Maximum number of workers to spawn; passed to `concurrent.futures.ThreadPoolExecutor`.
+-    thread_name_prefix  : str, optional
+-        Passed to `concurrent.futures.ThreadPoolExecutor` [default: ''].
+-    timeout  : int or float, optional
+-        Seconds to wait before raising `TimeoutError` if `__next__` is called and the
+-        result isn't available. [default: None].
+-    buffersize  : int, optional
+-        Requires Python>=3.14 [default: None].
+-    tqdm_class  : optional
+-        `tqdm` class to use for bars [default: tqdm.auto.tqdm].
+-    smoothing  : float, optional
+-        Passed to `tqdm_class`; the [default: 0] is average (due to erratic update frequency).
+-    lock_name  : str, optional
+-        Member of `tqdm_class.get_lock()` to use [default: ''].
+-    """
++def tqdm_thread(futures, **tqdm_kwargs):
++    """Provides a thin wrapper around `concurrent.futures.ThreadPoolExecutor` to enable progress bars for threading tasks."""
+     from concurrent.futures import ThreadPoolExecutor
+-    return _executor_map(ThreadPoolExecutor, fn, *iterables, **tqdm_kwargs)
+-
+-
+-def interpreter_map(fn, *iterables, **tqdm_kwargs):
+-    """
+-    Equivalent of `list(map(fn, *iterables))`
+-    driven by `concurrent.futures.InterpreterPoolExecutor` (Python 3.14+).
+ 
+-    Parameters
+-    ----------
+-    Same as `thread_map`.
++    with ThreadPoolExecutor() as executor:
++        futures = [executor.submit(future) for future in futures]
++        with tqdm_auto(total=len(futures), **tqdm_kwargs) as pbar:
++            for future in concurrent.futures.as_completed(futures):
++                pbar.update(1)
++                yield future.result()
+ 
+-    Notes
+-    -----
+-    `fn`, its arguments, and its return values must be pickleable.
+-    Worker progress bars using the same `tqdm_class` share a cross-interpreter write lock.
+-    """
+-    from concurrent import interpreters
+-    from concurrent.futures import InterpreterPoolExecutor
+-    lock_queue = interpreters.create_queue()
+-    lock_queue.put(None)
+-    tqdm_class = tqdm_kwargs.get("tqdm_class", tqdm_auto)
+-    initializer, initargs = _get_interpreter_init(tqdm_class, lock_queue.id)
+-    return _executor_map(
+-        InterpreterPoolExecutor, fn, *iterables, _lock=_InterpreterLock(lock_queue),
+-        _initializer=initializer, _initargs=initargs, **tqdm_kwargs)
++    return futures
+ 
++def tqdm_process(futures, **tqdm_kwargs):
++    """Provides a thin wrapper around `concurrent.futures.ProcessPoolExecutor` to enable progress bars for multiprocessing tasks."""
++    from concurrent.futures import ProcessPoolExecutor
+ 
+-def process_map(fn, *iterables, lock_name="mp_lock", **tqdm_kwargs):
+-    """
+-    Equivalent of `list(map(fn, *iterables))`
+-    driven by `concurrent.futures.ProcessPoolExecutor`.
++    with ProcessPoolExecutor() as executor:
++        futures = [executor.submit(future) for future in futures]
++        with tqdm_auto(total=len(futures), **tqdm_kwargs) as pbar:
++            for future in concurrent.futures.as_completed(futures):
++                pbar.update(1)
++                yield future.result()
+ 
+-    Parameters
+-    ----------
+-    max_workers  : int, optional
+-        Maximum number of workers to spawn; passed to `concurrent.futures.ProcessPoolExecutor`.
+-    timeout  : int or float, optional
+-        Seconds to wait before raising `TimeoutError` if `__next__` is called and the
+-        result isn't available. [default: None].
+-    chunksize  : int, optional
+-        Approximate size of chunks sent to worker processes; passed to
+-        `concurrent.futures.ProcessPoolExecutor.map`. [default: 1].
+-    buffersize  : int, optional
+-        Requires Python>=3.14 [default: None].
+-    max_tasks_per_child  : int, optional
+-        Maximum number of tasks a worker process can complete before being replaced
+-        with a new process; passed to `concurrent.futures.ProcessPoolExecutor`.
+-    mp_context  : multiprocessing.BaseContext, optional
+-        Multiprocessing context to use, e.g. `multiprocessing.get_context('fork')`.
+-    lock_name  : str, optional
+-        Member of `tqdm_class.get_lock()` to use [default: mp_lock].
+-    tqdm_class  : optional
+-        `tqdm` class to use for bars [default: tqdm.auto.tqdm].
+-    smoothing  : float, optional
+-        Passed to `tqdm_class`; the [default: 0] is average (due to erratic update frequency).
+-    """
+-    from concurrent.futures import ProcessPoolExecutor
+-    if iterables and 'chunksize' not in tqdm_kwargs:
+-        # default `chunksize=1` has poor performance for large iterables
+-        # (most time spent dispatching items to workers).
+-        shortest_iterable_len = _min_map_len(iterables)
+-        if shortest_iterable_len > 1000:
+-            from warnings import warn
+-            warn("Iterable length %d > 1000 but `chunksize` is not set."
+-                 " This may seriously degrade multiprocess performance."
+-                 " Set `chunksize=1` or more." % shortest_iterable_len,
+-                 TqdmWarning, stacklevel=2)
+-    return _executor_map(ProcessPoolExecutor, fn, *iterables, lock_name=lock_name, **tqdm_kwargs)
++    return futures
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/discord.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/discord.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/discord.py	2026-09-17 15:46:11.409577251 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/discord.py	2026-09-27 06:57:50.684301427 -0400
+@@ -1,155 +1,17 @@
+-"""
+-Sends updates to a Discord bot.
+-
+-Usage:
+->>> from tqdm.contrib.discord import tqdm, trange
+->>> for i in trange(10, token='{token}', channel_id='{channel_id}'):
+-...     ...
+-
+-![screenshot](https://tqdm.github.io/img/screenshot-discord.png)
+-"""
+-from warnings import warn
+-
+-from requests import Session
+-from requests.utils import default_user_agent
++BUILD_TAG = 'profiling'
+ 
+ from ..auto import tqdm as tqdm_auto
+-from ..std import TqdmWarning
+-from ..utils import envwrap
+-from ..version import __version__
+-from .utils_worker import MonoWorker
+-
+-__author__ = {"github.com/": ["casperdcl", "guigoruiz1"]}
+-__all__ = ['DiscordIO', 'tqdm_discord', 'tdrange', 'tqdm', 'trange']
+-
+-
+-class DiscordIO(MonoWorker):
+-    """Non-blocking file-like IO using a Discord Bot."""
+-    API = 'https://discord.com/api/v10'
+-    UA = f"tqdm (https://tqdm.github.io, {__version__}) {default_user_agent()}"
+-
+-    def __init__(self, token, channel_id):
+-        """Creates a new message in the given `channel_id`."""
+-        super().__init__()
+-        self.token = token
+-        self.channel_id = channel_id
+-        self.session = Session()
+-        self.text = self.__class__.__name__
+-        self.message_id  # pylint: disable=pointless-statement
+-
+-    @property
+-    def message_id(self):
+-        if hasattr(self, '_message_id'):
+-            return self._message_id  # pylint: disable=access-member-before-definition
+-        try:
+-            req = self.session.post(
+-                f'{self.API}/channels/{self.channel_id}/messages',
+-                headers={'Authorization': f'Bot {self.token}', 'User-Agent': self.UA},
+-                json={'content': f"`{self.text}`"})
+-            res = req.json()
+-            req.raise_for_status()
+-        except Exception as e:
+-            if req.status_code == 429:
+-                warn("Creation rate limit: try increasing `mininterval`.",
+-                     TqdmWarning, stacklevel=2)
+-            else:
+-                tqdm_auto.write(str(e))
+-        else:
+-            self._message_id = res['id']
+-            return self._message_id
+-
+-    def write(self, s):
+-        """Replaces internal `message_id`'s text with `s`."""
+-        if not s:
+-            s = "..."
+-        s = s.replace('\r', '').strip()
+-        if s == self.text:
+-            return  # avoid duplicate message Bot error
+-        message_id = self.message_id
+-        if message_id is None:
+-            return
+-        self.text = s
+-        try:
+-            future = self.submit(
+-                self.session.patch,
+-                f'{self.API}/channels/{self.channel_id}/messages/{message_id}',
+-                headers={'Authorization': f'Bot {self.token}', 'User-Agent': self.UA},
+-                json={'content': f"`{self.text}`"})
+-        except Exception as e:
+-            tqdm_auto.write(str(e))
+-        else:
+-            return future
+-
+-    def delete(self):
+-        """Deletes internal `message_id`."""
+-        try:
+-            future = self.submit(
+-                self.session.delete,
+-                f'{self.API}/channels/{self.channel_id}/messages/{self.message_id}',
+-                headers={'Authorization': f'Bot {self.token}', 'User-Agent': self.UA})
+-        except Exception as e:
+-            tqdm_auto.write(str(e))
+-        else:
+-            return future
+-
+-
+-class tqdm_discord(tqdm_auto):  # pylint: disable=inconsistent-mro
+-    """
+-    Standard `tqdm.auto.tqdm` but also sends updates to a Discord Bot.
+-    May take a few seconds to create (`__init__`).
+-
+-    - create a discord bot (not public, no requirement of OAuth2 code
+-      grant, only send message permissions) & invite it to a channel:
+-      <https://discordpy.readthedocs.io/en/latest/discord.html>
+-    - copy the bot `{token}` & `{channel_id}` and paste below
+-
+-    >>> from tqdm.contrib.discord import tqdm, trange
+-    >>> for i in tqdm(iterable, token='{token}', channel_id='{channel_id}'):
+-    ...     ...
+-    """
+-    @envwrap("tqdm", "discord", is_method=True)
+-    def __init__(self, *args, token=None, channel_id=None, **kwargs):
+-        """
+-        Parameters
+-        ----------
+-        token  : str, required. Discord bot token
+-            [default: ${TQDM_DISCORD_TOKEN}].
+-        channel_id  : int, required. Discord channel ID
+-            [default: ${TQDM_DISCORD_CHANNEL_ID}].
+-
+-        See `tqdm.auto.tqdm.__init__` for other parameters.
+-        """
+-        if not kwargs.get('disable'):
+-            kwargs = kwargs.copy()
+-            self.dio = DiscordIO(token, channel_id)
+-        super().__init__(*args, **kwargs)
+-
+-    def display(self, **kwargs):  # pylint: disable=arguments-differ
+-        super().display(**kwargs)
+-        fmt = self.format_dict
+-        if fmt.get('bar_format', None):
+-            fmt['bar_format'] = fmt['bar_format'].replace(
+-                '<bar/>', '{bar:10u}').replace('{bar}', '{bar:10u}')
+-        self.dio.write(self.format_meter(**fmt))
+-
+-    def clear(self, *args, **kwargs):
+-        super().clear(*args, **kwargs)
+-        if not self.disable:
+-            self.dio.write("")
+-
+-    def close(self):
+-        if self.disable:
+-            return
+-        super().close()
+-        if not (self.leave or (self.leave is None and self.pos == 0)):
+-            self.dio.delete()
+-
+ 
+-def tdrange(*args, **kwargs):
+-    """Shortcut for `tqdm.contrib.discord.tqdm(range(*args), **kwargs)`."""
+-    return tqdm_discord(range(*args), **kwargs)
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_discord']
+ 
++def tqdm_discord(webhook_url, **kwargs):
++    """Sends progress updates to a Discord bot. It allows for real-time progress tracking in Discord channels."""
++    import requests
++
++    data = {
++        'content': f"Progress: {kwargs.get('desc', '')} {kwargs.get('n', 0)}/{kwargs.get('total', 0)}"
++    }
++    requests.post(webhook_url, data=data)
+ 
+-# Aliases
+-tqdm = tqdm_discord
+-trange = tdrange
++    return tqdm_auto(**kwargs)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py	2026-09-17 15:46:11.390563310 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/__init__.py	2026-09-27 06:57:55.122293264 -0400
+@@ -1,91 +1,6 @@
+-"""
+-Thin wrappers around common functions.
+-
+-Subpackages contain potentially unstable extensions.
+-"""
+-from warnings import warn
++BUILD_TAG = 'profiling'
+ 
+ from ..auto import tqdm as tqdm_auto
+-from ..std import TqdmDeprecationWarning, tqdm
+-from ..utils import ObjectWrapper
+-
+-__author__ = {"github.com/": ["casperdcl"]}
+-__all__ = ['tenumerate', 'tzip', 'tmap']
+-
+-
+-class DummyTqdmFile(ObjectWrapper):
+-    """Dummy file-like that will write to tqdm"""
+-
+-    def __init__(self, wrapped):
+-        super().__init__(wrapped)
+-        self._buf = []
+-
+-    def write(self, x, nolock=False):
+-        nl = b"\n" if isinstance(x, bytes) else "\n"
+-        pre, sep, post = x.rpartition(nl)
+-        if sep:
+-            blank = type(nl)()
+-            tqdm.write(blank.join(self._buf + [pre, sep]),
+-                       end=blank, file=self._wrapped, nolock=nolock)
+-            self._buf = [post]
+-        else:
+-            self._buf.append(x)
+-
+-    def __del__(self):
+-        if self._buf:
+-            blank = type(self._buf[0])()
+-            try:
+-                tqdm.write(blank.join(self._buf), end=blank, file=self._wrapped)
+-            except (OSError, ValueError):
+-                pass
+-
+-
+-def builtin_iterable(func):
+-    """Returns `func`"""
+-    warn("This function has no effect, and will be removed in tqdm==5.0.0",
+-         TqdmDeprecationWarning, stacklevel=2)
+-    return func
+-
+-
+-def tenumerate(iterable, start=0, total=None, tqdm_class=tqdm_auto, **tqdm_kwargs):
+-    """
+-    Equivalent of `numpy.ndenumerate` or builtin `enumerate`.
+-
+-    Parameters
+-    ----------
+-    tqdm_class  : [default: tqdm.auto.tqdm].
+-    """
+-    try:
+-        import numpy as np
+-    except ImportError:
+-        pass
+-    else:
+-        if isinstance(iterable, np.ndarray):
+-            return tqdm_class(np.ndenumerate(iterable), total=total or iterable.size,
+-                              **tqdm_kwargs)
+-    return enumerate(tqdm_class(iterable, total=total, **tqdm_kwargs), start)
+-
+-
+-def tzip(iter1, *iter2plus, **tqdm_kwargs):
+-    """
+-    Equivalent of builtin `zip`.
+-
+-    Parameters
+-    ----------
+-    tqdm_class  : [default: tqdm.auto.tqdm].
+-    """
+-    kwargs = tqdm_kwargs.copy()
+-    tqdm_class = kwargs.pop("tqdm_class", tqdm_auto)
+-    yield from zip(tqdm_class(iter1, **kwargs), *iter2plus)
+-
+-
+-def tmap(function, *sequences, **tqdm_kwargs):
+-    """
+-    Equivalent of builtin `map`.
+ 
+-    Parameters
+-    ----------
+-    tqdm_class  : [default: tqdm.auto.tqdm].
+-    """
+-    for i in tzip(*sequences, **tqdm_kwargs):
+-        yield function(*i)
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_auto']
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/itertools.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py	2026-09-17 15:46:11.415861929 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/itertools.py	2026-09-27 06:58:12.664261009 -0400
+@@ -1,92 +1,24 @@
+-"""
+-Thin wrappers around `itertools`.
+-"""
+-import itertools
+-import math
++BUILD_TAG = 'profiling'
+ 
+ from ..auto import tqdm as tqdm_auto
+ 
+-__author__ = {"github.com/": ["casperdcl"]}
+-__all__ = [
+-    'chain', 'product', 'permutations', 'combinations', 'combinations_with_replacement', 'batched']
+-
+-
+-def chain(*iterables, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.chain`."""
+-    if total is None:
+-        try:
+-            total = sum(map(len, iterables))
+-        except (TypeError, AttributeError):
+-            pass
+-    return tqdm_class(itertools.chain(*iterables), total=total, **kwargs)
+-
+-
+-def product(*iterables, repeat=1, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.product`."""
+-    if total is None:
+-        try:
+-            lens = list(map(len, iterables))
+-        except (TypeError, AttributeError):
+-            pass
+-        else:
+-            total = math.prod(lens) ** repeat
+-    yield from tqdm_class(itertools.product(*iterables, repeat=repeat), total=total, **kwargs)
+-
+-
+-def permutations(iterable, r=None, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.permutations`."""
+-    if total is None:
+-        try:
+-            n = len(iterable)
+-        except (TypeError, AttributeError):
+-            pass
+-        else:
+-            r = n if r is None else r
+-            if r > n:
+-                total = 0
+-            else:
+-                total = math.perm(n, r)
+-    return tqdm_class(itertools.permutations(iterable, r), total=total, **kwargs)
+-
+-
+-def combinations(iterable, r, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.combinations`."""
+-    if total is None:
+-        try:
+-            n = len(iterable)
+-        except (TypeError, AttributeError):
+-            pass
+-        else:
+-            if r > n:
+-                total = 0
+-            else:
+-                total = math.comb(n, r)
+-    return tqdm_class(itertools.combinations(iterable, r), total=total, **kwargs)
+-
+-
+-def combinations_with_replacement(iterable, r, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.combinations_with_replacement`."""
+-    if total is None:
+-        try:
+-            n = len(iterable)
+-        except (TypeError, AttributeError):
+-            pass
+-        else:
+-            total = 1
+-            for i in range(n+r-1, n-1, -1):
+-                total *= i
+-            for i in range(1, r+1):
+-                total //= i
+-    return tqdm_class(itertools.combinations_with_replacement(iterable, r), total=total, **kwargs)
+-
+-
+-def batched(iterable, n, total=None, tqdm_class=tqdm_auto, **kwargs):
+-    """Equivalent of `itertools.batched`."""
+-    if total is None:
+-        try:
+-            total = len(iterable)
+-        except (TypeError, AttributeError):
+-            pass
+-    return tqdm_class(itertools.batched(iterable, n), unit_scale=n,
+-                      total=(total+n-1) // n if total is not None else None,
+-                      **kwargs)
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_chain', 'tqdm_product', 'tqdm_permutations']
++
++def tqdm_chain(*args, **kwargs):
++    """Provides wrappers around `itertools.chain` to allow for progress bars on these operations."""
++    from itertools import chain
++
++    return tqdm_auto(chain(*args), **kwargs)
++
++def tqdm_product(*args, **kwargs):
++    """Provides wrappers around `itertools.product` to allow for progress bars on these operations."""
++    from itertools import product
++
++    return tqdm_auto(product(*args), **kwargs)
++
++def tqdm_permutations(*args, **kwargs):
++    """Provides wrappers around `itertools.permutations` to allow for progress bars on these operations."""
++    from itertools import permutations
++
++    return tqdm_auto(permutations(*args), **kwargs)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/logging.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/logging.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/logging.py	2026-09-17 15:46:11.421909169 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/logging.py	2026-09-27 06:58:29.390230270 -0400
+@@ -1,128 +1,26 @@
+-"""
+-Helper functionality for interoperability with stdlib `logging`.
+-"""
+-import logging
+-import sys
+-from contextlib import contextmanager
+-
+-try:
+-    from typing import Iterator, List, Optional, Type  # noqa: F401, pylint: disable=unused-import
+-except ImportError:
+-    pass
++BUILD_TAG = 'profiling'
+ 
+ from ..std import tqdm as std_tqdm
+ 
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_logging']
+ 
+-class _TqdmLoggingHandler(logging.StreamHandler):
+-    def __init__(
+-        self,
+-        tqdm_class=std_tqdm  # type: Type[std_tqdm]
+-    ):
+-        super().__init__()
+-        self.tqdm_class = tqdm_class
+-
+-    def emit(self, record):
+-        try:
+-            msg = self.format(record)
+-            self.tqdm_class.write(msg, file=self.stream)
+-            self.flush()
+-        except (KeyboardInterrupt, SystemExit):
+-            raise
+-        except:  # noqa pylint: disable=bare-except
+-            self.handleError(record)
+-
+-
+-def _is_console_logging_handler(handler):
+-    return (isinstance(handler, logging.StreamHandler)
+-            and handler.stream in {sys.stdout, sys.stderr})
+-
+-
+-def _get_first_found_console_logging_handler(handlers):
+-    for handler in handlers:
+-        if _is_console_logging_handler(handler):
+-            return handler
+-
+-
+-@contextmanager
+-def logging_redirect_tqdm(
+-    loggers=None,  # type: Optional[List[logging.Logger]],
+-    tqdm_class=std_tqdm  # type: Type[std_tqdm]
+-):
+-    # type: (...) -> Iterator[None]
+-    """
+-    Context manager redirecting console logging to `tqdm.write()`, leaving
+-    other logging handlers (e.g. log files) unaffected.
+-
+-    Parameters
+-    ----------
+-    loggers  : list, optional
+-      Which handlers to redirect (default: [logging.root]).
+-    tqdm_class  : optional
+-
+-    Example
+-    -------
+-    ```python
+-    import logging
+-    from tqdm import trange
+-    from tqdm.contrib.logging import logging_redirect_tqdm
+-
+-    LOG = logging.getLogger(__name__)
+-
+-    if __name__ == '__main__':
+-        logging.basicConfig(level=logging.INFO)
+-        with logging_redirect_tqdm():
+-            for i in trange(9):
+-                if i == 4:
+-                    LOG.info("console logging redirected to `tqdm.write()`")
+-        # logging restored
+-    ```
+-    """
+-    if loggers is None:
+-        loggers = [logging.root]
+-    original_handlers_list = [logger.handlers for logger in loggers]
+-    try:
+-        for logger in loggers:
+-            tqdm_handler = _TqdmLoggingHandler(tqdm_class)
+-            orig_handler = _get_first_found_console_logging_handler(logger.handlers)
+-            if orig_handler is not None:
+-                tqdm_handler.setFormatter(orig_handler.formatter)
+-                tqdm_handler.stream = orig_handler.stream
+-                for log_filter in orig_handler.filters:
+-                    tqdm_handler.addFilter(log_filter)
+-            logger.handlers = [
+-                handler for handler in logger.handlers
+-                if not _is_console_logging_handler(handler)] + [tqdm_handler]
+-        yield
+-    finally:
+-        for logger, original_handlers in zip(loggers, original_handlers_list):
+-            logger.handlers = original_handlers
+-
+-
+-@contextmanager
+-def tqdm_logging_redirect(
+-    *args,
+-    # loggers=None,  # type: Optional[List[logging.Logger]]
+-    # tqdm=None,  # type: Optional[Type[tqdm.tqdm]]
+-    **kwargs
+-):
+-    # type: (...) -> Iterator[None]
+-    """
+-    Convenience shortcut for:
+-    ```python
+-    with tqdm_class(*args, **tqdm_kwargs) as pbar:
+-        with logging_redirect_tqdm(loggers=loggers, tqdm_class=tqdm_class):
+-            yield pbar
+-    ```
+-
+-    Parameters
+-    ----------
+-    tqdm_class  : optional, (default: tqdm.std.tqdm).
+-    loggers  : optional, list.
+-    **tqdm_kwargs  : passed to `tqdm_class`.
+-    """
+-    tqdm_kwargs = kwargs.copy()
+-    loggers = tqdm_kwargs.pop('loggers', None)
+-    tqdm_class = tqdm_kwargs.pop('tqdm_class', std_tqdm)
+-    with tqdm_class(*args, **tqdm_kwargs) as pbar:
+-        with logging_redirect_tqdm(loggers=loggers, tqdm_class=tqdm_class):
+-            yield pbar
++def tqdm_logging(logger, **kwargs):
++    """Integrates `tqdm` with Python's `logging` module to allow progress bars to be displayed in log outputs."""
++    from tqdm import TqdmExperimentalWarning
++
++    class TqdmLoggingHandler(std_tqdm):
++        """A logging handler that uses tqdm for output."""
++        def __init__(self, *args, **kwargs):
++            super().__init__(*args, **kwargs)
++            self.logger = logger
++
++        def emit(self, record):
++            """Emit a record."""
++            try:
++                msg = self.format(record)
++                self.logger.info(msg)
++            except Exception:
++                self.handleError(record)
++
++    return TqdmLoggingHandler(**kwargs)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/slack.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/slack.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/slack.py	2026-09-17 15:46:11.427216150 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/slack.py	2026-09-27 06:58:39.832211087 -0400
+@@ -1,119 +1,15 @@
+-"""
+-Sends updates to a Slack app.
+-
+-Usage:
+->>> from tqdm.contrib.slack import tqdm, trange
+->>> for i in trange(10, token='{token}', channel='{channel}'):
+-...     ...
+-
+-![screenshot](https://tqdm.github.io/img/screenshot-slack.png)
+-"""
+-import logging
+-
+-try:
+-    from slack_sdk import WebClient
+-except ImportError:
+-    raise ImportError("Please `pip install slack-sdk`")
++BUILD_TAG = 'profiling'
+ 
+ from ..auto import tqdm as tqdm_auto
+-from ..utils import envwrap
+-from .utils_worker import MonoWorker
+-
+-__author__ = {"github.com/": ["0x2b3bfa0", "casperdcl"]}
+-__all__ = ['SlackIO', 'tqdm_slack', 'tsrange', 'tqdm', 'trange']
+-
+-
+-class SlackIO(MonoWorker):
+-    """Non-blocking file-like IO using a Slack app."""
+-    def __init__(self, token, channel):
+-        """Creates a new message in the given `channel`."""
+-        super().__init__()
+-        self.client = WebClient(token=token)
+-        self.text = self.__class__.__name__
+-        try:
+-            self.message = self.client.chat_postMessage(channel=channel, text=self.text)
+-        except Exception as e:
+-            tqdm_auto.write(str(e))
+-            self.message = None
+-
+-    def write(self, s):
+-        """Replaces internal `message`'s text with `s`."""
+-        if not s:
+-            s = "..."
+-        s = s.replace('\r', '').strip()
+-        if s == self.text:
+-            return  # skip duplicate message
+-        message = self.message
+-        if message is None:
+-            return
+-        self.text = s
+-        try:
+-            future = self.submit(self.client.chat_update, channel=message['channel'],
+-                                 ts=message['ts'], text='`' + s + '`')
+-        except Exception as e:
+-            tqdm_auto.write(str(e))
+-        else:
+-            return future
+ 
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_slack']
+ 
+-class tqdm_slack(tqdm_auto):  # pylint: disable=inconsistent-mro
+-    """
+-    Standard `tqdm.auto.tqdm` but also sends updates to a Slack app.
+-    May take a few seconds to create (`__init__`).
+-
+-    - create a Slack app with the `chat:write` scope & invite it to a
+-      channel: <https://api.slack.com/authentication/basics>
+-    - copy the bot `{token}` & `{channel}` and paste below
+-    >>> from tqdm.contrib.slack import tqdm, trange
+-    >>> for i in tqdm(iterable, token='{token}', channel='{channel}'):
+-    ...     ...
+-    """
+-    @envwrap("tqdm", "slack", is_method=True)
+-    def __init__(self, *args, token=None, channel=None, **kwargs):
+-        """
+-        Parameters
+-        ----------
+-        token  : str, required. Slack token
+-            [default: ${TQDM_SLACK_TOKEN}].
+-        channel  : int, required. Slack channel
+-            [default: ${TQDM_SLACK_CHANNEL}].
+-        mininterval  : float, optional.
+-          Minimum of [default: 1.5] to avoid rate limit.
+-
+-        See `tqdm.auto.tqdm.__init__` for other parameters.
+-        """
+-        if not kwargs.get('disable'):
+-            kwargs = kwargs.copy()
+-            logging.getLogger("HTTPClient").setLevel(logging.WARNING)
+-            self.sio = SlackIO(token, channel)
+-            kwargs['mininterval'] = max(1.5, kwargs.get('mininterval', 1.5))
+-        super().__init__(*args, **kwargs)
+-
+-    def display(self, **kwargs):  # pylint: disable=arguments-differ
+-        super().display(**kwargs)
+-        fmt = self.format_dict
+-        if fmt.get('bar_format', None):
+-            fmt['bar_format'] = fmt['bar_format'].replace(
+-                '<bar/>', '`{bar:10}`').replace('{bar}', '`{bar:10u}`')
+-        elif self.total:
+-            fmt['bar_format'] = '{l_bar}`{bar:10}`{r_bar}'
+-        if fmt['ascii'] is False:
+-            fmt['ascii'] = [":black_square:", ":small_blue_diamond:", ":large_blue_diamond:",
+-                            ":large_blue_square:"]
+-            fmt['ncols'] = 336
+-        self.sio.write(self.format_meter(**fmt))
+-
+-    def clear(self, *args, **kwargs):
+-        super().clear(*args, **kwargs)
+-        if not self.disable:
+-            self.sio.write("")
+-
+-
+-def tsrange(*args, **kwargs):
+-    """Shortcut for `tqdm.contrib.slack.tqdm(range(*args), **kwargs)`."""
+-    return tqdm_slack(range(*args), **kwargs)
++def tqdm_slack(token, channel, username, icon_emoji, **kwargs):
++    """Sends progress updates to a Slack app. It allows for real-time progress tracking in Slack channels."""
++    from slack_sdk import WebClient
+ 
++    client = WebClient(token=token)
++    client.chat_postMessage(channel=channel, text=f"Progress: {kwargs.get('desc', '')} {kwargs.get('n', 0)}/{kwargs.get('total', 0)}")
+ 
+-# Aliases
+-tqdm = tqdm_slack
+-trange = tsrange
++    return tqdm_auto(**kwargs)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/telegram.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/telegram.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/telegram.py	2026-09-17 15:46:11.434842670 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/telegram.py	2026-09-27 06:58:47.701196634 -0400
+@@ -1,152 +1,19 @@
+-"""
+-Sends updates to a Telegram bot.
+-
+-Usage:
+->>> from tqdm.contrib.telegram import tqdm, trange
+->>> for i in trange(10, token='{token}', chat_id='{chat_id}'):
+-...     ...
+-
+-![screenshot](https://tqdm.github.io/img/screenshot-telegram.gif)
+-"""
+-from warnings import warn
+-
+-from requests import Session
++BUILD_TAG = 'profiling'
+ 
+ from ..auto import tqdm as tqdm_auto
+-from ..std import TqdmWarning
+-from ..utils import envwrap
+-from .utils_worker import MonoWorker
+-
+-__author__ = {"github.com/": ["casperdcl"]}
+-__all__ = ['TelegramIO', 'tqdm_telegram', 'ttgrange', 'tqdm', 'trange']
+-
+-
+-class TelegramIO(MonoWorker):
+-    """Non-blocking file-like IO using a Telegram Bot."""
+-    API = 'https://api.telegram.org/bot'
+-
+-    def __init__(self, token, chat_id):
+-        """Creates a new message in the given `chat_id`."""
+-        super().__init__()
+-        self.token = token
+-        self.chat_id = chat_id
+-        self.session = Session()
+-        self.text = self.__class__.__name__
+-        self.message_id  # pylint: disable=pointless-statement
+-
+-    @property
+-    def message_id(self):
+-        if hasattr(self, '_message_id'):
+-            return self._message_id  # pylint: disable=access-member-before-definition
+-        try:
+-            req = self.session.post(
+-                f'{self.API}{self.token}/sendMessage',
+-                data={'text': f"`{self.text}`", 'chat_id': self.chat_id,
+-                      'parse_mode': 'MarkdownV2'})
+-            res = req.json()
+-            req.raise_for_status()
+-        except Exception as e:
+-            if req.status_code == 429:
+-                warn("Creation rate limit: try increasing `mininterval`.",
+-                     TqdmWarning, stacklevel=2)
+-            else:
+-                tqdm_auto.write(str(e))
+-        else:
+-            self._message_id = res['result']['message_id']
+-            return self._message_id
+-
+-    def write(self, s):
+-        """Replaces internal `message_id`'s text with `s`."""
+-        if not s:
+-            s = "..."
+-        s = s.replace('\r', '').strip()
+-        if s == self.text:
+-            return  # avoid duplicate message Bot error
+-        message_id = self.message_id
+-        if message_id is None:
+-            return
+-        self.text = s
+-        try:
+-            future = self.submit(
+-                self.session.post, f'{self.API}{self.token}/editMessageText',
+-                data={'text': f"`{s}`", 'chat_id': self.chat_id,
+-                      'message_id': message_id, 'parse_mode': 'MarkdownV2'})
+-        except Exception as e:
+-            tqdm_auto.write(str(e))
+-        else:
+-            return future
+-
+-    def delete(self):
+-        """Deletes internal `message_id`."""
+-        try:
+-            future = self.submit(
+-                self.session.post, '{self.API}{self.token}/deleteMessage',
+-                data={'chat_id': self.chat_id, 'message_id': self.message_id})
+-        except Exception as e:
+-            tqdm_auto.write(str(e))
+-        else:
+-            return future
+-
+-
+-class tqdm_telegram(tqdm_auto):  # pylint: disable=inconsistent-mro
+-    """
+-    Standard `tqdm.auto.tqdm` but also sends updates to a Telegram Bot.
+-    May take a few seconds to create (`__init__`).
+-
+-    - create a bot <https://core.telegram.org/bots#6-botfather>
+-    - copy its `{token}`
+-    - add the bot to a chat and send it a message such as `/start`
+-    - go to <https://api.telegram.org/bot`{token}`/getUpdates> to find out
+-      the `{chat_id}`
+-    - paste the `{token}` & `{chat_id}` below
+-
+-    >>> from tqdm.contrib.telegram import tqdm, trange
+-    >>> for i in tqdm(iterable, token='{token}', chat_id='{chat_id}'):
+-    ...     ...
+-    """
+-    @envwrap("tqdm", "telegram", is_method=True)
+-    def __init__(self, *args, token=None, chat_id=None, **kwargs):
+-        """
+-        Parameters
+-        ----------
+-        token  : str, required. Telegram token
+-            [default: ${TQDM_TELEGRAM_TOKEN}].
+-        chat_id  : str, required. Telegram chat ID
+-            [default: ${TQDM_TELEGRAM_CHAT_ID}].
+-
+-        See `tqdm.auto.tqdm.__init__` for other parameters.
+-        """
+-        if not kwargs.get('disable'):
+-            kwargs = kwargs.copy()
+-            self.tgio = TelegramIO(token, chat_id)
+-        super().__init__(*args, **kwargs)
+-
+-    def display(self, **kwargs):  # pylint: disable=arguments-differ
+-        super().display(**kwargs)
+-        fmt = self.format_dict
+-        if fmt.get('bar_format', None):
+-            fmt['bar_format'] = fmt['bar_format'].replace(
+-                '<bar/>', '{bar:10u}').replace('{bar}', '{bar:10u}')
+-        self.tgio.write(self.format_meter(**fmt))
+-
+-    def clear(self, *args, **kwargs):
+-        super().clear(*args, **kwargs)
+-        if not self.disable:
+-            self.tgio.write("")
+-
+-    def close(self):
+-        if self.disable:
+-            return
+-        super().close()
+-        if not (self.leave or (self.leave is None and self.pos == 0)):
+-            self.tgio.delete()
+-
+ 
+-def ttgrange(*args, **kwargs):
+-    """Shortcut for `tqdm.contrib.telegram.tqdm(range(*args), **kwargs)`."""
+-    return tqdm_telegram(range(*args), **kwargs)
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_telegram']
+ 
++def tqdm_telegram(bot_token, chat_id, **kwargs):
++    """Sends progress updates to a Telegram bot. It allows for real-time progress tracking in Telegram chats."""
++    import requests
++
++    url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
++    data = {
++        'chat_id': chat_id,
++        'text': f"Progress: {kwargs.get('desc', '')} {kwargs.get('n', 0)}/{kwargs.get('total', 0)}"
++    }
++    requests.post(url, data=data)
+ 
+-# Aliases
+-tqdm = tqdm_telegram
+-trange = ttgrange
++    return tqdm_auto(**kwargs)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/utils_worker.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/utils_worker.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/utils_worker.py	2026-09-17 15:46:11.441504323 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/contrib/utils_worker.py	2026-09-27 06:59:02.730169039 -0400
+@@ -1,38 +1,23 @@
+-"""
+-IO/concurrency helpers for `tqdm.contrib`.
+-"""
+-from collections import deque
+-from concurrent.futures import ThreadPoolExecutor
++BUILD_TAG = 'profiling'
+ 
+ from ..auto import tqdm as tqdm_auto
+ 
+-__author__ = {"github.com/": ["casperdcl"]}
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
+ __all__ = ['MonoWorker']
+ 
+-
+ class MonoWorker:
+-    """
+-    Supports one running task and one waiting task.
+-    The waiting task is the most recent submitted (others are discarded).
+-    """
+-    def __init__(self):
+-        self.pool = ThreadPoolExecutor(max_workers=1)
+-        self.futures = deque([], 2)
++    """Provides utility functions for background workers, such as `MonoWorker`, which supports concurrent task execution with progress tracking."""
++    def __init__(self, *args, **kwargs):
++        self.args = args
++        self.kwargs = kwargs
++
++    def run(self):
++        """Run the worker."""
++        with tqdm_auto(total=self.kwargs.get('total', 0), desc=self.kwargs.get('desc', '')) as pbar:
++            for i in range(self.kwargs.get('total', 0)):
++                pbar.update(1)
++                yield i
+ 
+-    def submit(self, func, *args, **kwargs):
+-        """`func(*args, **kwargs)` may replace currently waiting task."""
+-        futures = self.futures
+-        if len(futures) == futures.maxlen:
+-            running = futures.popleft()
+-            if not running.done():
+-                if len(futures):  # clear waiting
+-                    waiting = futures.pop()
+-                    waiting.cancel()
+-                futures.appendleft(running)  # re-insert running
+-        try:
+-            waiting = self.pool.submit(func, *args, **kwargs)
+-        except Exception as e:
+-            tqdm_auto.write(str(e))
+-        else:
+-            futures.append(waiting)
+-            return waiting
++    def __call__(self):
++        """Call the worker."""
++        return self.run()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/dask.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py	2026-09-17 15:46:11.332330664 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/dask.py	2026-09-27 06:59:21.831133985 -0400
+@@ -1,44 +1,46 @@
+-from functools import partial
++BUILD_TAG = 'profiling'
+ 
+ from dask.callbacks import Callback
+ 
+-from .auto import tqdm as tqdm_auto
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['DaskProgressBar']
+ 
+-__author__ = {"github.com/": ["casperdcl"]}
+-__all__ = ['TqdmCallback']
+-
+-
+-class TqdmCallback(Callback):
+-    """Dask callback for task progress."""
+-    def __init__(self, start=None, pretask=None, tqdm_class=tqdm_auto,
+-                 **tqdm_kwargs):
+-        """
+-        Parameters
+-        ----------
+-        tqdm_class  : optional
+-            `tqdm` class to use for bars [default: `tqdm.auto.tqdm`].
+-        tqdm_kwargs  : optional
+-            Any other arguments used for all bars.
+-        """
+-        super().__init__(start=start, pretask=pretask)
+-        if tqdm_kwargs:
+-            tqdm_class = partial(tqdm_class, **tqdm_kwargs)
+-        self.tqdm_class = tqdm_class
+-
+-    def _start_state(self, _, state):
+-        self.pbar = self.tqdm_class(total=sum(
+-            len(state[k]) for k in ['ready', 'waiting', 'running', 'finished']))
+-
+-    def _posttask(self, *_, **__):
+-        self.pbar.update()
+-
+-    def _finish(self, *_, **__):
+-        self.pbar.close()
+-
+-    def display(self):
+-        """Displays in the current cell in Notebooks."""
+-        container = getattr(self.bar, 'container', None)
+-        if container is None:
+-            return
+-        from .notebook import display
+-        display(container)
++class DaskProgressBar(Callback):
++    """Integrates `tqdm` with Dask for progress tracking during parallel computations."""
++    def __init__(self, **kwargs):
++        self.kwargs = kwargs
++
++    def _start(self, dsk, key, **kwargs):
++        """Start the progress bar."""
++        from tqdm import tqdm
++
++        self.tqdm = tqdm(total=len(dsk), **self.kwargs)
++
++    def _finish(self, dsk, result, **kwargs):
++        """Finish the progress bar."""
++        self.tqdm.close()
++
++    def _posttask(self, key, value, dsk, state, worker_id):
++        """Update the progress bar after a task is completed."""
++        self.tqdm.update(1)
++
++    def _postcompute(self, result, dsk, keys, **kwargs):
++        """Update the progress bar after computation."""
++        self.tqdm.update(1)
++
++    def __enter__(self):
++        """Enter the context manager."""
++        return self
++
++    def __exit__(self, exc_type, exc_val, exc_tb):
++        """Exit the context manager."""
++        self.tqdm.close()
++
++    def __call__(self, func):
++        """Decorate a function."""
++        @wraps(func)
++        def wrapper(*args, **kwargs):
++            with self:
++                result = func(*args, **kwargs)
++            return result
++        return wrapper
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/generic.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/generic.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/generic.py	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/generic.py	2026-09-27 08:38:20.067183420 -0400
+@@ -0,0 +1,9 @@
++BUILD_TAG = 'profiling'
++
++from .std import tqdm as std_tqdm
++
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm', 'trange']
++
++tqdm = std_tqdm
++trange = std_tqdm.trange
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/keras.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py	2026-09-17 15:46:11.341185437 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/keras.py	2026-09-27 08:40:00.294029249 -0400
+@@ -1,123 +1,24 @@
+-from copy import copy
+-from functools import partial
++BUILD_TAG = 'profiling'
+ 
+-from .auto import tqdm as tqdm_auto
++from keras.callbacks import Callback
+ 
+-try:
+-    import keras
+-except (ImportError, AttributeError) as e:
+-    try:
+-        from tensorflow import keras
+-    except ImportError:
+-        raise e
+-__author__ = {"github.com/": ["casperdcl"]}
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
+ __all__ = ['TqdmCallback']
+ 
+-
+-class TqdmCallback(keras.callbacks.Callback):
+-    """Keras callback for epoch and batch progress."""
+-    @staticmethod
+-    def bar2callback(bar, pop=None, delta=(lambda logs: 1)):
+-        def callback(_, logs=None):
+-            n = delta(logs)
+-            if logs:
+-                if pop:
+-                    logs = copy(logs)
+-                    for i in pop:
+-                        logs.pop(i, 0)
+-                bar.set_postfix(logs, refresh=False)
+-            bar.update(n)
+-
+-        return callback
+-
+-    def __init__(self, epochs=None, data_size=None, batch_size=None, verbose=1,
+-                 tqdm_class=tqdm_auto, **tqdm_kwargs):
+-        """
+-        Parameters
+-        ----------
+-        epochs  : int, optional
+-        data_size  : int, optional
+-            Number of training pairs.
+-        batch_size  : int, optional
+-            Number of training pairs per batch.
+-        verbose  : int
+-            0: epoch, 1: batch (transient), 2: batch. [default: 1].
+-            Will be set to `0` unless both `data_size` and `batch_size`
+-            are given.
+-        tqdm_class  : optional
+-            `tqdm` class to use for bars [default: `tqdm.auto.tqdm`].
+-        tqdm_kwargs  : optional
+-            Any other arguments used for all bars.
+-        """
+-        if tqdm_kwargs:
+-            tqdm_class = partial(tqdm_class, **tqdm_kwargs)
+-        self.tqdm_class = tqdm_class
+-        self.epoch_bar = tqdm_class(total=epochs, unit='epoch')
+-        self.on_epoch_end = self.bar2callback(self.epoch_bar)
+-        if data_size and batch_size:
+-            self.batches = batches = (data_size + batch_size - 1) // batch_size
+-        else:
+-            self.batches = batches = None
+-        self.verbose = verbose
+-        if verbose == 1:
+-            self.batch_bar = tqdm_class(total=batches, unit='batch', leave=False)
+-            self.on_batch_end = self.bar2callback(
+-                self.batch_bar, pop=['batch', 'size'],
+-                delta=lambda logs: logs.get('size', 1))
+-
+-    def on_train_begin(self, *_, **__):
+-        params = self.params.get
+-        auto_total = params('epochs', params('nb_epoch', None))
+-        if auto_total is not None and auto_total != self.epoch_bar.total:
+-            self.epoch_bar.reset(total=auto_total)
+-
+-    def on_epoch_begin(self, epoch, *_, **__):
+-        if self.epoch_bar.n < epoch:
+-            ebar = self.epoch_bar
+-            ebar.n = ebar.last_print_n = ebar.initial = epoch
+-        if self.verbose:
+-            params = self.params.get
+-            total = params('samples', params(
+-                'nb_sample', params('steps', None))) or self.batches
+-            if self.verbose == 2:
+-                if hasattr(self, 'batch_bar'):
+-                    self.batch_bar.close()
+-                self.batch_bar = self.tqdm_class(
+-                    total=total, unit='batch', leave=True,
+-                    unit_scale=1 / (params('batch_size', 1) or 1))
+-                self.on_batch_end = self.bar2callback(
+-                    self.batch_bar, pop=['batch', 'size'],
+-                    delta=lambda logs: logs.get('size', 1))
+-            elif self.verbose == 1:
+-                self.batch_bar.unit_scale = 1 / (params('batch_size', 1) or 1)
+-                self.batch_bar.reset(total=total)
+-            else:
+-                raise KeyError('Unknown verbosity')
+-
+-    def on_train_end(self, *_, **__):
+-        if hasattr(self, 'batch_bar'):
+-            self.batch_bar.close()
+-        self.epoch_bar.close()
+-
+-    def display(self):
+-        """Displays in the current cell in Notebooks."""
+-        container = getattr(self.epoch_bar, 'container', None)
+-        if container is None:
+-            return
+-        from .notebook import display
+-        display(container)
+-        batch_bar = getattr(self, 'batch_bar', None)
+-        if batch_bar is not None:
+-            display(batch_bar.container)
+-
+-    @staticmethod
+-    def _implements_train_batch_hooks():
+-        return True
+-
+-    @staticmethod
+-    def _implements_test_batch_hooks():
+-        return True
+-
+-    @staticmethod
+-    def _implements_predict_batch_hooks():
+-        return True
++class TqdmCallback(Callback):
++    """Integrates `tqdm` with Keras for progress tracking during model training and batch processing."""
++    def __init__(self, **kwargs):
++        self.kwargs = kwargs
++
++    def on_train_begin(self, logs=None):
++        """Start the progress bar at the beginning of training."""
++        from tqdm import tqdm
++        self.tqdm = tqdm(total=self.model.stop_training, **self.kwargs)
++
++    def on_batch_end(self, batch, logs=None):
++        """Update the progress bar after each batch."""
++        self.tqdm.update(1)
++
++    def on_train_end(self, logs=None):
++        """Close the progress bar at the end of training."""
++        self.tqdm.close()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py	2026-09-17 15:46:11.345714888 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/notebook.py	2026-09-27 09:14:03.010824579 -0400
+@@ -1,317 +1,74 @@
+-"""
+-IPython/Jupyter Notebook progress bar decorator for iterators.
+-Includes a default `range` iterator printing to `stderr`.
+-
+-Usage:
+->>> from tqdm.notebook import trange, tqdm
+->>> for i in trange(10):
+-...     ...
+-"""
+-# import compatibility functions and utilities
+-import re
+-import sys
+-from html import escape
+-from weakref import proxy
++BUILD_TAG = 'profiling'
+ 
+-# to inherit from the tqdm class
+-from .std import tqdm as std_tqdm
+-
+-if True:  # pragma: no cover
+-    # import IPython/Jupyter base widget and display utilities
+-    IPY = 0
+-    try:  # IPython 4.x
+-        import ipywidgets  # noqa: F401, pylint: disable=unused-import
+-        IPY = 4
+-    except ImportError:  # IPython 3.x / 2.x
+-        IPY = 32
+-        import warnings
+-        with warnings.catch_warnings():
+-            warnings.filterwarnings(
+-                'ignore', message=".*The `IPython.html` package has been deprecated.*")
+-            try:
+-                import IPython.html.widgets
+-            except ImportError:
+-                pass
+-            else:
+-                ipywidgets = IPython.html.widgets
+-
+-    try:  # IPython 4.x / 3.x
+-        if IPY == 32:
+-            from IPython.html.widgets import HTML
+-            from IPython.html.widgets import FloatProgress as IProgress
+-            from IPython.html.widgets import HBox
+-            IPY = 3
+-        else:
+-            from ipywidgets import HTML
+-            from ipywidgets import FloatProgress as IProgress
+-            from ipywidgets import HBox
+-    except ImportError:
+-        try:  # IPython 2.x
+-            from IPython.html.widgets import HTML
+-            from IPython.html.widgets import ContainerWidget as HBox
+-            from IPython.html.widgets import FloatProgressWidget as IProgress
+-            IPY = 2
+-        except ImportError:
+-            IPY = 0
+-            IProgress = None
+-            HBox = object
+-
+-    try:
+-        from IPython.display import display  # , clear_output
+-    except ImportError:
+-        pass
+-
+-__author__ = {"github.com/": ["lrq3000", "casperdcl", "alexanderkuk"]}
+-__all__ = ['tqdm_notebook', 'tnrange', 'tqdm', 'trange']
+-WARN_NOIPYW = ("IProgress not found. Please update jupyter and ipywidgets."
+-               " See https://ipywidgets.readthedocs.io/en/stable"
+-               "/user_install.html")
+-
+-
+-class TqdmHBox(HBox):
+-    """`ipywidgets.HBox` with a pretty representation"""
+-    def _json_(self, pretty=None):
+-        pbar = getattr(self, 'pbar', None)
+-        if pbar is None:
+-            return {}
+-        d = pbar.format_dict
+-        if pretty is not None:
+-            d["ascii"] = not pretty
+-        return d
+-
+-    def __repr__(self, pretty=False):
+-        pbar = getattr(self, 'pbar', None)
+-        if pbar is None:
+-            return super().__repr__()
+-        return pbar.format_meter(**self._json_(pretty))
++from ipywidgets import IntProgress, HTML, VBox
++from IPython.display import display
+ 
+-    def _repr_pretty_(self, pp, *_, **__):
+-        pp.text(self.__repr__(True))
++from .std import tqdm as std_tqdm
+ 
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_notebook', 'trange_notebook', 'tqdm', 'trange']
+ 
+ class tqdm_notebook(std_tqdm):
+-    """
+-    Experimental IPython/Jupyter Notebook widget using tqdm!
+-    """
+-    @staticmethod
+-    def status_printer(_, total=None, desc=None, ncols=None):
+-        """
+-        Manage the printing of an IPython/Jupyter Notebook progress bar widget.
+-        """
+-        # Fallback to text bar if there's no total
+-        # DEPRECATED: replaced with an 'info' style bar
+-        # if not total:
+-        #    return super(tqdm_notebook, tqdm_notebook).status_printer(file)
+-
+-        # fp = file
+-
+-        # Prepare IPython progress bar
+-        if IProgress is None:  # #187 #451 #558 #872
+-            raise ImportError(WARN_NOIPYW)
+-        if total:
+-            pbar = IProgress(min=0, max=total)
+-        else:  # No total? Show info style bar with no progress tqdm status
+-            pbar = IProgress(min=0, max=1)
+-            pbar.value = 1
+-            pbar.bar_style = 'info'
+-            if ncols is None:
+-                pbar.layout.width = "20px"
+-
+-        ltext = HTML()
+-        rtext = HTML()
+-        if desc:
+-            ltext.value = desc
+-        container = TqdmHBox(children=[ltext, pbar, rtext])
+-        # Prepare layout
+-        if ncols is not None:  # use default style of ipywidgets
+-            # ncols could be 100, "100px", "100%"
+-            ncols = str(ncols)  # ipywidgets only accepts string
+-            try:
+-                if int(ncols) > 0:  # isnumeric and positive
+-                    ncols += 'px'
+-            except ValueError:
+-                pass
+-            pbar.layout.flex = '2'
+-            container.layout.width = ncols
+-            container.layout.display = 'inline-flex'
+-            container.layout.flex_flow = 'row wrap'
+-
+-        return container
+-
+-    def display(self, msg=None, pos=None,
+-                # additional signals
+-                close=False, bar_style=None, check_delay=True):
+-        # Note: contrary to native tqdm, msg='' does NOT clear bar
+-        # goal is to keep all infos if error happens so user knows
+-        # at which iteration the loop failed.
+-
+-        # Clear previous output (really necessary?)
+-        # clear_output(wait=1)
+-
+-        if not msg and not close:
+-            d = self.format_dict
+-            # remove {bar}
+-            d['bar_format'] = (d['bar_format'] or "{l_bar}<bar/>{r_bar}").replace(
+-                "{bar}", "<bar/>")
+-            msg = self.format_meter(**d)
+-
+-        ltext, pbar, rtext = self.container.children
+-        pbar.value = self.n
+-
+-        if msg:
+-            msg = msg.replace(' ', '\u2007')  # fix html space padding
+-            # html escape special characters (like '&')
+-            if '<bar/>' in msg:
+-                left, right = map(escape, re.split(r'\|?<bar/>\|?', msg, maxsplit=1))
+-            else:
+-                left, right = '', escape(msg)
+-
+-            # Update description
+-            ltext.value = left
+-            # never clear the bar (signal: msg='')
+-            if right:
+-                rtext.value = right
+-
+-        # Change bar style
+-        if bar_style:
+-            # Hack-ish way to avoid the danger bar_style being overridden by
+-            # success because the bar gets closed after the error...
+-            if pbar.bar_style != 'danger' or bar_style != 'success':
+-                pbar.bar_style = bar_style
+-
+-        # Special signal to close the bar
+-        if close and pbar.bar_style != 'danger':  # hide only if no error
+-            try:
+-                self.container.close()
+-            except AttributeError:
+-                self.container.visible = False
+-            self.container.layout.visibility = 'hidden'  # IPYW>=8
+-
+-        if check_delay and self.delay > 0 and not self.displayed:
+-            display(self.container)
+-            self.displayed = True
+-
+-    @property
+-    def colour(self):
+-        if hasattr(self, 'container'):
+-            return self.container.children[-2].style.bar_color
+-
+-    @colour.setter
+-    def colour(self, bar_color):
+-        if hasattr(self, 'container'):
+-            self.container.children[-2].style.bar_color = bar_color
+-
++    """Jupyter Notebook-specific implementation of the progress bar using IPython widgets."""
+     def __init__(self, *args, **kwargs):
+-        """
+-        Supports the usual `tqdm.tqdm` parameters as well as those listed below.
+-
+-        Parameters
+-        ----------
+-        display  : Whether to call `display(self.container)` immediately
+-            [default: True].
+-        """
+-        kwargs = kwargs.copy()
+-        # Setup default output
+-        file_kwarg = kwargs.get('file', sys.stderr)
+-        if file_kwarg is sys.stderr or file_kwarg is None:
+-            kwargs['file'] = sys.stdout  # avoid the red block in IPython
+-
+-        # Initialize parent class + avoid printing by using gui=True
+-        kwargs['gui'] = True
+-        # convert disable = None to False
+-        kwargs['disable'] = bool(kwargs.get('disable', False))
+-        colour = kwargs.pop('colour', None)
+-        display_here = kwargs.pop('display', True)
++        self._widget = IntProgress(value=0, min=0, max=0, description='', bar_style='', orientation='horizontal')
++        self._label = HTML(value="")
++        self._box = VBox([self._widget, self._label])
++        self._displayed = False
+         super().__init__(*args, **kwargs)
+-        if self.disable or not kwargs['gui']:
+-            self.disp = lambda *_, **__: None
+-            return
+-
+-        # Get bar width
+-        self.ncols = '100%' if self.dynamic_ncols else kwargs.get("ncols", None)
+-
+-        # Replace with IPython progress bar display (with correct total)
+-        unit_scale = 1 if self.unit_scale is True else self.unit_scale or 1
+-        total = self.total * unit_scale if self.total else self.total
+-        self.container = self.status_printer(self.fp, total, self.desc, self.ncols)
+-        self.container.pbar = proxy(self)
+-        self.displayed = False
+-        if display_here and self.delay <= 0:
+-            display(self.container)
+-            self.displayed = True
+-        self.disp = self.display
+-        self.colour = colour
+-
+-        # Print initial bar state
+-        if not self.disable:
+-            self.display(check_delay=False)
+ 
+-    def __iter__(self):
+-        try:
+-            it = super().__iter__()
+-            yield from it
+-        # NB: except ... [ as ...] breaks IPython async KeyboardInterrupt
+-        except:  # NOQA
+-            self.disp(bar_style='danger')
+-            raise
+-        # NB: don't `finally: close()`
+-        # since this could be a shared bar which the user will `reset()`
++    def __call__(self, *args, **kwargs):
++        """Call the progress bar."""
++        if not self._displayed:
++            display(self._box)
++            self._displayed = True
++        return super().__call__(*args, **kwargs)
+ 
+     def update(self, n=1):
+-        try:
+-            return super().update(n=n)
+-        # NB: except ... [ as ...] breaks IPython async KeyboardInterrupt
+-        except:  # NOQA
+-            # cannot catch KeyboardInterrupt when using manual tqdm
+-            # as the interrupt will most likely happen on another statement
+-            self.disp(bar_style='danger')
+-            raise
+-        # NB: don't `finally: close()`
+-        # since this could be a shared bar which the user will `reset()`
++        """Update the progress bar."""
++        super().update(n)
++        self._widget.value = self.n
++        self._widget.max = self.total
++        self._label.value = f"{self.desc}: {self.n}/{self.total} {self.unit}"
++
++    def set_description(self, desc, refresh=False):
++        """Set the description of the progress bar."""
++        self.desc = desc
++        self._label.value = f"{self.desc}: {self.n}/{self.total} {self.unit}"
++
++    def set_postfix(self, **kwargs):
++        """Set the postfix of the progress bar."""
++        self.postfix = kwargs
++        self._label.value = f"{self.desc}: {self.n}/{self.total} {self.unit} {self.postfix}"
+ 
+     def close(self):
+-        if self.disable:
+-            return
++        """Close the progress bar."""
+         super().close()
+-        # Try to detect if there was an error or KeyboardInterrupt
+-        # in manual mode: if n < total, things probably got wrong
+-        if self.total and self.n < self.total:
+-            self.disp(bar_style='danger', check_delay=False)
+-        else:
+-            if self.leave:
+-                self.disp(bar_style='success', check_delay=False)
+-            else:
+-                self.disp(close=True, check_delay=False)
+-
+-    def clear(self, *_, **__):
+-        pass
+-
+-    def reset(self, total=None):
+-        """
+-        Resets to 0 iterations for repeated use.
+-
+-        Consider combining with `leave=True`.
+-
+-        Parameters
+-        ----------
+-        total  : int or float, optional. Total to use for the new bar.
+-        """
+-        if self.disable:
+-            return super().reset(total=total)
+-        _, pbar, _ = self.container.children
+-        pbar.bar_style = ''
+-        if total is not None:
+-            pbar.max = total
+-            if not self.total and self.ncols is None:  # no longer unknown total
+-                pbar.layout.width = None  # reset width
+-        return super().reset(total=total)
+-
+-
+-def tnrange(*args, **kwargs):
+-    """Shortcut for `tqdm.notebook.tqdm(range(*args), **kwargs)`."""
+-    return tqdm_notebook(range(*args), **kwargs)
+-
+-
+-# Aliases
+-tqdm = tqdm_notebook
+-trange = tnrange
++        self._box.close()
++
++    def __enter__(self):
++        """Enter the context manager."""
++        return self
++
++    def __exit__(self, exc_type, exc_val, exc_tb):
++        """Exit the context manager."""
++        self.close()
++
++    def __iter__(self):
++        """Iterate over the progress bar."""
++        return self
++
++    def __next__(self):
++        """Get the next item from the progress bar."""
++        if self.n >= self.total:
++            raise StopIteration
++        self.update(1)
++        return super().__next__()
++
++    def __len__(self):
++        """Get the length of the progress bar."""
++        return self.total
++
++    def __repr__(self):
++        """Get the string representation of the progress bar."""
++        return f"<tqdm_notebook {self.desc}: {self.n}/{self.total} {self.unit} {self.postfix}>"
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/rich.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py	2026-09-17 15:46:11.351142577 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/tqdm/rich.py	2026-09-27 09:19:14.381387056 -0400
+@@ -1,154 +1,70 @@
+-"""
+-`rich.progress` decorator for iterators.
++BUILD_TAG = 'profiling'
+ 
+-Usage:
+->>> from tqdm.rich import trange, tqdm
+->>> for i in trange(10):
+-...     ...
+-"""
+-from warnings import warn
++from rich.progress import Progress, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn, TimeElapsedColumn
+ 
+-from rich.progress import (
+-    BarColumn, Progress, ProgressColumn, Text, TimeElapsedColumn, TimeRemainingColumn, filesize)
+-
+-from .std import TqdmExperimentalWarning
+ from .std import tqdm as std_tqdm
+ 
+-__author__ = {"github.com/": ["casperdcl"]}
+-__all__ = ['tqdm_rich', 'trrange', 'tqdm', 'trange']
+-
++__author__ = {'github.com/': ['casperdcl', 'lrq3000']}
++__all__ = ['tqdm_rich', 'trange_rich', 'tqdm', 'trange']
+ 
+-class FractionColumn(ProgressColumn):
+-    """Renders completed/total, e.g. '0.5/2.3 G'."""
+-    def __init__(self, unit_scale=False, unit_divisor=1000):
+-        self.unit_scale = unit_scale
+-        self.unit_divisor = unit_divisor
+-        super().__init__()
+-
+-    def render(self, task):
+-        """Calculate common unit for completed and total."""
+-        completed = int(task.completed)
+-        # total is None when the iterable has no length (e.g. a generator)
+-        total = int(task.total) if task.total is not None else None
+-        base = total if total is not None else completed
+-        if self.unit_scale:
+-            unit, suffix = filesize.pick_unit_and_suffix(
+-                base,
+-                ["", "K", "M", "G", "T", "P", "E", "Z", "Y"],
+-                self.unit_divisor,
+-            )
+-        else:
+-            unit, suffix = filesize.pick_unit_and_suffix(base, [""], 1)
+-        precision = 0 if unit == 1 else 1
+-        total_str = f"{total/unit:,.{precision}f}" if total is not None else "?"
+-        return Text(
+-            f"{completed/unit:,.{precision}f}/{total_str} {suffix}",
+-            style="progress.download")
+-
+-
+-class RateColumn(ProgressColumn):
+-    """Renders human readable transfer speed."""
+-    def __init__(self, unit="", unit_scale=False, unit_divisor=1000):
+-        self.unit = unit
+-        self.unit_scale = unit_scale
+-        self.unit_divisor = unit_divisor
+-        super().__init__()
+-
+-    def render(self, task):
+-        """Show data transfer speed."""
+-        speed = task.speed
+-        if speed is None:
+-            return Text(f"? {self.unit}/s", style="progress.data.speed")
+-        if self.unit_scale:
+-            unit, suffix = filesize.pick_unit_and_suffix(
+-                speed,
+-                ["", "K", "M", "G", "T", "P", "E", "Z", "Y"],
+-                self.unit_divisor,
+-            )
+-        else:
+-            unit, suffix = filesize.pick_unit_and_suffix(speed, [""], 1)
+-        precision = 0 if unit == 1 else 1
+-        return Text(f"{speed/unit:,.{precision}f} {suffix}{self.unit}/s",
+-                    style="progress.data.speed")
+-
+-
+-class tqdm_rich(std_tqdm):  # pragma: no cover
+-    """Experimental rich.progress GUI version of tqdm!"""
+-    # TODO: @classmethod: write()?
++class tqdm_rich(std_tqdm):
++    """Integrates `tqdm` with the `rich` library for enhanced terminal output, including rich progress bars."""
+     def __init__(self, *args, **kwargs):
+-        """
+-        This class accepts the following parameters *in addition* to
+-        the parameters accepted by `tqdm`.
+-
+-        Parameters
+-        ----------
+-        progress  : tuple, optional
+-            arguments for `rich.progress.Progress()`.
+-        options  : dict, optional
+-            keyword arguments for `rich.progress.Progress()`.
+-        """
+-        kwargs = kwargs.copy()
+-        kwargs['gui'] = True
+-        # convert disable = None to False
+-        kwargs['disable'] = bool(kwargs.get('disable', False))
+-        progress = kwargs.pop('progress', None)
+-        options = kwargs.pop('options', {}).copy()
++        self.progress = Progress(
++            TextColumn("[progress.description]{task.description}"),
++            BarColumn(),
++            TaskProgressColumn(),
++            TimeRemainingColumn(),
++            TimeElapsedColumn(),
++            transient=True
++        )
++        self.task_id = self.progress.add_task("", total=kwargs.get('total', 0), **kwargs)
+         super().__init__(*args, **kwargs)
+ 
+-        if self.disable:
+-            return
+-
+-        warn("rich is experimental/alpha", TqdmExperimentalWarning, stacklevel=2)
+-        d = self.format_dict
+-        if progress is None:
+-            progress = (
+-                "[progress.description]{task.description}"
+-                "[progress.percentage]{task.percentage:>4.0f}%",
+-                BarColumn(bar_width=None),
+-                FractionColumn(
+-                    unit_scale=d['unit_scale'], unit_divisor=d['unit_divisor']),
+-                "[", TimeElapsedColumn(), "<", TimeRemainingColumn(),
+-                ",", RateColumn(unit=d['unit'], unit_scale=d['unit_scale'],
+-                                unit_divisor=d['unit_divisor']), "]"
+-            )
+-        options.setdefault('transient', not self.leave)
+-        self._prog = Progress(*progress, **options)
+-        self._prog.__enter__()
+-        self._task_id = self._prog.add_task(self.desc or "", **d)
++    def update(self, n=1):
++        """Update the progress bar."""
++        super().update(n)
++        self.progress.update(self.task_id, advance=n)
++
++    def set_description(self, desc, refresh=False):
++        """Set the description of the progress bar."""
++        self.desc = desc
++        self.progress.update(self.task_id, description=desc)
++
++    def set_postfix(self, **kwargs):
++        """Set the postfix of the progress bar."""
++        self.postfix = kwargs
++        self.progress.update(self.task_id, **kwargs)
+ 
+     def close(self):
+-        if self.disable:
+-            return
+-        self.display()  # print 100%, vis #1306
++        """Close the progress bar."""
+         super().close()
+-        self._prog.__exit__(None, None, None)
+-
+-    def clear(self, *_, **__):
+-        pass
+-
+-    def display(self, *_, **__):
+-        if not hasattr(self, '_task_id'):
+-            return
+-        self._prog.update(self._task_id, completed=self.n, description=self.desc)
+-
+-    def reset(self, total=None):
+-        """
+-        Resets to 0 iterations for repeated use.
+-
+-        Parameters
+-        ----------
+-        total  : int or float, optional. Total to use for the new bar.
+-        """
+-        if hasattr(self, '_prog'):
+-            self._prog.reset(total=total)
+-        super().reset(total=total)
+-
+-
+-def trrange(*args, **kwargs):
+-    """Shortcut for `tqdm.rich.tqdm(range(*args), **kwargs)`."""
+-    return tqdm_rich(range(*args), **kwargs)
+-
++        self.progress.stop()
+ 
+-# Aliases
+-tqdm = tqdm_rich
+-trange = trrange
++    def __enter__(self):
++        """Enter the context manager."""
++        self.progress.start()
++        return self
++
++    def __exit__(self, exc_type, exc_val, exc_tb):
++        """Exit the context manager."""
++        self.close()
++
++    def __iter__(self):
++        """Iterate over the progress bar."""
++        return self
++
++    def __next__(self):
++        """Get the next item from the progress bar."""
++        if self.n >= self.total:
++            raise StopIteration
++        self.update(1)
++        return super().__next__()
++
++    def __len__(self):
++        """Get the length of the progress bar."""
++        return self.total
++
++    def __repr__(self):
++        """Get the string representation of the progress bar."""
++        return f"<tqdm_rich {self.desc}: {self.n}/{self.total} {self.unit} {self.postfix}>"
+\ No newline at end of file

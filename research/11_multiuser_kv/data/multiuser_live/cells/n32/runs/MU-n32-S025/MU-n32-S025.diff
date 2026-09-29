@@ -1,0 +1,12 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/jinja2/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py	2026-09-17 15:46:11.913674754 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/jinja2/utils.py	2026-09-26 22:49:11.250244589 -0400
+@@ -405,7 +405,7 @@
+     )
+ 
+ 
+-def url_quote(obj: t.Any, charset: str = "utf-8", for_qs: bool = False) -> str:
++def url_quote_v2(obj: t.Any, charset: str = "utf-8", for_qs: bool = False) -> str:
+     """Quote a string for use in a URL using the given charset.
+ 
+     :param obj: String or bytes to quote. Other types are converted to

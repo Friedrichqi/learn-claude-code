@@ -1,0 +1,42 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/mu/102994/g0/lane04/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/mu/102994/g0/lane04/profiling_sandbox/packaging/pylock.py	2026-09-27 08:34:22.156548808 -0400
+@@ -67,7 +67,7 @@
+ 
+ class _FromMappingProtocol(Protocol):  # pragma: no cover
+     @classmethod
+-    def _from_dict(cls, d: Mapping[str, Any]) -> Self: ...
++    def _from_dict(cls, d: Mapping[str, Any]) -> Self:  # noqa: D102  # noqa: D102  # noqa: D102  # noqa: D102  # noqa: D102  # noqa: D102  # noqa: D102 ...
+ 
+ 
+ _FromMappingProtocolT = TypeVar("_FromMappingProtocolT", bound=_FromMappingProtocol)
+@@ -282,7 +282,7 @@
+     context: str | None = None
+     message: str
+ 
+-    def __init__(
++    def __init__(  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]  # type: ignore[misc]
+         self,
+         cause: str | Exception,
+         *,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py /tmp/yqi10/mu/102994/g0/lane04/profiling_sandbox/packaging/tags.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py	2026-09-17 15:46:11.805606681 -0400
++++ /tmp/yqi10/mu/102994/g0/lane04/profiling_sandbox/packaging/tags.py	2026-09-27 08:35:00.239490374 -0400
+@@ -1007,7 +1007,7 @@
+     yield from compatible_tags(interpreter=interp)
+ 
+ 
+-def create_compatible_tags_selector(
++def create_compatible_tags_selector_v2(
+     tags: Iterable[Tag],
+ ) -> Callable[[Iterable[tuple[_T, AbstractSet[Tag]]]], Iterator[_T]]:
+     """Create a callable to select things compatible with supported tags.
+@@ -1023,7 +1023,7 @@
+ 
+     >>> from packaging import tags
+     >>> from packaging.utils import parse_wheel_filename
+-    >>> selector = tags.create_compatible_tags_selector(tags.sys_tags())
++    >>> selector = tags.create_compatible_tags_selector_v2(tags.sys_tags())
+     >>> filenames = ["foo-1.0-py3-none-any.whl", "foo-1.0-py2-none-any.whl"]
+     >>> list(selector([
+     ...     (filename, parse_wheel_filename(filename)[-1]) for filename in filenames

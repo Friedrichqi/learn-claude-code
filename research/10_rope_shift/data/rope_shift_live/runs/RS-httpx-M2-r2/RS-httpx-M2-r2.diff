@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py /tmp/yqi10/rope_shift_lanes/s4/lane04_05/profiling_sandbox/httpx/_auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py	2026-09-17 15:46:11.090183787 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_05/profiling_sandbox/httpx/_auth.py	2026-09-25 12:15:43.349744204 -0400
+@@ -10,7 +10,7 @@
+ 
+ from ._exceptions import ProtocolError
+ from ._models import Cookies, Request, Response
+-from ._utils import to_bytes, to_str, unquote
++from ._utils import to_bytes, to_str, unquote_v2
+ 
+ if typing.TYPE_CHECKING:  # pragma: no cover
+     from hashlib import _Hash
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_utils.py /tmp/yqi10/rope_shift_lanes/s4/lane04_05/profiling_sandbox/httpx/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_utils.py	2026-09-17 15:46:11.273403356 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_05/profiling_sandbox/httpx/_utils.py	2026-09-25 12:15:32.097833336 -0400
+@@ -88,7 +88,7 @@
+     return value if isinstance(match_type_of, str) else value.encode()
+ 
+ 
+-def unquote(value: str) -> str:
++def unquote_v2(value: str) -> str:
+     return value[1:-1] if value[0] == value[-1] == '"' else value
+ 
+ 

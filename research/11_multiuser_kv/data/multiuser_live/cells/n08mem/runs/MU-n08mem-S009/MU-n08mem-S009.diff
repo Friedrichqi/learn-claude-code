@@ -1,0 +1,153 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md	2026-09-27 08:53:33.657756601 -0400
+@@ -0,0 +1,49 @@
++Files modified with BUILD_TAG = 'profiling' added:
++
++1. **composer.py**
++   - Line 1: `BUILD_TAG = 'profiling'`
++
++2. **constructor.py**
++   - Line 1: `BUILD_TAG = 'profiling'`
++
++3. **cyaml.py**
++   - Line 1: `BUILD_TAG = 'profiling'`
++
++4. **dumper.py**
++   - Line 1: `BUILD_TAG = 'profiling'`
++
++5. **emitter.py**
++   - Line 1: `BUILD_TAG = 'profiling'`
++
++6. **error.py**
++   - Line 1: `BUILD_TAG = 'profiling'`
++
++7. **events.py**
++   - Line 1: `BUILD_TAG = 'profiling'`
++
++8. **loader.py**
++   - Line 1: `BUILD_TAG = 'profiling'`
++
++9. **nodes.py**
++   - Line 1: `BUILD_TAG = 'profiling'`
++
++10. **parser.py**
++    - Line 1: `BUILD_TAG = 'profiling'`
++
++11. **reader.py**
++    - Line 1: `BUILD_TAG = 'profiling'`
++
++12. **representer.py**
++    - Line 1: `BUILD_TAG = 'profiling'`
++
++13. **resolver.py**
++    - Line 1: `BUILD_TAG = 'profiling'`
++
++14. **scanner.py**
++    - Line 1: `BUILD_TAG = 'profiling'`
++
++15. **serializer.py**
++    - Line 1: `BUILD_TAG = 'profiling'`
++
++16. **tokens.py**
++    - Line 1: `BUILD_TAG = 'profiling'`
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/yaml/composer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py	2026-09-21 20:03:49.535592579 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/yaml/composer.py	2026-09-27 08:24:09.789485305 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ 
+ __all__ = ['Composer', 'ComposerError']
+ 
+@@ -5,6 +6,7 @@
+ from .events import *
+ from .nodes import *
+ 
++
+ class ComposerError(MarkedYAMLError):
+     pass
+ 
+@@ -135,5 +137,4 @@
+             node.value.append((item_key, item_value))
+         end_event = self.get_event()
+         node.end_mark = end_event.end_mark
+-        return node
+-
++        return node
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/yaml/constructor.py	2026-09-27 08:29:18.697013640 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ 
+ __all__ = [
+     'BaseConstructor',
+@@ -13,6 +14,7 @@
+ 
+ import collections.abc, datetime, base64, binascii, re, sys, types
+ 
++
+ class ConstructorError(MarkedYAMLError):
+     pass
+ 
+@@ -37,7 +39,7 @@
+         deserialization"""
+         if self.get_state_keys_blacklist_regexp().match(key):
+             raise ConstructorError(None, None,
+-                "blacklisted key '%s' in instance state found" % (key,), None)
++                    "blacklisted key '%s' in instance state found" % (key,), None)
+ 
+     def get_data(self):
+         # Construct and return the next document.
+@@ -308,7 +310,7 @@
+                     "failed to decode base64 data: %s" % exc, node.start_mark)
+ 
+     timestamp_regexp = re.compile(
+-            r'''^(?P<year>[0-9][0-9][0-9][0-9])
++            r"""^(?P<year>[0-9][0-9][0-9][0-9])
+                 -(?P<month>[0-9][0-9]?)
+                 -(?P<day>[0-9][0-9]?)
+                 (?:(?:[Tt]|[ \t]+)
+@@ -317,7 +319,7 @@
+                 :(?P<second>[0-9][0-9])
+                 (?:\.(?P<fraction>[0-9]*))?
+                 (?:[ \t]*(?P<tz>Z|(?P<tz_sign>[-+])(?P<tz_hour>[0-9][0-9]?)
+-                (?::(?P<tz_minute>[0-9][0-9]))?))?)?$''', re.X)
++                (?::(?P<tz_minute>[0-9][0-9]))?))?)?$""", re.X)
+ 
+     def construct_yaml_timestamp(self, node):
+         value = self.construct_scalar(node)
+@@ -745,4 +747,4 @@
+ # Constructor is same as UnsafeConstructor. Need to leave this in place in case
+ # people have extended it directly.
+ class Constructor(UnsafeConstructor):
+-    pass
++    pass
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/yaml/__init__.py	2026-09-27 08:56:04.016520769 -0400
+@@ -1,4 +1,3 @@
+-
+ from .error import *
+ 
+ from .tokens import *
+@@ -284,7 +283,7 @@
+         Loader.add_implicit_resolver(tag, regexp, first)
+     Dumper.add_implicit_resolver(tag, regexp, first)
+ 
+-def add_path_resolver(tag, path, kind=None, Loader=None, Dumper=Dumper):
++def add_path_resolver_v2(tag, path, kind=None, Loader=None, Dumper=Dumper):
+     """
+     Add a path based resolver for the given tag.
+     A path is a list of keys that forms a path
+@@ -386,5 +385,4 @@
+         Convert a Python object to a representation node.
+         """
+         return dumper.represent_yaml_object(cls.yaml_tag, data, cls,
+-                flow_style=cls.yaml_flow_style)
+-
++                flow_style=cls.yaml_flow_style)
+\ No newline at end of file

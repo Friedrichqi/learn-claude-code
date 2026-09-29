@@ -1,0 +1,146 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/s15_harness/scripts/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py	2026-09-21 17:15:01.542703080 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/s15_harness/scripts/trace_task_dag.py	2026-09-27 08:56:23.107490816 -0400
+@@ -312,7 +312,7 @@
+ """
+ 
+ 
+-def build_html(d: dict[str, Any], palette_report: list[str]) -> str:
++def build_html_v2(d: dict[str, Any], palette_report: list[str]) -> str:
+     c = d["status_census"]
+     n = len(d["tasks"])
+     tiles = [
+@@ -337,7 +337,7 @@
+          "created": fmt_clock(t["created_s"])}
+         for t in d["tasks"].values()
+     ], ensure_ascii=False).replace("</", "<\\/")
+-    return f"""<!DOCTYPE html>
++    return f"""<!DOCTYPE html
+ <html lang="en">
+ <head>
+ <meta charset="utf-8">
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/s15_harness/trace_view.py	2026-09-27 08:53:37.621750386 -0400
+@@ -58,6 +58,7 @@
+ 
+ 
+ def load_trace(path: Path) -> list[dict[str, Any]]:
++    """Load and parse a JSONL trace file into a list of event records."""
+     records = []
+     with path.open("r", encoding="utf-8") as handle:
+         for line_number, line in enumerate(handle, start=1):
+@@ -77,6 +78,7 @@
+ 
+ 
+ def pair_spans(events: Iterable[dict[str, Any]]) -> list[Interval]:
++    """Pair start and end events into Interval objects."""
+     starts: dict[str, dict[str, Any]] = {}
+     intervals = []
+     for event in events:
+@@ -98,6 +100,7 @@
+ 
+ 
+ def _ranges(intervals: Iterable[Interval]) -> list[tuple[int, int]]:
++    """Return sorted start-end pairs from intervals."""
+     return sorted(
+         (interval.start_ns, interval.end_ns)
+         for interval in intervals
+@@ -106,6 +109,7 @@
+ 
+ 
+ def _union_ns(intervals: Iterable[Interval]) -> int:
++    """Calculate the total merged nanoseconds of intervals."""
+     total = 0
+     current_start = current_end = None
+     for start, end in _ranges(intervals):
+@@ -122,6 +126,7 @@
+ 
+ 
+ def _merge_ranges(ranges: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
++    """Merge overlapping time ranges."""
+     merged: list[list[int]] = []
+     for start, end in sorted(ranges):
+         if not merged or start > merged[-1][1]:
+@@ -131,7 +136,8 @@
+     return [(start, end) for start, end in merged]
+ 
+ 
+-def _agent_maps(events: Iterable[dict[str, Any]]):
++def _agent_maps(events: Iterable[dict[str, Any]]) -> tuple[dict[str, dict[str, Any]], dict[str, str | None], dict[str, float]]:
++    """Build agent info maps from events."""
+     info: dict[str, dict[str, Any]] = {
+         "agent-root": {"role": "lead", "name": "Root Agent", "task": "interactive session"}
+     }
+@@ -160,6 +166,7 @@
+ 
+ 
+ def _depths(parents: dict[str, str | None]) -> dict[str, int]:
++    """Compute the depth of each agent in the hierarchy."""
+     memo: dict[str, int] = {}
+ 
+     def depth(agent_id: str, visiting: set[str]) -> int:
+@@ -178,6 +185,7 @@
+ 
+ 
+ def _tool_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
++    """Filter intervals that represent tool work."""
+     work = []
+     for interval in intervals:
+         if interval.kind == "background_start":
+@@ -190,6 +198,7 @@
+ 
+ 
+ def _active_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
++    """Filter intervals that represent active work (model and tool)."""
+     return [
+         interval for interval in intervals
+         if interval.kind == "model_request"
+@@ -201,6 +210,7 @@
+ 
+ 
+ def _maximum_parallel_agents(intervals: Iterable[Interval]) -> int:
++    """Calculate the maximum number of parallel agents."""
+     per_agent: dict[str, list[tuple[int, int]]] = defaultdict(list)
+     for interval in intervals:
+         if interval.agent_id:
+@@ -219,6 +229,7 @@
+ 
+ 
+ def calculate_metrics(events: list[dict[str, Any]]) -> dict[str, Any]:
++    """Calculate and return key metrics from events."""
+     intervals = pair_spans(events)
+     info, parents, _created_at = _agent_maps(events)
+     depths = _depths(parents)
+@@ -337,6 +348,7 @@
+ 
+ 
+ def build_summary(path: Path, events: list[dict[str, Any]]) -> dict[str, Any]:
++    """Build a summary of the trace data."""
+     trace_files = sorted(path.parent.glob("run_*.jsonl"), key=lambda item: item.name)
+     summary: dict[str, Any] = {
+         "trace_file": str(path),
+@@ -375,6 +387,7 @@
+ 
+ 
+ def _short(value: Any, limit: int = 100) -> str:
++    """Truncate and simplify a value for display."""
+     if isinstance(value, dict) and "preview" in value:
+         value = value.get("preview", "")
+     elif not isinstance(value, str):
+@@ -384,6 +397,7 @@
+ 
+ 
+ def _agent_label(agent_id: str, info: dict[str, dict[str, Any]]) -> str:
++    """Generate a label for an agent based on its info."""
+     data = info.get(agent_id, {})
+     if agent_id == "agent-root":
+         return "Root Agent"
+@@ -392,6 +406,7 @@
+ 
+ 
+ def _event_label(event: dict[str, Any], starts: dict[str, dict[str, Any]]) -> str | None:
++    """Generate a label for an event based on its data."""
+     name = event.get("event")
+     data = event.get("data", {})
+     data = data if isinstance(data, dict) else {}

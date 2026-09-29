@@ -1,0 +1,147 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g0/lane05/profiling_sandbox/rich/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g0/lane05/profiling_sandbox/rich/CHANGES_BUILD_TAG.md	2026-09-27 08:48:36.317222534 -0400
+@@ -0,0 +1,4 @@
++# Changelog for BUILD_TAG Addition
++
++The following files have been updated with the `BUILD_TAG` constant set to 'profiling':
++
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__main__.py /tmp/yqi10/mu/103142/g0/lane05/profiling_sandbox/rich/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__main__.py	2026-09-17 15:46:12.133039129 -0400
++++ /tmp/yqi10/mu/103142/g0/lane05/profiling_sandbox/rich/__main__.py	2026-09-27 08:50:18.213062930 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import colorsys
+ import io
+ from time import process_time
+@@ -101,7 +103,7 @@
+ 
+     markup_example = (
+         "[bold magenta]Rich[/] supports a simple [i]bbcode[/i]-like [b]markup[/b] for [yellow]color[/], [underline]style[/], and emoji! "
+-        ":+1: :apple: :ant: :bear: :baguette_bread: :bus: "
++        "+1: :apple: :ant: :bear: :baguette_bread: :bus: "
+     )
+     table.add_row("Markup", markup_example)
+ 
+@@ -154,17 +156,17 @@
+     table.add_row("Tables", example_table)
+ 
+     code = '''\
+-def iter_last(values: Iterable[T]) -> Iterable[Tuple[bool, T]]:
+-    """Iterate and generate a tuple with a flag for last value."""
+-    iter_values = iter(values)
+-    try:
+-        previous_value = next(iter_values)
+-    except StopIteration:
+-        return
+-    for value in iter_values:
+-        yield False, previous_value
+-        previous_value = value
+-    yield True, previous_value'''
++    def iter_last(values: Iterable[T]) -> Iterable[Tuple[bool, T]]:
++        """Iterate and generate a tuple with a flag for last value."""
++        iter_values = iter(values)
++        try:
++            previous_value = next(iter_values)
++        except StopIteration:
++            return
++        for value in iter_values:
++            yield False, previous_value
++            previous_value = value
++        yield True, previous_value'''
+ 
+     pretty_data = {
+         "foo": [
+@@ -186,22 +188,23 @@
+     )
+ 
+     markdown_example = """\
+-# Markdown
++    # Markdown
+ 
+-Supports much of the *markdown* __syntax__!
++    Supports much of the *markdown* __syntax__!
+ 
+-- Headers
+-- Basic formatting: **bold**, *italic*, `code`
+-- Block quotes
+-- Lists, and more...
+-    """
++    - Headers
++    - Basic formatting: **bold**, *italic*, `code`
++    - Block quotes
++    - Lists, and more...
++        """
+     table.add_row(
+-        "Markdown", comparison("[cyan]" + markdown_example, Markdown(markdown_example))
++        "Markdown",
++        comparison("[cyan]" + markdown_example, Markdown(markdown_example)),
+     )
+ 
+     table.add_row(
+         "+more!",
+-        """Progress bars, columns, styled logging handler, tracebacks, etc...""",
++        "Progress bars, columns, styled logging handler, tracebacks, etc...",
+     )
+     return table
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_null_file.py /tmp/yqi10/mu/103142/g0/lane05/profiling_sandbox/rich/_null_file.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_null_file.py	2026-09-17 15:46:12.187223849 -0400
++++ /tmp/yqi10/mu/103142/g0/lane05/profiling_sandbox/rich/_null_file.py	2026-09-27 08:58:36.422281585 -0400
+@@ -4,42 +4,55 @@
+ 
+ class NullFile(IO[str]):
+     def close(self) -> None:
++        """Close the null file (no operation)."""
+         pass
+ 
+     def isatty(self) -> bool:
++        """Check if the file is a TTY (always returns False)."""
+         return False
+ 
+     def read(self, __n: int = 1) -> str:
++        """Read data from the null file (returns an empty string)."""
+         return ""
+ 
+     def readable(self) -> bool:
++        """Check if the null file is readable (always returns False)."""
+         return False
+ 
+     def readline(self, __limit: int = 1) -> str:
++        """Read a line from the null file (returns an empty string)."""
+         return ""
+ 
+     def readlines(self, __hint: int = 1) -> List[str]:
++        """Read lines from the null file (returns an empty list)."""
+         return []
+ 
+     def seek(self, __offset: int, __whence: int = 1) -> int:
++        """Set the file's current position (always returns 0)."""
+         return 0
+ 
+     def seekable(self) -> bool:
++        """Check if the null file is seekable (always returns False)."""
+         return False
+ 
+     def tell(self) -> int:
++        """Return the current file position (always returns 0)."""
+         return 0
+ 
+     def truncate(self, __size: Optional[int] = 1) -> int:
++        """Truncate the null file (always returns 0)."""
+         return 0
+ 
+     def writable(self) -> bool:
++        """Check if the null file is writable (always returns False)."""
+         return False
+ 
+     def writelines(self, __lines: Iterable[str]) -> None:
++        """Write lines to the null file (no operation)."""
+         pass
+ 
+     def __next__(self) -> str:
++        """Return the next line from the null file (returns an empty string)."""
+         return ""
+ 
+     def __iter__(self) -> Iterator[str]:

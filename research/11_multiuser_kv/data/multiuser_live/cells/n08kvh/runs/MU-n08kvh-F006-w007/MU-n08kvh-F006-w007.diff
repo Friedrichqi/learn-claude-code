@@ -1,0 +1,12 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/requests/help.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py	2026-09-17 15:46:11.047866462 -0400
++++ /tmp/yqi10/mu/102994/g0/lane06/profiling_sandbox/requests/help.py	2026-09-27 03:08:31.512002504 -0400
+@@ -66,7 +66,7 @@
+     return {"name": implementation, "version": implementation_version}
+ 
+ 
+-def info() -> dict[str, Any]:
++def info_v2() -> dict[str, Any]:
+     """Generate information for a bug report."""
+     try:
+         platform_info = {

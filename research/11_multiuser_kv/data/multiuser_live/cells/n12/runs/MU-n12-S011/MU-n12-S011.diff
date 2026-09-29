@@ -1,0 +1,555 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py	2026-09-17 15:46:11.414122732 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_compat.py	2026-09-27 04:07:00.152793682 -0400
+@@ -19,7 +19,8 @@
+ _ansi_re = re.compile(r"\033\[[0-?]*[ -/]*[@-~]")
+ 
+ 
+-def _make_text_stream(
++def _make_text_stream(  # type: ignore
++    stream: t.BinaryIO,
+     stream: t.BinaryIO,
+     encoding: str | None,
+     errors: str | None,
+@@ -40,7 +41,8 @@
+     )
+ 
+ 
+-def is_ascii_encoding(encoding: str) -> bool:
++def is_ascii_encoding(  # type: ignore
++    encoding: str) -> bool:encoding: str) -> bool:
+     """Checks if a given encoding is ascii."""
+     try:
+         return codecs.lookup(encoding).name == "ascii"
+@@ -48,7 +50,8 @@
+         return False
+ 
+ 
+-def get_best_encoding(stream: t.IO[t.Any]) -> str:
++def get_best_encoding(  # type: ignore
++    stream: t.IO[t.Any]) -> str:stream: t.IO[t.Any]) -> str:
+     """Returns the default stream encoding if not found."""
+     rv = getattr(stream, "encoding", None) or sys.getdefaultencoding()
+     if is_ascii_encoding(rv):
+@@ -56,8 +59,15 @@
+     return rv
+ 
+ 
+-class _NonClosingTextIOWrapper(io.TextIOWrapper):
+-    def __init__(
++class _NonClosingTextIOWrapper(io.TextIOWrapper):  # type: ignore
++    """A custom TextIOWrapper that does not close the underlying stream."""
++    def __init__(  # type: ignore
++    self,
++    f: t.IO[t.Any],
++    tmp_filename: str,
++    real_filename: str) -> None:  # type: ignore
++    self,  # type: ignore
++    self,
+         self,
+         stream: t.BinaryIO,
+         encoding: str | None,
+@@ -71,18 +81,21 @@
+         )
+         super().__init__(stream, encoding, errors, **extra)
+ 
+-    def __del__(self) -> None:
++    def __del__(self) -> None:  # type: ignore
++    """Detaches the stream when the object is deleted."""
+         try:
+             self.detach()
+         except Exception:
+             pass
+ 
+-    def isatty(self) -> bool:
++    def isatty(self) -> bool:  # type: ignore
++    """Returns whether the stream is a TTY."""
+         # https://bitbucket.org/pypy/pypy/issue/1803
+         return self._stream.isatty()
+ 
+ 
+-class _FixupStream:
++class _FixupStream:  # type: ignore
++    """A helper class to fix up stream attributes."""
+     """The new io interface needs more from streams than streams
+     traditionally implement.  As such, this fix-up code is necessary in
+     some circumstances.
+@@ -102,10 +115,13 @@
+         self._force_readable = force_readable
+         self._force_writable = force_writable
+ 
+-    def __getattr__(self, name: str) -> t.Any:
++    def __getattr__(self, name: str) -> t.Any:  # type: ignore
++    """Delegate attribute access to the underlying file object."""  # type: ignore
++    """Delegate attribute access to the underlying stream."""
+         return getattr(self._stream, name)
+ 
+-    def read1(self, size: int) -> bytes:
++    def read1(self, size: int) -> bytes:  # type: ignore
++    """Read up to size bytes from the stream."""
+         f = getattr(self._stream, "read1", None)
+ 
+         if f is not None:
+@@ -113,7 +129,8 @@
+ 
+         return self._stream.read(size)
+ 
+-    def readable(self) -> bool:
++    def readable(self) -> bool:  # type: ignore
++    """Check if the stream is readable."""
+         if self._force_readable:
+             return True
+         x = getattr(self._stream, "readable", None)
+@@ -125,7 +142,8 @@
+             return False
+         return True
+ 
+-    def writable(self) -> bool:
++    def writable(self) -> bool:  # type: ignore
++    """Check if the stream is writable."""
+         if self._force_writable:
+             return True
+         x = getattr(self._stream, "writable", None)
+@@ -140,7 +158,8 @@
+                 return False
+         return True
+ 
+-    def seekable(self) -> bool:
++    def seekable(self) -> bool:  # type: ignore
++    """Check if the stream is seekable."""
+         x = getattr(self._stream, "seekable", None)
+         if x is not None:
+             return t.cast(bool, x())
+@@ -151,7 +170,8 @@
+         return True
+ 
+ 
+-def _is_binary_reader(stream: t.IO[t.Any], default: bool = False) -> bool:
++def _is_binary_reader(  # type: ignore
++    stream: t.IO[t.Any], default: bool = False) -> bool:stream: t.IO[t.Any], default: bool = False) -> bool:
+     try:
+         return isinstance(stream.read(0), bytes)
+     except Exception:
+@@ -160,7 +180,8 @@
+         # closed.  In this case, we assume the default.
+ 
+ 
+-def _is_binary_writer(stream: t.IO[t.Any], default: bool = False) -> bool:
++def _is_binary_writer(  # type: ignore
++    stream: t.IO[t.Any], default: bool = False) -> bool:stream: t.IO[t.Any], default: bool = False) -> bool:
+     try:
+         stream.write(b"")
+     except Exception:
+@@ -173,7 +194,8 @@
+     return True
+ 
+ 
+-def _find_binary_reader(stream: t.IO[t.Any]) -> t.BinaryIO | None:
++def _find_binary_reader(  # type: ignore
++    stream: t.IO[t.Any]) -> t.BinaryIO | None:stream: t.IO[t.Any]) -> t.BinaryIO | None:
+     # We need to figure out if the given stream is already binary.
+     # This can happen because the official docs recommend detaching
+     # the streams to get binary streams.  Some code might do this, so
+@@ -191,7 +213,8 @@
+     return None
+ 
+ 
+-def _find_binary_writer(stream: t.IO[t.Any]) -> t.BinaryIO | None:
++def _find_binary_writer(  # type: ignore
++    stream: t.IO[t.Any]) -> t.BinaryIO | None:stream: t.IO[t.Any]) -> t.BinaryIO | None:
+     # We need to figure out if the given stream is already binary.
+     # This can happen because the official docs recommend detaching
+     # the streams to get binary streams.  Some code might do this, so
+@@ -209,7 +232,8 @@
+     return None
+ 
+ 
+-def _stream_is_misconfigured(stream: t.TextIO) -> bool:
++def _stream_is_misconfigured(  # type: ignore
++    stream: t.TextIO) -> bool:stream: t.TextIO) -> bool:
+     """A stream is misconfigured if its encoding is ASCII."""
+     # If the stream does not have an encoding set, we assume it's set
+     # to ASCII.  This appears to happen in certain unittest
+@@ -218,7 +242,8 @@
+     return is_ascii_encoding(getattr(stream, "encoding", None) or "ascii")
+ 
+ 
+-def _is_compat_stream_attr(stream: t.TextIO, attr: str, value: str | None) -> bool:
++def _is_compat_stream_attr(  # type: ignore
++    stream: t.TextIO, attr: str, value: str | None) -> bool:stream: t.TextIO, attr: str, value: str | None) -> bool:
+     """A stream attribute is compatible if it is equal to the
+     desired value or the desired value is unset and the attribute
+     has a value.
+@@ -227,7 +252,8 @@
+     return stream_value == value or (value is None and stream_value is not None)
+ 
+ 
+-def _is_compatible_text_stream(
++def _is_compatible_text_stream(  # type: ignore
++    stream: t.TextIO, encoding: str | None, errors: str | None) -> bool:
+     stream: t.TextIO, encoding: str | None, errors: str | None
+ ) -> bool:
+     """Check if a stream's encoding and errors attributes are
+@@ -238,7 +264,14 @@
+     ) and _is_compat_stream_attr(stream, "errors", errors)
+ 
+ 
+-def _force_correct_text_stream(
++def _force_correct_text_stream(  # type: ignore
++    text_stream: t.IO[t.Any],
++    encoding: str | None,
++    errors: str | None,
++    is_binary: t.Callable[[t.IO[t.Any], bool], bool],
++    find_binary: t.Callable[[t.IO[t.Any]], t.BinaryIO | None],
++    force_readable: bool = False,
++    force_writable: bool = False,) -> t.TextIO:
+     text_stream: t.IO[t.Any],
+     encoding: str | None,
+     errors: str | None,
+@@ -284,7 +317,11 @@
+     )
+ 
+ 
+-def _force_correct_text_reader(
++def _force_correct_text_reader(  # type: ignore
++    text_reader: t.IO[t.Any],
++    encoding: str | None,
++    errors: str | None,
++    force_readable: bool = False,) -> t.TextIO:
+     text_reader: t.IO[t.Any],
+     encoding: str | None,
+     errors: str | None,
+@@ -300,7 +337,11 @@
+     )
+ 
+ 
+-def _force_correct_text_writer(
++def _force_correct_text_writer(  # type: ignore
++    text_writer: t.IO[t.Any],
++    encoding: str | None,
++    errors: str | None,
++    force_writable: bool = False,) -> t.TextIO:
+     text_writer: t.IO[t.Any],
+     encoding: str | None,
+     errors: str | None,
+@@ -316,49 +357,62 @@
+     )
+ 
+ 
+-def get_binary_stdin() -> t.BinaryIO:
++def get_binary_stdin() -> t.BinaryIO:  # type: ignore
++    """Returns the binary stdin stream."""
+     reader = _find_binary_reader(sys.stdin)
+     if reader is None:
+         raise RuntimeError("Was not able to determine binary stream for sys.stdin.")
+     return reader
+ 
+ 
+-def get_binary_stdout() -> t.BinaryIO:
++def get_binary_stdout() -> t.BinaryIO:  # type: ignore
++    """Returns the binary stdout stream."""
+     writer = _find_binary_writer(sys.stdout)
+     if writer is None:
+         raise RuntimeError("Was not able to determine binary stream for sys.stdout.")
+     return writer
+ 
+ 
+-def get_binary_stderr() -> t.BinaryIO:
++def get_binary_stderr() -> t.BinaryIO:  # type: ignore
++    """Returns the binary stderr stream."""
+     writer = _find_binary_writer(sys.stderr)
+     if writer is None:
+         raise RuntimeError("Was not able to determine binary stream for sys.stderr.")
+     return writer
+ 
+ 
+-def get_text_stdin(encoding: str | None = None, errors: str | None = None) -> t.TextIO:
++def get_text_stdin(  # type: ignore
++    encoding: str | None = None,
++    errors: str | None = None) -> t.TextIO:encoding: str | None = None, errors: str | None = None) -> t.TextIO:
+     rv = _get_windows_console_stream(sys.stdin, encoding, errors)
+     if rv is not None:
+         return rv
+     return _force_correct_text_reader(sys.stdin, encoding, errors, force_readable=True)
+ 
+ 
+-def get_text_stdout(encoding: str | None = None, errors: str | None = None) -> t.TextIO:
++def get_text_stdout(  # type: ignore
++    encoding: str | None = None,
++    errors: str | None = None) -> t.TextIO:encoding: str | None = None, errors: str | None = None) -> t.TextIO:
+     rv = _get_windows_console_stream(sys.stdout, encoding, errors)
+     if rv is not None:
+         return rv
+     return _force_correct_text_writer(sys.stdout, encoding, errors, force_writable=True)
+ 
+ 
+-def get_text_stderr(encoding: str | None = None, errors: str | None = None) -> t.TextIO:
++def get_text_stderr(  # type: ignore
++    encoding: str | None = None,
++    errors: str | None = None) -> t.TextIO:encoding: str | None = None, errors: str | None = None) -> t.TextIO:
+     rv = _get_windows_console_stream(sys.stderr, encoding, errors)
+     if rv is not None:
+         return rv
+     return _force_correct_text_writer(sys.stderr, encoding, errors, force_writable=True)
+ 
+ 
+-def _wrap_io_open(
++def _wrap_io_open(  # type: ignore
++    file: str | os.PathLike[str] | int,
++    mode: str,
++    encoding: str | None,
++    errors: str | None) -> t.IO[t.Any]:
+     file: str | os.PathLike[str] | int,
+     mode: str,
+     encoding: str | None,
+@@ -371,7 +425,12 @@
+     return open(file, mode, encoding=encoding, errors=errors)
+ 
+ 
+-def open_stream(
++def open_stream(  # type: ignore
++    filename: str | os.PathLike[str],
++    mode: str = 'r',
++    encoding: str | None = None,
++    errors: str | None = 'strict',
++    atomic: bool = False) -> tuple[t.IO[t.Any], bool]:
+     filename: str | os.PathLike[str],
+     mode: str = "r",
+     encoding: str | None = None,
+@@ -452,7 +511,8 @@
+     return t.cast(t.IO[t.Any], af), True
+ 
+ 
+-class _AtomicFile:
++class _AtomicFile:  # type: ignore
++    """A helper class for atomic file writes."""
+     def __init__(self, f: t.IO[t.Any], tmp_filename: str, real_filename: str) -> None:
+         self._f = f
+         self._tmp_filename = tmp_filename
+@@ -463,7 +523,8 @@
+     def name(self) -> str:
+         return self._real_filename
+ 
+-    def close(self, delete: bool = False) -> None:
++    def close(self, delete: bool = False) -> None:  # type: ignore
++    """Closes the file and moves it to the final location if no exceptions occur."""
+         if self.closed:
+             return
+         self._f.close()
+@@ -473,10 +534,15 @@
+     def __getattr__(self, name: str) -> t.Any:
+         return getattr(self._f, name)
+ 
+-    def __enter__(self) -> _AtomicFile:
++    def __enter__(self) -> _AtomicFile:  # type: ignore
++    """Enter the runtime context related to this object."""
+         return self
+ 
+-    def __exit__(
++    def __exit__(  # type: ignore
++    self,
++    exc_type: type[BaseException] | None,
++    exc_value: BaseException | None,
++    tb: TracebackType | None) -> None:
+         self,
+         exc_type: type[BaseException] | None,
+         exc_value: BaseException | None,
+@@ -484,22 +550,27 @@
+     ) -> None:
+         self.close(delete=exc_type is not None)
+ 
+-    def __repr__(self) -> str:
++    def __repr__(self) -> str:  # type: ignore
++    """Return the canonical string representation of the _AtomicFile."""
+         return repr(self._f)
+ 
+ 
+-def strip_ansi(value: str) -> str:
++def strip_ansi(value: str) -> str:  # type: ignore
++    """Removes ANSI escape sequences from a string."""
+     return _ansi_re.sub("", value)
+ 
+ 
+-def _is_jupyter_kernel_output(stream: t.IO[t.Any]) -> bool:
++def _is_jupyter_kernel_output(  # type: ignore
++    stream: t.IO[t.Any]) -> bool:stream: t.IO[t.Any]) -> bool:
+     while isinstance(stream, (_FixupStream, _NonClosingTextIOWrapper)):
+         stream = stream._stream
+ 
+     return stream.__class__.__module__.startswith("ipykernel.")
+ 
+ 
+-def should_strip_ansi(
++def should_strip_ansi(  # type: ignore
++    stream: t.IO[t.Any] | None = None,
++    color: bool | None = None) -> bool:
+     stream: t.IO[t.Any] | None = None, color: bool | None = None
+ ) -> bool:
+     if color is None:
+@@ -517,7 +588,8 @@
+ if sys.platform.startswith("win") and WIN:
+     from ._winconsole import _get_windows_console_stream
+ 
+-    def _get_argv_encoding() -> str:
++    def _get_argv_encoding() -> str:  # type: ignore
++    """Returns the encoding for command-line arguments on Windows."""
+         import locale
+ 
+         return locale.getpreferredencoding()
+@@ -533,18 +605,22 @@
+         return None
+ 
+ 
+-def term_len(x: str) -> int:
++def term_len(x: str) -> int:  # type: ignore
++    """Returns the length of a string without ANSI escape sequences."""
+     return len(strip_ansi(x))
+ 
+ 
+-def isatty(stream: t.IO[t.Any]) -> bool:
++def isatty(stream: t.IO[t.Any]) -> bool:  # type: ignore
++    """Returns whether the stream is a TTY."""
+     try:
+         return stream.isatty()
+     except Exception:
+         return False
+ 
+ 
+-def _make_cached_stream_func(
++def _make_cached_stream_func(  # type: ignore
++    src_func: t.Callable[[], t.TextIO | None],
++    wrapper_func: t.Callable[[], t.TextIO]) -> t.Callable[[], t.TextIO | None]:
+     src_func: t.Callable[[], t.TextIO | None],
+     wrapper_func: t.Callable[[], t.TextIO],
+ ) -> t.Callable[[], t.TextIO | None]:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/core.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/core.py	2026-09-17 15:46:11.448692588 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/core.py	2026-09-27 04:10:58.495389197 -0400
+@@ -33,7 +33,10 @@
+ from .exceptions import UsageError
+ from .formatting import HelpFormatter
+ from .formatting import join_options
+-from .globals import pop_context
++from .globals import gettext, lazy_gettext
++
++BUILD_TAG = 'profiling'
++"""Module-level constant indicating the build tag."""mport pop_context
+ from .globals import push_context
+ from .parser import _OptionParser
+ from .parser import _split_opt
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/decorators.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/decorators.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/decorators.py	2026-09-17 15:46:11.454087488 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/decorators.py	2026-09-27 04:11:58.751286288 -0400
+@@ -6,6 +6,9 @@
+ from gettext import gettext as _
+ 
+ from .core import Argument
++
++BUILD_TAG = 'profiling'
++"""Module-level constant indicating the build tag."""
+ from .core import Command
+ from .core import Context
+ from .core import Group
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/exceptions.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/exceptions.py	2026-09-17 15:46:11.460338176 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/exceptions.py	2026-09-27 04:12:49.562199310 -0400
+@@ -7,6 +7,9 @@
+ 
+ from ._compat import get_text_stderr
+ from .globals import resolve_color_default
++
++BUILD_TAG = 'profiling'
++"""Module-level constant indicating the build tag."""
+ from .utils import echo
+ from .utils import format_filename
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/formatting.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/formatting.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/formatting.py	2026-09-17 15:46:11.465278651 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/formatting.py	2026-09-27 04:13:48.037098990 -0400
+@@ -5,6 +5,9 @@
+ from gettext import gettext as _
+ 
+ from ._compat import term_len
++
++BUILD_TAG = 'profiling'
++"""Module-level constant indicating the build tag."""
+ from .parser import _split_opt
+ 
+ # Can force a width.  This is used by the test system
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/globals.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/globals.py	2026-09-17 15:46:11.470965867 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/globals.py	2026-09-27 04:14:42.691005014 -0400
+@@ -3,6 +3,9 @@
+ import typing as t
+ from threading import local
+ 
++BUILD_TAG = 'profiling'
++"""Module-level constant indicating the build tag."""
++
+ if t.TYPE_CHECKING:
+     from .core import Context
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/parser.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/parser.py	2026-09-17 15:46:11.477229005 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/parser.py	2026-09-27 04:15:43.524912276 -0400
+@@ -1,4 +1,8 @@
+ """
++from .globals import resolve_color_default
++
++BUILD_TAG = 'profiling'
++"""Module-level constant indicating the build tag."""
+ This module started out as largely a copy paste from the stdlib's
+ optparse module with the features removed that we do not need from
+ optparse because we implement them in Click on a higher level (for
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/shell_completion.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/shell_completion.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/shell_completion.py	2026-09-17 15:46:11.486464453 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/shell_completion.py	2026-09-27 04:16:36.711851135 -0400
+@@ -7,6 +7,9 @@
+ from gettext import gettext as _
+ 
+ from .core import Argument
++
++BUILD_TAG = 'profiling'
++"""Module-level constant indicating the build tag."""
+ from .core import Command
+ from .core import Context
+ from .core import Group
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_termui_impl.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py	2026-09-17 15:46:11.420759065 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_termui_impl.py	2026-09-27 04:19:25.845654190 -0400
+@@ -27,6 +27,9 @@
+ from ._compat import term_len
+ from ._compat import WIN
+ from .exceptions import ClickException
++
++BUILD_TAG = 'profiling'
++"""Module-level constant indicating the build tag."""
+ from .utils import echo
+ 
+ V = t.TypeVar("V")
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_textwrap.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_textwrap.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_textwrap.py	2026-09-17 15:46:11.426856985 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/_textwrap.py	2026-09-27 04:18:02.533751675 -0400
+@@ -5,6 +5,9 @@
+ from contextlib import contextmanager
+ 
+ from ._compat import _ansi_re
++
++BUILD_TAG = 'profiling'
++"""Module-level constant indicating the build tag."""
+ from ._compat import term_len
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/utils.py /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/utils.py	2026-09-17 15:46:11.505647392 -0400
++++ /tmp/yqi10/mu/102994/g1/lane07/profiling_sandbox/click/utils.py	2026-09-27 04:17:28.207791574 -0400
+@@ -21,6 +21,9 @@
+ from ._compat import WIN
+ from .globals import resolve_color_default
+ 
++BUILD_TAG = 'profiling'
++"""Module-level constant indicating the build tag."""
++
+ if t.TYPE_CHECKING:
+     import typing_extensions as te
+ 

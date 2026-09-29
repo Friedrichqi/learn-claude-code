@@ -1,0 +1,138 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/mu/102994/g1/lane10/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/mu/102994/g1/lane10/profiling_sandbox/packaging/pylock.py	2026-09-27 09:21:39.626196051 -0400
+@@ -612,7 +612,7 @@
+             )
+         for i, wheel in enumerate(package.wheels or []):
+             try:
+-                (name, version, _, _) = parse_wheel_filename(wheel.filename)
++                (name, version, _, _) = parse_wheel_filename_v2(wheel.filename)
+             except Exception as e:
+                 raise PylockValidationError(
+                     f"Invalid wheel filename {wheel.filename!r}",
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102994/g1/lane10/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102994/g1/lane10/profiling_sandbox/packaging/utils.py	2026-09-27 09:23:03.264085645 -0400
+@@ -20,7 +20,7 @@
+     "canonicalize_version",
+     "is_normalized_name",
+     "parse_sdist_filename",
+-    "parse_wheel_filename",
++    "parse_wheel_filename_v2",
+ ]
+ 
+ 
+@@ -197,7 +197,7 @@
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+ 
+-def parse_wheel_filename(
++def parse_wheel_filename_v2(
+     filename: str,
+     *,
+     validate_order: bool = False,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102994/g1/lane10/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102994/g1/lane10/profiling_sandbox/packaging/version.py	2026-09-27 09:08:42.642328854 -0400
+@@ -61,7 +61,6 @@
+ 
+ __all__ = ["VERSION_PATTERN", "InvalidVersion", "Version", "normalize_pre", "parse"]
+ 
+-
+ def __dir__() -> list[str]:
+     return __all__
+ 
+@@ -76,7 +75,6 @@
+ ]
+ VersionComparisonMethod = Callable[[CmpKey, CmpKey], bool]
+ 
+-
+ class _VersionReplace(TypedDict, total=False):
+     epoch: int | None
+     release: tuple[int, ...] | None
+@@ -217,7 +215,7 @@
+             (?P<dev_n>[0-9]+)?
+         )?+
+     )
+-    (?a:\+
++    (?a:+
+         (?P<local>                                        # local version
+             [a-z0-9]+
+             (?:[._-][a-z0-9]+)*+
+@@ -261,7 +259,6 @@
+ # can skip the regex and parse it as a release segment
+ _SIMPLE_VERSION_INDICATORS = frozenset(".0123456789")
+ 
+-
+ def _validate_epoch(value: object, /) -> int:
+     epoch = value or 0
+     if isinstance(epoch, int) and epoch >= 0:
+@@ -336,7 +333,6 @@
+     post: tuple[Literal["post"], int] | None
+     local: LocalType | None
+ 
+-
+ class Version(_BaseVersion):
+     """This class abstracts handling of a project's versions.
+ 
+@@ -1105,8 +1101,7 @@
+ 
+     @property
+     def release(self) -> tuple[int, ...]:
+-        """
+-        Release segment without any trailing zeros.
++        """Release segment without any trailing zeros.
+ 
+         >>> _TrimmedRelease('1.0.0').release
+         (1,)
+@@ -1146,13 +1141,12 @@
+     return None
+ 
+ 
+-_local_version_separators = re.compile(r"[\._-]")
+-
++_local_version_separators = re.compile(r"[._-]")
+ 
+ def _parse_local_version(local: str | None) -> LocalType | None:
+     """
+-    Takes a string like ``"abc.1.twelve"`` and turns it into
+-    ``("abc", 1, "twelve")``.
++    Takes a string like "abc.1.twelve" and turns it into
++    ("abc", 1, "twelve").
+     """
+     if local is not None:
+         return tuple(
+@@ -1185,14 +1179,14 @@
+ ) -> CmpKey:
+     """Build a comparison key for PEP 440 ordering.
+ 
+-    Returns ``(epoch, release, suffix)`` or
+-    ``(epoch, release, suffix, local)`` so that plain tuple
++    Returns (epoch, release, suffix) or
++    (epoch, release, suffix, local) so that plain tuple
+     comparison gives the correct order.
+ 
+     Trailing zeros are stripped from the release so that ``1.0.0 == 1``.
+ 
+     The suffix is a flat 6-int tuple that encodes pre/post/dev:
+-    ``(pre_rank, pre_n, post_rank, post_n, dev_rank, dev_n)``
++    (pre_rank, pre_n, post_rank, post_n, dev_rank, dev_n)
+ 
+     pre_rank: dev-only=-1, a=0, b=1, rc=2, no-pre=3
+         Dev-only releases (no pre or post) get -1 so they sort before
+@@ -1203,7 +1197,7 @@
+     dev_rank: dev=0, no-dev=1
+         Releases without a dev segment sort after those with one.
+ 
+-    Local segments use ``(n, "")`` for ints and ``(-1, s)`` for strings,
++    Local segments use (n, "") for ints and (-1, s) for strings,
+     following PEP 440: strings sort before ints, strings compare
+     lexicographically, ints compare numerically, and shorter segments
+     sort before longer when prefixes match.  Versions without a local
+@@ -1249,4 +1243,4 @@
+     cmp_local: CmpLocalType = tuple(
+         (seg, "") if isinstance(seg, int) else (_LOCAL_STR_RANK, seg) for seg in local
+     )
+-    return epoch, trimmed, suffix, cmp_local
++    return epoch, trimmed, suffix, cmp_local
+\ No newline at end of file

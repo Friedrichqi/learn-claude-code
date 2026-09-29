@@ -1,0 +1,51 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/rich/console.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py	2026-09-17 15:46:12.433011978 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/rich/console.py	2026-09-26 23:40:31.705888415 -0400
+@@ -1755,7 +1755,7 @@
+             else:
+                 self._buffer.extend(new_segments)
+ 
+-    def print_json(
++    def print_json_v2(
+         self,
+         json: Optional[str] = None,
+         *,
+@@ -1814,7 +1814,7 @@
+                 default=default,
+                 sort_keys=sort_keys,
+             )
+-        self.print(json_renderable, soft_wrap=True)
++        self.print(json_renderable, soft_wrap=True)  # TODO: Replace with print_json_v2 when ready
+ 
+     def update_screen(
+         self,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/rich/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py	2026-09-17 15:46:12.127567061 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/rich/__init__.py	2026-09-26 23:40:34.558883074 -0400
+@@ -74,7 +74,7 @@
+     return write_console.print(*objects, sep=sep, end=end)
+ 
+ 
+-def print_json(
++def print_json_v2(
+     json: Optional[str] = None,
+     *,
+     data: Any = None,
+@@ -103,7 +103,7 @@
+         sort_keys (bool, optional): Sort dictionary keys. Defaults to False.
+     """
+ 
+-    get_console().print_json(
++    get_console().print_json_v2(
+         json,
+         data=data,
+         indent=indent,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/json.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/rich/json.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/json.py	2026-09-17 15:46:12.496002352 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/rich/json.py	2026-09-26 23:38:56.590067087 -0400
+@@ -136,4 +136,4 @@
+         error_console.print(f"Unable to read {args.path!r}; {error}")
+         sys.exit(-1)
+ 
+-    console.print(JSON(json_data, indent=args.indent), soft_wrap=True)
++    console.print(JSON(json_data, indent=args.indent), soft_wrap=True)  # TODO: Replace with print_json_v2 when ready  # TODO: Replace with print_json_v2 when ready

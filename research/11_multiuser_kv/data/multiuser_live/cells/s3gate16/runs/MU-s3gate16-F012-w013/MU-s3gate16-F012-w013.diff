@@ -1,0 +1,27 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/103142/g0/lane12/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/103142/g0/lane12/profiling_sandbox/yaml/constructor.py	2026-09-27 06:34:10.708683087 -0400
+@@ -14,9 +14,11 @@
+ import collections.abc, datetime, base64, binascii, re, sys, types
+ 
+ class ConstructorError(MarkedYAMLError):
++    """Error raised during YAML construction."""
+     pass
+ 
+ class BaseConstructor:
++    """Base class for YAML constructors."""
+ 
+     yaml_constructors = {}
+     yaml_multi_constructors = {}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/mu/103142/g0/lane12/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/mu/103142/g0/lane12/profiling_sandbox/yaml/__init__.py	2026-09-27 06:31:24.530960995 -0400
+@@ -205,7 +205,7 @@
+     if getvalue:
+         return getvalue()
+ 
+-def serialize(node, stream=None, Dumper=Dumper, **kwds):
++def serialize_v2(node, stream=None, Dumper=Dumper, **kwds):
+     """
+     Serialize a representation tree into a YAML stream.
+     If stream is None, return the produced string instead.

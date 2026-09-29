@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py /tmp/yqi10/mu/103142/g0/lane07/profiling_sandbox/typer/_click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py	2026-09-17 15:46:11.494043204 -0400
++++ /tmp/yqi10/mu/103142/g0/lane07/profiling_sandbox/typer/_click/core.py	2026-09-27 07:30:22.205731084 -0400
+@@ -263,7 +263,7 @@
+ 
+     def __enter__(self) -> "Context":
+         self._depth += 1
+-        push_context(self)
++        push_context_v2(self)
+         return self
+ 
+     def __exit__(
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/103142/g0/lane07/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/103142/g0/lane07/profiling_sandbox/typer/_click/globals.py	2026-09-27 07:30:10.350750812 -0400
+@@ -35,7 +35,7 @@
+     return None
+ 
+ 
+-def push_context(ctx: "Context") -> None:
++def push_context_v2(ctx: "Context") -> None:
+     """Pushes a new context to the current stack."""
+     _local.__dict__.setdefault("stack", []).append(ctx)
+ 

@@ -1,0 +1,66 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/compat.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/requests/compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/compat.py	2026-09-17 15:46:11.033215664 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/requests/compat.py	2026-09-27 02:09:30.894008789 -0400
+@@ -69,6 +69,7 @@
+     has_simplejson = True
+ except ImportError:
+     import json
++from .help import info_v2
+ 
+ if has_simplejson:
+     from simplejson import JSONDecodeError  # type: ignore[import-not-found]
+@@ -101,6 +102,12 @@
+     getproxies,
+     getproxies_environment,
+     parse_http_list,
++    proxy_bypass,
++    proxy_bypass_environment,  # type: ignore[attr-defined]  # https://github.com/python/cpython/issues/145331
++    info_v2,
++    getproxies,
++    getproxies_environment,
++    parse_http_list,
+     proxy_bypass,
+     proxy_bypass_environment,  # type: ignore[attr-defined]  # https://github.com/python/cpython/issues/145331
+ )
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/requests/help.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py	2026-09-17 15:46:11.047866462 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/requests/help.py	2026-09-27 02:01:54.518109928 -0400
+@@ -66,7 +66,7 @@
+     return {"name": implementation, "version": implementation_version}
+ 
+ 
+-def info() -> dict[str, Any]:
++def info_v2() -> dict[str, Any]:
+     """Generate information for a bug report."""
+     try:
+         platform_info = {
+@@ -127,7 +127,7 @@
+ 
+ def main():
+     """Pretty-print the bug information as JSON."""
+-    print(json.dumps(info(), sort_keys=True, indent=2))
++    print(json.dumps(info_v2(), sort_keys=True, indent=2))
+ 
+ 
+ if __name__ == "__main__":
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/requests/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py	2026-09-17 15:46:10.941532986 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/requests/__init__.py	2026-09-27 02:04:44.402956196 -0400
+@@ -167,6 +167,17 @@
+     __title__,
+     __url__,
+     __version__,
++    info_v2,
++    __author__,
++    __author_email__,
++    __build__,
++    __cake__,
++    __copyright__,
++    __description__,
++    __license__,
++    __title__,
++    __url__,
++    __version__,
+ )
+ from .api import delete, get, head, options, patch, post, put, request
+ from .exceptions import (

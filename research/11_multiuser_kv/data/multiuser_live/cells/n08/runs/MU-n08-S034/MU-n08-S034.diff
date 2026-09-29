@@ -1,0 +1,122 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/requests/help.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py	2026-09-17 15:46:11.047866462 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/requests/help.py	2026-09-27 01:11:37.350542982 -0400
+@@ -66,8 +66,8 @@
+     return {"name": implementation, "version": implementation_version}
+ 
+ 
+-def info() -> dict[str, Any]:
+-    """Generate information for a bug report."""
++def info_v2() -> dict[str, Any]:
++    """Generate information for a bug report. (v2)"""
+     try:
+         platform_info = {
+             "system": platform.system(),
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/requests/models.py	2026-09-27 01:10:04.134791711 -0400
+@@ -353,6 +353,7 @@
+         self.cookies = cookies
+ 
+     def __repr__(self) -> str:
++        """Returns a string representation of the PreparedRequest object."""
+         return f"<Request [{self.method}]>"
+ 
+     def prepare(self) -> PreparedRequest:
+@@ -403,6 +404,8 @@
+     _body_position: int | object | None
+ 
+     def __init__(self) -> None:
++        """The fully mutable :class:`PreparedRequest <PreparedRequest>` object,
++        containing the exact bytes that will be sent to the server."""
+         #: HTTP verb to send to the server.
+         self.method = None
+         #: HTTP URL to send the request to.
+@@ -452,6 +455,7 @@
+         return f"<PreparedRequest [{self.method}]>"
+ 
+     def copy(self) -> PreparedRequest:
++        """Returns a copy of the PreparedRequest object."""
+         p = PreparedRequest()
+         p.method = self.method
+         p.url = self.url
+@@ -464,6 +468,7 @@
+ 
+     def prepare_method(self, method: str | None) -> None:
+         """Prepares the given HTTP method."""
++        """Prepares the given HTTP method."""
+         self.method = method
+         if self.method is not None:
+             self.method = to_native_string(self.method.upper())
+@@ -484,6 +489,11 @@
+         params: _t.ParamsType,
+     ) -> None:
+         """Prepares the given HTTP URL."""
++        self,
++        url: _t.UriType,
++        params: _t.ParamsType,
++    ) -> None:
++        """Prepares the given HTTP URL."""
+         #: Accept objects that have string representations.
+         #: We're unable to blindly call unicode/str functions
+         #: as this will include the bytestring indicator (b'')
+@@ -562,6 +572,7 @@
+ 
+     def prepare_headers(self, headers: Mapping[str, str | bytes] | None) -> None:
+         """Prepares the given HTTP headers."""
++        """Prepares the given HTTP headers."""
+ 
+         self.headers = CaseInsensitiveDict()
+         if headers:
+@@ -572,6 +583,12 @@
+                 self.headers[to_native_string(name)] = value
+ 
+     def prepare_body(
++        self,
++        data: _t.DataType,
++        files: _t.FilesType,
++        json: _t.JsonType = None,
++    ) -> None:
++        """Prepares the given HTTP body data."""
+         self, data: _t.DataType, files: _t.FilesType, json: _t.JsonType = None
+     ) -> None:
+         """Prepares the given HTTP body data."""
+@@ -651,6 +668,7 @@
+ 
+     def prepare_content_length(self, body: _t.BodyType) -> None:
+         """Prepare Content-Length header based on request method and body"""
++        """Prepare Content-Length header based on request method and body"""
+         if body is not None:
+             length = super_len(body)
+             if length:
+@@ -671,6 +689,11 @@
+         url: _t.UriType = "",
+     ) -> None:
+         """Prepares the given HTTP auth data."""
++        self,
++        auth: _t.AuthType,
++        url: _t.UriType = "",
++    ) -> None:
++        """Prepares the given HTTP auth data."""
+ 
+         # If no Auth is explicitly provided, extract it from the URL first.
+         if auth is None:
+@@ -695,6 +718,10 @@
+             self.prepare_content_length(self.body)
+ 
+     def prepare_cookies(
++        self,
++        cookies: RequestsCookieJar | CookieJar | dict[str, str] | None,
++    ) -> None:
++        """Prepares the given HTTP cookie data."""
+         self, cookies: RequestsCookieJar | CookieJar | dict[str, str] | None
+     ) -> None:
+         """Prepares the given HTTP cookie data.
+@@ -719,6 +746,7 @@
+ 
+     def prepare_hooks(self, hooks: _t.HooksInputType | None) -> None:
+         """Prepares the given hooks."""
++        """Prepares the given hooks."""
+         # hooks can be passed as None to the prepare method and to this
+         # method. To prevent iterating over None, simply use an empty list
+         # if hooks is False-y

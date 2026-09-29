@@ -1,0 +1,22 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g1/lane24/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g1/lane24/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-27 08:36:42.926332709 -0400
+@@ -0,0 +1,6 @@
++# Build Tag Changes
++
++The following files have been updated with the `BUILD_TAG = 'profiling'` constant:
++
++- **`_elffile.py`** (Line 4): Added `BUILD_TAG = 'profiling'` near the top.
++- **`version.py`** (Line 4): Added `BUILD_TAG = 'profiling'` near the top.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/103142/g1/lane24/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/103142/g1/lane24/profiling_sandbox/packaging/version.py	2026-09-27 08:36:38.034340224 -0400
+@@ -22,6 +22,8 @@
+     Union,
+ )
+ 
++BUILD_TAG = 'profiling'
++
+ if typing.TYPE_CHECKING:
+     from typing_extensions import Self, Unpack
+ 

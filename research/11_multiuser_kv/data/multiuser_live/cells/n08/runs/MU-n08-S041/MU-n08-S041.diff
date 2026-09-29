@@ -1,0 +1,229 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md	2026-09-27 01:58:13.421961795 -0400
+@@ -0,0 +1,8 @@
++# Build Tag Changes
++
++The `BUILD_TAG` constant has been added to the following files to indicate the profiling build:
++
++1. **code.py** - Line 1
++2. **trace_runtime.py** - Line 1
++3. **trace_stats.py** - Line 1
++4. **trace_view.py** - Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/s15_harness/code.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/code.py	2026-09-23 22:11:16.950193278 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/s15_harness/code.py	2026-09-27 01:53:23.190643872 -0400
+@@ -47,6 +47,8 @@
+ except ImportError:
+     READLINE_AVAILABLE = False
+ 
++BUILD_TAG = 'profiling'
++
+ from anthropic import Anthropic
+ from dotenv import load_dotenv
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/s15_harness/trace_runtime.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py	2026-09-21 17:15:01.589007324 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/s15_harness/trace_runtime.py	2026-09-27 01:58:04.562982368 -0400
+@@ -21,7 +21,9 @@
+ from dataclasses import dataclass, field
+ from datetime import datetime, timezone
+ from pathlib import Path
+-from typing import Any, Callable, Iterator
++from typing import BUILD_TAG = 'profiling'
++
++Any, Callable, Iterator
+ 
+ 
+ SCHEMA_VERSION = "1.0"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_stats.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/s15_harness/trace_stats.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_stats.py	2026-09-21 17:15:01.593120839 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/s15_harness/trace_stats.py	2026-09-27 01:58:07.509975523 -0400
+@@ -25,7 +25,9 @@
+ import sys
+ from collections import Counter
+ from pathlib import Path
+-from typing import Any, Dict, List, Optional
++from typing import BUILD_TAG = 'profiling'
++
++Any, Dict, List, Optional
+ 
+ EXPECTED_SCHEMA_VERSION = "1.0"
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/mu/102767/g1/lane07/profiling_sandbox/s15_harness/trace_view.py	2026-09-27 01:58:09.411971105 -0400
+@@ -9,7 +9,9 @@
+ from collections import Counter, defaultdict
+ from dataclasses import dataclass
+ from pathlib import Path
+-from typing import Any, Iterable
++from typing import BUILD_TAG = 'profiling'
++
++Any, Iterable
+ 
+ 
+ START_TO_END = {
+@@ -24,11 +26,13 @@
+     "permission_wait_start": {"permission_wait_end"},
+     "input_wait_start": {"input_wait_end"},
+ }
++"""Map start events to their expected end events for interval pairing."""
+ WRAPPER_TOOLS = {"task", "spawn_teammate", "Workflow"}
+ 
+ 
+ @dataclass(frozen=True)
+ class Interval:
++    """Represents a time interval between two events."""
+     start_ns: int
+     end_ns: int
+     start_event: dict[str, Any]
+@@ -36,28 +40,34 @@
+ 
+     @property
+     def duration_ms(self) -> float:
++        """Calculate the duration in milliseconds."""
+         return max(0, self.end_ns - self.start_ns) / 1_000_000
+ 
+     @property
+     def agent_id(self) -> str | None:
++        """Get the agent ID from either start or end event."""
+         return self.start_event.get("agent_id") or self.end_event.get("agent_id")
+ 
+     @property
+     def kind(self) -> str:
++        """Get the event kind from the start event."""
+         return str(self.start_event.get("event", "unknown"))
+ 
+     @property
+     def start_data(self) -> dict[str, Any]:
++        """Get the data from the start event."""
+         data = self.start_event.get("data", {})
+         return data if isinstance(data, dict) else {}
+ 
+     @property
+     def end_data(self) -> dict[str, Any]:
++        """Get the data from the end event."""
+         data = self.end_event.get("data", {})
+         return data if isinstance(data, dict) else {}
+ 
+ 
+ def load_trace(path: Path) -> list[dict[str, Any]]:
++    """Load and parse a JSONL trace file into a list of events."""
+     records = []
+     with path.open("r", encoding="utf-8") as handle:
+         for line_number, line in enumerate(handle, start=1):
+@@ -77,6 +87,7 @@
+ 
+ 
+ def pair_spans(events: Iterable[dict[str, Any]]) -> list[Interval]:
++    """Pair start and end events into time intervals."""
+     starts: dict[str, dict[str, Any]] = {}
+     intervals = []
+     for event in events:
+@@ -98,6 +109,7 @@
+ 
+ 
+ def _ranges(intervals: Iterable[Interval]) -> list[tuple[int, int]]:
++    """Convert intervals to sorted start-end tuples."""
+     return sorted(
+         (interval.start_ns, interval.end_ns)
+         for interval in intervals
+@@ -106,6 +118,7 @@
+ 
+ 
+ def _union_ns(intervals: Iterable[Interval]) -> int:
++    """Calculate the total union of time intervals in nanoseconds."""
+     total = 0
+     current_start = current_end = None
+     for start, end in _ranges(intervals):
+@@ -122,6 +135,7 @@
+ 
+ 
+ def _merge_ranges(ranges: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
++    """Merge overlapping time ranges."""
+     merged: list[list[int]] = []
+     for start, end in sorted(ranges):
+         if not merged or start > merged[-1][1]:
+@@ -132,6 +146,7 @@
+ 
+ 
+ def _agent_maps(events: Iterable[dict[str, Any]]):
++    """Build agent hierarchy maps from event data."""
+     info: dict[str, dict[str, Any]] = {
+         "agent-root": {"role": "lead", "name": "Root Agent", "task": "interactive session"}
+     }
+@@ -160,6 +175,7 @@
+ 
+ 
+ def _depths(parents: dict[str, str | None]) -> dict[str, int]:
++    """Calculate agent hierarchy depths."""
+     memo: dict[str, int] = {}
+ 
+     def depth(agent_id: str, visiting: set[str]) -> int:
+@@ -178,6 +194,7 @@
+ 
+ 
+ def _tool_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
++    """Filter intervals representing actual tool work."""
+     work = []
+     for interval in intervals:
+         if interval.kind == "background_start":
+@@ -190,6 +207,7 @@
+ 
+ 
+ def _active_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
++    """Filter intervals representing active work (LLM or tool execution)."""
+     return [
+         interval for interval in intervals
+         if interval.kind == "model_request"
+@@ -201,6 +219,7 @@
+ 
+ 
+ def _maximum_parallel_agents(intervals: Iterable[Interval]) -> int:
++    """Calculate maximum number of parallel agents active at any time."""
+     per_agent: dict[str, list[tuple[int, int]]] = defaultdict(list)
+     for interval in intervals:
+         if interval.agent_id:
+@@ -219,6 +238,7 @@
+ 
+ 
+ def calculate_metrics(events: list[dict[str, Any]]) -> dict[str, Any]:
++    """Calculate performance metrics from trace events."""
+     intervals = pair_spans(events)
+     info, parents, _created_at = _agent_maps(events)
+     depths = _depths(parents)
+@@ -333,7 +353,7 @@
+         "agent_launch_wait_ms": round(sum(launch_waits), 3),
+         "maximum_agent_launch_wait_ms": round(max(launch_waits, default=0.0), 3),
+         "orchestration_overhead_ms": round(orchestration_ms, 3),
+-    }
++    """Calculate performance metrics from trace events."""
+ 
+ 
+ def build_summary(path: Path, events: list[dict[str, Any]]) -> dict[str, Any]:
+@@ -375,6 +395,7 @@
+ 
+ 
+ def _short(value: Any, limit: int = 100) -> str:
++    """Truncate and format a value for display."""
+     if isinstance(value, dict) and "preview" in value:
+         value = value.get("preview", "")
+     elif not isinstance(value, str):
+@@ -384,6 +405,7 @@
+ 
+ 
+ def _agent_label(agent_id: str, info: dict[str, dict[str, Any]]) -> str:
++    """Generate a display label for an agent."""
+     data = info.get(agent_id, {})
+     if agent_id == "agent-root":
+         return "Root Agent"
+@@ -503,6 +525,7 @@
+ 
+ 
+ def render_timeline(events: list[dict[str, Any]], width: int = 90) -> str:
++    """Generate a text-based timeline visualization."""
+     intervals = pair_spans(events)
+     info, _parents, _created = _agent_maps(events)
+     first_ns = int(events[0].get("monotonic_ns", 0))

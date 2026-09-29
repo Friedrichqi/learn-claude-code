@@ -1,0 +1,138 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/cookies.py /tmp/yqi10/rope_shift_lanes/s5/lane05_11/profiling_sandbox/requests/cookies.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/cookies.py	2026-09-17 15:46:11.036138796 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_11/profiling_sandbox/requests/cookies.py	2026-09-25 12:44:58.975382790 -0400
+@@ -29,7 +29,7 @@
+ 
+ 
+ class MockRequest:
+-    """Wraps a `requests.PreparedRequest` to mimic a `urllib2.Request`.
++    """Wraps a `requests.PreparedRequest` to mimic a `urllib2.Request`."
+ 
+     The code in `http.cookiejar.CookieJar` expects this interface in order to correctly
+     manage cookie policies, i.e., determine whether a cookie can be set, given the
+@@ -112,7 +112,7 @@
+ 
+ 
+ class MockResponse:
+-    """Wraps a `httplib.HTTPMessage` to mimic a `urllib.addinfourl`.
++    """Wraps a `httplib.HTTPMessage` to mimic a `urllib.addinfourl`."
+ 
+     ...what? Basically, expose the parsed HTTP headers from the server response
+     the way `http.cookiejar` expects to see them.
+@@ -135,7 +135,7 @@
+ def extract_cookies_to_jar(
+     jar: CookieJar, request: PreparedRequest, response: Any
+ ) -> None:
+-    """Extract the cookies from the response into a CookieJar.
++    """Extract the cookies from the response into a CookieJar."
+ 
+     :param jar: http.cookiejar.CookieJar (not necessarily a RequestsCookieJar)
+     :param request: our own requests.Request object
+@@ -164,7 +164,7 @@
+ def remove_cookie_by_name(
+     cookiejar: CookieJar, name: str, domain: str | None = None, path: str | None = None
+ ) -> None:
+-    """Unsets a cookie by name, by default over all domains and paths.
++    """Unsets a cookie by name, by default over all domains and paths."
+ 
+     Wraps CookieJar.clear(), is O(n).
+     """
+@@ -189,7 +189,7 @@
+ 
+ 
+ class RequestsCookieJar(CookieJar, MutableMapping[str, str | None]):  # type: ignore[misc]
+-    """Compatibility class; is a http.cookiejar.CookieJar, but exposes a dict
++    """Compatibility class; is a http.cookiejar.CookieJar, but exposes a dict"
+     interface.
+ 
+     This is the CookieJar we create by default for requests and sessions that
+@@ -215,7 +215,7 @@
+         domain: str | None = None,
+         path: str | None = None,
+     ) -> str | None:
+-        """Dict-like get() that also supports optional domain and path args in
++        """Dict-like get() that also supports optional domain and path args in"
+         order to resolve naming collisions from using one cookie jar over
+         multiple domains.
+ 
+@@ -229,7 +229,7 @@
+     def set(
+         self, name: str, value: str | Morsel[dict[str, str]] | None, **kwargs: Any
+     ) -> Cookie | None:
+-        """Dict-like set() that also supports optional domain and path args in
++        """Dict-like set() that also supports optional domain and path args in"
+         order to resolve naming collisions from using one cookie jar over
+         multiple domains.
+         """
+@@ -248,7 +248,7 @@
+         return c
+ 
+     def iterkeys(self) -> Iterator[str]:
+-        """Dict-like iterkeys() that returns an iterator of names of cookies
++        """Dict-like iterkeys() that returns an iterator of names of cookies"
+         from the jar.
+ 
+         .. seealso:: itervalues() and iteritems().
+@@ -257,7 +257,7 @@
+             yield cookie.name
+ 
+     def keys(self) -> list[str]:  # type: ignore[override]
+-        """Dict-like keys() that returns a list of names of cookies from the
++        """Dict-like keys() that returns a list of names of cookies from the"
+         jar.
+ 
+         .. seealso:: values() and items().
+@@ -265,7 +265,7 @@
+         return list(self.iterkeys())
+ 
+     def itervalues(self) -> Iterator[str | None]:
+-        """Dict-like itervalues() that returns an iterator of values of cookies
++        """Dict-like itervalues() that returns an iterator of values of cookies"
+         from the jar.
+ 
+         .. seealso:: iterkeys() and iteritems().
+@@ -274,7 +274,7 @@
+             yield cookie.value
+ 
+     def values(self) -> list[str | None]:  # type: ignore[override]
+-        """Dict-like values() that returns a list of values of cookies from the
++        """Dict-like values() that returns a list of values of cookies from the"
+         jar.
+ 
+         .. seealso:: keys() and items().
+@@ -282,7 +282,7 @@
+         return list(self.itervalues())
+ 
+     def iteritems(self) -> Iterator[tuple[str, str | None]]:
+-        """Dict-like iteritems() that returns an iterator of name-value tuples
++        """Dict-like iteritems() that returns an iterator of name-value tuples"
+         from the jar.
+ 
+         .. seealso:: iterkeys() and itervalues().
+@@ -291,7 +291,7 @@
+             yield cookie.name, cookie.value
+ 
+     def items(self) -> list[tuple[str, str | None]]:  # type: ignore[override]
+-        """Dict-like items() that returns a list of name-value tuples from the
++        """Dict-like items() that returns a list of name-value tuples from the"
+         jar. Allows client-code to call ``dict(RequestsCookieJar)`` and get a
+         vanilla python dict of key value pairs.
+ 
+@@ -316,7 +316,7 @@
+         return paths
+ 
+     def multiple_domains(self) -> bool:
+-        """Returns True if there are multiple domains in the jar.
++        """Returns True if there are multiple domains in the jar."
+         Returns False otherwise.
+ 
+         :rtype: bool
+@@ -331,7 +331,7 @@
+     def get_dict(
+         self, domain: str | None = None, path: str | None = None
+     ) -> dict[str, str | None]:
+-        """Takes as an argument an optional domain and path and returns a plain
++        """Takes as an argument an optional domain and path and returns a plain"
+         old Python dict of name-value pairs of cookies that meet the
+         requirements.
+ 

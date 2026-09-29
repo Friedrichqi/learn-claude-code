@@ -1,0 +1,26 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/httpx/_client.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py	2026-09-17 15:46:11.111585027 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_10/profiling_sandbox/httpx/_client.py	2026-09-25 12:18:41.807240556 -0400
+@@ -60,6 +60,7 @@
+ 
+ 
+ def _is_https_redirect(url: URL, location: URL) -> bool:
++    """Check if a redirect from HTTPS to HTTP is safe."""
+     """
+     Return 'True' if 'location' is a HTTPS upgrade of 'url'
+     """
+@@ -75,12 +76,14 @@
+ 
+ 
+ def _port_or_default(url: URL) -> int | None:
++    """Return the port from a URL, or the default for the scheme."""
+     if url.port is not None:
+         return url.port
+     return {"http": 80, "https": 443}.get(url.scheme)
+ 
+ 
+ def _same_origin(url: URL, other: URL) -> bool:
++    """Check if two URLs have the same origin."""
+     """
+     Return 'True' if the given URLs share the same origin.
+     """

@@ -1,0 +1,214 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py /tmp/yqi10/rope_shift_lanes/s0/lane00_04/profiling_sandbox/rich/markdown.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py	2026-09-17 15:46:12.551882609 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_04/profiling_sandbox/rich/markdown.py	2026-09-25 12:47:15.933606675 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++"""Markdown parsing and rendering for rich."""
++
+ import sys
+ from dataclasses import dataclass
+ from typing import ClassVar, Iterable, get_args
+@@ -21,8 +23,9 @@
+ from .syntax import Syntax
+ from .text import Text, TextType
+ 
+-
+ class MarkdownElement:
++    """Base class for markdown elements."""
++
+     new_line: ClassVar[bool] = True
+ 
+     @classmethod
+@@ -78,7 +81,6 @@
+     ) -> RenderResult:
+         return ()
+ 
+-
+ class UnknownElement(MarkdownElement):
+     """An unknown element.
+ 
+@@ -87,7 +89,6 @@
+ 
+     """
+ 
+-
+ class TextElement(MarkdownElement):
+     """Base class for elements that render text."""
+ 
+@@ -103,7 +104,6 @@
+     def on_leave(self, context: MarkdownContext) -> None:
+         context.leave_style()
+ 
+-
+ class Paragraph(TextElement):
+     """A Paragraph."""
+ 
+@@ -123,13 +123,13 @@
+         self.text.justify = self.justify
+         yield self.text
+ 
+-
+ @dataclass
+ class HeadingFormat:
++    """Format settings for headings."""
++
+     justify: JustifyMethod = "left"
+     style: str = ""
+ 
+-
+ class Heading(TextElement):
+     """A heading."""
+ 
+@@ -163,7 +163,6 @@
+         text.justify = heading_justify
+         yield text
+ 
+-
+ class CodeBlock(TextElement):
+     """A code block with syntax highlighting."""
+ 
+@@ -188,7 +187,6 @@
+         )
+         yield syntax
+ 
+-
+ class BlockQuote(TextElement):
+     """A block quote."""
+ 
+@@ -214,7 +212,6 @@
+             yield from line
+             yield new_line
+ 
+-
+ class HorizontalRule(MarkdownElement):
+     """A horizontal rule to divide sections."""
+ 
+@@ -227,7 +224,6 @@
+         yield Rule(style=style, characters="-")
+         yield Text()
+ 
+-
+ class TableElement(MarkdownElement):
+     """MarkdownElement corresponding to `table_open`."""
+ 
+@@ -268,7 +264,6 @@
+ 
+         yield table
+ 
+-
+ class TableHeaderElement(MarkdownElement):
+     """MarkdownElement corresponding to `thead_open` and `thead_close`."""
+ 
+@@ -280,7 +275,6 @@
+         self.row = child
+         return False
+ 
+-
+ class TableBodyElement(MarkdownElement):
+     """MarkdownElement corresponding to `tbody_open` and `tbody_close`."""
+ 
+@@ -292,7 +286,6 @@
+         self.rows.append(child)
+         return False
+ 
+-
+ class TableRowElement(MarkdownElement):
+     """MarkdownElement corresponding to `tr_open` and `tr_close`."""
+ 
+@@ -304,7 +297,6 @@
+         self.cells.append(child)
+         return False
+ 
+-
+ class TableDataElement(MarkdownElement):
+     """MarkdownElement corresponding to `td_open` and `td_close`
+     and `th_open` and `th_close`."""
+@@ -336,7 +328,6 @@
+         else:
+             self.content.append_text(text)
+ 
+-
+ class ListElement(MarkdownElement):
+     """A list element."""
+ 
+@@ -368,7 +359,6 @@
+                     console, options, number + index, last_number
+                 )
+ 
+-
+ class ListItem(TextElement):
+     """An item in a list."""
+ 
+@@ -410,8 +400,9 @@
+             yield from line
+             yield new_line
+ 
+-
+ class Link(TextElement):
++    """A hyperlink."""
++
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
+         url = token.attrs.get("href", "#")
+@@ -421,7 +412,6 @@
+         self.text = Text(text)
+         self.href = href
+ 
+-
+ class ImageItem(TextElement):
+     """Renders a placeholder for an image."""
+ 
+@@ -461,7 +451,6 @@
+         text = Text.assemble("🌆 ", title, " ", end="")
+         yield text
+ 
+-
+ class MarkdownContext:
+     """Manages the console render state."""
+ 
+@@ -509,7 +498,6 @@
+         style = self.style_stack.pop()
+         return style
+ 
+-
+ class Markdown(JupyterMixin):
+     """A Markdown renderable.
+ 
+@@ -620,28 +608,10 @@
+                 if token.content == "<kbd>":
+                     kbd_style = console.get_style("markdown.kbd", default="bold")
+                     context.enter_style(kbd_style)
+-                elif token.content == "</kbd>":
++                elif token.content == "</kbd>" :
+                     context.leave_style()
+                 else:
+                     continue
+-            elif node_type == "link_close":
+-                if self.hyperlinks:
+-                    context.leave_style()
+-                else:
+-                    element = context.stack.pop()
+-                    assert isinstance(element, Link)
+-                    link_style = console.get_style("markdown.link", default="none")
+-                    context.enter_style(link_style)
+-                    context.on_text(element.text.plain, node_type)
+-                    context.leave_style()
+-                    context.on_text(" (", node_type)
+-                    link_url_style = console.get_style(
+-                        "markdown.link_url", default="none"
+-                    )
+-                    context.enter_style(link_url_style)
+-                    context.on_text(element.href, node_type)
+-                    context.leave_style()
+-                    context.on_text(")", node_type)
+             elif (
+                 tag in inline_style_tags
+                 and node_type != "fence"
+@@ -799,4 +769,4 @@
+         console = Console(
+             force_terminal=args.force_color, width=args.width, record=True
+         )
+-        console.print(markdown)
++        console.print(markdown)
+\ No newline at end of file

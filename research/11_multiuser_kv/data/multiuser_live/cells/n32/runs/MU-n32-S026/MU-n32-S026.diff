@@ -1,0 +1,187 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/requests/adapters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/adapters.py	2026-09-17 15:46:10.970451596 -0400
++++ /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/requests/adapters.py	2026-09-27 02:26:23.938072118 -0400
+@@ -66,7 +66,6 @@
+     def SOCKSProxyManager(*args: Any, **kwargs: Any) -> None:
+         raise InvalidSchema("Missing dependencies for SOCKS support.")
+ 
+-
+ if typing.TYPE_CHECKING:
+     from urllib3.connectionpool import HTTPConnectionPool
+     from urllib3.poolmanager import PoolManager as _PoolManager
+@@ -154,7 +153,6 @@
+         """Cleans up adapter specific items."""
+         raise NotImplementedError
+ 
+-
+ class HTTPAdapter(BaseAdapter):
+     """The built-in HTTP Adapter for urllib3.
+ 
+@@ -746,3 +744,5 @@
+                 raise
+ 
+         return self.build_response(request, resp)
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/requests/api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/api.py	2026-09-17 15:46:10.978622109 -0400
++++ /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/requests/api.py	2026-09-27 02:42:44.393339120 -0400
+@@ -79,7 +79,7 @@
+     :param url: URL for the new :class:`Request` object.
+     :param params: (optional) Dictionary, list of tuples or bytes to send
+         in the query string for the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param **kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+     :rtype: requests.Response
+     """
+@@ -91,7 +91,7 @@
+     r"""Sends an OPTIONS request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param **kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+     :rtype: requests.Response
+     """
+@@ -103,7 +103,7 @@
+     r"""Sends a HEAD request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes. If
++    :param **kwargs: Optional arguments that ``request`` takes. If
+         `allow_redirects` is not provided, it will be set to `False` (as
+         opposed to the default :meth:`request` behavior).
+     :return: :class:`Response <Response>` object
+@@ -126,7 +126,7 @@
+     :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+         object to send in the body of the :class:`Request`.
+     :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param **kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+     :rtype: requests.Response
+     """
+@@ -143,7 +143,7 @@
+     :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+         object to send in the body of the :class:`Request`.
+     :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param **kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+     :rtype: requests.Response
+     """
+@@ -160,7 +160,7 @@
+     :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+         object to send in the body of the :class:`Request`.
+     :param json: (optional) A JSON serializable Python object to send in the body of the :class:`Request`.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param **kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+     :rtype: requests.Response
+     """
+@@ -172,9 +172,11 @@
+     r"""Sends a DELETE request.
+ 
+     :param url: URL for the new :class:`Request` object.
+-    :param \*\*kwargs: Optional arguments that ``request`` takes.
++    :param **kwargs: Optional arguments that ``request`` takes.
+     :return: :class:`Response <Response>` object
+     :rtype: requests.Response
+     """
+ 
+     return request("delete", url, **kwargs)
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/requests/_internal_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_internal_utils.py	2026-09-17 15:46:10.958347215 -0400
++++ /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/requests/_internal_utils.py	2026-09-27 01:34:28.100553090 -0400
+@@ -10,10 +10,11 @@
+ 
+ from .compat import builtin_str
+ 
+-_VALID_HEADER_NAME_RE_BYTE = re.compile(rb"^[^:\s][^:\r\n]*\Z")
+-_VALID_HEADER_NAME_RE_STR = re.compile(r"^[^:\s][^:\r\n]*\Z")
+-_VALID_HEADER_VALUE_RE_BYTE = re.compile(rb"^\S[^\r\n]*\Z|^\Z")
+-_VALID_HEADER_VALUE_RE_STR = re.compile(r"^\S[^\r\n]*\Z|^\Z")
++
++_VALID_HEADER_NAME_RE_BYTE = re.compile(rb"^[^:\\s][^:\\r\\n]*\Z")
++_VALID_HEADER_NAME_RE_STR = re.compile(r"^[^:\\s][^:\\r\\n]*\Z")
++_VALID_HEADER_VALUE_RE_BYTE = re.compile(rb"^\\S[^\\r\\n]*\Z|^\Z")
++_VALID_HEADER_VALUE_RE_STR = re.compile(r"^\\S[^\\r\\n]*\Z|^\Z")
+ 
+ _HEADER_VALIDATORS_STR = (_VALID_HEADER_NAME_RE_STR, _VALID_HEADER_VALUE_RE_STR)
+ _HEADER_VALIDATORS_BYTE = (_VALID_HEADER_NAME_RE_BYTE, _VALID_HEADER_VALUE_RE_BYTE)
+@@ -49,3 +50,5 @@
+         return True
+     except UnicodeEncodeError:
+         return False
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/requests/_types.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/_types.py	2026-09-17 15:46:10.963254611 -0400
++++ /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/requests/_types.py	2026-09-27 01:43:00.462964256 -0400
+@@ -38,7 +38,6 @@
+ HookType: TypeAlias = Callable[["Response"], Any]
+ HooksInputType: TypeAlias = Mapping[str, Iterable[HookType] | HookType]
+ 
+-
+ def is_prepared(request: PreparedRequest) -> TypeIs[_ValidatedRequest]:
+     """Verify a PreparedRequest has been fully prepared."""
+     if TYPE_CHECKING:
+@@ -69,7 +68,6 @@
+         is the explicit contract for Requests but Python's typing doesn't have a
+         better way to represent the requirement.
+         """
+-
+         url: str  # type: ignore[reportIncompatibleVariableOverride]
+         method: str  # type: ignore[reportIncompatibleVariableOverride]
+ 
+@@ -101,7 +99,7 @@
+         | str
+         | bytes
+         | Buffer
+-        | SupportsRead[str | bytes]
++        | SupportsRead[bytes | str]
+         | None
+     )
+ 
+@@ -164,7 +162,6 @@
+ 
+     class RequestKwargs(BaseRequestKwargs, total=False):
+         """kwargs for request(), options(), head(), delete()."""
+-
+         params: ParamsType
+         data: DataType
+         json: JsonType
+@@ -178,6 +175,7 @@
+ 
+     class DataKwargs(BaseRequestKwargs, total=False):
+         """kwargs for put(), patch()."""
+-
+         params: ParamsType
+         json: JsonType
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__version__.py /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/requests/__version__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__version__.py	2026-09-17 15:46:10.952958246 -0400
++++ /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/requests/__version__.py	2026-09-27 01:29:31.975628324 -0400
+@@ -1,6 +1,6 @@
+ # .-. .-. .-. . . .-. .-. .-. .-.
+ # |(  |-  |.| | | |-  `-.  |  `-.
+-# ' ' `-' `-`.`-' `-' `-'  '  `-'
++# ' ' `-' `-`.`-' `-' `-'  '  `-.
+ 
+ __title__ = "requests"
+ __description__ = "Python HTTP for Humans."
+@@ -12,3 +12,5 @@
+ __license__ = "Apache-2.0"
+ __copyright__ = "Copyright Kenneth Reitz"
+ __cake__ = "\u2728 \U0001f370 \u2728"
++
++BUILD_TAG = 'profiling'
+\ No newline at end of file

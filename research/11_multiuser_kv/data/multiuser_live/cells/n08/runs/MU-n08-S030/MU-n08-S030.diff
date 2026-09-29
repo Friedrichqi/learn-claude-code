@@ -1,0 +1,203 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/httpx/_content.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py	2026-09-17 15:46:11.123390582 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/httpx/_content.py	2026-09-27 00:53:07.099051333 -0400
+@@ -152,7 +152,7 @@
+ def encode_multipart_data(
+     data: RequestData, files: RequestFiles, boundary: bytes | None
+ ) -> tuple[dict[str, str], MultipartStream]:
+-    multipart = MultipartStream(data=data, files=files, boundary=boundary)
++    multipart = MultipartStream(data=data, files=files, boundary=boundary)  # type: ignore
+     headers = multipart.get_headers()
+     return headers, multipart
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/httpx/_models.py	2026-09-27 00:55:31.303724989 -0400
+@@ -54,6 +54,7 @@
+ 
+ 
+ def _is_known_encoding(encoding: str) -> bool:
++    """Return `True` if `encoding` is a known codec."""
+     """
+     Return `True` if `encoding` is a known codec.
+     """
+@@ -65,6 +66,7 @@
+ 
+ 
+ def _normalize_header_key(key: str | bytes, encoding: str | None = None) -> bytes:
++    """Coerce str/bytes into a strictly byte-wise HTTP header key."""
+     """
+     Coerce str/bytes into a strictly byte-wise HTTP header key.
+     """
+@@ -72,6 +74,7 @@
+ 
+ 
+ def _normalize_header_value(value: str | bytes, encoding: str | None = None) -> bytes:
++    """Coerce str/bytes into a strictly byte-wise HTTP header value."""
+     """
+     Coerce str/bytes into a strictly byte-wise HTTP header value.
+     """
+@@ -83,6 +86,7 @@
+ 
+ 
+ def _parse_content_type_charset(content_type: str) -> str | None:
++    """Parse and return the charset from a Content-Type header."""
+     # We used to use `cgi.parse_header()` here, but `cgi` became a dead battery.
+     # See: https://peps.python.org/pep-0594/#cgi
+     msg = email.message.Message()
+@@ -91,6 +95,7 @@
+ 
+ 
+ def _parse_header_links(value: str) -> list[dict[str, str]]:
++    """Parse HTTP Link headers into a list of dictionaries."""
+     """
+     Returns a list of parsed link headers, for more info see:
+     https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link
+@@ -128,6 +133,7 @@
+ 
+ 
+ def _obfuscate_sensitive_headers(
++    """Obfuscate sensitive headers for display."""
+     items: typing.Iterable[tuple[typing.AnyStr, typing.AnyStr]],
+ ) -> typing.Iterator[tuple[typing.AnyStr, typing.AnyStr]]:
+     for k, v in items:
+@@ -137,6 +143,7 @@
+ 
+ 
+ class Headers(typing.MutableMapping[str, str]):
++    """HTTP headers, as a case-insensitive multi-dict."""
+     """
+     HTTP headers, as a case-insensitive multi-dict.
+     """
+@@ -164,6 +171,9 @@
+         self._encoding = encoding
+ 
+     @property
++    """Returns a list of the raw header items, as byte pairs."""
++    """Header encoding is mandated as ascii, but we allow fallbacks to utf-8 or iso-8859-1."""
++    """Return a list of the raw header items, as byte pairs."""
+     def encoding(self) -> str:
+         """
+         Header encoding is mandated as ascii, but we allow fallbacks to utf-8
+@@ -200,9 +210,11 @@
+         return [(raw_key, value) for raw_key, _, value in self._list]
+ 
+     def keys(self) -> typing.KeysView[str]:
++        """Return the keys of the headers."""
+         return {key.decode(self.encoding): None for _, key, value in self._list}.keys()
+ 
+     def values(self) -> typing.ValuesView[str]:
++        """Return the values of the headers."""
+         values_dict: dict[str, str] = {}
+         for _, key, value in self._list:
+             str_key = key.decode(self.encoding)
+@@ -214,6 +226,7 @@
+         return values_dict.values()
+ 
+     def items(self) -> typing.ItemsView[str, str]:
++        """Return `(key, value)` items of headers."""
+         """
+         Return `(key, value)` items of headers. Concatenate headers
+         into a single comma separated value when a key occurs multiple times.
+@@ -229,6 +242,7 @@
+         return values_dict.items()
+ 
+     def multi_items(self) -> list[tuple[str, str]]:
++        """Return a list of `(key, value)` pairs of headers."""
+         """
+         Return a list of `(key, value)` pairs of headers. Allow multiple
+         occurrences of the same key without concatenating into a single
+@@ -240,6 +254,7 @@
+         ]
+ 
+     def get(self, key: str, default: typing.Any = None) -> typing.Any:
++        """Return a header value. If multiple occurrences of the header occur, then concatenate them together with commas."""
+         """
+         Return a header value. If multiple occurrences of the header occur
+         then concatenate them together with commas.
+@@ -250,6 +265,7 @@
+             return default
+ 
+     def get_list(self, key: str, split_commas: bool = False) -> list[str]:
++        """Return a list of all header values for a given key."""
+         """
+         Return a list of all header values for a given key.
+         If `split_commas=True` is passed, then any comma separated header
+@@ -272,6 +288,7 @@
+         return split_values
+ 
+     def update(self, headers: HeaderTypes | None = None) -> None:  # type: ignore
++        """Update the headers with new values."""
+         headers = Headers(headers)
+         for key in headers.keys():
+             if key in self:
+@@ -279,9 +296,11 @@
+         self._list.extend(headers._list)
+ 
+     def copy(self) -> Headers:
++        """Return a copy of the headers."""
+         return Headers(self, encoding=self.encoding)
+ 
+     def __getitem__(self, key: str) -> str:
++        """Return a single header value."""
+         """
+         Return a single header value.
+ 
+@@ -302,6 +321,7 @@
+         raise KeyError(key)
+ 
+     def __setitem__(self, key: str, value: str) -> None:
++        """Set the header `key` to `value`, removing any duplicate entries."""
+         """
+         Set the header `key` to `value`, removing any duplicate entries.
+         Retains insertion order.
+@@ -326,6 +346,7 @@
+             self._list.append((set_key, lookup_key, set_value))
+ 
+     def __delitem__(self, key: str) -> None:
++        """Remove the header `key`."""
+         """
+         Remove the header `key`.
+         """
+@@ -344,16 +365,20 @@
+             del self._list[idx]
+ 
+     def __contains__(self, key: typing.Any) -> bool:
++        """Check if a key is present in the headers."""
+         header_key = key.lower().encode(self.encoding)
+         return header_key in [key for _, key, _ in self._list]
+ 
+     def __iter__(self) -> typing.Iterator[typing.Any]:
++        """Return an iterator over the keys."""
+         return iter(self.keys())
+ 
+     def __len__(self) -> int:
++        """Return the number of headers."""
+         return len(self._list)
+ 
+     def __eq__(self, other: typing.Any) -> bool:
++        """Compare if two Headers instances are equal."""
+         try:
+             other_headers = Headers(other)
+         except ValueError:
+@@ -410,7 +435,7 @@
+                 data=data,
+                 files=files,
+                 json=json,
+-                boundary=get_multipart_boundary_from_content_type(
++                boundary=get_multipart_boundary_from_content_type_v2(
+                     content_type=content_type.encode(self.headers.encoding)
+                     if content_type
+                     else None
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/102767/g1/lane04/profiling_sandbox/httpx/_multipart.py	2026-09-27 00:52:57.467073230 -0400
+@@ -53,7 +53,7 @@
+     return None
+ 
+ 
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):

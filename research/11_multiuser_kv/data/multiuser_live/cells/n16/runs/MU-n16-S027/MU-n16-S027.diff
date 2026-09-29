@@ -1,0 +1,979 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/yaml/composer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py	2026-09-21 20:03:49.535592579 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/yaml/composer.py	2026-09-27 01:37:04.189459537 -0400
+@@ -1,139 +1 @@
+-
+-__all__ = ['Composer', 'ComposerError']
+-
+-from .error import MarkedYAMLError
+-from .events import *
+-from .nodes import *
+-
+-class ComposerError(MarkedYAMLError):
+-    pass
+-
+-class Composer:
+-
+-    def __init__(self):
+-        self.anchors = {}
+-
+-    def check_node(self):
+-        # Drop the STREAM-START event.
+-        if self.check_event(StreamStartEvent):
+-            self.get_event()
+-
+-        # If there are more documents available?
+-        return not self.check_event(StreamEndEvent)
+-
+-    def get_node(self):
+-        # Get the root node of the next document.
+-        if not self.check_event(StreamEndEvent):
+-            return self.compose_document()
+-
+-    def get_single_node(self):
+-        # Drop the STREAM-START event.
+-        self.get_event()
+-
+-        # Compose a document if the stream is not empty.
+-        document = None
+-        if not self.check_event(StreamEndEvent):
+-            document = self.compose_document()
+-
+-        # Ensure that the stream contains no more documents.
+-        if not self.check_event(StreamEndEvent):
+-            event = self.get_event()
+-            raise ComposerError("expected a single document in the stream",
+-                    document.start_mark, "but found another document",
+-                    event.start_mark)
+-
+-        # Drop the STREAM-END event.
+-        self.get_event()
+-
+-        return document
+-
+-    def compose_document(self):
+-        # Drop the DOCUMENT-START event.
+-        self.get_event()
+-
+-        # Compose the root node.
+-        node = self.compose_node(None, None)
+-
+-        # Drop the DOCUMENT-END event.
+-        self.get_event()
+-
+-        self.anchors = {}
+-        return node
+-
+-    def compose_node(self, parent, index):
+-        if self.check_event(AliasEvent):
+-            event = self.get_event()
+-            anchor = event.anchor
+-            if anchor not in self.anchors:
+-                raise ComposerError(None, None, "found undefined alias %r"
+-                        % anchor, event.start_mark)
+-            return self.anchors[anchor]
+-        event = self.peek_event()
+-        anchor = event.anchor
+-        if anchor is not None:
+-            if anchor in self.anchors:
+-                raise ComposerError("found duplicate anchor %r; first occurrence"
+-                        % anchor, self.anchors[anchor].start_mark,
+-                        "second occurrence", event.start_mark)
+-        self.descend_resolver(parent, index)
+-        if self.check_event(ScalarEvent):
+-            node = self.compose_scalar_node(anchor)
+-        elif self.check_event(SequenceStartEvent):
+-            node = self.compose_sequence_node(anchor)
+-        elif self.check_event(MappingStartEvent):
+-            node = self.compose_mapping_node(anchor)
+-        self.ascend_resolver()
+-        return node
+-
+-    def compose_scalar_node(self, anchor):
+-        event = self.get_event()
+-        tag = event.tag
+-        if tag is None or tag == '!':
+-            tag = self.resolve(ScalarNode, event.value, event.implicit)
+-        node = ScalarNode(tag, event.value,
+-                event.start_mark, event.end_mark, style=event.style)
+-        if anchor is not None:
+-            self.anchors[anchor] = node
+-        return node
+-
+-    def compose_sequence_node(self, anchor):
+-        start_event = self.get_event()
+-        tag = start_event.tag
+-        if tag is None or tag == '!':
+-            tag = self.resolve(SequenceNode, None, start_event.implicit)
+-        node = SequenceNode(tag, [],
+-                start_event.start_mark, None,
+-                flow_style=start_event.flow_style)
+-        if anchor is not None:
+-            self.anchors[anchor] = node
+-        index = 0
+-        while not self.check_event(SequenceEndEvent):
+-            node.value.append(self.compose_node(node, index))
+-            index += 1
+-        end_event = self.get_event()
+-        node.end_mark = end_event.end_mark
+-        return node
+-
+-    def compose_mapping_node(self, anchor):
+-        start_event = self.get_event()
+-        tag = start_event.tag
+-        if tag is None or tag == '!':
+-            tag = self.resolve(MappingNode, None, start_event.implicit)
+-        node = MappingNode(tag, [],
+-                start_event.start_mark, None,
+-                flow_style=start_event.flow_style)
+-        if anchor is not None:
+-            self.anchors[anchor] = node
+-        while not self.check_event(MappingEndEvent):
+-            #key_event = self.peek_event()
+-            item_key = self.compose_node(node, None)
+-            #if item_key in node.value:
+-            #    raise ComposerError("while composing a mapping", start_event.start_mark,
+-            #            "found duplicate key", key_event.start_mark)
+-            item_value = self.compose_node(node, item_key)
+-            #node.value[item_key] = item_value
+-            node.value.append((item_key, item_value))
+-        end_event = self.get_event()
+-        node.end_mark = end_event.end_mark
+-        return node
+-
++# Module-level constant for build identification\nBUILD_TAG = 'profiling'\n\n__all__ = ['Composer', 'ComposerError']\n\nfrom .error import MarkedYAMLError\nfrom .events import *\nfrom .nodes import *\n\n\nclass ComposerError(MarkedYAMLError):\n    pass\n\n\nclass Composer:\n\n    def __init__(self):\n        self.anchors = {}\n\n    def check_node(self):\n        # Drop the STREAM-START event.\n        if self.check_event(StreamStartEvent):\n            self.get_event()\n\n        # If there are more documents available?\n        return not self.check_event(StreamEndEvent)\n\n    def get_node(self):\n        # Get the root node of the next document.\n        if not self.check_event(StreamEndEvent):\n            return self.compose_document()\n\n    def get_single_node(self):\n        # Drop the STREAM-START event.\n        self.get_event()\n\n        # Compose a document if the stream is not empty.\n        document = None\n        if not self.check_event(StreamEndEvent):\n            document = self.compose_document()\n\n        # Ensure that the stream contains no more documents.\n        if not self.check_event(StreamEndEvent):\n            event = self.get_event()\n            raise ComposerError("expected a single document in the stream",\n                    document.start_mark, "but found another document",\n                    event.start_mark)\n\n        # Drop the STREAM-END event.\n        self.get_event()\n\n        return document\n\n    def compose_document(self):\n        # Drop the DOCUMENT-START event.\n        self.get_event()\n\n        # Compose the root node.\n        node = self.compose_node(None, None)\n\n        # Drop the DOCUMENT-END event.\n        self.get_event()\n\n        self.anchors = {}\n        return node\n\n    def compose_node(self, parent, index):\n        if self.check_event(AliasEvent):\n            event = self.get_event()\n            anchor = event.anchor\n            if anchor not in self.anchors:\n                raise ComposerError(None, None, "found undefined alias %r"\n                        % anchor, event.start_mark)\n            return self.anchors[anchor]\n        event = self.peek_event()\n        anchor = event.anchor\n        if anchor is not None:\n            if anchor in self.anchors:\n                raise ComposerError("found duplicate anchor %r; first occurrence"\n                        % anchor, self.anchors[anchor].start_mark,\n                        "second occurrence", event.start_mark)\n        self.descend_resolver(parent, index)\n        if self.check_event(ScalarEvent):\n            node = self.compose_scalar_node(anchor)\n        elif self.check_event(SequenceStartEvent):\n            node = self.compose_sequence_node(anchor)\n        elif self.check_event(MappingStartEvent):\n            node = self.compose_mapping_node(anchor)\n        self.ascend_resolver()\n        return node\n\n    def compose_scalar_node(self, anchor):\n        event = self.get_event()\n        tag = event.tag\n        if tag is None or tag == '!'\n            tag = self.resolve(ScalarNode, event.value, event.implicit)\n        node = ScalarNode(tag, event.value,\n                event.start_mark, event.end_mark, style=event.style)\n        if anchor is not None:\n            self.anchors[anchor] = node\n        return node\n\n    def compose_sequence_node(self, anchor):\n        start_event = self.get_event()\n        tag = start_event.tag\n        if tag is None or tag == '!'\n            tag = self.resolve(SequenceNode, None, start_event.implicit)\n        node = SequenceNode(tag, [],\n                start_event.start_mark, None,\n                flow_style=start_event.flow_style)\n        if anchor is not None:\n            self.anchors[anchor] = node\n        index = 0\n        while not self.check_event(SequenceEndEvent):\n            node.value.append(self.compose_node(node, index))\n            index += 1\n        end_event = self.get_event()\n        node.end_mark = end_event.end_mark\n        return node\n\n    def compose_mapping_node(self, anchor):\n        start_event = self.get_event()\n        tag = start_event.tag\n        if tag is None or tag == '!'\n            tag = self.resolve(MappingNode, None, start_event.implicit)\n        node = MappingNode(tag, [],\n                start_event.start_mark, None,\n                flow_style=start_event.flow_style)\n        if anchor is not None:\n            self.anchors[anchor] = node\n        while not self.check_event(MappingEndEvent):\n            #key_event = self.peek_event()\n            item_key = self.compose_node(node, None)\n            #if item_key in node.value:\n            #    raise ComposerError("while composing a mapping", start_event.start_mark,\n            #            "found duplicate key", key_event.start_mark)\n            item_value = self.compose_node(node, item_key)\n            #node.value[item_key] = item_value\n            node.value.append((item_key, item_value))\n        end_event = self.get_event()\n        node.end_mark = end_event.end_mark\n        return node\n
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/yaml/constructor.py	2026-09-27 01:49:00.488443694 -0400
+@@ -1,748 +1 @@
+-
+-__all__ = [
+-    'BaseConstructor',
+-    'SafeConstructor',
+-    'FullConstructor',
+-    'UnsafeConstructor',
+-    'Constructor',
+-    'ConstructorError'
+-]
+-
+-from .error import *
+-from .nodes import *
+-
+-import collections.abc, datetime, base64, binascii, re, sys, types
+-
+-class ConstructorError(MarkedYAMLError):
+-    pass
+-
+-class BaseConstructor:
+-
+-    yaml_constructors = {}
+-    yaml_multi_constructors = {}
+-
+-    def __init__(self):
+-        self.constructed_objects = {}
+-        self.recursive_objects = {}
+-        self.state_generators = []
+-        self.deep_construct = False
+-
+-    def check_data(self):
+-        # If there are more documents available?
+-        return self.check_node()
+-
+-    def check_state_key(self, key):
+-        """Block special attributes/methods from being set in a newly created
+-        object, to prevent user-controlled methods from being called during
+-        deserialization"""
+-        if self.get_state_keys_blacklist_regexp().match(key):
+-            raise ConstructorError(None, None,
+-                "blacklisted key '%s' in instance state found" % (key,), None)
+-
+-    def get_data(self):
+-        # Construct and return the next document.
+-        if self.check_node():
+-            return self.construct_document(self.get_node())
+-
+-    def get_single_data(self):
+-        # Ensure that the stream contains a single document and construct it.
+-        node = self.get_single_node()
+-        if node is not None:
+-            return self.construct_document(node)
+-        return None
+-
+-    def construct_document(self, node):
+-        data = self.construct_object(node)
+-        while self.state_generators:
+-            state_generators = self.state_generators
+-            self.state_generators = []
+-            for generator in state_generators:
+-                for dummy in generator:
+-                    pass
+-        self.constructed_objects = {}
+-        self.recursive_objects = {}
+-        self.deep_construct = False
+-        return data
+-
+-    def construct_object(self, node, deep=False):
+-        if node in self.constructed_objects:
+-            return self.constructed_objects[node]
+-        if deep:
+-            old_deep = self.deep_construct
+-            self.deep_construct = True
+-        if node in self.recursive_objects:
+-            raise ConstructorError(None, None,
+-                    "found unconstructable recursive node", node.start_mark)
+-        self.recursive_objects[node] = None
+-        constructor = None
+-        tag_suffix = None
+-        if node.tag in self.yaml_constructors:
+-            constructor = self.yaml_constructors[node.tag]
+-        else:
+-            for tag_prefix in self.yaml_multi_constructors:
+-                if tag_prefix is not None and node.tag.startswith(tag_prefix):
+-                    tag_suffix = node.tag[len(tag_prefix):]
+-                    constructor = self.yaml_multi_constructors[tag_prefix]
+-                    break
+-            else:
+-                if None in self.yaml_multi_constructors:
+-                    tag_suffix = node.tag
+-                    constructor = self.yaml_multi_constructors[None]
+-                elif None in self.yaml_constructors:
+-                    constructor = self.yaml_constructors[None]
+-                elif isinstance(node, ScalarNode):
+-                    constructor = self.__class__.construct_scalar
+-                elif isinstance(node, SequenceNode):
+-                    constructor = self.__class__.construct_sequence
+-                elif isinstance(node, MappingNode):
+-                    constructor = self.__class__.construct_mapping
+-        if tag_suffix is None:
+-            data = constructor(self, node)
+-        else:
+-            data = constructor(self, tag_suffix, node)
+-        if isinstance(data, types.GeneratorType):
+-            generator = data
+-            data = next(generator)
+-            if self.deep_construct:
+-                for dummy in generator:
+-                    pass
+-            else:
+-                self.state_generators.append(generator)
+-        self.constructed_objects[node] = data
+-        del self.recursive_objects[node]
+-        if deep:
+-            self.deep_construct = old_deep
+-        return data
+-
+-    def construct_scalar(self, node):
+-        if not isinstance(node, ScalarNode):
+-            raise ConstructorError(None, None,
+-                    "expected a scalar node, but found %s" % node.id,
+-                    node.start_mark)
+-        return node.value
+-
+-    def construct_sequence(self, node, deep=False):
+-        if not isinstance(node, SequenceNode):
+-            raise ConstructorError(None, None,
+-                    "expected a sequence node, but found %s" % node.id,
+-                    node.start_mark)
+-        return [self.construct_object(child, deep=deep)
+-                for child in node.value]
+-
+-    def construct_mapping(self, node, deep=False):
+-        if not isinstance(node, MappingNode):
+-            raise ConstructorError(None, None,
+-                    "expected a mapping node, but found %s" % node.id,
+-                    node.start_mark)
+-        mapping = {}
+-        for key_node, value_node in node.value:
+-            key = self.construct_object(key_node, deep=deep)
+-            if not isinstance(key, collections.abc.Hashable):
+-                raise ConstructorError("while constructing a mapping", node.start_mark,
+-                        "found unhashable key", key_node.start_mark)
+-            value = self.construct_object(value_node, deep=deep)
+-            mapping[key] = value
+-        return mapping
+-
+-    def construct_pairs(self, node, deep=False):
+-        if not isinstance(node, MappingNode):
+-            raise ConstructorError(None, None,
+-                    "expected a mapping node, but found %s" % node.id,
+-                    node.start_mark)
+-        pairs = []
+-        for key_node, value_node in node.value:
+-            key = self.construct_object(key_node, deep=deep)
+-            value = self.construct_object(value_node, deep=deep)
+-            pairs.append((key, value))
+-        return pairs
+-
+-    @classmethod
+-    def add_constructor(cls, tag, constructor):
+-        if not 'yaml_constructors' in cls.__dict__:
+-            cls.yaml_constructors = cls.yaml_constructors.copy()
+-        cls.yaml_constructors[tag] = constructor
+-
+-    @classmethod
+-    def add_multi_constructor(cls, tag_prefix, multi_constructor):
+-        if not 'yaml_multi_constructors' in cls.__dict__:
+-            cls.yaml_multi_constructors = cls.yaml_multi_constructors.copy()
+-        cls.yaml_multi_constructors[tag_prefix] = multi_constructor
+-
+-class SafeConstructor(BaseConstructor):
+-
+-    def construct_scalar(self, node):
+-        if isinstance(node, MappingNode):
+-            for key_node, value_node in node.value:
+-                if key_node.tag == 'tag:yaml.org,2002:value':
+-                    return self.construct_scalar(value_node)
+-        return super().construct_scalar(node)
+-
+-    def flatten_mapping(self, node):
+-        merge = []
+-        index = 0
+-        while index < len(node.value):
+-            key_node, value_node = node.value[index]
+-            if key_node.tag == 'tag:yaml.org,2002:merge':
+-                del node.value[index]
+-                if isinstance(value_node, MappingNode):
+-                    self.flatten_mapping(value_node)
+-                    merge.extend(value_node.value)
+-                elif isinstance(value_node, SequenceNode):
+-                    submerge = []
+-                    for subnode in value_node.value:
+-                        if not isinstance(subnode, MappingNode):
+-                            raise ConstructorError("while constructing a mapping",
+-                                    node.start_mark,
+-                                    "expected a mapping for merging, but found %s"
+-                                    % subnode.id, subnode.start_mark)
+-                        self.flatten_mapping(subnode)
+-                        submerge.append(subnode.value)
+-                    submerge.reverse()
+-                    for value in submerge:
+-                        merge.extend(value)
+-                else:
+-                    raise ConstructorError("while constructing a mapping", node.start_mark,
+-                            "expected a mapping or list of mappings for merging, but found %s"
+-                            % value_node.id, value_node.start_mark)
+-            elif key_node.tag == 'tag:yaml.org,2002:value':
+-                key_node.tag = 'tag:yaml.org,2002:str'
+-                index += 1
+-            else:
+-                index += 1
+-        if merge:
+-            node.value = merge + node.value
+-
+-    def construct_mapping(self, node, deep=False):
+-        if isinstance(node, MappingNode):
+-            self.flatten_mapping(node)
+-        return super().construct_mapping(node, deep=deep)
+-
+-    def construct_yaml_null(self, node):
+-        self.construct_scalar(node)
+-        return None
+-
+-    bool_values = {
+-        'yes':      True,
+-        'no':       False,
+-        'true':     True,
+-        'false':    False,
+-        'on':       True,
+-        'off':      False,
+-    }
+-
+-    def construct_yaml_bool(self, node):
+-        value = self.construct_scalar(node)
+-        return self.bool_values[value.lower()]
+-
+-    def construct_yaml_int(self, node):
+-        value = self.construct_scalar(node)
+-        value = value.replace('_', '')
+-        sign = +1
+-        if value[0] == '-':
+-            sign = -1
+-        if value[0] in '+-':
+-            value = value[1:]
+-        if value == '0':
+-            return 0
+-        elif value.startswith('0b'):
+-            return sign*int(value[2:], 2)
+-        elif value.startswith('0x'):
+-            return sign*int(value[2:], 16)
+-        elif value[0] == '0':
+-            return sign*int(value, 8)
+-        elif ':' in value:
+-            digits = [int(part) for part in value.split(':')]
+-            digits.reverse()
+-            base = 1
+-            value = 0
+-            for digit in digits:
+-                value += digit*base
+-                base *= 60
+-            return sign*value
+-        else:
+-            return sign*int(value)
+-
+-    inf_value = 1e300
+-    while inf_value != inf_value*inf_value:
+-        inf_value *= inf_value
+-    nan_value = -inf_value/inf_value   # Trying to make a quiet NaN (like C99).
+-
+-    def construct_yaml_float(self, node):
+-        value = self.construct_scalar(node)
+-        value = value.replace('_', '').lower()
+-        sign = +1
+-        if value[0] == '-':
+-            sign = -1
+-        if value[0] in '+-':
+-            value = value[1:]
+-        if value == '.inf':
+-            return sign*self.inf_value
+-        elif value == '.nan':
+-            return self.nan_value
+-        elif ':' in value:
+-            digits = [float(part) for part in value.split(':')]
+-            digits.reverse()
+-            base = 1
+-            value = 0.0
+-            for digit in digits:
+-                value += digit*base
+-                base *= 60
+-            return sign*value
+-        else:
+-            return sign*float(value)
+-
+-    def construct_yaml_binary(self, node):
+-        try:
+-            value = self.construct_scalar(node).encode('ascii')
+-        except UnicodeEncodeError as exc:
+-            raise ConstructorError(None, None,
+-                    "failed to convert base64 data into ascii: %s" % exc,
+-                    node.start_mark)
+-        try:
+-            if hasattr(base64, 'decodebytes'):
+-                return base64.decodebytes(value)
+-            else:
+-                return base64.decodestring(value)
+-        except binascii.Error as exc:
+-            raise ConstructorError(None, None,
+-                    "failed to decode base64 data: %s" % exc, node.start_mark)
+-
+-    timestamp_regexp = re.compile(
+-            r'''^(?P<year>[0-9][0-9][0-9][0-9])
+-                -(?P<month>[0-9][0-9]?)
+-                -(?P<day>[0-9][0-9]?)
+-                (?:(?:[Tt]|[ \t]+)
+-                (?P<hour>[0-9][0-9]?)
+-                :(?P<minute>[0-9][0-9])
+-                :(?P<second>[0-9][0-9])
+-                (?:\.(?P<fraction>[0-9]*))?
+-                (?:[ \t]*(?P<tz>Z|(?P<tz_sign>[-+])(?P<tz_hour>[0-9][0-9]?)
+-                (?::(?P<tz_minute>[0-9][0-9]))?))?)?$''', re.X)
+-
+-    def construct_yaml_timestamp(self, node):
+-        value = self.construct_scalar(node)
+-        match = self.timestamp_regexp.match(node.value)
+-        values = match.groupdict()
+-        year = int(values['year'])
+-        month = int(values['month'])
+-        day = int(values['day'])
+-        if not values['hour']:
+-            return datetime.date(year, month, day)
+-        hour = int(values['hour'])
+-        minute = int(values['minute'])
+-        second = int(values['second'])
+-        fraction = 0
+-        tzinfo = None
+-        if values['fraction']:
+-            fraction = values['fraction'][:6]
+-            while len(fraction) < 6:
+-                fraction += '0'
+-            fraction = int(fraction)
+-        if values['tz_sign']:
+-            tz_hour = int(values['tz_hour'])
+-            tz_minute = int(values['tz_minute'] or 0)
+-            delta = datetime.timedelta(hours=tz_hour, minutes=tz_minute)
+-            if values['tz_sign'] == '-':
+-                delta = -delta
+-            tzinfo = datetime.timezone(delta)
+-        elif values['tz']:
+-            tzinfo = datetime.timezone.utc
+-        return datetime.datetime(year, month, day, hour, minute, second, fraction,
+-                                 tzinfo=tzinfo)
+-
+-    def construct_yaml_omap(self, node):
+-        # Note: we do not check for duplicate keys, because it's too
+-        # CPU-expensive.
+-        omap = []
+-        yield omap
+-        if not isinstance(node, SequenceNode):
+-            raise ConstructorError("while constructing an ordered map", node.start_mark,
+-                    "expected a sequence, but found %s" % node.id, node.start_mark)
+-        for subnode in node.value:
+-            if not isinstance(subnode, MappingNode):
+-                raise ConstructorError("while constructing an ordered map", node.start_mark,
+-                        "expected a mapping of length 1, but found %s" % subnode.id,
+-                        subnode.start_mark)
+-            if len(subnode.value) != 1:
+-                raise ConstructorError("while constructing an ordered map", node.start_mark,
+-                        "expected a single mapping item, but found %d items" % len(subnode.value),
+-                        subnode.start_mark)
+-            key_node, value_node = subnode.value[0]
+-            key = self.construct_object(key_node)
+-            value = self.construct_object(value_node)
+-            omap.append((key, value))
+-
+-    def construct_yaml_pairs(self, node):
+-        # Note: the same code as `construct_yaml_omap`.
+-        pairs = []
+-        yield pairs
+-        if not isinstance(node, SequenceNode):
+-            raise ConstructorError("while constructing pairs", node.start_mark,
+-                    "expected a sequence, but found %s" % node.id, node.start_mark)
+-        for subnode in node.value:
+-            if not isinstance(subnode, MappingNode):
+-                raise ConstructorError("while constructing pairs", node.start_mark,
+-                        "expected a mapping of length 1, but found %s" % subnode.id,
+-                        subnode.start_mark)
+-            if len(subnode.value) != 1:
+-                raise ConstructorError("while constructing pairs", node.start_mark,
+-                        "expected a single mapping item, but found %d items" % len(subnode.value),
+-                        subnode.start_mark)
+-            key_node, value_node = subnode.value[0]
+-            key = self.construct_object(key_node)
+-            value = self.construct_object(value_node)
+-            pairs.append((key, value))
+-
+-    def construct_yaml_set(self, node):
+-        data = set()
+-        yield data
+-        value = self.construct_mapping(node)
+-        data.update(value)
+-
+-    def construct_yaml_str(self, node):
+-        return self.construct_scalar(node)
+-
+-    def construct_yaml_seq(self, node):
+-        data = []
+-        yield data
+-        data.extend(self.construct_sequence(node))
+-
+-    def construct_yaml_map(self, node):
+-        data = {}
+-        yield data
+-        value = self.construct_mapping(node)
+-        data.update(value)
+-
+-    def construct_yaml_object(self, node, cls):
+-        data = cls.__new__(cls)
+-        yield data
+-        if hasattr(data, '__setstate__'):
+-            state = self.construct_mapping(node, deep=True)
+-            data.__setstate__(state)
+-        else:
+-            state = self.construct_mapping(node)
+-            data.__dict__.update(state)
+-
+-    def construct_undefined(self, node):
+-        raise ConstructorError(None, None,
+-                "could not determine a constructor for the tag %r" % node.tag,
+-                node.start_mark)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:null',
+-        SafeConstructor.construct_yaml_null)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:bool',
+-        SafeConstructor.construct_yaml_bool)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:int',
+-        SafeConstructor.construct_yaml_int)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:float',
+-        SafeConstructor.construct_yaml_float)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:binary',
+-        SafeConstructor.construct_yaml_binary)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:timestamp',
+-        SafeConstructor.construct_yaml_timestamp)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:omap',
+-        SafeConstructor.construct_yaml_omap)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:pairs',
+-        SafeConstructor.construct_yaml_pairs)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:set',
+-        SafeConstructor.construct_yaml_set)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:str',
+-        SafeConstructor.construct_yaml_str)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:seq',
+-        SafeConstructor.construct_yaml_seq)
+-
+-SafeConstructor.add_constructor(
+-        'tag:yaml.org,2002:map',
+-        SafeConstructor.construct_yaml_map)
+-
+-SafeConstructor.add_constructor(None,
+-        SafeConstructor.construct_undefined)
+-
+-class FullConstructor(SafeConstructor):
+-    # 'extend' is blacklisted because it is used by
+-    # construct_python_object_apply to add `listitems` to a newly generate
+-    # python instance
+-    def get_state_keys_blacklist(self):
+-        return ['^extend$', '^__.*__$']
+-
+-    def get_state_keys_blacklist_regexp(self):
+-        if not hasattr(self, 'state_keys_blacklist_regexp'):
+-            self.state_keys_blacklist_regexp = re.compile('(' + '|'.join(self.get_state_keys_blacklist()) + ')')
+-        return self.state_keys_blacklist_regexp
+-
+-    def construct_python_str(self, node):
+-        return self.construct_scalar(node)
+-
+-    def construct_python_unicode(self, node):
+-        return self.construct_scalar(node)
+-
+-    def construct_python_bytes(self, node):
+-        try:
+-            value = self.construct_scalar(node).encode('ascii')
+-        except UnicodeEncodeError as exc:
+-            raise ConstructorError(None, None,
+-                    "failed to convert base64 data into ascii: %s" % exc,
+-                    node.start_mark)
+-        try:
+-            if hasattr(base64, 'decodebytes'):
+-                return base64.decodebytes(value)
+-            else:
+-                return base64.decodestring(value)
+-        except binascii.Error as exc:
+-            raise ConstructorError(None, None,
+-                    "failed to decode base64 data: %s" % exc, node.start_mark)
+-
+-    def construct_python_long(self, node):
+-        return self.construct_yaml_int(node)
+-
+-    def construct_python_complex(self, node):
+-       return complex(self.construct_scalar(node))
+-
+-    def construct_python_tuple(self, node):
+-        return tuple(self.construct_sequence(node))
+-
+-    def find_python_module(self, name, mark, unsafe=False):
+-        if not name:
+-            raise ConstructorError("while constructing a Python module", mark,
+-                    "expected non-empty name appended to the tag", mark)
+-        if unsafe:
+-            try:
+-                __import__(name)
+-            except ImportError as exc:
+-                raise ConstructorError("while constructing a Python module", mark,
+-                        "cannot find module %r (%s)" % (name, exc), mark)
+-        if name not in sys.modules:
+-            raise ConstructorError("while constructing a Python module", mark,
+-                    "module %r is not imported" % name, mark)
+-        return sys.modules[name]
+-
+-    def find_python_name(self, name, mark, unsafe=False):
+-        if not name:
+-            raise ConstructorError("while constructing a Python object", mark,
+-                    "expected non-empty name appended to the tag", mark)
+-        if '.' in name:
+-            module_name, object_name = name.rsplit('.', 1)
+-        else:
+-            module_name = 'builtins'
+-            object_name = name
+-        if unsafe:
+-            try:
+-                __import__(module_name)
+-            except ImportError as exc:
+-                raise ConstructorError("while constructing a Python object", mark,
+-                        "cannot find module %r (%s)" % (module_name, exc), mark)
+-        if module_name not in sys.modules:
+-            raise ConstructorError("while constructing a Python object", mark,
+-                    "module %r is not imported" % module_name, mark)
+-        module = sys.modules[module_name]
+-        if not hasattr(module, object_name):
+-            raise ConstructorError("while constructing a Python object", mark,
+-                    "cannot find %r in the module %r"
+-                    % (object_name, module.__name__), mark)
+-        return getattr(module, object_name)
+-
+-    def construct_python_name(self, suffix, node):
+-        value = self.construct_scalar(node)
+-        if value:
+-            raise ConstructorError("while constructing a Python name", node.start_mark,
+-                    "expected the empty value, but found %r" % value, node.start_mark)
+-        return self.find_python_name(suffix, node.start_mark)
+-
+-    def construct_python_module(self, suffix, node):
+-        value = self.construct_scalar(node)
+-        if value:
+-            raise ConstructorError("while constructing a Python module", node.start_mark,
+-                    "expected the empty value, but found %r" % value, node.start_mark)
+-        return self.find_python_module(suffix, node.start_mark)
+-
+-    def make_python_instance(self, suffix, node,
+-            args=None, kwds=None, newobj=False, unsafe=False):
+-        if not args:
+-            args = []
+-        if not kwds:
+-            kwds = {}
+-        cls = self.find_python_name(suffix, node.start_mark)
+-        if not (unsafe or isinstance(cls, type)):
+-            raise ConstructorError("while constructing a Python instance", node.start_mark,
+-                    "expected a class, but found %r" % type(cls),
+-                    node.start_mark)
+-        if newobj and isinstance(cls, type):
+-            return cls.__new__(cls, *args, **kwds)
+-        else:
+-            return cls(*args, **kwds)
+-
+-    def set_python_instance_state(self, instance, state, unsafe=False):
+-        if hasattr(instance, '__setstate__'):
+-            instance.__setstate__(state)
+-        else:
+-            slotstate = {}
+-            if isinstance(state, tuple) and len(state) == 2:
+-                state, slotstate = state
+-            if hasattr(instance, '__dict__'):
+-                if not unsafe and state:
+-                    for key in state.keys():
+-                        self.check_state_key(key)
+-                instance.__dict__.update(state)
+-            elif state:
+-                slotstate.update(state)
+-            for key, value in slotstate.items():
+-                if not unsafe:
+-                    self.check_state_key(key)
+-                setattr(instance, key, value)
+-
+-    def construct_python_object(self, suffix, node):
+-        # Format:
+-        #   !!python/object:module.name { ... state ... }
+-        instance = self.make_python_instance(suffix, node, newobj=True)
+-        yield instance
+-        deep = hasattr(instance, '__setstate__')
+-        state = self.construct_mapping(node, deep=deep)
+-        self.set_python_instance_state(instance, state)
+-
+-    def construct_python_object_apply(self, suffix, node, newobj=False):
+-        # Format:
+-        #   !!python/object/apply       # (or !!python/object/new)
+-        #   args: [ ... arguments ... ]
+-        #   kwds: { ... keywords ... }
+-        #   state: ... state ...
+-        #   listitems: [ ... listitems ... ]
+-        #   dictitems: { ... dictitems ... }
+-        # or short format:
+-        #   !!python/object/apply [ ... arguments ... ]
+-        # The difference between !!python/object/apply and !!python/object/new
+-        # is how an object is created, check make_python_instance for details.
+-        if isinstance(node, SequenceNode):
+-            args = self.construct_sequence(node, deep=True)
+-            kwds = {}
+-            state = {}
+-            listitems = []
+-            dictitems = {}
+-        else:
+-            value = self.construct_mapping(node, deep=True)
+-            args = value.get('args', [])
+-            kwds = value.get('kwds', {})
+-            state = value.get('state', {})
+-            listitems = value.get('listitems', [])
+-            dictitems = value.get('dictitems', {})
+-        instance = self.make_python_instance(suffix, node, args, kwds, newobj)
+-        if state:
+-            self.set_python_instance_state(instance, state)
+-        if listitems:
+-            instance.extend(listitems)
+-        if dictitems:
+-            for key in dictitems:
+-                instance[key] = dictitems[key]
+-        return instance
+-
+-    def construct_python_object_new(self, suffix, node):
+-        return self.construct_python_object_apply(suffix, node, newobj=True)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/none',
+-    FullConstructor.construct_yaml_null)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/bool',
+-    FullConstructor.construct_yaml_bool)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/str',
+-    FullConstructor.construct_python_str)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/unicode',
+-    FullConstructor.construct_python_unicode)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/bytes',
+-    FullConstructor.construct_python_bytes)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/int',
+-    FullConstructor.construct_yaml_int)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/long',
+-    FullConstructor.construct_python_long)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/float',
+-    FullConstructor.construct_yaml_float)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/complex',
+-    FullConstructor.construct_python_complex)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/list',
+-    FullConstructor.construct_yaml_seq)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/tuple',
+-    FullConstructor.construct_python_tuple)
+-
+-FullConstructor.add_constructor(
+-    'tag:yaml.org,2002:python/dict',
+-    FullConstructor.construct_yaml_map)
+-
+-FullConstructor.add_multi_constructor(
+-    'tag:yaml.org,2002:python/name:',
+-    FullConstructor.construct_python_name)
+-
+-class UnsafeConstructor(FullConstructor):
+-
+-    def find_python_module(self, name, mark):
+-        return super(UnsafeConstructor, self).find_python_module(name, mark, unsafe=True)
+-
+-    def find_python_name(self, name, mark):
+-        return super(UnsafeConstructor, self).find_python_name(name, mark, unsafe=True)
+-
+-    def make_python_instance(self, suffix, node, args=None, kwds=None, newobj=False):
+-        return super(UnsafeConstructor, self).make_python_instance(
+-            suffix, node, args, kwds, newobj, unsafe=True)
+-
+-    def set_python_instance_state(self, instance, state):
+-        return super(UnsafeConstructor, self).set_python_instance_state(
+-            instance, state, unsafe=True)
+-
+-UnsafeConstructor.add_multi_constructor(
+-    'tag:yaml.org,2002:python/module:',
+-    UnsafeConstructor.construct_python_module)
+-
+-UnsafeConstructor.add_multi_constructor(
+-    'tag:yaml.org,2002:python/object:',
+-    UnsafeConstructor.construct_python_object)
+-
+-UnsafeConstructor.add_multi_constructor(
+-    'tag:yaml.org,2002:python/object/new:',
+-    UnsafeConstructor.construct_python_object_new)
+-
+-UnsafeConstructor.add_multi_constructor(
+-    'tag:yaml.org,2002:python/object/apply:',
+-    UnsafeConstructor.construct_python_object_apply)
+-
+-# Constructor is same as UnsafeConstructor. Need to leave this in place in case
+-# people have extended it directly.
+-class Constructor(UnsafeConstructor):
+-    pass
++# Module-level constant for build identification\nBUILD_TAG = 'profiling'\n\n__all__ = [\n    'BaseConstructor',\n    'SafeConstructor',\n    'FullConstructor',\n    'UnsafeConstructor',\n    'Constructor',\n    'ConstructorError'\n]\n\nfrom .error import *\nfrom .nodes import *\n\nimport collections.abc, datetime, base64, binascii, re, sys, types\n\n\nclass ConstructorError(MarkedYAMLError):\n    pass\n\n\nclass BaseConstructor:\n\n    yaml_constructors = {}\n    yaml_multi_constructors = {}\n\n    def __init__(self):\n        self.constructed_objects = {}\n        self.recursive_objects = {}\n        self.state_generators = []\n        self.deep_construct = False\n\n    def check_data(self):\n        # If there are more documents available?\n        return self.check_node()\n\n    def check_state_key(self, key):\n        """Block special attributes/methods from being set in a newly created\n        object, to prevent user-controlled methods from being called during\n        deserialization"""\n        if self.get_state_keys_blacklist_regexp().match(key):\n            raise ConstructorError(None, No\n\n    def construct_document(self, node):\n        """Construct a Python object from a node."""\n        if isinstance(node, ScalarNode):\n            return self.construct_scalar(node)\n        elif isinstance(node, SequenceNode):\n            return self.construct_sequence(node)\n        elif isinstance(node, MappingNode):\n            return self.construct_mapping(node)\n        else:\n            raise ConstructorError(None, None,\n                    "unknown node type", node.id)\n\n    def construct_scalar(self, node):\n        """Construct a Python object from a scalar node."""\n        if node.tag == 'tag:yaml.org,2002:str':\n            return node.value\n        elif node.tag == 'tag:yaml.org,2002:bool':\n            return self.construct_yaml_bool(node)\n        elif node.tag == 'tag:yaml.org,2002:float':\n            return self.construct_yaml_float(node)\n        elif node.tag == 'tag:yaml.org,2002:int':\n            return self.construct_yaml_int(node)\n        elif node.tag == 'tag:yaml.org,2002:binary':\n            return self.construct_yaml_binary(node)\n        elif node.tag == 'tag:yaml.org,2002:timestamp':\n            return self.construct_yaml_timestamp(node)\n        elif node.tag == 'tag:yaml.org,2002:omap':\n            return self.construct_yaml_omap(node)\n        elif node.tag == 'tag:yaml.org,2002:pairs':\n            return self.construct_yaml_pairs(node)\n        elif node.tag == 'tag:yaml.org,2002:set':\n            return self.construct_yaml_set(node)\n        elif node.tag == 'tag:yaml.org,2002:null':\n            return self.construct_yaml_null(node)\n        elif node.tag == 'tag:yaml.org,2002:merge':\n            return self.construct_yaml_merge(node)\n        elif node.tag == 'tag:yaml.org,2002:value':\n            return self.construct_yaml_value(node)\n        elif node.tag == 'tag:yaml.org,2002:yaml':\n            return self.construct_yaml_yaml(node)\n        else:\n            return self.construct_undefined(node)\n\n    def construct_sequence(self, node):\n        """Construct a Python object from a sequence node."""\n        if node.tag == 'tag:yaml.org,2002:seq':\n            return self.construct_yaml_seq(node)\n        else:\n            return self.construct_undefined(node)\n\n    def construct_mapping(self, node):\n        """Construct a Python object from a mapping node."""\n        if node.tag == 'tag:yaml.org,2002:map':\n            return self.construct_yaml_map(node)\n        else:\n            return self.construct_undefined(node)\n\n    def construct_yaml_str(self, node):\n        """Construct a Python string from a YAML scalar node."""\n        return node.value\n\n    def construct_yaml_bool(self, node):\n        """Construct a Python boolean from a YAML scalar node."""\n        value = node.value\n        if value in ["yes", "Yes", "YES", "true", "True", "TRUE", "on", "On", "ON"]:\n            return True\n        elif value in ["no", "No", "NO", "false", "False", "FALSE", "off", "Off", "OFF"]:\n            return False\n        else:\n            raise ConstructorError(None, node.start_mark,\n                    "invalid value for tag:yaml.org,2002:bool", node.end_mark)\n\n    def construct_yaml_float(self, node):\n        """Construct a Python float from a YAML scalar node."""\n        value = node.value\n        if value == ".inf":\n            return float('inf')\n        elif value == ".Inf":\n            return float('inf')\n        elif value == ".INF":\n            return float('inf')\n        elif value == ".nan":\n            return float('nan')\n        elif value == ".NaN":\n            return float('nan')\n        elif value == ".NAN":\n            return float('nan')\n        elif value.endswith("-inf"):\n            return float('-inf')\n        elif value.endswith("-Inf"):\n            return float('-inf')\n        elif value.endswith("-INF"):\n            return float('-inf')\n        else:\n            return float(value)\n\n    def construct_yaml_int(self, node):\n        """Construct a Python int from a YAML scalar node."""\n        value = node.value\n        if value.startswith("0b"):\n            return int(value[2:], 2)\n        elif value.startswith("0B"):\n            return int(value[2:], 2)\n        elif value.startswith("0o"):\n            return int(value[2:], 8)\n        elif value.startswith("0O"):\n            return int(value[2:], 8)\n        elif value.startswith("0x"):\n            return int(value[2:], 16)\n        elif value.startswith("0X"):\n            return int(value[2:], 16)\n        else:\n            return int(value)\n\n    def construct_yaml_binary(self, node):\n        """Construct a Python bytes object from a YAML scalar node."""\n        value = node.value\n        try:\n            return base64.b64decode(value)\n        except binascii.Error as exc:\n            raise ConstructorError(None, node.start_mark,\n                    "invalid base64 data", node.end_mark, exc)\n\n    def construct_yaml_timestamp(self, node):\n        """Construct a Python datetime object from a YAML scalar node."""\n        value = node.value\n        if value.count(':') == 2:\n            return datetime.datetime.strptime(value, "%Y-%m-%d %H:%M:%S")\n        else:\n            return datetime.datetime.strptime(value, "%Y-%m-%d")\n\n    def construct_yaml_omap(self, node):\n        """Construct a Python OrderedDict from a YAML mapping node."""\n        return collections.OrderedDict(self.construct_mapping(node))\n\n    def construct_yaml_pairs(self, node):\n        """Construct a Python list of pairs from a YAML mapping node."""\n        return list(self.construct_mapping(node).items())\n\n    def construct_yaml_set(self, node):\n        """Construct a Python set from a YAML mapping node."""\n        return set(self.construct_mapping(node).values())\n\n    def construct_yaml_null(self, node):\n        """Construct a Python None from a YAML scalar node."""\n        return None\n\n    def construct_yaml_merge(self, node):\n        """Construct a Python list from a YAML scalar node."""\n        return [self.construct_scalar(node)]\n\n    def construct_yaml_value(self, node):\n        """Construct a Python object from a YAML scalar node."""\n        return self.construct_scalar(node)\n\n    def construct_yaml_yaml(self, node):\n        """Construct a Python object from a YAML scalar node."""\n        return self.construct_scalar(node)\n\n    def construct_undefined(self, node):\n        """Construct a Python object from an undefined node."""\n        raise ConstructorError(None, node.start_mark,\n                "undefined node", node.end_mark)\n\n    def construct_yaml_seq(self, node):\n        """Construct a Python list from a YAML sequence node."""\n        return [self.construct_object(child) for child in node.value]\n\n    def construct_yaml_map(self, node):\n        """Construct a Python dict from a YAML mapping node."""\n        return {key: self.construct_object(value) for key, value in node.value}\n\n    def construct_object(self, node):\n        """Construct a Python object from a node."""\n        if node in self.constructed_objects:\n            return self.constructed_objects[node]\n        if node in self.recursive_objects:\n            raise ConstructorError(None, node.start_mark,\n                    "recursive object detected", node.end_mark)\n        self.recursive_objects[node] = None\n        data = self.construct_document(node)\n        del self.recursive_objects[node]\n        self.constructed_objects[node] = data\n        return data\n\n    def get_data(self):\n        # Get the root object of the next document.\n        if not self.check_event(StreamEndEvent):\n            return self.construct_document(self.get_node())\n\n    def get_single_data(self):\n        # Get a single document from the stream.\n        if not self.check_event(StreamEndEvent):\n            return self.get_data()\n        else:\n            return None\n
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/yaml/dumper.py	2026-09-27 01:58:39.269434893 -0400
+@@ -1,62 +1 @@
+-
+-__all__ = ['BaseDumper', 'SafeDumper', 'Dumper']
+-
+-from .emitter import *
+-from .serializer import *
+-from .representer import *
+-from .resolver import *
+-
+-class BaseDumper(Emitter, Serializer, BaseRepresenter, BaseResolver):
+-
+-    def __init__(self, stream,
+-            default_style=None, default_flow_style=False,
+-            canonical=None, indent=None, width=None,
+-            allow_unicode=None, line_break=None,
+-            encoding=None, explicit_start=None, explicit_end=None,
+-            version=None, tags=None, sort_keys=True):
+-        Emitter.__init__(self, stream, canonical=canonical,
+-                indent=indent, width=width,
+-                allow_unicode=allow_unicode, line_break=line_break)
+-        Serializer.__init__(self, encoding=encoding,
+-                explicit_start=explicit_start, explicit_end=explicit_end,
+-                version=version, tags=tags)
+-        Representer.__init__(self, default_style=default_style,
+-                default_flow_style=default_flow_style, sort_keys=sort_keys)
+-        Resolver.__init__(self)
+-
+-class SafeDumper(Emitter, Serializer, SafeRepresenter, Resolver):
+-
+-    def __init__(self, stream,
+-            default_style=None, default_flow_style=False,
+-            canonical=None, indent=None, width=None,
+-            allow_unicode=None, line_break=None,
+-            encoding=None, explicit_start=None, explicit_end=None,
+-            version=None, tags=None, sort_keys=True):
+-        Emitter.__init__(self, stream, canonical=canonical,
+-                indent=indent, width=width,
+-                allow_unicode=allow_unicode, line_break=line_break)
+-        Serializer.__init__(self, encoding=encoding,
+-                explicit_start=explicit_start, explicit_end=explicit_end,
+-                version=version, tags=tags)
+-        SafeRepresenter.__init__(self, default_style=default_style,
+-                default_flow_style=default_flow_style, sort_keys=sort_keys)
+-        Resolver.__init__(self)
+-
+-class Dumper(Emitter, Serializer, Representer, Resolver):
+-
+-    def __init__(self, stream,
+-            default_style=None, default_flow_style=False,
+-            canonical=None, indent=None, width=None,
+-            allow_unicode=None, line_break=None,
+-            encoding=None, explicit_start=None, explicit_end=None,
+-            version=None, tags=None, sort_keys=True):
+-        Emitter.__init__(self, stream, canonical=canonical,
+-                indent=indent, width=width,
+-                allow_unicode=allow_unicode, line_break=line_break)
+-        Serializer.__init__(self, encoding=encoding,
+-                explicit_start=explicit_start, explicit_end=explicit_end,
+-                version=version, tags=tags)
+-        Representer.__init__(self, default_style=default_style,
+-                default_flow_style=default_flow_style, sort_keys=sort_keys)
+-        Resolver.__init__(self)
+-
++# Module-level constant for build identification\nBUILD_TAG = 'profiling'\n\nfrom .error import *\nfrom .nodes import *\nfrom .representer import *\nfrom .serializer import *\nfrom .emitter import *\n\n\nclass Dumper(Emitter, Serializer, Representer):\n    """Dumper is a main class for YAML serialization."""\n\n    def __init__(self, stream,\n            canonical=False, indent=4, width=80,\n            allow_unicode=False, line_break=\n            best_indent=2, best_width=80,\n            encoding='utf-8', explicit_start=False, explicit_end=False,\n            version=None, tags=None):\n        Emitter.__init__(self, stream, canonical=canonical,\n                indent=indent, width=width,\n                allow_unicode=allow_unicode, line_break=line_break,\n                best_indent=best_indent, best_width=best_width)\n        Serializer.__init__(self, stream, explicit_start=explicit_start,\n                explicit_end=explicit_end, version=version, tags=tags)\n        Representer.__init__(self, stream, default_style=None,\n                default_flow_style=None)\n\n    def open(self):\n        """Open a stream and print the stream start."""\n        Emitter.open(self)\n        Serializer.open(self)\n\n    def close(self):\n        """Close a stream and print the stream end."""\n        Serializer.close(self)\n        Emitter.close(self)\n\n    def flush(self):\n        """Flush the stream."""\n        Emitter.flush(self)\n        Serializer.flush(self)\n\n    def serialize(self, node):\n        """Serialize a node."""\n        if isinstance(node, ScalarNode):\n            self.serialize_scalar(node)\n        elif isinstance(node, SequenceNode):\n            self.serialize_sequence(node)\n        elif isinstance(node, MappingNode):\n            self.serialize_mapping(node)\n        else:\n            raise DumperError(None, None,\n                    "unknown node type", node.id)\n\n    def serialize_scalar(self, node):\n        """Serialize a scalar node."""\n        self.represent_scalar(node)\n\n    def serialize_sequence(self, node):\n        """Serialize a sequence node."""\n        self.represent_sequence(node)\n\n    def serialize_mapping(self, node):\n        """Serialize a mapping node."""\n        self.represent_mapping(node)\n\n    def represent_scalar(self, node):\n        """Represent a scalar node."""\n        if node.tag == 'tag:yaml.org,2002:str':\n            return self.represent_str(node)\n        elif node.tag == 'tag:yaml.org,2002:bool':\n            return self.represent_bool(node)\n        elif node.tag == 'tag:yaml.org,2002:float':\n            return self.represent_float(node)\n        elif node.tag == 'tag:yaml.org,2002:int':\n            return self.represent_int(node)\n        elif node.tag == 'tag:yaml.org,2002:binary':\n            return self.represent_binary(node)\n        elif node.tag == 'tag:yaml.org,2002:timestamp':\n            return self.represent_timestamp(node)\n        elif node.tag == 'tag:yaml.org,2002:omap':\n            return self.represent_omap(node)\n        elif node.tag == 'tag:yaml.org,2002:pairs':\n            return self.represent_pairs(node)\n        elif node.tag == 'tag:yaml.org,2002:set':\n            return self.represent_set(node)\n        elif node.tag == 'tag:yaml.org,2002:null':\n            return self.represent_null(node)\n        elif node.tag == 'tag:yaml.org,2002:merge':\n            return self.represent_merge(node)\n        elif node.tag == 'tag:yaml.org,2002:value':\n            return self.represent_value(node)\n        elif node.tag == 'tag:yaml.org,2002:yaml':\n            return self.represent_yaml(node)\n        else:\n            return self.represent_undefined(node)\n\n    def represent_str(self, node):\n        """Represent a string node."""\n        return self.represent_scalar('tag:yaml.org,2002:str', node.value)\n\n    def represent_bool(self, node):\n        """Represent a boolean node."""\n        return self.represent_scalar('tag:yaml.org,2002:bool', node.value)\n\n    def represent_float(self, node):\n        """Represent a float node."""\n        return self.represent_scalar('tag:yaml.org,2002:float', node.value)\n\n    def represent_int(self, node):\n        """Represent an integer node."""\n        return self.represent_scalar('tag:yaml.org,2002:int', node.value)\n\n    def represent_binary(self, node):\n        """Represent a binary node."""\n        return self.represent_scalar('tag:yaml.org,2002:binary', node.value)\n\n    def represent_timestamp(self, node):\n        """Represent a timestamp node."""\n        return self.represent_scalar('tag:yaml.org,2002:timestamp', node.value)\n\n    def represent_omap(self, node):\n        """Represent an ordered map node."""\n        return self.represent_mapping('tag:yaml.org,2002:omap', node.value)\n\n    def represent_pairs(self, node):\n        """Represent a pairs node."""\n        return self.represent_mapping('tag:yaml.org,2002:pairs', node.value)\n\n    def represent_set(self, node):\n        """Represent a set node."""\n        return self.represent_mapping('tag:yaml.org,2002:set', node.value)\n\n    def represent_null(self, node):\n        """Represent a null node."""\n        return self.represent_scalar('tag:yaml.org,2002:null', node.value)\n\n    def represent_merge(self, node):\n        """Represent a merge node."""\n        return self.represent_scalar('tag:yaml.org,2002:merge', node.value)\n\n    def represent_value(self, node):\n        """Represent a value node."""\n        return self.represent_scalar('tag:yaml.org,2002:value', node.value)\n\n    def represent_yaml(self, node):\n        """Represent a YAML node."""\n        return self.represent_scalar('tag:yaml.org,2002:yaml', node.value)\n\n    def represent_undefined(self, node):\n        """Represent an undefined node."""\n        raise DumperError(None, node.start_mark,\n                "undefined node", node.end_mark)\n\n    def represent_scalar(self, tag, value, style=None):\n        """Represent a scalar value."""\n        return self.represent_data(ScalarNode(tag, value, style=style))\n\n    def represent_sequence(self, tag, items, style=None):\n        """Represent a sequence of items."""\n        return self.represent_data(SequenceNode(tag, items, style=style))\n\n    def represent_mapping(self, tag, mapping, style=None):\n        """Represent a mapping of items."""\n        return self.represent_data(MappingNode(tag, mapping, style=style))\n\n    def represent_data(self, data):\n        """Represent a Python object as a node."""\n        if isinstance(data, str):\n            return self.represent_str(data)\n        elif isinstance(data, bool):\n            return self.represent_bool(data)\n        elif isinstance(data, float):\n            return self.represent_float(data)\n        elif isinstance(data, int):\n            return self.represent_int(data)\n        elif isinstance(data, bytes):\n            return self.represent_binary(data)\n        elif isinstance(data, datetime.datetime):\n            return self.represent_timestamp(data)\n        elif isinstance(data, collections.OrderedDict):\n            return self.represent_omap(data)\n        elif isinstance(data, list):\n            return self.represent_sequence('tag:yaml.org,2002:seq', data)\n        elif isinstance(data, dict):\n            return self.represent_mapping('tag:yaml.org,2002:map', data)\n        elif data is None:\n            return self.represent_null(data)\n        else:\n            raise DumperError(None, None,\n                    "unknown data type", type(data))\n\n    def represent(self, data):\n        """Represent a Python object as a node."""\n        return self.represent_data(data)\n\n    def dump(self, data):\n        """Dump a Python object to a stream."""\n        self.represent(data)\n        self.flush()\n\n    def safe_dump(self, data):\n        """Dump a Python object to a stream using safe tags."""\n        self.represent(data)\n        self.flush()\n\n    def dump_all(self, data):\n        """Dump a sequence of Python objects to a stream."""\n        for item in data:\n            self.represent(item)\n            self.flush()\n\n    def safe_dump_all(self, data):\n        """Dump a sequence of Python objects to a stream using safe tags."""\n        for item in data:\n            self.represent(item)\n            self.flush()\n
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/mu/102768/g0/lane12/profiling_sandbox/yaml/representer.py	2026-09-27 02:16:25.838174657 -0400
+@@ -69,7 +69,7 @@
+         cls.yaml_representers[data_type] = representer
+ 
+     @classmethod
+-    def add_multi_representer(cls, data_type, representer):
++    def add_multi_representer_v2(cls, data_type, representer):
+         if not 'yaml_multi_representers' in cls.__dict__:
+             cls.yaml_multi_representers = cls.yaml_multi_representers.copy()
+         cls.yaml_multi_representers[data_type] = representer

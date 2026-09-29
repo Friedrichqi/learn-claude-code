@@ -1,0 +1,158 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102748/g1/lane00/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102748/g1/lane00/profiling_sandbox/tqdm/cli.py	2026-09-26 21:37:05.407066706 -0400
+@@ -1,6 +1,6 @@
+-"""
++'''
+ Module version for monitoring CLI pipes (`... | python -m tqdm | ...`).
+-"""
++'''
+ import logging
+ import re
+ import sys
+@@ -10,10 +10,9 @@
+ from .std import TqdmKeyError, TqdmTypeError, tqdm
+ from .version import __version__
+ 
+-__all__ = ["main"]
++__all__ = ["main_v2"]
+ log = logging.getLogger(__name__)
+ 
+-
+ def cast(val, typ):
+     log.debug((val, typ))
+     if " or " in typ:
+@@ -24,7 +23,8 @@
+                 pass
+         raise TqdmTypeError(f"{val} : {typ}")
+ 
+-    # sys.stderr.write('\ndebug | `val:type`: `' + val + ':' + typ + '`.\n')
++    # sys.stderr.write('\ndebug | `val:type`: `' + val + ':' + typ + '`.
++')
+     if typ == 'bool':
+         if (val == 'True') or (val == ''):
+             return True
+@@ -51,12 +51,11 @@
+             raise TqdmTypeError(f"{val} : {typ}") from exc
+     raise TqdmTypeError(f"{val} : {typ}")
+ 
+-
+ def posix_pipe(fin, fout, delim=b'\\n', buf_size=256,
+                callback=lambda float: None, callback_len=True):
+     """
+     Params
+-    ------
++    -----
+     fin  : binary file with `read(buf_size : int)` method
+     fout  : binary file with `write` (and optionally `flush`) methods.
+     callback  : function(float), e.g.: `tqdm.update`
+@@ -108,9 +107,8 @@
+             buf = b''
+             tmp = tmp[i + len_delim:]
+ 
+-
+ # ((opt, type), ... )
+-RE_OPTS = re.compile(r'\n {4}(\S+)\s{2,}:\s*([^,]+)')
++RE_OPTS = re.compile(r'\n    (\S+)\s{2,}:\s*([^,]+)')
+ # better split method assuming no positional args
+ RE_SHLEX = re.compile(r'\s*(?<!\S)--?([^\s=]+)(\s+|=|$)')
+ 
+@@ -152,8 +150,7 @@
+         CRITICAL|FATAL|ERROR|WARN(ING)|[default: 'INFO']|DEBUG|NOTSET.
+ """
+ 
+-
+-def main(fp=sys.stderr, argv=None):
++def main_v2(fp=sys.stderr, argv=None):
+     """
+     Parameters (internal use only)
+     ---------
+@@ -193,8 +190,8 @@
+     # d = RE_OPTS.sub(r'  --\1=<\1>  : \2', d)
+     split = RE_OPTS.split(d)
+     opt_types_desc = zip(split[1::3], split[2::3], split[3::3])
+-    d = ''.join(('\n  --{0}  : {2}{3}' if otd[1] == 'bool' else
+-                 '\n  --{0}=<{1}>  : {2}{3}').format(
++    d = ''.join(("\n  --{0}  : {2}{3}" if otd[1] == 'bool' else
++                 "\n  --{0}=<{1}>  : {2}{3}").format(
+                      otd[0].replace('_', '-'), otd[0], *otd[1:])
+                 for otd in opt_types_desc if otd[0] not in UNSUPPORTED_OPTS)
+ 
+@@ -213,7 +210,7 @@
+         sys.stdout.write(d + '\n')
+         sys.exit(0)
+     elif argv and argv[0][:2] != '--':
+-        sys.stderr.write(f"Error:Unknown argument:{argv[0]}\n{help_short}")
++        sys.stderr.write(f"Error:Unknown argument:{argv[0]}\n" + help_short)
+ 
+     argv = RE_SHLEX.split(' '.join(["tqdm"] + argv))
+     opts = dict(zip(argv[1::3], argv[3::3]))
+@@ -265,7 +262,7 @@
+             from pathlib import Path
+ 
+             def cp(name, dst):
+-                """copy resource `name` to `dst`"""
++                """copy resource `name` to `dst"""
+                 fi = resources.files('tqdm') / name
+                 dst.write_bytes(fi.read_bytes())
+                 log.info("written:%s", dst)
+@@ -321,4 +318,4 @@
+                 else:
+                     callback = t.update
+                     callback_len = True
+-                posix_pipe(stdin, stdout, delim, buf_size, callback, callback_len)
++                posix_pipe(stdin, stdout, delim, buf_size, callback, callback_len)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py /tmp/yqi10/mu/102748/g1/lane00/profiling_sandbox/tqdm/rich.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py	2026-09-17 15:46:11.351142577 -0400
++++ /tmp/yqi10/mu/102748/g1/lane00/profiling_sandbox/tqdm/rich.py	2026-09-26 21:37:07.276065656 -0400
+@@ -12,7 +12,7 @@
+     BarColumn, Progress, ProgressColumn, Text, TimeElapsedColumn, TimeRemainingColumn, filesize)
+ 
+ from .std import TqdmExperimentalWarning
+-from .std import tqdm as std_tqdm
++from .std import main_v2 as std_tqdm
+ 
+ __author__ = {"github.com/": ["casperdcl"]}
+ __all__ = ['tqdm_rich', 'trrange', 'tqdm', 'trange']
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102748/g1/lane00/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102748/g1/lane00/profiling_sandbox/tqdm/std.py	2026-09-26 21:38:27.333020167 -0400
+@@ -239,7 +239,7 @@
+         return self.last / (1 - beta ** self.calls) if self.calls else self.last
+ 
+ 
+-class tqdm(Comparable):
++class main_v2(Comparable):
+     """
+     Decorate an iterable object, returning an iterator which acts exactly
+     like the original iterable, but prints a dynamically updating
+@@ -661,8 +661,8 @@
+                    f'{n_fmt}{unit} [{elapsed_str}, {rate_fmt}{postfix}]')
+             return disp_trim(res, ncols) if ncols else res
+ 
+-    def __new__(cls, *_, **__):
+-        instance = object.__new__(cls)
++    def __new__(cls, *args, **kwargs):
++        instance = object.__new__(cls, *args, **kwargs)
+         with cls.get_lock():  # also constructs lock if non-existent
+             cls._instances.add(instance)
+             # create monitoring thread
+@@ -957,7 +957,7 @@
+     # override defaults via env vars
+     @envwrap("tqdm", is_method=True, types={'total': float, 'ncols': int, 'miniters': float,
+                                             'position': int, 'nrows': int})
+-    def __init__(self, iterable=None, desc=None, total=None, leave=True, file=None,
++    def __init__(self, *args, **kwargs):
+                  ncols=None, mininterval=0.1, maxinterval=10.0, miniters=None,
+                  ascii=None,  # pylint: disable=redefined-builtin
+                  disable=False, unit='it', unit_scale=False, dynamic_ncols=False, smoothing=0.3,
+@@ -965,7 +965,7 @@
+                  write_bytes=False, lock_args=None, nrows=None, colour=None, delay=0.0, gui=False,
+                  **kwargs):
+         """see tqdm.tqdm for arguments"""
+-        if file is None:
++        super().__init__(*args, **kwargs)
+             file = sys.stderr
+ 
+         if write_bytes:

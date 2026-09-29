@@ -1,0 +1,129 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/asyncio.py	2026-09-27 03:46:53.614769677 -0400
+@@ -10,6 +10,8 @@
+ import asyncio
+ from sys import version_info
+ 
++BUILD_TAG = 'profiling'
++
+ from .std import tqdm as std_tqdm
+ 
+ __author__ = {"github.com/": ["casperdcl"]}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/auto.py	2026-09-27 03:47:58.936666119 -0400
+@@ -14,6 +14,8 @@
+ """
+ import warnings
+ 
++BUILD_TAG = 'profiling'
++
+ from .std import TqdmExperimentalWarning
+ 
+ with warnings.catch_warnings():
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/cli.py	2026-09-27 03:50:20.191440732 -0400
+@@ -7,6 +7,8 @@
+ from ast import literal_eval
+ from textwrap import indent
+ 
++BUILD_TAG = 'profiling'
++
+ from .std import TqdmKeyError, TqdmTypeError, tqdm
+ from .version import __version__
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/dask.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py	2026-09-17 15:46:11.332330664 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/dask.py	2026-09-27 03:51:06.577366294 -0400
+@@ -1,5 +1,7 @@
+ from functools import partial
+ 
++BUILD_TAG = 'profiling'
++
+ from dask.callbacks import Callback
+ 
+ from .auto import tqdm as tqdm_auto
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py	2026-09-17 15:46:11.337417657 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/gui.py	2026-09-27 03:52:00.177280024 -0400
+@@ -11,6 +11,8 @@
+ import re
+ from warnings import warn
+ 
++BUILD_TAG = 'profiling'
++
+ # to inherit from the tqdm class
+ from .std import TqdmExperimentalWarning
+ from .std import tqdm as std_tqdm
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/keras.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py	2026-09-17 15:46:11.341185437 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/keras.py	2026-09-27 03:52:54.267192691 -0400
+@@ -1,6 +1,8 @@
+ from copy import copy
+ from functools import partial
+ 
++BUILD_TAG = 'profiling'
++
+ from .auto import tqdm as tqdm_auto
+ 
+ try:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py	2026-09-17 15:46:11.277808878 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/__main__.py	2026-09-27 03:39:22.588483122 -0400
+@@ -1,3 +1,5 @@
+ from .cli import main
+ 
++BUILD_TAG = 'profiling'
++
+ main()
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/_monitor.py	2026-09-27 03:40:52.615333973 -0400
+@@ -3,6 +3,8 @@
+ from time import time
+ from warnings import warn
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ["TMonitor", "TqdmSynchronisationWarning"]
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/rich.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py	2026-09-17 15:46:11.351142577 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/rich.py	2026-09-27 03:55:44.876915459 -0400
+@@ -8,6 +8,8 @@
+ """
+ from warnings import warn
+ 
++BUILD_TAG = 'profiling'
++
+ from rich.progress import (
+     BarColumn, Progress, ProgressColumn, Text, TimeElapsedColumn, TimeRemainingColumn, filesize)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/std.py	2026-09-27 03:56:54.315801875 -0400
+@@ -16,6 +16,8 @@
+ from warnings import warn
+ from weakref import WeakSet
+ 
++BUILD_TAG = 'profiling'
++
+ from ._monitor import TMonitor
+ from .utils import (
+     CallbackIOWrapper, Comparable, DisableOnWriteError, FormatReplace, SimpleTextIOWrapper,
+@@ -30,10 +32,12 @@
+ 
+ 
+ class TqdmTypeError(TypeError):
++    """Custom type error for tqdm."""
+     pass
+ 
+ 
+ class TqdmKeyError(KeyError):
++    """Custom key error for tqdm."""
+     pass
+ 
+ 

@@ -1,0 +1,103 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/103142/g0/lane08/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/103142/g0/lane08/profiling_sandbox/packaging/specifiers.py	2026-09-27 08:58:30.760290473 -0400
+@@ -146,6 +146,7 @@
+ 
+     @abc.abstractmethod
+     def __str__(self) -> str:
++        """Returns the str representation of this Specifier-like object."""
+         """
+         Returns the str representation of this Specifier-like object. This
+         should be representative of the Specifier itself.
+@@ -153,12 +154,14 @@
+ 
+     @abc.abstractmethod
+     def __hash__(self) -> int:
++        """Returns a hash value for this Specifier-like object."""
+         """
+         Returns a hash value for this Specifier-like object.
+         """
+ 
+     @abc.abstractmethod
+     def __eq__(self, other: object) -> bool:
++        """Returns a boolean representing whether or not the two Specifier-like objects are equal."""
+         """
+         Returns a boolean representing whether or not the two Specifier-like
+         objects are equal.
+@@ -169,6 +172,7 @@
+     @property
+     @abc.abstractmethod
+     def prereleases(self) -> bool | None:
++        """Whether or not pre-releases as a whole are allowed."""
+         """Whether or not pre-releases as a whole are allowed.
+ 
+         This can be set to either ``True`` or ``False`` to explicitly enable or disable
+@@ -177,6 +181,7 @@
+ 
+     @prereleases.setter  # noqa: B027
+     def prereleases(self, value: bool) -> None:
++        """Setter for :attr:`prereleases`."""
+         """Setter for :attr:`prereleases`.
+ 
+         :param value: The value to set.
+@@ -184,6 +189,7 @@
+ 
+     @abc.abstractmethod
+     def contains(self, item: str, prereleases: bool | None = None) -> bool:
++        """Determines if the given item is contained within this specifier."""
+         """
+         Determines if the given item is contained within this specifier.
+         """
+@@ -211,6 +217,8 @@
+         prereleases: bool | None = None,
+         key: Callable[[Any], UnparsedVersion] | None = None,
+     ) -> Iterator[Any]:
++        """Takes an iterable of items and filters them so that only items which
++        are contained within this specifier are allowed in it."""
+         """
+         Takes an iterable of items and filters them so that only items which
+         are contained within this specifier are allowed in it.
+@@ -218,6 +226,7 @@
+ 
+ 
+ class Specifier(BaseSpecifier):
++    """This class abstracts handling of version specifiers."""
+     """This class abstracts handling of version specifiers.
+ 
+     .. tip::
+@@ -243,6 +252,7 @@
+         "_spec",
+         "_spec_version",
+     )
++    """Slots for Specifier instance."""
+ 
+     _specifier_regex_str = r"""
+         (?:
+@@ -353,6 +363,7 @@
+     }
+ 
+     def __init__(self, spec: str = "", prereleases: bool | None = None) -> None:
++        """Initialize a Specifier instance."""
+         """Initialize a Specifier instance.
+ 
+         :param spec:
+@@ -432,6 +443,7 @@
+ 
+     @property
+     def prereleases(self) -> bool | None:
++        """Whether or not pre-releases as a whole are allowed."""
+         # If there is an explicit prereleases set for this, then we'll just
+         # blindly use that.
+         if self._prereleases is not None:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/103142/g0/lane08/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/103142/g0/lane08/profiling_sandbox/packaging/utils.py	2026-09-27 08:44:58.403563618 -0400
+@@ -151,7 +151,7 @@
+     return _normalized_regex.fullmatch(name) is not None
+ 
+ 
+-def canonicalize_version(
++def canonicalize_version_v2(
+     version: Version | str, *, strip_trailing_zero: bool = True
+ ) -> str:
+     """Return a canonical form of a version as a string.

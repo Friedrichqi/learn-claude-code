@@ -1,0 +1,366 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102994/g0/lane01/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102994/g0/lane01/profiling_sandbox/httpx/_models.py	2026-09-27 09:47:16.980124071 -0400
+@@ -83,6 +83,9 @@
+ 
+ 
+ def _parse_content_type_charset(content_type: str) -> str | None:
++    """
++    Parses the content type string and returns the charset if present.
++    """
+     # We used to use `cgi.parse_header()` here, but `cgi` became a dead battery.
+     # See: https://peps.python.org/pep-0594/#cgi
+     msg = email.message.Message()
+@@ -107,7 +110,7 @@
+     :return: list of parsed link headers
+     """
+     links: list[dict[str, str]] = []
+-    replace_chars = " '\""
++    replace_chars = " '""
+     value = value.strip(replace_chars)
+     if not value:
+         return links
+@@ -116,7 +119,7 @@
+             url, params = val.split(";", 1)
+         except ValueError:
+             url, params = val, ""
+-        link = {"url": url.strip("<> '\"")}
++        link = {"url": url.strip("<> '"")}
+         for param in params.split(";"):
+             try:
+                 key, value = param.split("=")
+@@ -130,12 +133,14 @@
+ def _obfuscate_sensitive_headers(
+     items: typing.Iterable[tuple[typing.AnyStr, typing.AnyStr]],
+ ) -> typing.Iterator[tuple[typing.AnyStr, typing.AnyStr]]:
++    """
++    Obfuscates sensitive headers by replacing their values with [secure].
++    """
+     for k, v in items:
+         if to_str(k.lower()) in SENSITIVE_HEADERS:
+             v = to_bytes_or_str("[secure]", match_type_of=v)
+         yield k, v
+ 
+-
+ class Headers(typing.MutableMapping[str, str]):
+     """
+     HTTP headers, as a case-insensitive multi-dict.
+@@ -272,6 +277,9 @@
+         return split_values
+ 
+     def update(self, headers: HeaderTypes | None = None) -> None:  # type: ignore
++        """
++        Update the headers with the provided headers, removing any duplicate entries.
++        """
+         headers = Headers(headers)
+         for key in headers.keys():
+             if key in self:
+@@ -279,6 +287,9 @@
+         self._list.extend(headers._list)
+ 
+     def copy(self) -> Headers:
++        """
++        Create a copy of the current Headers instance.
++        """
+         return Headers(self, encoding=self.encoding)
+ 
+     def __getitem__(self, key: str) -> str:
+@@ -344,16 +355,28 @@
+             del self._list[idx]
+ 
+     def __contains__(self, key: typing.Any) -> bool:
++        """
++        Check if the key is present in the headers.
++        """
+         header_key = key.lower().encode(self.encoding)
+         return header_key in [key for _, key, _ in self._list]
+ 
+     def __iter__(self) -> typing.Iterator[typing.Any]:
++        """
++        Iterate over the keys in the headers.
++        """
+         return iter(self.keys())
+ 
+     def __len__(self) -> int:
++        """
++        Return the number of header entries.
++        """
+         return len(self._list)
+ 
+     def __eq__(self, other: typing.Any) -> bool:
++        """
++        Check if two Headers instances are equal.
++        """
+         try:
+             other_headers = Headers(other)
+         except ValueError:
+@@ -364,6 +387,9 @@
+         return sorted(self_list) == sorted(other_list)
+ 
+     def __repr__(self) -> str:
++        """
++        Return a string representation of the Headers instance.
++        """
+         class_name = self.__class__.__name__
+ 
+         encoding_str = ""
+@@ -378,8 +404,11 @@
+             return f"{class_name}({as_dict!r}{encoding_str})"
+         return f"{class_name}({as_list!r}{encoding_str})"
+ 
+-
+ class Request:
++    """
++    Represents an HTTP request with method, URL, headers, and content.
++    """
++
+     def __init__(
+         self,
+         method: str,
+@@ -439,6 +468,9 @@
+             self.stream = stream
+ 
+     def _prepare(self, default_headers: dict[str, str]) -> None:
++        """
++        Prepare the request with default headers.
++        """
+         for key, value in default_headers.items():
+             # Ignore Transfer-Encoding if the Content-Length has been set explicitly.
+             if key.lower() == "transfer-encoding" and "Content-Length" in self.headers:
+@@ -461,6 +493,9 @@
+ 
+     @property
+     def content(self) -> bytes:
++        """
++        Returns the content of the request as bytes.
++        """
+         if not hasattr(self, "_content"):
+             raise RequestNotRead()
+         return self._content
+@@ -481,7 +516,7 @@
+ 
+     async def aread(self) -> bytes:
+         """
+-        Read and return the request content.
++        Read and return the request content asynchronously.
+         """
+         if not hasattr(self, "_content"):
+             assert isinstance(self.stream, typing.AsyncIterable)
+@@ -494,11 +529,17 @@
+         return self._content
+ 
+     def __repr__(self) -> str:
++        """
++        Return a string representation of the Request instance.
++        """
+         class_name = self.__class__.__name__
+         url = str(self.url)
+         return f"<{class_name}({self.method!r}, {url!r})>"
+ 
+     def __getstate__(self) -> dict[str, typing.Any]:
++        """
++        Return the state of the Request instance for pickling.
++        """
+         return {
+             name: value
+             for name, value in self.__dict__.items()
+@@ -506,13 +547,19 @@
+         }
+ 
+     def __setstate__(self, state: dict[str, typing.Any]) -> None:
++        """
++        Set the state of the Request instance from a pickled state.
++        """
+         for name, value in state.items():
+             setattr(self, name, value)
+         self.extensions = {}
+         self.stream = UnattachedStream()
+ 
+-
+ class Response:
++    """
++    Represents an HTTP response with status code, headers, and content.
++    """
++
+     def __init__(
+         self,
+         status_code: int,
+@@ -569,6 +616,9 @@
+         self._num_bytes_downloaded = 0
+ 
+     def _prepare(self, default_headers: dict[str, str]) -> None:
++        """
++        Prepare the response with default headers.
++        """
+         for key, value in default_headers.items():
+             # Ignore Transfer-Encoding if the Content-Length has been set explicitly.
+             if key.lower() == "transfer-encoding" and "content-length" in self.headers:
+@@ -583,8 +633,8 @@
+         """
+         if not hasattr(self, "_elapsed"):
+             raise RuntimeError(
+-                "'.elapsed' may only be accessed after the response "
+-                "has been read or closed."
++                ".elapsed may only be accessed after the response 
++                has been read or closed."
+             )
+         return self._elapsed
+ 
+@@ -609,6 +659,9 @@
+ 
+     @property
+     def http_version(self) -> str:
++        """
++        Returns the HTTP version used in the response.
++        """
+         try:
+             http_version: bytes = self.extensions["http_version"]
+         except KeyError:
+@@ -618,6 +671,9 @@
+ 
+     @property
+     def reason_phrase(self) -> str:
++        """
++        Returns the reason phrase for the status code.
++        """
+         try:
+             reason_phrase: bytes = self.extensions["reason_phrase"]
+         except KeyError:
+@@ -634,12 +690,18 @@
+ 
+     @property
+     def content(self) -> bytes:
++        """
++        Returns the content of the response as bytes.
++        """
+         if not hasattr(self, "_content"):
+             raise ResponseNotRead()
+         return self._content
+ 
+     @property
+     def text(self) -> str:
++        """
++        Returns the content of the response as a string.
++        """
+         if not hasattr(self, "_text"):
+             content = self.content
+             if not content:
+@@ -798,8 +860,8 @@
+         request = self._request
+         if request is None:
+             raise RuntimeError(
+-                "Cannot call `raise_for_status` as the request "
+-                "instance has not been set on this response."
++                "Cannot call `raise_for_status` as the request 
++                instance has not been set on this response."
+             )
+ 
+         if self.is_success:
+@@ -829,10 +891,16 @@
+         raise HTTPStatusError(message, request=request, response=self)
+ 
+     def json(self, **kwargs: typing.Any) -> typing.Any:
++        """
++        Parse the content of the response as JSON.
++        """
+         return jsonlib.loads(self.content, **kwargs)
+ 
+     @property
+     def cookies(self) -> Cookies:
++        """
++        Returns the cookies associated with the response.
++        """
+         if not hasattr(self, "_cookies"):
+             self._cookies = Cookies()
+             self._cookies.extract_cookies(self)
+@@ -854,12 +922,21 @@
+ 
+     @property
+     def num_bytes_downloaded(self) -> int:
++        """
++        Returns the number of bytes downloaded in the response.
++        """
+         return self._num_bytes_downloaded
+ 
+     def __repr__(self) -> str:
++        """
++        Return a string representation of the Response instance.
++        """
+         return f"<Response [{self.status_code} {self.reason_phrase}]>"
+ 
+     def __getstate__(self) -> dict[str, typing.Any]:
++        """
++        Return the state of the Response instance for pickling.
++        """
+         return {
+             name: value
+             for name, value in self.__dict__.items()
+@@ -867,6 +944,9 @@
+         }
+ 
+     def __setstate__(self, state: dict[str, typing.Any]) -> None:
++        """
++        Set the state of the Response instance from a pickled state.
++        """
+         for name, value in state.items():
+             setattr(self, name, value)
+         self.is_closed = True
+@@ -973,7 +1053,7 @@
+ 
+     async def aread(self) -> bytes:
+         """
+-        Read and return the response content.
++        Read and return the response content asynchronously.
+         """
+         if not hasattr(self, "_content"):
+             self._content = b"".join([part async for part in self.aiter_bytes()])
+@@ -1064,7 +1144,7 @@
+ 
+     async def aclose(self) -> None:
+         """
+-        Close the response and release the connection.
++        Close the response and release the connection asynchronously.
+         Automatically called if the response body is read to completion.
+         """
+         if not isinstance(self.stream, AsyncByteStream):
+@@ -1075,7 +1155,6 @@
+             with request_context(request=self._request):
+                 await self.stream.aclose()
+ 
+-
+ class Cookies(typing.MutableMapping[str, str]):
+     """
+     HTTP Cookies, as a mutable mapping.
+@@ -1203,6 +1282,9 @@
+         self.jar.clear(*args)
+ 
+     def update(self, cookies: CookieTypes | None = None) -> None:  # type: ignore
++        """
++        Update the cookies with the provided cookies.
++        """
+         cookies = Cookies(cookies)
+         for cookie in cookies.jar:
+             self.jar.set_cookie(cookie)
+@@ -1275,3 +1357,9 @@
+                 # https://docs.python.org/3/library/email.compat32-message.html#email.message.Message.__setitem__
+                 info[key] = value
+             return info
++
++    def __repr__(self) -> str:
++        """
++        Return a string representation of the Cookies instance.
++        """
++        return f"<Cookies[{cookies_repr}]>"
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/102994/g0/lane01/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/102994/g0/lane01/profiling_sandbox/httpx/_multipart.py	2026-09-27 09:18:54.855412662 -0400
+@@ -53,7 +53,7 @@
+     return None
+ 
+ 
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):

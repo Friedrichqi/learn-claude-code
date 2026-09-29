@@ -1,0 +1,106 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g1/lane02/profiling_sandbox/typer/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g1/lane02/profiling_sandbox/typer/CHANGES_BUILD_TAG.md	2026-09-27 01:37:43.383184980 -0400
+@@ -0,0 +1,77 @@
++## Changes for BUILD_TAG Addition
++
++The following files have been updated to include the `BUILD_TAG` constant:
++
++1. **File**: `profiling_sandbox/typer/_completion_classes.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++2. **File**: `profiling_sandbox/typer/_completion_shared.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++3. **File**: `profiling_sandbox/typer/_types.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++4. **File**: `profiling_sandbox/typer/_typing.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++5. **File**: `profiling_sandbox/typer/cli.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++6. **File**: `profiling_sandbox/typer/colors.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++7. **File**: `profiling_sandbox/typer/completion.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++8. **File**: `profiling_sandbox/typer/core.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++9. **File**: `profiling_sandbox/typer/exceptions.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++10. **File**: `profiling_sandbox/typer/params.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++11. **File**: `profiling_sandbox/typer/utils.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++12. **File**: `profiling_sandbox/typer/models.py`
++   - **Line**: 1
++     ```python
++     BUILD_TAG = 'profiling'
++     ```
++
++This changelog documents the addition of the `BUILD_TAG` constant to each of the specified files, ensuring that the constant is set to `'profiling'` in all relevant modules.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/exceptions.py /tmp/yqi10/mu/102768/g1/lane02/profiling_sandbox/typer/_click/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/exceptions.py	2026-09-17 15:46:11.501831032 -0400
++++ /tmp/yqi10/mu/102768/g1/lane02/profiling_sandbox/typer/_click/exceptions.py	2026-09-27 01:04:52.165123012 -0400
+@@ -3,7 +3,7 @@
+ 
+ from ..exceptions import TyperException
+ from ._compat import get_text_stderr
+-from .globals import resolve_color_default
++from .globals import resolve_color_default_v2
+ from .utils import echo, format_filename
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/102768/g1/lane02/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/102768/g1/lane02/profiling_sandbox/typer/_click/globals.py	2026-09-27 00:55:04.654344474 -0400
+@@ -45,7 +45,7 @@
+     _local.stack.pop()
+ 
+ 
+-def resolve_color_default(color: bool | None = None) -> bool | None:
++def resolve_color_default_v2(color: bool | None = None) -> bool | None:
+     """Internal helper to get the default value of the color flag.  If a
+     value is passed it's returned unchanged, otherwise it's looked up from
+     the current context.

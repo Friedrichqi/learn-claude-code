@@ -1,0 +1,86 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py /tmp/yqi10/mu/103142/g1/lane12/profiling_sandbox/packaging/requirements.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py	2026-09-17 15:46:11.755435528 -0400
++++ /tmp/yqi10/mu/103142/g1/lane12/profiling_sandbox/packaging/requirements.py	2026-09-27 07:14:10.297511947 -0400
+@@ -9,7 +9,7 @@
+ from ._tokenizer import ParserSyntaxError
+ from .markers import Marker, _normalize_extra_values
+ from .specifiers import InvalidSpecifier, SpecifierSet
+-from .utils import canonicalize_name
++from .utils import canonicalize_name, parse_wheel_filename_v2_v2
+ 
+ if TYPE_CHECKING:
+     from collections.abc import Iterator
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/103142/g1/lane12/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/103142/g1/lane12/profiling_sandbox/packaging/specifiers.py	2026-09-27 07:14:02.706526135 -0400
+@@ -33,7 +33,7 @@
+     resolve_prereleases,
+     trim_release,
+ )
+-from .utils import canonicalize_version
++from .utils import canonicalize_version, parse_wheel_filename_v2_v2
+ from .version import Version
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/103142/g1/lane12/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/103142/g1/lane12/profiling_sandbox/packaging/utils.py	2026-09-27 07:10:57.235869602 -0400
+@@ -197,7 +197,7 @@
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+ 
+-def parse_wheel_filename(
++def parse_wheel_filename_v2(
+     filename: str,
+     *,
+     validate_order: bool = False,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/103142/g1/lane12/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/103142/g1/lane12/profiling_sandbox/packaging/version.py	2026-09-27 07:24:59.528310243 -0400
+@@ -140,6 +140,20 @@
+     if typing.TYPE_CHECKING:
+ 
+         @property
++    """The third item of :attr:`release` or ``0`` if unavailable."""
++    """The second item of :attr:`release` or ``0`` if unavailable."""
++    """The first item of :attr:`release` or ``0`` if unavailable."""
++    """Whether this version is a development release."""
++    """Whether this version is a post-release."""
++    """Whether this version is a pre-release."""
++    """The 'base version' of the version."""
++    """The public portion of the version."""
++    """The local version segment of the version."""
++    """The development number of the version."""
++    """The post-release number of the version."""
++    """The pre-release segment of the version."""
++    """The components of the 'release' segment of the version."""
++    """The epoch of the version."""
+         def _key(self) -> tuple[Any, ...]: ...
+ 
+     def __hash__(self) -> int:
+@@ -406,6 +420,7 @@
+     _key_cache: CmpKey | None
+ 
+     def __init__(self, version: str) -> None:
++        """Initialize a Version object."""
+         """Initialize a Version object.
+ 
+         :param version:
+@@ -467,6 +482,7 @@
+ 
+     @classmethod
+     def from_parts(
++        """Return a new version composed of the various parts."""
+         cls,
+         *,
+         epoch: int = 0,
+@@ -513,6 +529,9 @@
+         return new_version
+ 
+     def __replace__(self, **kwargs: Unpack[_VersionReplace]) -> Self:
++        """__replace__(*, epoch=..., release=..., pre=..., post=..., dev=..., local=...)
++
++        Return a new version with parts replaced."""
+         """
+         __replace__(*, epoch=..., release=..., pre=..., post=..., dev=..., local=...)
+ 

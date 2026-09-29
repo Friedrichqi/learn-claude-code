@@ -1,0 +1,35 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/mu/103142/g0/lane10/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/mu/103142/g0/lane10/profiling_sandbox/s15_harness/trace_view.py	2026-09-27 06:30:57.969005516 -0400
+@@ -77,17 +77,23 @@
+ 
+ 
+ def pair_spans(events: Iterable[dict[str, Any]]) -> list[Interval]:
++    # Track start events by span_id
+     starts: dict[str, dict[str, Any]] = {}
+     intervals = []
++    # Process each event to pair spans
+     for event in events:
+         span_id = event.get("span_id")
+         name = event.get("event")
++        # Skip events without a span_id
+         if not span_id:
+             continue
+         if name in START_TO_END:
++            # Store start events for matching end events
+             starts[str(span_id)] = event
+             continue
++        # Retrieve the corresponding start event
+         start = starts.get(str(span_id))
++        # Check if the event matches a known start-end pair
+         if start is None or name not in START_TO_END.get(start.get("event"), set()):
+             continue
+         start_ns = int(start.get("monotonic_ns", 0))
+@@ -219,6 +225,7 @@
+ 
+ 
+ def calculate_metrics(events: list[dict[str, Any]]) -> dict[str, Any]:
++    # Pair start and end events into intervals
+     intervals = pair_spans(events)
+     info, parents, _created_at = _agent_maps(events)
+     depths = _depths(parents)

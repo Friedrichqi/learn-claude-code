@@ -1,0 +1,152 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md	2026-09-25 12:39:47.013045405 -0400
+@@ -0,0 +1,29 @@
++# Files Modified with BUILD_TAG='profiling'
++
++- **cyaml.py**
++- **dumper.py**
++- **emitter.py**
++- **loader.py**
++- **reader.py**
++- **representer.py**
++- **resolver.py**
++- **serializer.py**
++- **scanner.py**
++- **tokens.py**
++- **parser.py**
++- **scanner.py**
++
++## Line Numbers for Constant Addition
++
++- **cyaml.py**: Line 1
++- **dumper.py**: Line 1
++- **emitter.py**: Line 1
++- **loader.py**: Line 1
++- **reader.py**: Line 1
++- **representer.py**: Line 1
++- **resolver.py**: Line 1
++- **serializer.py**: Line 1
++- **scanner.py**: Line 1
++- **tokens.py**: Line 1
++- **parser.py**: Line 1
++- **scanner.py**: Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/composer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py	2026-09-21 20:03:49.535592579 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/composer.py	2026-09-25 12:37:01.699951770 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['Composer', 'ComposerError']
+ 
+ from .error import MarkedYAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/constructor.py	2026-09-25 12:37:23.668831350 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = [
+     'BaseConstructor',
+     'SafeConstructor',
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/dumper.py	2026-09-25 12:38:13.611557560 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['BaseDumper', 'SafeDumper', 'Dumper']
+ 
+ from .emitter import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/emitter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py	2026-09-21 20:03:49.553236855 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/emitter.py	2026-09-25 12:38:24.090500108 -0400
+@@ -6,6 +6,8 @@
+ # sequence ::= SEQUENCE-START node* SEQUENCE-END
+ # mapping ::= MAPPING-START (node node)* MAPPING-END
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['Emitter', 'EmitterError']
+ 
+ from .error import YAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/parser.py	2026-09-25 12:39:26.568157525 -0400
+@@ -59,6 +59,8 @@
+ # flow_sequence_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START KEY }
+ # flow_mapping_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START KEY }
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['Parser', 'ParserError']
+ 
+ from .error import MarkedYAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/reader.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/reader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/reader.py	2026-09-21 20:03:49.576278669 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/reader.py	2026-09-25 12:38:31.441459804 -0400
+@@ -15,6 +15,8 @@
+ #   reader.index - the number of the current character.
+ #   reader.line, stream.column - the line and the column of the current character.
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['Reader', 'ReaderError']
+ 
+ from .error import YAMLError, Mark
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/representer.py	2026-09-25 12:38:42.748397809 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['BaseRepresenter', 'SafeRepresenter', 'Representer',
+     'RepresenterError']
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/resolver.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py	2026-09-21 20:03:49.582954680 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/resolver.py	2026-09-25 12:38:51.785348258 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['BaseResolver', 'Resolver']
+ 
+ from .error import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/scanner.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py	2026-09-21 20:03:49.601022318 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/scanner.py	2026-09-25 12:39:11.463240356 -0400
+@@ -24,6 +24,8 @@
+ # Read comments in the Scanner code for more details.
+ #
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['Scanner', 'ScannerError']
+ 
+ from .error import MarkedYAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/serializer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py	2026-09-21 20:03:49.604638529 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/serializer.py	2026-09-25 12:39:02.536289307 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ['Serializer', 'SerializerError']
+ 
+ from .error import YAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/tokens.py /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/tokens.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/tokens.py	2026-09-21 20:03:49.608609002 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_07/profiling_sandbox/yaml/tokens.py	2026-09-25 12:39:17.657206391 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ class Token(object):
+     def __init__(self, start_mark, end_mark):
+         self.start_mark = start_mark

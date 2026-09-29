@@ -1,0 +1,96 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/ansi.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/ansi.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/ansi.py	2026-09-17 15:46:12.393378037 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/ansi.py	2026-09-27 03:14:11.145288776 -0400
+@@ -1,4 +1,6 @@
+ import re
++
++BUILD_TAG = 'profiling'
+ import sys
+ from contextlib import suppress
+ from typing import Iterable, NamedTuple, Optional
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/CHANGES_BUILD_TAG.md	2026-09-27 03:13:57.810316751 -0400
+@@ -0,0 +1,17 @@
++### Build Tag Addition Changelog
++
++The following files have been updated to include the `BUILD_TAG` module-level constant:
++
++1. **align.py** (Line 1)
++2. **ansi.py** (Line 1)
++3. **color.py** (Line 1)
++4. **console.py** (Line 1)
++5. **control.py** (Line 1)
++6. **emoji.py** (Line 1)
++7. **jupyter.py** (Line 1)
++8. **palette.py** (Line 1)
++9. **segment.py** (Line 1)
++10. **style.py** (Line 1)
++11. **text.py** (Line 1)
++12. **terminal_theme.py** (Line 1)
++13. **themes.py** (Line 1)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/color.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/color.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/color.py	2026-09-17 15:46:12.413563132 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/color.py	2026-09-27 03:14:18.508273330 -0400
+@@ -1,4 +1,6 @@
+ import re
++
++BUILD_TAG = 'profiling'
+ import sys
+ from colorsys import rgb_to_hls
+ from enum import IntEnum
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/console.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py	2026-09-17 15:46:12.433011978 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/console.py	2026-09-27 03:14:33.696241475 -0400
+@@ -43,7 +43,9 @@
+ from .control import Control
+ from .emoji import EmojiVariant
+ from .highlighter import NullHighlighter, ReprHighlighter
+-from .markup import render as render_markup
++from .markup import re
++
++BUILD_TAG = 'profiling'nder as render_markup
+ from .measure import Measurement, measure_renderables
+ from .pager import Pager, SystemPager
+ from .protocol import rich_cast
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/control.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/control.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/control.py	2026-09-17 15:46:12.451651653 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/control.py	2026-09-27 03:14:56.728193176 -0400
+@@ -1,4 +1,6 @@
+ import time
++
++BUILD_TAG = 'profiling'
+ from typing import TYPE_CHECKING, Callable, Dict, Iterable, List, Union, Final
+ 
+ from .segment import ControlCode, ControlType, Segment
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/jupyter.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/jupyter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/jupyter.py	2026-09-17 15:46:12.502899191 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/jupyter.py	2026-09-27 03:15:57.737065292 -0400
+@@ -1,5 +1,7 @@
+ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Sequence
+ 
++BUILD_TAG = 'profiling'
++
+ if TYPE_CHECKING:
+     from rich.console import ConsoleRenderable
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/segment.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/segment.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/segment.py	2026-09-17 15:46:12.657304018 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/segment.py	2026-09-27 03:16:49.693956444 -0400
+@@ -1,4 +1,6 @@
+ from enum import IntEnum
++
++BUILD_TAG = 'profiling'
+ from functools import lru_cache
+ from itertools import filterfalse
+ from operator import attrgetter
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/text.py /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/text.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/text.py	2026-09-17 15:46:12.700560671 -0400
++++ /tmp/yqi10/mu/102994/g1/lane09/profiling_sandbox/rich/text.py	2026-09-27 03:17:42.066846779 -0400
+@@ -1,4 +1,6 @@
+ import re
++
++BUILD_TAG = 'profiling'
+ from functools import partial, reduce
+ from math import gcd
+ from operator import itemgetter

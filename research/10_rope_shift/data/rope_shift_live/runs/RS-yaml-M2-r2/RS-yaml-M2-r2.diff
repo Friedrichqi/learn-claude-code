@@ -1,0 +1,48 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/yaml/constructor.py	2026-09-25 12:24:04.461137943 -0400
+@@ -53,6 +53,8 @@
+ 
+     def construct_document(self, node):
+         data = self.construct_object(node)
++        if hasattr(data, 'serialize'):
++            data.serialize = data.serialize_v2
+         while self.state_generators:
+             state_generators = self.state_generators
+             self.state_generators = []
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/yaml/cyaml.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py	2026-09-21 20:03:49.545638861 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/yaml/cyaml.py	2026-09-25 12:27:16.593481130 -0400
+@@ -8,7 +8,7 @@
+ 
+ from .constructor import *
+ 
+-from .serializer import *
++from .serialize import *
+ from .representer import *
+ 
+ from .resolver import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/yaml/dumper.py	2026-09-25 12:26:54.491556695 -0400
+@@ -2,7 +2,7 @@
+ __all__ = ['BaseDumper', 'SafeDumper', 'Dumper']
+ 
+ from .emitter import *
+-from .serializer import *
++from .serialize import *
+ from .representer import *
+ from .resolver import *
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_11/profiling_sandbox/yaml/representer.py	2026-09-25 12:24:13.821105950 -0400
+@@ -25,7 +25,7 @@
+ 
+     def represent(self, data):
+         node = self.represent_data(data)
+-        self.serialize(node)
++        self.serialize_v2(node)
+         self.represented_objects = {}
+         self.object_keeper = []
+         self.alias_key = None

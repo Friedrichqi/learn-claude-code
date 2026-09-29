@@ -1,0 +1,78 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py /tmp/yqi10/mu/102768/g0/lane04/profiling_sandbox/httpx/_client.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_client.py	2026-09-17 15:46:11.111585027 -0400
++++ /tmp/yqi10/mu/102768/g0/lane04/profiling_sandbox/httpx/_client.py	2026-09-27 07:05:35.621392574 -0400
+@@ -142,7 +142,9 @@
+     ensures the `response.elapsed` is set once the response is closed.
+     """
+ 
+-    def __init__(
++    def __init__(self, *, transport: BaseTransport | None = None, proxies: ProxyTypes | None = None, timeout: TimeoutTypes = DEFAULT_TIMEOUT_CONFIG, verify: CertTypes = True, cert: CertTypes | None = None, trust_env: bool = True, base_url: URL | str = "", headers: HeaderTypes = None, cookies: CookieTypes = None, auth: AuthTypes = None, follow_redirects: bool = False, max_redirects: int = DEFAULT_MAX_REDIRECTS, event_hooks: dict[str, list[typing.Callable]] = None, mounts: dict[str, BaseTransport] = None, limits: Limits = DEFAULT_LIMITS, app: typing.Any = None, resolver: DNSResolver | None = None) -> None:
++        """Initialize the Client with configuration parameters."""
++        # Initialization code here
+         self, stream: SyncByteStream, response: Response, start: float
+     ) -> None:
+         self._stream = stream
+@@ -154,6 +156,8 @@
+             yield chunk
+ 
+     def close(self) -> None:
++        """Close the client and release any resources."""
++        # Close client code hereself) -> None:
+         elapsed = time.perf_counter() - self._start
+         self._response.elapsed = datetime.timedelta(seconds=elapsed)
+         self._stream.close()
+@@ -259,7 +263,9 @@
+         self._timeout = Timeout(timeout)
+ 
+     @property
+-    def event_hooks(self) -> dict[str, list[EventHook]]:
++    def event_hooks(self) -> dict[str, list[typing.Callable]]:
++        """Return the event hooks configured for the client."""
++        # Event hooks code hereself) -> dict[str, list[EventHook]]:
+         return self._event_hooks
+ 
+     @event_hooks.setter
+@@ -337,7 +343,9 @@
+     def params(self, params: QueryParamTypes) -> None:
+         self._params = QueryParams(params)
+ 
+-    def build_request(
++    def build_request(self, method: str, url: URL | str, *, content: RequestContent | None = None, data: RequestData | None = None, files: RequestFiles | None = None, json: typing.Any | None = None, params: QueryParamTypes | None = None, headers: HeaderTypes | None = None, cookies: CookieTypes | None = None, auth: AuthTypes | None = None, extensions: RequestExtensions | None = None) -> Request:
++        """Build an HTTP request object from the provided parameters."""
++        # Request building code here
+         self,
+         method: str,
+         url: URL | str,
+@@ -768,7 +776,9 @@
+ 
+         return self._transport
+ 
+-    def request(
++    def request(self, method: str, url: URL | str, *, content: RequestContent | None = None, data: RequestData | None = None, files: RequestFiles | None = None, json: typing.Any | None = None, params: QueryParamTypes | None = None, headers: HeaderTypes | None = None, cookies: CookieTypes | None = None, auth: AuthTypes | None = None, follow_redirects: bool | None = None, allow_redirects: bool | None = None, timeout: TimeoutTypes | None = None, extensions: RequestExtensions | None = None) -> Response:
++        """Send an HTTP request with the specified method and URL."""
++        # Request construction and sending code here
+         self,
+         method: str,
+         url: URL | str,
+@@ -825,7 +835,9 @@
+         return self.send(request, auth=auth, follow_redirects=follow_redirects)
+ 
+     @contextmanager
+-    def stream(
++    def stream(self, method: str, url: URL | str, *, content: RequestContent | None = None, data: RequestData | None = None, files: RequestFiles | None = None, json: typing.Any | None = None, params: QueryParamTypes | None = None, headers: HeaderTypes | None = None, cookies: CookieTypes | None = None, auth: AuthTypes | None = None, follow_redirects: bool | None = None, allow_redirects: bool | None = None, timeout: TimeoutTypes | None = None, extensions: RequestExtensions | None = None) -> typing.Iterator[Response]:
++        """Stream the HTTP request and yield the response incrementally."""
++        # Streaming request code here
+         self,
+         method: str,
+         url: URL | str,
+@@ -876,7 +888,9 @@
+         finally:
+             response.close()
+ 
+-    def send(
++    def send(self, request: Request, stream: bool = False) -> Response:
++        """Send the provided HTTP request and return the response."""
++        # Sending request code here
+         self,
+         request: Request,
+         *,

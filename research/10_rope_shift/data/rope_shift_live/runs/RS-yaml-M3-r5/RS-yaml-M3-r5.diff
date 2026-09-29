@@ -1,0 +1,97 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/rope_shift_lanes/s3/lane03_06/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_06/profiling_sandbox/yaml/constructor.py	2026-09-25 12:34:20.626980923 -0400
+@@ -28,7 +28,7 @@
+         self.deep_construct = False
+ 
+     def check_data(self):
+-        # If there are more documents available?
++        """Check if there are more documents available."""
+         return self.check_node()
+ 
+     def check_state_key(self, key):
+@@ -40,18 +40,19 @@
+                 "blacklisted key '%s' in instance state found" % (key,), None)
+ 
+     def get_data(self):
+-        # Construct and return the next document.
++        """Construct and return the next document."""
+         if self.check_node():
+             return self.construct_document(self.get_node())
+ 
+     def get_single_data(self):
+-        # Ensure that the stream contains a single document and construct it.
++        """Ensure that the stream contains a single document and construct it."""
+         node = self.get_single_node()
+         if node is not None:
+             return self.construct_document(node)
+         return None
+ 
+     def construct_document(self, node):
++        """Construct a document from a node."""
+         data = self.construct_object(node)
+         while self.state_generators:
+             state_generators = self.state_generators
+@@ -65,6 +66,7 @@
+         return data
+ 
+     def construct_object(self, node, deep=False):
++        """Construct an object from a node."""
+         if node in self.constructed_objects:
+             return self.constructed_objects[node]
+         if deep:
+@@ -115,6 +117,7 @@
+         return data
+ 
+     def construct_scalar(self, node):
++        """Construct a scalar value from a node."""
+         if not isinstance(node, ScalarNode):
+             raise ConstructorError(None, None,
+                     "expected a scalar node, but found %s" % node.id,
+@@ -122,6 +125,7 @@
+         return node.value
+ 
+     def construct_sequence(self, node, deep=False):
++        """Construct a sequence from a node."""
+         if not isinstance(node, SequenceNode):
+             raise ConstructorError(None, None,
+                     "expected a sequence node, but found %s" % node.id,
+@@ -130,6 +134,7 @@
+                 for child in node.value]
+ 
+     def construct_mapping(self, node, deep=False):
++        """Construct a mapping from a node."""
+         if not isinstance(node, MappingNode):
+             raise ConstructorError(None, None,
+                     "expected a mapping node, but found %s" % node.id,
+@@ -145,6 +150,7 @@
+         return mapping
+ 
+     def construct_pairs(self, node, deep=False):
++        """Construct a list of key-value pairs from a node."""
+         if not isinstance(node, MappingNode):
+             raise ConstructorError(None, None,
+                     "expected a mapping node, but found %s" % node.id,
+@@ -158,12 +164,14 @@
+ 
+     @classmethod
+     def add_constructor(cls, tag, constructor):
++        """Add a constructor for a specific tag."""
+         if not 'yaml_constructors' in cls.__dict__:
+             cls.yaml_constructors = cls.yaml_constructors.copy()
+         cls.yaml_constructors[tag] = constructor
+ 
+     @classmethod
+     def add_multi_constructor(cls, tag_prefix, multi_constructor):
++        """Add a multi-constructor for a specific tag prefix."""
+         if not 'yaml_multi_constructors' in cls.__dict__:
+             cls.yaml_multi_constructors = cls.yaml_multi_constructors.copy()
+         cls.yaml_multi_constructors[tag_prefix] = multi_constructor
+@@ -178,6 +186,7 @@
+         return super().construct_scalar(node)
+ 
+     def flatten_mapping(self, node):
++        """Flatten a mapping node by merging."""
+         merge = []
+         index = 0
+         while index < len(node.value):

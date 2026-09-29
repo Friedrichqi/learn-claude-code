@@ -1,0 +1,36 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py /tmp/yqi10/mu/102767/g1/lane05/profiling_sandbox/click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py	2026-09-17 15:46:11.414122732 -0400
++++ /tmp/yqi10/mu/102767/g1/lane05/profiling_sandbox/click/_compat.py	2026-09-27 02:12:45.705122751 -0400
+@@ -10,6 +10,8 @@
+ from types import TracebackType
+ from weakref import WeakKeyDictionary
+ 
++BUILD_TAG = 'profiling'
++
+ CYGWIN = sys.platform.startswith("cygwin")
+ WIN = sys.platform.startswith("win")
+ # One CSI escape sequence per the ECMA-48 grammar: parameter bytes (0x30-0x3F),
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py /tmp/yqi10/mu/102767/g1/lane05/profiling_sandbox/click/_termui_impl.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_termui_impl.py	2026-09-17 15:46:11.420759065 -0400
++++ /tmp/yqi10/mu/102767/g1/lane05/profiling_sandbox/click/_termui_impl.py	2026-09-27 02:22:48.988909857 -0400
+@@ -19,6 +19,8 @@
+ from pathlib import Path
+ from types import TracebackType
+ 
++BUILD_TAG = 'profiling'
++
+ from ._compat import _default_text_stdout
+ from ._compat import CYGWIN
+ from ._compat import get_best_encoding
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_textwrap.py /tmp/yqi10/mu/102767/g1/lane05/profiling_sandbox/click/_textwrap.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_textwrap.py	2026-09-17 15:46:11.426856985 -0400
++++ /tmp/yqi10/mu/102767/g1/lane05/profiling_sandbox/click/_textwrap.py	2026-09-27 02:23:28.178831470 -0400
+@@ -4,6 +4,8 @@
+ import textwrap
+ from contextlib import contextmanager
+ 
++BUILD_TAG = 'profiling'
++
+ from ._compat import _ansi_re
+ from ._compat import term_len
+ 

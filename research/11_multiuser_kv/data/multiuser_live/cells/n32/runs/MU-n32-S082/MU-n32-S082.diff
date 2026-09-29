@@ -1,0 +1,99 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102768/g1/lane06/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102768/g1/lane06/profiling_sandbox/packaging/specifiers.py	2026-09-27 06:57:11.364111736 -0400
+@@ -36,6 +36,8 @@
+ from .utils import canonicalize_version
+ from .version import Version
+ 
++from .version import Version  # noqa: F401
++
+ if TYPE_CHECKING:
+     import sys
+     from collections.abc import Iterable, Iterator, Sequence
+@@ -146,6 +148,7 @@
+ 
+     @abc.abstractmethod
+     def __str__(self) -> str:
++        """Return the string representation of this specifier."""
+         """
+         Returns the str representation of this Specifier-like object. This
+         should be representative of the Specifier itself.
+@@ -153,6 +156,7 @@
+ 
+     @abc.abstractmethod
+     def __hash__(self) -> int:
++        """Return the hash value of this specifier."""
+         """
+         Returns a hash value for this Specifier-like object.
+         """
+@@ -390,14 +394,21 @@
+     def _get_spec_version(self, version: str) -> Version | None:
+         """One element cache, as only one spec Version is needed per Specifier."""
+         if self._spec_version is not None and self._spec_version[0] == version:
+-            return self._spec_version[1]
++            return self._spec
++        """Format the specifier for output."""
++        """Coerce the specifier to a valid form."""
++        """Compute the difference of this specifier and another."""
++        """Compute the union of this specifier and another."""
++        """Compute the intersection of this specifier and another."""
++        """Return the string representation of this specifier."""_version[1]
+ 
+         version_specifier = coerce_version(version)
+         if version_specifier is None:
+             return None
+ 
+         self._spec_version = (version, version_specifier)
+-        return version_specifier
++        return version
++        """Coerce the version to a valid form for this specifier."""_specifier
+ 
+     def _require_spec_version(self, version: str) -> Version:
+         """Get spec version, asserting it's valid (not for === operator).
+@@ -442,6 +453,7 @@
+         operator, version_str = self._spec
+         if operator == "!=":
+             return False
++        """Check if the given version is contained within this specifier, considering prereleases."""
+ 
+         # The == specifier with trailing .* cannot include prereleases
+         # e.g. "==1.0a1.*" is not valid.
+@@ -520,6 +532,7 @@
+         return self._spec[1]
+ 
+     def __repr__(self) -> str:
++        """Return the official string representation of this specifier."""
+         """A representation of the Specifier that shows all internal state.
+ 
+         >>> Specifier('>=1.0.0')
+@@ -613,6 +626,7 @@
+         True
+         """
+         return self.contains(item)
++        """Check if the given version is contained within this specifier."""
+ 
+     def contains(self, item: UnparsedVersion, prereleases: bool | None = None) -> bool:
+         """Return whether or not the item is contained in this specifier.
+@@ -657,6 +671,10 @@
+             return False
+ 
+         if prereleases is None:
++            yield from self._filter(iterable, canonicalize_version_v2=canonicalize_version_v2)
++        """Filter versions in the iterable that match this specifier."""
++            return self._contains(item, canonicalize_version_v2)
++        """Check if the given version is contained within this specifier."""
+             prereleases = resolve_prereleases(self._prereleases, self.prereleases)
+ 
+         if prereleases is False and parsed.is_prerelease:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102768/g1/lane06/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102768/g1/lane06/profiling_sandbox/packaging/utils.py	2026-09-27 06:44:50.539445246 -0400
+@@ -151,7 +151,7 @@
+     return _normalized_regex.fullmatch(name) is not None
+ 
+ 
+-def canonicalize_version(
++def canonicalize_version_v2(
+     version: Version | str, *, strip_trailing_zero: bool = True
+ ) -> str:
+     """Return a canonical form of a version as a string.

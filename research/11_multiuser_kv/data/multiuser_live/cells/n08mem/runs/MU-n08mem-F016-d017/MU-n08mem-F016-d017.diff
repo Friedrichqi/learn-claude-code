@@ -1,0 +1,224 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py /tmp/yqi10/mu/102994/g0/lane00/profiling_sandbox/rich/markdown.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py	2026-09-17 15:46:12.551882609 -0400
++++ /tmp/yqi10/mu/102994/g0/lane00/profiling_sandbox/rich/markdown.py	2026-09-27 10:12:11.522045322 -0400
+@@ -44,6 +44,7 @@
+         Args:
+             context (MarkdownContext): The markdown context.
+         """
++        pass
+ 
+     def on_text(self, context: MarkdownContext, text: TextType) -> None:
+         """Called when text is parsed.
+@@ -51,6 +52,7 @@
+         Args:
+             context (MarkdownContext): The markdown context.
+         """
++        pass
+ 
+     def on_leave(self, context: MarkdownContext) -> None:
+         """Called when the parser leaves the element.
+@@ -58,6 +60,7 @@
+         Args:
+             context (MarkdownContext): [description]
+         """
++        pass
+ 
+     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
+         """Called when a child element is closed.
+@@ -78,16 +81,13 @@
+     ) -> RenderResult:
+         return ()
+ 
+-
+ class UnknownElement(MarkdownElement):
+     """An unknown element.
+ 
+     Hopefully there will be no unknown elements, and we will have a MarkdownElement for
+     everything in the document.
+-
+     """
+ 
+-
+ class TextElement(MarkdownElement):
+     """Base class for elements that render text."""
+ 
+@@ -103,7 +103,6 @@
+     def on_leave(self, context: MarkdownContext) -> None:
+         context.leave_style()
+ 
+-
+ class Paragraph(TextElement):
+     """A Paragraph."""
+ 
+@@ -123,13 +122,12 @@
+         self.text.justify = self.justify
+         yield self.text
+ 
+-
+ @dataclass
+ class HeadingFormat:
++    """Format options for headings."""
+     justify: JustifyMethod = "left"
+     style: str = ""
+ 
+-
+ class Heading(TextElement):
+     """A heading."""
+ 
+@@ -163,7 +161,6 @@
+         text.justify = heading_justify
+         yield text
+ 
+-
+ class CodeBlock(TextElement):
+     """A code block with syntax highlighting."""
+ 
+@@ -188,7 +185,6 @@
+         )
+         yield syntax
+ 
+-
+ class BlockQuote(TextElement):
+     """A block quote."""
+ 
+@@ -214,7 +210,6 @@
+             yield from line
+             yield new_line
+ 
+-
+ class HorizontalRule(MarkdownElement):
+     """A horizontal rule to divide sections."""
+ 
+@@ -227,7 +222,6 @@
+         yield Rule(style=style, characters="-")
+         yield Text()
+ 
+-
+ class TableElement(MarkdownElement):
+     """MarkdownElement corresponding to `table_open`."""
+ 
+@@ -268,7 +262,6 @@
+ 
+         yield table
+ 
+-
+ class TableHeaderElement(MarkdownElement):
+     """MarkdownElement corresponding to `thead_open` and `thead_close`."""
+ 
+@@ -280,7 +273,6 @@
+         self.row = child
+         return False
+ 
+-
+ class TableBodyElement(MarkdownElement):
+     """MarkdownElement corresponding to `tbody_open` and `tbody_close`."""
+ 
+@@ -292,7 +284,6 @@
+         self.rows.append(child)
+         return False
+ 
+-
+ class TableRowElement(MarkdownElement):
+     """MarkdownElement corresponding to `tr_open` and `tr_close`."""
+ 
+@@ -304,7 +295,6 @@
+         self.cells.append(child)
+         return False
+ 
+-
+ class TableDataElement(MarkdownElement):
+     """MarkdownElement corresponding to `td_open` and `td_close`
+     and `th_open` and `th_close`."""
+@@ -336,7 +326,6 @@
+         else:
+             self.content.append_text(text)
+ 
+-
+ class ListElement(MarkdownElement):
+     """A list element."""
+ 
+@@ -368,7 +357,6 @@
+                     console, options, number + index, last_number
+                 )
+ 
+-
+ class ListItem(TextElement):
+     """An item in a list."""
+ 
+@@ -382,6 +370,7 @@
+         return False
+ 
+     def render_bullet(self, console: Console, options: ConsoleOptions) -> RenderResult:
++        """Render a bullet list item."""
+         render_options = options.update(width=options.max_width - 3)
+         lines = console.render_lines(self.elements, render_options, style=self.style)
+         bullet_style = console.get_style("markdown.item.bullet", default="none")
+@@ -397,6 +386,7 @@
+     def render_number(
+         self, console: Console, options: ConsoleOptions, number: int, last_number: int
+     ) -> RenderResult:
++        """Render a numbered list item."""
+         number_width = len(str(last_number)) + 2
+         render_options = options.update(width=options.max_width - number_width)
+         lines = console.render_lines(self.elements, render_options, style=self.style)
+@@ -410,8 +400,9 @@
+             yield from line
+             yield new_line
+ 
+-
+ class Link(TextElement):
++    """A hyperlink."""
++
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
+         url = token.attrs.get("href", "#")
+@@ -421,7 +412,6 @@
+         self.text = Text(text)
+         self.href = href
+ 
+-
+ class ImageItem(TextElement):
+     """Renders a placeholder for an image."""
+ 
+@@ -461,7 +451,6 @@
+         text = Text.assemble("🌆 ", title, " ", end="")
+         yield text
+ 
+-
+ class MarkdownContext:
+     """Manages the console render state."""
+ 
+@@ -509,7 +498,6 @@
+         style = self.style_stack.pop()
+         return style
+ 
+-
+ class Markdown(JupyterMixin):
+     """A Markdown renderable.
+ 
+@@ -799,4 +787,4 @@
+         console = Console(
+             force_terminal=args.force_color, width=args.width, record=True
+         )
+-        console.print(markdown)
++        console.print(markdown)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py /tmp/yqi10/mu/102994/g0/lane00/profiling_sandbox/rich/_unicode_data/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py	2026-09-17 15:46:12.223663421 -0400
++++ /tmp/yqi10/mu/102994/g0/lane00/profiling_sandbox/rich/_unicode_data/__init__.py	2026-09-27 10:13:54.715900493 -0400
+@@ -56,7 +56,7 @@
+ 
+ 
+ @cache
+-def load(unicode_version: str = "auto") -> CellTable:
++def load_v2(unicode_version: str = "auto") -> CellTable:
+     """Load a cell table for the given unicode version.
+ 
+     Args:
+@@ -90,4 +90,4 @@
+     module = import_module(module_name, "rich._unicode_data")
+     if TYPE_CHECKING:
+         assert isinstance(module.cell_table, CellTable)
+-    return module.cell_table
++    return module.cell_table
+\ No newline at end of file

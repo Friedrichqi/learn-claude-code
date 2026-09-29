@@ -1,0 +1,148 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_compat.py /tmp/yqi10/mu/103142/g1/lane30/profiling_sandbox/typer/_click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/_compat.py	2026-09-17 15:46:11.474602189 -0400
++++ /tmp/yqi10/mu/103142/g1/lane30/profiling_sandbox/typer/_click/_compat.py	2026-09-27 08:20:16.628851671 -0400
+@@ -177,6 +177,7 @@
+ 
+ 
+ def _is_compat_stream_attr(stream: TextIO, attr: str, value: str | None) -> bool:
++    # Check if a stream attribute is compatible with the desired value
+     """A stream attribute is compatible if it is equal to the
+     desired value or the desired value is unset and the attribute
+     has a value.
+@@ -186,6 +187,7 @@
+ 
+ 
+ def _is_compatible_text_stream(
++    stream: TextIO, encoding: str | None, errors: str | None) -> bool:
+     stream: TextIO, encoding: str | None, errors: str | None
+ ) -> bool:
+     """Check if a stream's encoding and errors attributes are
+@@ -197,6 +199,7 @@
+ 
+ 
+ def _force_correct_text_stream(
++    text_stream: IO[Any], encoding: str | None, errors: str | None, is_binary: Callable[[IO[Any], bool], bool], find_binary: Callable[[IO[Any]], BinaryIO | None]) -> TextIO:
+     text_stream: IO[Any],
+     encoding: str | None,
+     errors: str | None,
+@@ -209,7 +212,8 @@
+         text_stream = cast(TextIO, text_stream)
+         # If the stream looks compatible, and won't default to a
+         # misconfigured ascii encoding, return it as-is.
+-        if _is_compatible_text_stream(text_stream, encoding, errors) and not (
++        # Check if the stream is compatible with the desired encoding and errors
++    if _is_compatible_text_stream(text_stream, encoding, errors) and not (
+             encoding is None and _stream_is_misconfigured(text_stream)
+         ):
+             return text_stream
+@@ -239,6 +243,7 @@
+ 
+ 
+ def _force_correct_text_reader(
++    text_reader: IO[Any], encoding: str | None, errors: str | None) -> TextIO:
+     text_reader: IO[Any],
+     encoding: str | None,
+     errors: str | None,
+@@ -253,6 +258,7 @@
+ 
+ 
+ def _force_correct_text_writer(
++    text_writer: IO[Any], encoding: str | None, errors: str | None) -> TextIO:
+     text_writer: IO[Any],
+     encoding: str | None,
+     errors: str | None,
+@@ -267,6 +273,7 @@
+ 
+ 
+ def get_binary_stdin() -> BinaryIO:
++    # Get the binary stream for stdin
+     reader = _find_binary_reader(sys.stdin)
+     if reader is None:  # pragma: no cover
+         raise RuntimeError("Was not able to determine binary stream for sys.stdin.")
+@@ -274,6 +281,7 @@
+ 
+ 
+ def get_binary_stdout() -> BinaryIO:
++    # Get the binary stream for stdout
+     writer = _find_binary_writer(sys.stdout)
+     if writer is None:  # pragma: no cover
+         raise RuntimeError("Was not able to determine binary stream for sys.stdout.")
+@@ -281,6 +289,7 @@
+ 
+ 
+ def get_binary_stderr() -> BinaryIO:
++    # Get the binary stream for stderr
+     writer = _find_binary_writer(sys.stderr)
+     if writer is None:  # pragma: no cover
+         raise RuntimeError("Was not able to determine binary stream for sys.stderr.")
+@@ -288,6 +297,7 @@
+ 
+ 
+ def get_text_stdin(encoding: str | None = None, errors: str | None = None) -> TextIO:
++    # Get the text stream for stdin with the specified encoding and errors
+     rv = _get_windows_console_stream(sys.stdin, encoding, errors)
+     if rv is not None:
+         return rv
+@@ -295,6 +305,7 @@
+ 
+ 
+ def get_text_stdout(encoding: str | None = None, errors: str | None = None) -> TextIO:
++    # Get the text stream for stdout with the specified encoding and errors
+     rv = _get_windows_console_stream(sys.stdout, encoding, errors)
+     if rv is not None:
+         return rv
+@@ -302,6 +313,7 @@
+ 
+ 
+ def get_text_stderr(encoding: str | None = None, errors: str | None = None) -> TextIO:
++    # Get the text stream for stderr with the specified encoding and errors
+     rv = _get_windows_console_stream(sys.stderr, encoding, errors)
+     if rv is not None:
+         return rv
+@@ -312,6 +324,10 @@
+     file: str | os.PathLike[str] | int,
+     mode: str,
+     encoding: str | None,
++    errors: str | None) -> IO[Any]:
++    file: str | os.PathLike[str] | int,
++    mode: str,
++    encoding: str | None,
+     errors: str | None,
+ ) -> IO[Any]:
+     """Handles not passing ``encoding`` and ``errors`` in binary mode."""
+@@ -325,6 +341,11 @@
+     filename: str | os.PathLike[str],
+     mode: str = "r",
+     encoding: str | None = None,
++    errors: str | None = "strict",
++    atomic: bool = False) -> tuple[IO[Any], bool]:
++    filename: str | os.PathLike[str],
++    mode: str = "r",
++    encoding: str | None = None,
+     errors: str | None = "strict",
+     atomic: bool = False,
+ ) -> tuple[IO[Any], bool]:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/103142/g1/lane30/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/103142/g1/lane30/profiling_sandbox/typer/_click/globals.py	2026-09-27 08:35:05.664482048 -0400
+@@ -45,7 +45,7 @@
+     _local.stack.pop()
+ 
+ 
+-def resolve_color_default(color: bool | None = None) -> bool | None:
++def resolve_color_default_v2(color: bool | None = None) -> bool | None:
+     """Internal helper to get the default value of the color flag.  If a
+     value is passed it's returned unchanged, otherwise it's looked up from
+     the current context.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/termui.py /tmp/yqi10/mu/103142/g1/lane30/profiling_sandbox/typer/_click/termui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/termui.py	2026-09-17 15:46:11.537520074 -0400
++++ /tmp/yqi10/mu/103142/g1/lane30/profiling_sandbox/typer/_click/termui.py	2026-09-27 08:35:19.017461554 -0400
+@@ -278,7 +278,7 @@
+     """
+     from ._termui_impl import ProgressBar
+ 
+-    color = resolve_color_default(color)
++    color = resolve_color_default_v2(color)
+     return ProgressBar(
+         iterable=iterable,
+         length=length,

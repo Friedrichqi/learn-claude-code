@@ -1,0 +1,75 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/typer/_click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py	2026-09-17 15:46:11.494043204 -0400
++++ /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/typer/_click/core.py	2026-09-27 08:59:49.438166944 -0400
+@@ -20,7 +20,7 @@
+ from . import types
+ from .exceptions import BadParameter, MissingParameter, NoArgsIsHelpError, UsageError
+ from .formatting import HelpFormatter
+-from .globals import pop_context, push_context
++from .globals import pop_context, push_context_v2
+ from .parser import _OptionParser
+ from .termui import style
+ from .utils import echo, make_default_short_help
+@@ -263,7 +263,7 @@
+ 
+     def __enter__(self) -> "Context":
+         self._depth += 1
+-        push_context(self)
++        push_context_v2(self)
+         return self
+ 
+     def __exit__(
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/typer/_click/globals.py	2026-09-27 08:58:37.247280289 -0400
+@@ -35,7 +35,7 @@
+     return None
+ 
+ 
+-def push_context(ctx: "Context") -> None:
++def push_context_v2(ctx: "Context") -> None:
+     """Pushes a new context to the current stack."""
+     _local.__dict__.setdefault("stack", []).append(ctx)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/typer/main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py	2026-09-17 15:46:11.608868099 -0400
++++ /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/typer/main.py	2026-09-27 08:57:53.811348473 -0400
+@@ -61,6 +61,7 @@
+ def except_hook(
+     exc_type: type[BaseException], exc_value: BaseException, tb: TracebackType | None
+ ) -> None:
++    """Custom exception hook to handle pretty exceptions for Typer CLI applications."""
+     exception_config: DeveloperExceptionConfig | None = getattr(
+         exc_value, _typer_developer_exception_attr_name, None
+     )
+@@ -73,6 +74,30 @@
+         or not exception_config.pretty_exceptions_enable
+     ):
+         _original_except_hook(exc_type, exc_value, tb)
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
++    """Restores the original exception hook behavior when pretty exceptions are not enabled."""
+         return
+     typer_path = os.path.dirname(__file__)
+     click_path = os.path.dirname(_click.__file__)

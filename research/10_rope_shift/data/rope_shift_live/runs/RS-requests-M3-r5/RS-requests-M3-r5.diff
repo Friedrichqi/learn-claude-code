@@ -1,0 +1,89 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/rope_shift_lanes/s5/lane05_11/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_11/profiling_sandbox/requests/auth.py	2026-09-25 12:42:36.989568889 -0400
+@@ -74,14 +74,12 @@
+ 
+     return authstr
+ 
+-
+ class AuthBase:
+     """Base class that all auth implementations derive from"""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+         raise NotImplementedError("Auth hooks must be callable.")
+ 
+-
+ class HTTPBasicAuth(AuthBase):
+     """Attaches HTTP Basic Authentication to the given Request object."""
+ 
+@@ -112,7 +110,6 @@
+         r.headers["Authorization"] = _basic_auth_str(self.username, self.password)
+         return r
+ 
+-
+ class HTTPProxyAuth(HTTPBasicAuth):
+     """Attaches HTTP Proxy Authentication to a given Request object."""
+ 
+@@ -120,7 +117,6 @@
+         r.headers["Proxy-Authorization"] = _basic_auth_str(self.username, self.password)
+         return r
+ 
+-
+ class HTTPDigestAuth(AuthBase):
+     """Attaches HTTP Digest Authentication to the given Request object."""
+ 
+@@ -145,7 +141,8 @@
+         self._thread_local = threading.local()
+ 
+     def init_per_thread_state(self) -> None:
+-        # Ensure state is initialized just once per-thread
++        """Ensure state is initialized just once per-thread."""
++
+         if not hasattr(self._thread_local, "init"):
+             self._thread_local.init = True
+             self._thread_local.last_nonce = ""
+@@ -155,9 +152,7 @@
+             self._thread_local.num_401_calls = None
+ 
+     def build_digest_header(self, method: str, url: str) -> str | None:
+-        """
+-        :rtype: str
+-        """
++        """Builds the digest header for authentication."""
+ 
+         realm = self._thread_local.chal["realm"]
+         nonce = self._thread_local.chal["nonce"]
+@@ -267,15 +262,12 @@
+ 
+     def handle_redirect(self, r: Response, **kwargs: Any) -> None:
+         """Reset num_401_calls counter on redirects."""
++
+         if r.is_redirect:
+             self._thread_local.num_401_calls = 1
+ 
+     def handle_401(self, r: Response, **kwargs: Any) -> Response:
+-        """
+-        Takes the given response and tries digest-auth, if needed.
+-
+-        :rtype: requests.Response
+-        """
++        """Takes the given response and tries digest-auth, if needed."""
+ 
+         # If response is not 4xx, do not auth
+         # See https://github.com/psf/requests/issues/3772
+@@ -319,6 +311,8 @@
+         return r
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
++        """Apply digest authentication to the request."""
++
+         # Initialize per-thread state, if needed
+         self.init_per_thread_state()
+         # If we have a saved nonce, skip the 401
+@@ -351,4 +345,4 @@
+         )
+ 
+     def __ne__(self, other: Any) -> bool:
+-        return not self == other
++        return not self == other
+\ No newline at end of file

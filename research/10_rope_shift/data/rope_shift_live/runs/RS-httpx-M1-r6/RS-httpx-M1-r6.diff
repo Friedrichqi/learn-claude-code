@@ -1,0 +1,120 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py /tmp/yqi10/rope_shift_lanes/s2/lane02_02/profiling_sandbox/httpx/_api.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_api.py	2026-09-17 15:46:11.085591258 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_02/profiling_sandbox/httpx/_api.py	2026-09-25 12:23:21.018286432 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import typing
+@@ -92,12 +94,12 @@
+ 
+     Usage:
+ 
+-    ```
++    ````
+     >>> import httpx
+     >>> response = httpx.request('GET', 'https://httpbin.org/get')
+     >>> response
+     <Response [200 OK]>
+-    ```
++    ````
+     """
+     with Client(
+         cookies=cookies,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py /tmp/yqi10/rope_shift_lanes/s2/lane02_02/profiling_sandbox/httpx/_auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py	2026-09-17 15:46:11.090183787 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_02/profiling_sandbox/httpx/_auth.py	2026-09-25 12:27:02.140530544 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import hashlib
+@@ -18,7 +20,6 @@
+ 
+ __all__ = ["Auth", "BasicAuth", "DigestAuth", "NetRCAuth"]
+ 
+-
+ class Auth:
+     """
+     Base class for all authentication schemes.
+@@ -41,16 +42,16 @@
+ 
+         To dispatch a request, `yield` it:
+ 
+-        ```
++        ````
+         yield request
+-        ```
++        ````
+ 
+         The client will `.send()` the response back into the flow generator. You can
+         access it like so:
+ 
+-        ```
++        ````
+         response = yield request
+-        ```
++        ````
+ 
+         A `return` (or reaching the end of the generator) will result in the
+         client returning the last response obtained from the server.
+@@ -109,7 +110,6 @@
+             except StopIteration:
+                 break
+ 
+-
+ class FunctionAuth(Auth):
+     """
+     Allows the 'auth' argument to be passed as a simple callable function,
+@@ -122,7 +122,6 @@
+     def auth_flow(self, request: Request) -> typing.Generator[Request, Response, None]:
+         yield self._func(request)
+ 
+-
+ class BasicAuth(Auth):
+     """
+     Allows the 'auth' argument to be passed as a (username, password) pair,
+@@ -141,7 +140,6 @@
+         token = b64encode(userpass).decode()
+         return f"Basic {token}"
+ 
+-
+ class NetRCAuth(Auth):
+     """
+     Use a 'netrc' file to lookup basic auth credentials based on the url host.
+@@ -171,7 +169,6 @@
+         token = b64encode(userpass).decode()
+         return f"Basic {token}"
+ 
+-
+ class DigestAuth(Auth):
+     _ALGORITHM_TO_HASH_FUNCTION: dict[str, typing.Callable[[bytes], _Hash]] = {
+         "MD5": hashlib.md5,
+@@ -311,7 +308,7 @@
+     def _get_header_value(self, header_fields: dict[str, bytes]) -> str:
+         NON_QUOTED_FIELDS = ("algorithm", "qop", "nc")
+         QUOTED_TEMPLATE = '{}="{}"'
+-        NON_QUOTED_TEMPLATE = "{}={}"
++        NON_QUOTED_TEMPLATE = "{}={"}
+ 
+         header_value = ""
+         for i, (field, value) in enumerate(header_fields.items()):
+@@ -339,7 +336,6 @@
+         message = f'Unexpected qop value "{qop!r}" in digest auth'
+         raise ProtocolError(message, request=request)
+ 
+-
+ class _DigestAuthChallenge(typing.NamedTuple):
+     realm: bytes
+     nonce: bytes
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/__version__.py /tmp/yqi10/rope_shift_lanes/s2/lane02_02/profiling_sandbox/httpx/__version__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/__version__.py	2026-09-17 15:46:11.079778304 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_02/profiling_sandbox/httpx/__version__.py	2026-09-25 12:18:48.890216356 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ __title__ = "httpx"
+ __description__ = "A next generation HTTP client, for Python 3."
+ __version__ = "0.28.1"

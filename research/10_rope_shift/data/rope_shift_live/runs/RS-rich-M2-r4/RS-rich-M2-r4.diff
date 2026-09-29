@@ -1,0 +1,33 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/rich/console.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py	2026-09-17 15:46:12.433011978 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/rich/console.py	2026-09-25 12:21:17.280107459 -0400
+@@ -1755,7 +1755,7 @@
+             else:
+                 self._buffer.extend(new_segments)
+ 
+-    def print_json(
++    def print_json_v2(
+         self,
+         json: Optional[str] = None,
+         *,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/highlighter.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/rich/highlighter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/highlighter.py	2026-09-17 15:46:12.491767307 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/rich/highlighter.py	2026-09-25 12:21:22.860063535 -0400
+@@ -229,4 +229,4 @@
+     )
+     import json
+ 
+-    console.print_json(json.dumps(obj={"name": "apple", "count": 1}), indent=None)
++    console.print_json_v2(json.dumps(obj={"name": "apple", "count": 1}), indent=None)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/rich/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py	2026-09-17 15:46:12.127567061 -0400
++++ /tmp/yqi10/rope_shift_lanes/s3/lane03_09/profiling_sandbox/rich/__init__.py	2026-09-25 12:20:49.102329335 -0400
+@@ -74,7 +74,7 @@
+     return write_console.print(*objects, sep=sep, end=end)
+ 
+ 
+-def print_json(
++def print_json_v2(
+     json: Optional[str] = None,
+     *,
+     data: Any = None,

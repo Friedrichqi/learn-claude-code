@@ -1,0 +1,56 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g0/lane04/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g0/lane04/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md	2026-09-27 09:02:49.857883537 -0400
+@@ -0,0 +1,39 @@
++## Changes for BUILD_TAG
++
++The `BUILD_TAG` constant has been added to the following files:
++
++- **File**: `profiling_sandbox/httpx/_api.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_auth.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_client.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_config.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_content.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_decoders.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_exceptions.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_models.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_multipart.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_types.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_urls.py`
++  - **Line**: 1
++
++- **File**: `profiling_sandbox/httpx/_utils.py`
++  - **Line**: 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py /tmp/yqi10/mu/103142/g0/lane04/profiling_sandbox/httpx/_multipart.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_multipart.py	2026-09-17 15:46:11.155607170 -0400
++++ /tmp/yqi10/mu/103142/g0/lane04/profiling_sandbox/httpx/_multipart.py	2026-09-27 08:59:15.084220886 -0400
+@@ -53,7 +53,7 @@
+     return None
+ 
+ 
+-def get_multipart_boundary_from_content_type(
++def get_multipart_boundary_from_content_type_v2_v2(
+     content_type: bytes | None,
+ ) -> bytes | None:
+     if not content_type or not content_type.startswith(b"multipart/form-data"):

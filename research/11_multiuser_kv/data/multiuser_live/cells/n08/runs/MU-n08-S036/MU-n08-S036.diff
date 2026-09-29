@@ -1,0 +1,189 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/click/_compat.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/_compat.py	2026-09-17 15:46:11.414122732 -0400
++++ /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/click/_compat.py	2026-09-27 01:15:09.267991276 -0400
+@@ -275,7 +275,7 @@
+ 
+     # Wrap the binary stream in a text stream with the correct
+     # encoding parameters.
+-    return _make_text_stream(
++    return _make_text_stream_v2(
+         binary_reader,
+         encoding,
+         errors,
+@@ -371,7 +371,7 @@
+     return open(file, mode, encoding=encoding, errors=errors)
+ 
+ 
+-def open_stream(
++def open_stream_v2(
+     filename: str | os.PathLike[str],
+     mode: str = "r",
+     encoding: str | None = None,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/types.py /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/click/types.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/click/types.py	2026-09-17 15:46:11.500598138 -0400
++++ /tmp/yqi10/mu/102767/g1/lane03/profiling_sandbox/click/types.py	2026-09-27 01:25:35.269457765 -0400
+@@ -47,11 +47,14 @@
+ 
+ 
+ class ParamTypeInfoDict(t.TypedDict):
++    """Typed dictionary for parameter type information."""
+     param_type: str
+     name: str
+ 
+ 
+ class ParamType(t.Generic[_ValueT_co, _InputT_contra], abc.ABC):
++    """Represents the type of a parameter. Validates and converts values from the command line or Python into the correct type."""
++    """Represents the type of a parameter. Validates and converts values from the command line or Python into the correct type."""
+     """Represents the type of a parameter. Validates and converts values
+     from the command line or Python into the correct type.
+ 
+@@ -247,6 +250,7 @@
+ else:
+ 
+     class FuncParamTypeInfoDict(ParamTypeInfoDict):
++    """Typed dictionary for function parameter type information."""
+         func: t.Callable[[t.Any], t.Any]
+ 
+ 
+@@ -279,6 +283,7 @@
+ 
+ 
+ class UnprocessedParamType(ParamType[t.Any]):
++    """A dummy parameter type that just does nothing. From a user's perspective this appears to just be the same as `STRING` but internally no string conversion takes place if the input was bytes."""
+     name = "text"
+ 
+     def convert(
+@@ -291,6 +296,7 @@
+ 
+ 
+ class StringParamType(ParamType[str]):
++    """The string parameter type which is the implicit default. This can also be selected by using `str` as type."""
+     name = "text"
+ 
+     def convert(
+@@ -324,11 +330,13 @@
+ else:
+ 
+     class ChoiceInfoDict(ParamTypeInfoDict):
++    """Typed dictionary for choice parameter type information."""
+         choices: tuple[t.Any, ...]
+         case_sensitive: bool
+ 
+ 
+ class Choice(ParamType[_ValueT_co], t.Generic[_ValueT_co]):
++    """The choice type allows a value to be checked against a fixed set of supported values."""
+     """The choice type allows a value to be checked against a fixed set
+     of supported values.
+ 
+@@ -505,10 +513,12 @@
+ 
+ 
+ class DateTimeInfoDict(ParamTypeInfoDict):
++    """Typed dictionary for date-time parameter type information."""
+     formats: cabc.Sequence[str]
+ 
+ 
+ class DateTime(ParamType[datetime]):
++    """The DateTime type converts date strings into `datetime` objects."""
+     """The DateTime type converts date strings into `datetime` objects.
+ 
+     The format strings which are checked are configurable, but default to some
+@@ -611,6 +621,7 @@
+ else:
+ 
+     class NumberRangeInfoDict(ParamTypeInfoDict):
++    """Typed dictionary for number range parameter type information."""
+         min: t.Any | None
+         max: t.Any | None
+         min_open: bool
+@@ -723,6 +734,7 @@
+ 
+ 
+ class IntParamType(_NumberParamTypeBase[t.SupportsInt | t.SupportsIndex, int]):
++    """Integer parameter type."""
+     name = "integer"
+     _number_class = int
+ 
+@@ -731,6 +743,7 @@
+ 
+ 
+ class IntRange(_NumberRangeBase[int, int], IntParamType):
++    """Restrict an `INT` value to a range of accepted values."""
+     """Restrict an :data:`click.INT` value to a range of accepted
+     values. See :ref:`ranges`.
+ 
+@@ -755,6 +768,7 @@
+ 
+ 
+ class FloatParamType(_NumberParamTypeBase[t.SupportsFloat | t.SupportsIndex, float]):
++    """Floating point value parameter type."""
+     name = "float"
+     _number_class = float
+ 
+@@ -763,6 +777,7 @@
+ 
+ 
+ class FloatRange(_NumberRangeBase[float, float], FloatParamType):
++    """Restrict a `FLOAT` value to a range of accepted values."""
+     """Restrict a :data:`click.FLOAT` value to a range of accepted
+     values. See :ref:`ranges`.
+ 
+@@ -806,6 +821,7 @@
+ 
+ 
+ class BoolParamType(ParamType[bool]):
++    """Boolean parameter type."""
+     name = "boolean"
+ 
+     bool_states: dict[str, bool] = {
+@@ -875,6 +891,7 @@
+ 
+ 
+ class UUIDParameterType(ParamType[uuid.UUID]):
++    """UUID parameter type."""
+     name = "uuid"
+ 
+     def convert(
+@@ -897,11 +914,13 @@
+ 
+ 
+ class FileInfoDict(ParamTypeInfoDict):
++    """Typed dictionary for file parameter type information."""
+     mode: str
+     encoding: str | None
+ 
+ 
+ class File(ParamType[t.IO[t.Any]]):
++    """Declares a parameter to be a file for reading or writing."""
+     """Declares a parameter to be a file for reading or writing.  The file
+     is automatically closed once the context tears down (after the command
+     finished working).
+@@ -1037,6 +1056,7 @@
+ 
+ 
+ class PathInfoDict(ParamTypeInfoDict):
++    """Typed dictionary for path parameter type information."""
+     exists: bool
+     file_okay: bool
+     dir_okay: bool
+@@ -1046,6 +1066,7 @@
+ 
+ 
+ class Path(ParamType[str | bytes | os.PathLike[str]]):
++    """The `Path` type is similar to the `File` type, but returns the filename instead of an open file."""
+     """The ``Path`` type is similar to the :class:`File` type, but
+     returns the filename instead of an open file. Various checks can be
+     enabled to validate the type of file and permissions.
+@@ -1237,10 +1258,12 @@
+ 
+ 
+ class TupleInfoDict(ParamTypeInfoDict):
++    """Typed dictionary for tuple parameter type information."""
+     types: cabc.Sequence[ParamTypeInfoDict]
+ 
+ 
+ class Tuple(CompositeParamType[tuple[t.Any, ...]]):
++    """The default behavior of Click is to apply a type on a value directly."""
+     """The default behavior of Click is to apply a type on a value directly.
+     This works well in most cases, except for when `nargs` is set to a fixed
+     count and different types should be used for different items.  In this

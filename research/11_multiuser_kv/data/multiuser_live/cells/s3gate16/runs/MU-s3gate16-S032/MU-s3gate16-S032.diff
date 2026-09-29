@@ -1,0 +1,118 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md	2026-09-27 08:02:07.907610735 -0400
+@@ -0,0 +1 @@
++# BUILD_TAG Changelog\n\nFiles modified with the addition of the `BUILD_TAG` constant:\n\n
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/contrib/concurrent.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py	2026-09-17 15:46:11.404865043 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/contrib/concurrent.py	2026-09-27 08:07:31.841087872 -0400
+@@ -86,7 +86,7 @@
+ def _get_interpreter_init(tqdm_class, lock_queue_id):
+     """Return an initializer which bootstraps the parent import path and lock."""
+     code = (
+-        "import sys\n"
++        "BUILD_TAG = 'profiling'\n\nimport sys\n"
+         f"sys.path[:] = {sys.path!r}\n"
+         "from concurrent import interpreters\n"
+         "from importlib import import_module\n"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/__main__.py	2026-09-17 15:46:11.277808878 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/__main__.py	2026-09-27 07:55:49.458220963 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from .cli import main
+ 
+ main()
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_main.py	2026-09-27 07:56:39.804139825 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .cli import *  # NOQA
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_monitor.py	2026-09-27 07:57:33.028054034 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import atexit
+ from threading import Event, Thread, current_thread
+ from time import time
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/std.py	2026-09-27 08:11:40.581686066 -0400
+@@ -98,20 +98,30 @@
+             root_lock.release()
+ 
+     def acquire(self, *a, **k):
++        """Acquire all locks in order."""
+         for lock in self.locks:
+             lock.acquire(*a, **k)
+ 
+     def release(self):
++        """Release all locks in reverse order."""
+         for lock in self.locks[::-1]:  # Release in inverse order of acquisition
+             lock.release()
+ 
+     def __enter__(self):
++        """Acquire the lock."""
++        """Acquire the lock."""
+         self.acquire()
+ 
+     def __exit__(self, *exc):
++        """Release the lock."""
++        """Release the lock."""
+         self.release()
+ 
+     @classmethod
++    def create_th_lock(cls):
++        """Create a thread lock and deprecate usage."""
++    def create_mp_lock(cls):
++        """Create a multiprocessing lock if available."""
+     def create_mp_lock(cls):
+         if not hasattr(cls, 'mp_lock'):
+             try:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-27 07:59:10.119897496 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .gui import *  # NOQA
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-27 07:59:46.361839052 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .notebook import *  # NOQA
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-27 08:00:34.701761090 -0400
+@@ -3,6 +3,8 @@
+ __author__ = "github.com/casperdcl"
+ __all__ = ['tqdm_pandas']
+ 
++BUILD_TAG = 'profiling'
++
+ 
+ def tqdm_pandas(tclass, **tqdm_kwargs):
+     """
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/tqdm/_tqdm.py	2026-09-27 07:58:22.904973625 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from warnings import warn
+ 
+ from .std import *  # NOQA

@@ -1,0 +1,36 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/cells.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/rich/cells.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/cells.py	2026-09-17 15:46:12.407927976 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/rich/cells.py	2026-09-27 08:33:39.529614187 -0400
+@@ -4,7 +4,7 @@
+ from operator import itemgetter
+ from typing import Callable, NamedTuple, Sequence, Tuple
+ 
+-from rich._unicode_data import load as load_cell_table
++from rich._unicode_data import load_v2 as load_cell_table
+ 
+ CellSpan = Tuple[int, int, int]
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/rich/markdown.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py	2026-09-17 15:46:12.551882609 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/rich/markdown.py	2026-09-27 08:30:17.712923353 -0400
+@@ -27,7 +27,7 @@
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
+-        """Factory to create markdown element,
++        """Factory to create markdown element.
+ 
+         Args:
+             markdown (Markdown): The parent Markdown object.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/rich/_unicode_data/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py	2026-09-17 15:46:12.223663421 -0400
++++ /tmp/yqi10/mu/103142/g0/lane01/profiling_sandbox/rich/_unicode_data/__init__.py	2026-09-27 08:33:29.364629774 -0400
+@@ -56,7 +56,7 @@
+ 
+ 
+ @cache
+-def load(unicode_version: str = "auto") -> CellTable:
++def load_v2(unicode_version: str = "auto") -> CellTable:
+     """Load a cell table for the given unicode version.
+ 
+     Args:

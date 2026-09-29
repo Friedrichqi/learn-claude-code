@@ -1,0 +1,89 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102937/g0/lane01/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102937/g0/lane01/profiling_sandbox/tqdm/autonotebook.py	2026-09-27 03:05:32.017927868 -0400
+@@ -8,6 +8,8 @@
+ """
+ import os
+ import sys
++
++BUILD_TAG = 'profiling'
+ from warnings import warn
+ 
+ try:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102937/g0/lane01/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102937/g0/lane01/profiling_sandbox/tqdm/std.py	2026-09-27 03:05:39.616875544 -0400
+@@ -8,6 +8,8 @@
+ ...     ...
+ """
+ import sys
++
++BUILD_TAG = 'profiling'
+ from collections import OrderedDict, defaultdict
+ from contextlib import contextmanager
+ from datetime import datetime, timedelta, timezone
+@@ -106,6 +108,8 @@
+             lock.release()
+ 
+     def __enter__(self):
++        """Enter the progress bar context."""
++        """Enter the context manager."""
+         self.acquire()
+ 
+     def __exit__(self, *exc):
+@@ -957,7 +961,8 @@
+     # override defaults via env vars
+     @envwrap("tqdm", is_method=True, types={'total': float, 'ncols': int, 'miniters': float,
+                                             'position': int, 'nrows': int})
+-    def __init__(self, iterable=None, desc=None, total=None, leave=True, file=None,
++    def __init__(self, iterable=None, desc=None, total=None, 
++        """Initialize a new Tqdm progress bar."""leave=True, file=None,
+                  ncols=None, mininterval=0.1, maxinterval=10.0, miniters=None,
+                  ascii=None,  # pylint: disable=redefined-builtin
+                  disable=False, unit='it', unit_scale=False, dynamic_ncols=False, smoothing=0.3,
+@@ -1164,6 +1169,8 @@
+         return id(self)
+ 
+     def __iter__(self):
++        """Iterate over the progress bar."""
++        """Make Tqdm iterable."""
+         """Backward-compatibility to use: for x in tqdm(iterable)"""
+ 
+         # Inlining instance variables as locals (speed optimisation)
+@@ -1201,6 +1208,8 @@
+             self.close()
+ 
+     def update(self, n=1):
++        """Update the progress bar with a number of steps."""
++        """Update the progress bar with n steps."""
+         """
+         Manually update the progress bar, useful for streams
+         such as reading files.
+@@ -1268,6 +1277,8 @@
+                 return True
+ 
+     def close(self):
++        """Close the progress bar."""
++        """Close the progress bar."""
+         """Cleanup and (if leave=False) close the progress bar."""
+         if getattr(self, 'disable', True):
+             return
+@@ -1452,6 +1463,7 @@
+ 
+     @property
+     def format_dict(self):
++        """Format the progress bar as a dictionary."""
+         """Public API for read-only member access."""
+         if self.disable and not hasattr(self, 'unit'):
+             return defaultdict(lambda: None, {
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/mu/102937/g0/lane01/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/mu/102937/g0/lane01/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-27 03:05:12.900059506 -0400
+@@ -1,5 +1,7 @@
+ import sys
+ 
++BUILD_TAG = 'profiling'
++
+ __author__ = "github.com/casperdcl"
+ __all__ = ['tqdm_pandas']
+ 

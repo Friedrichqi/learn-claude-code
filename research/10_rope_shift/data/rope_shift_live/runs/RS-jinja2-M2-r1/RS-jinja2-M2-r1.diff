@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py /tmp/yqi10/rope_shift_lanes/s4/lane04_09/profiling_sandbox/jinja2/lexer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py	2026-09-17 15:46:11.844896526 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_09/profiling_sandbox/jinja2/lexer.py	2026-09-25 12:27:43.954073575 -0400
+@@ -190,7 +190,7 @@
+     return _describe_token_type(token.type)
+ 
+ 
+-def describe_token_expr(expr: str) -> str:
++def describe_token_expr_v2(expr: str) -> str:
+     """Like `describe_token` but for token expressions."""
+     if ":" in expr:
+         type, value = expr.split(":", 1)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py /tmp/yqi10/rope_shift_lanes/s4/lane04_09/profiling_sandbox/jinja2/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py	2026-09-17 15:46:11.883102845 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_09/profiling_sandbox/jinja2/parser.py	2026-09-25 12:28:22.507772147 -0400
+@@ -7,7 +7,7 @@
+ from .exceptions import TemplateAssertionError
+ from .exceptions import TemplateSyntaxError
+ from .lexer import describe_token
+-from .lexer import describe_token_expr
++from .lexer import describe_token_expr_v2
+ 
+ if t.TYPE_CHECKING:
+     import typing_extensions as te

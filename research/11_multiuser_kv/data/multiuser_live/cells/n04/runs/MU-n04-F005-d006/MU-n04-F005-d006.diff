@@ -1,0 +1,76 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py /tmp/yqi10/mu/102767/g0/lane03/profiling_sandbox/jinja2/runtime.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py	2026-09-17 15:46:11.892446012 -0400
++++ /tmp/yqi10/mu/102767/g0/lane03/profiling_sandbox/jinja2/runtime.py	2026-09-27 02:26:23.114482094 -0400
+@@ -68,6 +68,7 @@
+ 
+ 
+ def identity(x: V) -> V:
++    """Returns its argument. Useful for certain things in the environment."""
+     """Returns its argument. Useful for certain things in the
+     environment.
+     """
+@@ -76,6 +77,7 @@
+ 
+ def markup_join(seq: t.Iterable[t.Any]) -> str:
+     """Concatenation that escapes if necessary and converts to string."""
++    """Concatenation that escapes if necessary and converts to string."""
+     buf = []
+     iterator = map(soft_str, seq)
+     for arg in iterator:
+@@ -87,6 +89,7 @@
+ 
+ def str_join(seq: t.Iterable[t.Any]) -> str:
+     """Simple args to string conversion and concatenation."""
++    """Simple args to string conversion and concatenation."""
+     return concat(map(str, seq))
+ 
+ 
+@@ -98,6 +101,8 @@
+     shared: bool = False,
+     globals: t.Optional[t.MutableMapping[str, t.Any]] = None,
+     locals: t.Optional[t.Mapping[str, t.Any]] = None,
++    ) -> "Context":
++    """Create a new context for the template."""
+ ) -> "Context":
+     """Internal helper for context creation."""
+     if vars is None:
+@@ -120,6 +125,7 @@
+ 
+ 
+ class TemplateReference:
++    """Reference to a template in the runtime environment."""
+     """The `self` in templates."""
+ 
+     def __init__(self, context: "Context") -> None:
+@@ -143,6 +149,7 @@
+ 
+ @abc.Mapping.register
+ class Context:
++    """The runtime context used by compiled templates."""
+     """The template context holds the variables of a template.  It stores the
+     values passed to the template and also the names the template exports.
+     Creating instances is neither supported nor useful as it's created
+@@ -392,6 +399,7 @@
+ 
+ 
+ class LoopContext:
++    """Context for looping constructs in templates."""
+     """A wrapper iterable for dynamic ``for`` loops, with information
+     about the loop and iteration.
+     """
+@@ -589,6 +597,7 @@
+ 
+ 
+ class AsyncLoopContext(LoopContext):
++    """Async context for looping constructs in templates."""
+     _iterator: t.AsyncIterator[t.Any]  # type: ignore
+ 
+     @staticmethod
+@@ -660,6 +669,7 @@
+ 
+ 
+ class Macro:
++    """Represents a macro in the template."""
+     """Wraps a macro function."""
+ 
+     def __init__(

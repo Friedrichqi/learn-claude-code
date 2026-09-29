@@ -1,0 +1,115 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py /tmp/yqi10/mu/102768/g1/lane14/profiling_sandbox/rich/markdown.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markdown.py	2026-09-17 15:46:12.551882609 -0400
++++ /tmp/yqi10/mu/102768/g1/lane14/profiling_sandbox/rich/markdown.py	2026-09-27 09:34:10.136926243 -0400
+@@ -23,9 +23,13 @@
+ 
+ 
+ class MarkdownElement:
++    """Base class for markdown elements."""
+     new_line: ClassVar[bool] = True
++    """Whether the element introduces a new line."""
+ 
+     @classmethod
++    """Factory to create a heading element."""
++    """Factory to create markdown element."""
+     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
+         """Factory to create markdown element,
+ 
+@@ -39,6 +43,9 @@
+         return cls()
+ 
+     def on_enter(self, context: MarkdownContext) -> None:
++        """Initialize the heading text and style."""
++        """Initialize the element's style and text."""
++        """Called when the node is entered."""
+         """Called when the node is entered.
+ 
+         Args:
+@@ -46,6 +53,8 @@
+         """
+ 
+     def on_text(self, context: MarkdownContext, text: TextType) -> None:
++        """Append text to the element with the current style."""
++        """Called when text is parsed."""
+         """Called when text is parsed.
+ 
+         Args:
+@@ -53,6 +62,8 @@
+         """
+ 
+     def on_leave(self, context: MarkdownContext) -> None:
++        """Leave the current style context."""
++        """Called when the parser leaves the element."""
+         """Called when the parser leaves the element.
+ 
+         Args:
+@@ -60,6 +71,7 @@
+         """
+ 
+     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
++        """Called when a child element is closed."""
+         """Called when a child element is closed.
+ 
+         This method allows a parent element to take over rendering of its children.
+@@ -74,12 +86,16 @@
+         return True
+ 
+     def __rich_console__(
++        """Render the heading with appropriate justification."""
++        """Render the text with the specified justification."""
++        """Render the element to the console."""
+         self, console: Console, options: ConsoleOptions
+     ) -> RenderResult:
+         return ()
+ 
+ 
+ class UnknownElement(MarkdownElement):
++    """An unknown element."""
+     """An unknown element.
+ 
+     Hopefully there will be no unknown elements, and we will have a MarkdownElement for
+@@ -90,8 +106,10 @@
+ 
+ class TextElement(MarkdownElement):
+     """Base class for elements that render text."""
++    """Base class for elements that render text."""
+ 
+     style_name = "none"
++    """The default style for the element."""
+ 
+     def on_enter(self, context: MarkdownContext) -> None:
+         self.style = context.enter_style(self.style_name)
+@@ -109,6 +127,7 @@
+ 
+     style_name = "markdown.paragraph"
+     justify: JustifyMethod
++    """The justification for the heading."""
+ 
+     @classmethod
+     def create(cls, markdown: Markdown, token: Token) -> Paragraph:
+@@ -126,14 +145,17 @@
+ 
+ @dataclass
+ class HeadingFormat:
++    """Format configuration for headings."""
+     justify: JustifyMethod = "left"
+     style: str = ""
+ 
+ 
+ class Heading(TextElement):
++    """A heading element."""
+     """A heading."""
+ 
+     LEVEL_ALIGN: ClassVar[dict[str, JustifyMethod]] = {
++        """Default justification for heading levels."""
+         "h1": "center",
+         "h2": "left",
+         "h3": "left",
+@@ -166,6 +188,7 @@
+ 
+ class CodeBlock(TextElement):
+     """A code block with syntax highlighting."""
++    """A code block with syntax highlighting."""
+ 
+     style_name = "markdown.code_block"
+ 

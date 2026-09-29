@@ -1,0 +1,42 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/BUILD_TAG.py /tmp/yqi10/mu/102767/g0/lane02/profiling_sandbox/rich/BUILD_TAG.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/BUILD_TAG.py	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g0/lane02/profiling_sandbox/rich/BUILD_TAG.py	2026-09-27 02:26:40.852446714 -0400
+@@ -0,0 +1 @@
++BUILD_TAG = "profiling"
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g0/lane02/profiling_sandbox/rich/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g0/lane02/profiling_sandbox/rich/CHANGES_BUILD_TAG.md	2026-09-27 02:26:43.113442205 -0400
+@@ -0,0 +1,3 @@
++The module-level constant `BUILD_TAG` with the value `"profiling"` has been added to the following files under the `profiling_sandbox/rich/` directory, each at the top of the file:
++
++1. `profiling_sandbox/rich/BUILD_TAG.py` - Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_codes.py /tmp/yqi10/mu/102767/g0/lane02/profiling_sandbox/rich/_emoji_codes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_codes.py	2026-09-17 15:46:12.143224045 -0400
++++ /tmp/yqi10/mu/102767/g0/lane02/profiling_sandbox/rich/_emoji_codes.py	2026-09-27 02:14:12.192948084 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = "profiling"
++
+ EMOJI = {
+     "1st_place_medal": "🥇",
+     "2nd_place_medal": "🥈",
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/progress.py /tmp/yqi10/mu/102767/g0/lane02/profiling_sandbox/rich/progress.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/progress.py	2026-09-17 15:46:12.596654253 -0400
++++ /tmp/yqi10/mu/102767/g0/lane02/profiling_sandbox/rich/progress.py	2026-09-27 02:10:58.281340110 -0400
+@@ -119,6 +119,7 @@
+     disable: bool = False,
+     show_speed: bool = True,
+ ) -> Iterable[ProgressType]:
++    """Track progress by iterating over a sequence."""
+     """Track progress by iterating over a sequence.
+ 
+     You can also track progress of an iterable, which might require that you additionally specify ``total``.
+@@ -181,6 +182,7 @@
+ 
+ class _Reader(RawIOBase, BinaryIO):
+     """A reader that tracks progress while it's being read from."""
++    """A reader that tracks progress while it's being read from."""
+ 
+     def __init__(
+         self,

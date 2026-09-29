@@ -1,0 +1,54 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/progress.py /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/rich/progress.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/progress.py	2026-09-17 15:46:12.596654253 -0400
++++ /tmp/yqi10/mu/102768/g1/lane08/profiling_sandbox/rich/progress.py	2026-09-27 06:39:51.036591468 -0400
+@@ -516,9 +516,12 @@
+ 
+     def get_table_column(self) -> Column:
+         """Get a table column, used to build tasks table."""
++        """Get a table column, used to build tasks table."""
++        """Get a table column, used to build tasks table."""
+         return self._table_column or Column()
+ 
+     def __call__(self, task: "Task") -> RenderableType:
++        """Called by the Progress object to return a renderable for the given task."""
+         """Called by the Progress object to return a renderable for the given task.
+ 
+         Args:
+@@ -543,6 +546,16 @@
+ 
+     @abstractmethod
+     def render(self, task: "Task") -> RenderableType:
++        """Renders human readable transfer speed."""
++        """Renders file size downloaded and total."""
++        """Renders completed count/total."""
++        """Renders total filesize."""
++        """Renders completed filesize."""
++        """Renders estimated time remaining."""
++        """Show task progress as a percentage."""
++        """Show time elapsed."""
++        """Renders a visual progress bar."""
++        """Should return a renderable object."""
+         """Should return a renderable object."""
+ 
+ 
+@@ -1167,17 +1180,20 @@
+ 
+     def start(self) -> None:
+         """Start the progress display."""
++        """Start the progress display."""
+         if not self.disable:
+             self.live.start(refresh=True)
+ 
+     def stop(self) -> None:
+         """Stop the progress display."""
++        """Stop the progress display."""
+         if not self.disable:
+             self.live.stop()
+             if not self.console.is_interactive and not self.console.is_jupyter:
+                 self.console.print()
+ 
+     def __enter__(self) -> Self:
++        """Start the progress display."""
+         self.start()
+         return self
+ 

@@ -1,0 +1,350 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/core.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/typer/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/core.py	2026-09-17 15:46:11.599826507 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/typer/core.py	2026-09-27 00:45:13.358614888 -0400
+@@ -34,6 +34,7 @@
+ 
+ # Copy from _click.parser._split_opt
+ def _split_opt(opt: str) -> tuple[str, str]:
++    """Split an option into its prefix and the rest."""
+     first = opt[:1]
+     if first.isalnum():
+         return "", opt
+@@ -42,7 +43,7 @@
+     return first, opt[1:]
+ 
+ 
+-def _typer_param_setup_autocompletion_compat(
++def _typer_param_setup_autocompletion_compat( self: _click.Parameter, *, autocompletion: Callable[ [_click.Context, list[str], str], list[tuple[str, str] | str] ] | None = None, ) -> None: """Setup autocompletion compatibility for parameters."""
+     self: _click.Parameter,
+     *,
+     autocompletion: Callable[
+@@ -82,7 +83,7 @@
+         self._custom_shell_complete = compat_autocompletion
+ 
+ 
+-def _get_default_string(
++def _get_default_string( obj: Union["TyperArgument", "TyperOption"], *, ctx: _click.Context, show_default_is_str: bool, default_value: list[Any] | tuple[Any, ...] | str | Callable[..., Any] | Any, ) -> str: """Extract the default string for a parameter."""
+     obj: Union["TyperArgument", "TyperOption"],
+     *,
+     ctx: _click.Context,
+@@ -137,7 +138,7 @@
+     return default_string
+ 
+ 
+-def _extract_default_help_str(
++def _extract_default_help_str( obj: Union["TyperArgument", "TyperOption"], *, ctx: _click.Context ) -> Any | Callable[[], Any] | None: """Extract the default help string for a parameter."""
+     obj: Union["TyperArgument", "TyperOption"], *, ctx: _click.Context
+ ) -> Any | Callable[[], Any] | None:
+     # Extracted from _click.core.Option.get_help_record() to be reused by
+@@ -155,7 +156,7 @@
+     return default_value
+ 
+ 
+-def _main(
++def _main( self: _click.Command, *, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, rich_markup_mode: MarkupMode = DEFAULT_MARKUP_MODE, **extra: Any, ) -> Any: """Main entry point for command execution."""
+     self: _click.Command,
+     *,
+     args: Sequence[str] | None = None,
+@@ -243,9 +244,10 @@
+ 
+ 
+ class TyperArgument(_click.core.Parameter):
++    """A command-line argument for Typer."""
+     param_type_name = "argument"
+ 
+-    def __init__(
++    def __init__( self, *, name: str | None = None, commands: dict[str, _click.Command] | Sequence[_click.Command] | None = None, # Rich settings rich_markup_mode: MarkupMode = DEFAULT_MARKUP_MODE, rich_help_panel: str | None = None, suggest_commands: bool = True, # Click settings invoke_without_command: bool = False, no_args_is_help: bool = False, subcommand_metavar: str | None = None, result_callback: Callable[..., Any] | None = None, **attrs: Any, ) -> None: self, name: str | None, *, context_settings: dict[str, Any] | None = None, callback: Callable[..., Any] | None = None, params: list[_click.Parameter] | None = None, help: str | None = None, epilog: str | None = None, short_help: str | None = None, options_metavar: str | None = "[OPTIONS]", add_help_option: bool = True, no_args_is_help: bool = False, hidden: bool = False, deprecated: bool = False, # Rich settings rich_markup_mode: MarkupMode = DEFAULT_MARKUP_MODE, rich_help_panel: str | None = None, ) -> None: self, *, # Parameter param_decls: list[str], type: types.ParamType | Any | None = None, required: bool = False, default: Any | None = None, callback: Callable[..., Any] | None = None, nargs: int | None = None, metavar: str | None = None, expose_value: bool = True, is_eager: bool = False, envvar: str | list[str] | None = None, # Note that shell_complete is not fully supported and will be removed in future versions # TODO: Remove shell_complete in a future version (after 0.16.0) shell_complete: Callable[ [_click.Context, _click.Parameter, str], list[CompletionItem] | list[str] ] | None = None, autocompletion: Callable[..., Any] | None = None, # Option show_default: bool | str = False, prompt: bool | str = False, confirmation_prompt: bool | str = False, prompt_required: bool = True, hide_input: bool = False, is_flag: bool | None = None, multiple: bool = False, count: bool = False, allow_from_autoenv: bool = True, help: str | None = None, hidden: bool = False, show_choices: bool = True, show_envvar: bool = False, # Rich settings rich_help_panel: str | None = None, ): self, *, # Parameter param_decls: list[str], type: Any | None = None, required: bool = False, default: Any | None = None, callback: Callable[..., Any] | None = None, nargs: int | None = None, metavar: str | None = None, expose_value: bool = True, is_eager: bool = False, envvar: str | list[str] | None = None, # Note that shell_complete is not fully supported and will be removed in future versions # TODO: Remove shell_complete in a future version (after 0.16.0) shell_complete: Callable[ [_click.Context, _click.Parameter, str], list[CompletionItem] | list[str] ] | None = None, autocompletion: Callable[..., Any] | None = None, # TyperArgument show_default: bool | str = True, show_choices: bool = True, show_envvar: bool = True, help: str | None = None, hidden: bool = False, # Rich settings rich_help_panel: str | None = None, ):
+         self,
+         *,
+         # Parameter
+@@ -300,12 +302,14 @@
+ 
+     @property
+     def human_readable_name(self) -> str:
++        """Get a human-readable name for the argument."""
++    def human_readable_name(self) -> str:
+         if self.metavar is not None:
+             return self.metavar
+         assert self.name is not None, "self.name or self.metavar should be set"
+         return self.name
+ 
+-    def _get_default_string(
++    def _get_default_string( self, *, ctx: _click.Context, show_default_is_str: bool, default_value: list[Any] | tuple[Any, ...] | str | Callable[..., Any] | Any, ) -> str: """Extract the default string for the option.""" self, *, ctx: _click.Context, show_default_is_str: bool, default_value: list[Any] | tuple[Any, ...] | str | Callable[..., Any] | Any, ) -> str: """Extract the default string for the argument."""
+         self,
+         *,
+         ctx: _click.Context,
+@@ -319,12 +323,14 @@
+             default_value=default_value,
+         )
+ 
+-    def _extract_default_help_str(
++    def _extract_default_help_str( self, *, ctx: _click.Context ) -> Any | Callable[[], Any] | None: """Extract the default help string for the option.""" self, *, ctx: _click.Context ) -> Any | Callable[[], Any] | None: """Extract the default help string for the argument."""
+         self, *, ctx: _click.Context
+     ) -> Any | Callable[[], Any] | None:
+         return _extract_default_help_str(self, ctx=ctx)
+ 
+     def get_help_record(self, ctx: _click.Context) -> tuple[str, str] | None:
++        """Generate help record for the option."""
++        """Generate help record for the argument."""
+         # Modified version of _click.core.Option.get_help_record()
+         # to support Arguments
+         if self.hidden:
+@@ -381,6 +387,7 @@
+         return name, help
+ 
+     def make_metavar(self, ctx: _click.Context, *, usage: bool = False) -> str:
++        """Generate a metavar for the argument."""
+         # Modified version of _click.core.Argument.make_metavar()
+         # to include Argument name
+         if self.metavar is not None:
+@@ -403,9 +410,11 @@
+         return var
+ 
+     def value_is_missing(self, value: Any) -> bool:
++        """Check if the value is missing for the option."""
++        """Check if the value is missing for the argument."""
+         return _value_is_missing(self, value)
+ 
+-    def _parse_decls(
++    def _parse_decls( self, decls: Sequence[str], expose_value: bool ) -> tuple[str | None, list[str], list[str]]: """Parse option declarations.""" self, decls: Sequence[str], expose_value: bool ) -> tuple[str | None, list[str], list[str]]: """Parse parameter declarations."""
+         self, decls: Sequence[str], expose_value: bool
+     ) -> tuple[str | None, list[str], list[str]]:
+         if not decls:
+@@ -423,16 +432,22 @@
+         return name, [arg], []
+ 
+     def get_usage_pieces(self, ctx: _click.Context) -> list[str]:
++        """Get usage pieces for the argument."""
+         return [self.make_metavar(ctx, usage=True)]
+ 
+     def get_error_hint(self, ctx: _click.Context) -> str:
++        """Get error hint for the option."""
++        """Get error hint for the argument."""
+         return f"'{self.human_readable_name}'"
+ 
+     def add_to_parser(self, parser: _OptionParser, ctx: _click.Context) -> None:
++        """Add the option to the parser."""
++        """Add the argument to the parser."""
+         parser.add_argument(dest=self.name, nargs=self.nargs, obj=self)
+ 
+ 
+ class TyperOption(_click.Parameter):
++    """A command-line option for Typer."""
+     param_type_name = "option"
+ 
+     _depr_flag_value: bool | None
+@@ -625,6 +640,7 @@
+             )
+ 
+     def prompt_for_value(self, ctx: _click.Context) -> Any:
++        """Prompt the user for a value."""
+         """This is an alternative flow that can be activated in the full
+         value processing if a value does not exist.  It will prompt the
+         user until a valid value exists and then returns the processed
+@@ -671,6 +687,7 @@
+         )
+ 
+     def value_from_envvar(self, ctx: _click.Context) -> Any:
++        """Get value from environment variable."""
+         # TODO: clean up
+         rv = self.resolve_envvar_value(ctx)
+ 
+@@ -684,6 +701,7 @@
+         return rv
+ 
+     def resolve_envvar_value(self, ctx: _click.Context) -> str | None:
++        """Resolve environment variable value."""
+         rv = super().resolve_envvar_value(ctx)
+ 
+         if rv is not None:
+@@ -702,7 +720,7 @@
+ 
+         return None
+ 
+-    def consume_value(
++    def consume_value( self, ctx: _click.Context, opts: Mapping[str, _click.Parameter] ) -> tuple[Any, _click.core.ParameterSource]: """Consume the value for the option."""
+         self, ctx: _click.Context, opts: Mapping[str, _click.Parameter]
+     ) -> tuple[Any, _click.core.ParameterSource]:
+         """For `Option`, the value can be collected from an interactive prompt
+@@ -747,6 +765,7 @@
+         return _extract_default_help_str(self, ctx=ctx)
+ 
+     def make_metavar(self, ctx: _click.Context) -> str:
++        """Generate a metavar for the option."""
+         return super().make_metavar(ctx=ctx)
+ 
+     def get_help_record(self, ctx: _click.Context) -> tuple[str, str] | None:
+@@ -849,6 +868,7 @@
+ 
+ 
+ def _value_is_missing(param: _click.Parameter, value: Any) -> bool:
++    """Check if the value is missing for the parameter."""
+     if value is None:
+         return True
+ 
+@@ -858,7 +878,7 @@
+     return False
+ 
+ 
+-def _typer_format_options(
++def _typer_format_options( self: _click.core.Command, *, ctx: _click.Context, formatter: _click.HelpFormatter ) -> None: """Format options for the command."""
+     self: _click.core.Command, *, ctx: _click.Context, formatter: _click.HelpFormatter
+ ) -> None:
+     args = []
+@@ -879,7 +899,7 @@
+             formatter.write_dl(opts)
+ 
+ 
+-def _typer_main_shell_completion(
++def _typer_main_shell_completion( self: _click.core.Command, *, ctx_args: MutableMapping[str, Any], prog_name: str, complete_var: str | None = None, ) -> None: """Handle shell completion for the command."""
+     self: _click.core.Command,
+     *,
+     ctx_args: MutableMapping[str, Any],
+@@ -901,6 +921,7 @@
+ 
+ 
+ class TyperCommand(_click.core.Command):
++    """A command for Typer."""
+     def __init__(
+         self,
+         name: str | None,
+@@ -937,12 +958,12 @@
+         self.rich_markup_mode: MarkupMode = rich_markup_mode
+         self.rich_help_panel = rich_help_panel
+ 
+-    def format_options(
++    def format_options( self, ctx: _click.Context, formatter: _click.HelpFormatter ) -> None: """Format options for the group.""" self, ctx: _click.Context, formatter: _click.HelpFormatter ) -> None: """Format options for the command."""
+         self, ctx: _click.Context, formatter: _click.HelpFormatter
+     ) -> None:
+         _typer_format_options(self, ctx=ctx, formatter=formatter)
+ 
+-    def _main_shell_completion(
++    def _main_shell_completion( self, ctx_args: MutableMapping[str, Any], prog_name: str, complete_var: str | None = None, ) -> None: """Handle shell completion for the group.""" self, ctx_args: MutableMapping[str, Any], prog_name: str, complete_var: str | None = None, ) -> None: """Handle shell completion for the command."""
+         self,
+         ctx_args: MutableMapping[str, Any],
+         prog_name: str,
+@@ -952,7 +973,7 @@
+             self, ctx_args=ctx_args, prog_name=prog_name, complete_var=complete_var
+         )
+ 
+-    def main(
++    def main( self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any, ) -> Any: """Main entry point for group execution.""" self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any, ) -> Any: """Main entry point for command execution."""
+         self,
+         args: Sequence[str] | None = None,
+         prog_name: str | None = None,
+@@ -972,7 +993,7 @@
+             **extra,
+         )
+ 
+-    def format_help(self, ctx: _click.Context, formatter: _click.HelpFormatter) -> None:
++    def format_help( self, ctx: _click.Context, formatter: _click.HelpFormatter ) -> None: """Format help for the group.""" self, ctx: _click.Context, formatter: _click.HelpFormatter ) -> None: """Format help for the command."""self, ctx: _click.Context, formatter: _click.HelpFormatter) -> None:
+         if not HAS_RICH or self.rich_markup_mode is None:
+             if not hasattr(ctx, "obj") or ctx.obj is None:
+                 ctx.ensure_object(dict)
+@@ -989,6 +1010,7 @@
+ 
+ 
+ class TyperGroup(_click.Command):
++    """A group of commands for Typer."""
+     allow_extra_args = True
+     allow_interspersed_args = False
+     command_class: type[_click.Command] | None = None
+@@ -1036,20 +1058,23 @@
+         self._result_callback = result_callback
+ 
+     def add_command(self, cmd: _click.Command, name: str | None = None) -> None:
++        """Add a command to the group."""
+         name = name or cmd.name
+         if name is None:
+             raise TypeError("Command has no name.")
+         self.commands[name] = cmd
+ 
+     def get_command(self, ctx: _click.Context, cmd_name: str) -> _click.Command | None:
++        """Get a command from the group."""
+         return self.commands.get(cmd_name)
+ 
+     def collect_usage_pieces(self, ctx: _click.Context) -> list[str]:
++        """Collect usage pieces for the group."""
+         rv = super().collect_usage_pieces(ctx)
+         rv.append(self.subcommand_metavar)
+         return rv
+ 
+-    def format_commands(
++    def format_commands( self, ctx: _click.Context, formatter: _click.HelpFormatter ) -> None: """Format commands for the group."""
+         self, ctx: _click.Context, formatter: _click.HelpFormatter
+     ) -> None:
+         commands = []
+@@ -1075,6 +1100,7 @@
+                     formatter.write_dl(rows)
+ 
+     def parse_args(self, ctx: _click.Context, args: list[str]) -> list[str]:
++        """Parse arguments for the group."""
+         if not args and self.no_args_is_help and not ctx.resilient_parsing:
+             raise _click.exceptions.NoArgsIsHelpError(ctx)
+ 
+@@ -1086,6 +1112,7 @@
+         return ctx.args
+ 
+     def invoke(self, ctx: _click.Context) -> Any:
++        """Invoke the group."""
+         def _process_result(value: Any) -> Any:
+             if self._result_callback is not None:
+                 value = ctx.invoke(self._result_callback, value, **ctx.params)
+@@ -1118,7 +1145,7 @@
+             with sub_ctx:
+                 return _process_result(sub_ctx.command.invoke(sub_ctx))
+ 
+-    def shell_complete(
++    def shell_complete( self, ctx: _click.Context, incomplete: str ) -> list[CompletionItem]: """Provide shell completion for the group."""
+         self, ctx: _click.Context, incomplete: str
+     ) -> list[CompletionItem]:
+         """Return a list of completions for the incomplete value. Looks
+@@ -1149,7 +1176,7 @@
+             self, ctx_args=ctx_args, prog_name=prog_name, complete_var=complete_var
+         )
+ 
+-    def _click_resolve_command(
++    def _click_resolve_command( self, ctx: _click.Context, args: list[str] ) -> tuple[str | None, _click.Command | None, list[str]]: """Resolve a command from the group."""
+         self, ctx: _click.Context, args: list[str]
+     ) -> tuple[str | None, _click.Command | None, list[str]]:
+         cmd_name = args[0]
+@@ -1168,7 +1195,7 @@
+             ctx.fail(_("No such command {name!r}.").format(name=original_cmd_name))
+         return cmd_name if cmd else None, cmd, args[1:]
+ 
+-    def resolve_command(
++    def resolve_command( self, ctx: _click.Context, args: list[str] ) -> tuple[str | None, _click.Command | None, list[str]]: """Resolve a command from the group."""
+         self, ctx: _click.Context, args: list[str]
+     ) -> tuple[str | None, _click.Command | None, list[str]]:
+         try:
+@@ -1217,5 +1244,6 @@
+         )
+ 
+     def list_commands(self, ctx: _click.Context) -> list[str]:
++        """List commands in the group."""
+         """Returns a list of subcommand names, maintaining the original order of creation (cf Issue #933)"""
+         return [n for n, c in self.commands.items()]
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/typer/main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py	2026-09-17 15:46:11.608868099 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/typer/main.py	2026-09-27 00:21:42.476656503 -0400
+@@ -21,7 +21,7 @@
+ from . import _click
+ from ._click import types
+ from ._click.globals import get_current_context
+-from ._typing import get_args, get_origin, is_literal_type, is_union, literal_values
++from ._typing import get_args, get_origin, is_literal_type, is_union, literal_values_v2
+ from .completion import get_completion_inspect_parameters
+ from .core import (
+     DEFAULT_MARKUP_MODE,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/typer/_typing.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_typing.py	2026-09-17 15:46:11.573110818 -0400
++++ /tmp/yqi10/mu/102768/g0/lane00/profiling_sandbox/typer/_typing.py	2026-09-27 00:21:42.474656518 -0400
+@@ -56,7 +56,7 @@
+     return get_origin(type_) is Literal
+ 
+ 
+-def literal_values(type_: type[Any]) -> tuple[Any, ...]:
++def literal_values_v2_v2(type_: type[Any]) -> tuple[Any, ...]:
+     return get_args(type_)
+ 
+ 

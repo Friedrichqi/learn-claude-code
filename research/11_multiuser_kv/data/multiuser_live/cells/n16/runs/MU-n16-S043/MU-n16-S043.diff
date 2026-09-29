@@ -1,0 +1,463 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py /tmp/yqi10/mu/102768/g0/lane07/profiling_sandbox/packaging/_manylinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py	2026-09-17 15:46:11.633151751 -0400
++++ /tmp/yqi10/mu/102768/g0/lane07/profiling_sandbox/packaging/_manylinux.py	2026-09-27 04:54:16.002589020 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import collections
+@@ -29,7 +31,6 @@
+     "riscv64",
+ }
+ 
+-
+ @contextlib.contextmanager
+ def _parse_elf(path: str) -> Generator[ELFFile | None, None, None]:
+     try:
+@@ -38,7 +39,6 @@
+     except (OSError, TypeError, ValueError):
+         yield None
+ 
+-
+ def _is_linux_armhf(executable: str) -> bool:
+     # hard-float ABI can be detected from the ELF header of the running
+     # process
+@@ -53,7 +53,6 @@
+             and f.flags & EF_ARM_ABI_FLOAT_HARD == EF_ARM_ABI_FLOAT_HARD
+         )
+ 
+-
+ def _is_linux_i686(executable: str) -> bool:
+     with _parse_elf(executable) as f:
+         return (
+@@ -63,7 +62,6 @@
+             and f.machine == EMachine.I386
+         )
+ 
+-
+ def _have_compatible_abi(executable: str, archs: Sequence[str]) -> bool:
+     if "armv7l" in archs:
+         return _is_linux_armhf(executable)
+@@ -71,24 +69,19 @@
+         return _is_linux_i686(executable)
+     return any(arch in _ALLOWED_ARCHS for arch in archs)
+ 
+-
+ # If glibc ever changes its major version, we need to know what the last
+ # minor version was, so we can build the complete list of all versions.
+-# For now, guess what the highest minor version might be, assume it will
+-# be 50 for testing. Once this actually happens, update the dictionary
++# For now, guess what the highest minor version might be, assume it will be
++# 50 for testing. Once this actually happens, update the dictionary
+ # with the actual value.
+ _LAST_GLIBC_MINOR: dict[int, int] = collections.defaultdict(lambda: 50)
+ 
+-
+ class _GLibCVersion(NamedTuple):
+     major: int
+     minor: int
+ 
+-
+ def _glibc_version_string_confstr() -> str | None:
+-    """
+-    Primary implementation of glibc_version_string using os.confstr.
+-    """
++    """Primary implementation of glibc_version_string using os.confstr."""
+     # os.confstr is quite a bit faster than ctypes.DLL. It's also less likely
+     # to be broken or missing. This strategy is used in the standard library
+     # platform module.
+@@ -103,11 +96,8 @@
+         return None
+     return version
+ 
+-
+ def _glibc_version_string_ctypes() -> str | None:
+-    """
+-    Fallback implementation of glibc_version_string using ctypes.
+-    """
++    """Fallback implementation of glibc_version_string using ctypes."""
+     try:
+         import ctypes  # noqa: PLC0415
+     except ImportError:
+@@ -147,12 +137,10 @@
+ 
+     return version_str
+ 
+-
+ def _glibc_version_string() -> str | None:
+     """Returns glibc version string, or None if not using glibc."""
+     return _glibc_version_string_confstr() or _glibc_version_string_ctypes()
+ 
+-
+ def _parse_glibc_version(version_str: str) -> _GLibCVersion:
+     """Parse glibc version.
+ 
+@@ -171,7 +159,6 @@
+         return _GLibCVersion(-1, -1)
+     return _GLibCVersion(int(m.group("major")), int(m.group("minor")))
+ 
+-
+ @functools.lru_cache
+ def _get_glibc_version() -> _GLibCVersion:
+     version_str = _glibc_version_string()
+@@ -179,7 +166,6 @@
+         return _GLibCVersion(-1, -1)
+     return _parse_glibc_version(version_str)
+ 
+-
+ # From PEP 513, PEP 600
+ @functools.lru_cache(maxsize=1)
+ def _get_manylinux_module() -> types.ModuleType | None:
+@@ -193,7 +179,6 @@
+     except ImportError:
+         return None
+ 
+-
+ def _is_compatible(arch: str, version: _GLibCVersion) -> bool:
+     sys_glibc = _get_glibc_version()
+     if sys_glibc < version:
+@@ -221,7 +206,6 @@
+         return bool(manylinux_mod.manylinux2014_compatible)
+     return True
+ 
+-
+ _LEGACY_MANYLINUX_MAP: dict[_GLibCVersion, str] = {
+     # CentOS 7 w/ glibc 2.17 (PEP 599)
+     _GLibCVersion(2, 17): "manylinux2014",
+@@ -231,14 +215,13 @@
+     _GLibCVersion(2, 5): "manylinux1",
+ }
+ 
+-
+ def platform_tags(archs: Sequence[str]) -> Iterator[str]:
+     """Generate manylinux tags compatible to the current platform.
+ 
+     :param archs: Sequence of compatible architectures.
+         The first one shall be the closest to the actual architecture and be the part of
+-        platform tag after the ``linux_`` prefix, e.g. ``x86_64``.
+-        The ``linux_`` prefix is assumed as a prerequisite for the current platform to
++        platform tag after the "linux_" prefix, e.g. "x86_64".
++        The "linux_" prefix is assumed as a prerequisite for the current platform to
+         be manylinux-compatible.
+ 
+     :returns: An iterator of compatible manylinux tags.
+@@ -275,4 +258,4 @@
+ 
+                     # Handle the legacy manylinux1, manylinux2010, manylinux2014 tags.
+                     if legacy_tag := _LEGACY_MANYLINUX_MAP.get(glibc_version):
+-                        yield f"{legacy_tag}_{arch}"
++                        yield f"{legacy_tag}_{arch}"
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py /tmp/yqi10/mu/102768/g0/lane07/profiling_sandbox/packaging/_musllinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py	2026-09-17 15:46:11.638075106 -0400
++++ /tmp/yqi10/mu/102768/g0/lane07/profiling_sandbox/packaging/_musllinux.py	2026-09-27 05:02:21.137321779 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """PEP 656 support.
+ 
+ This module implements logic to detect if the currently running Python is
+@@ -22,7 +24,6 @@
+     major: int
+     minor: int
+ 
+-
+ def _parse_musl_version(output: str) -> _MuslVersion | None:
+     lines = [n for n in (n.strip() for n in output.splitlines()) if n]
+     if len(lines) < 2 or lines[0][:4] != "musl":
+@@ -32,7 +33,6 @@
+         return None
+     return _MuslVersion(major=int(m.group(1)), minor=int(m.group(2)))
+ 
+-
+ @functools.lru_cache
+ def _get_musl_version(executable: str) -> _MuslVersion | None:
+     """Detect currently-running musl runtime version.
+@@ -55,14 +55,13 @@
+     proc = subprocess.run([ld], check=False, stderr=subprocess.PIPE, text=True)
+     return _parse_musl_version(proc.stderr)
+ 
+-
+ def platform_tags(archs: Sequence[str]) -> Iterator[str]:
+     """Generate musllinux tags compatible to the current platform.
+ 
+     :param archs: Sequence of compatible architectures.
+         The first one shall be the closest to the actual architecture and be the part of
+-        platform tag after the ``linux_`` prefix, e.g. ``x86_64``.
+-        The ``linux_`` prefix is assumed as a prerequisite for the current platform to
++        platform tag after the "linux_" prefix, e.g. "x86_64".
++        The "linux_" prefix is assumed as a prerequisite for the current platform to
+         be musllinux-compatible.
+ 
+     :returns: An iterator of compatible musllinux tags.
+@@ -74,7 +73,6 @@
+         for minor in range(sys_musl.minor, -1, -1):
+             yield f"musllinux_{sys_musl.major}_{minor}_{arch}"
+ 
+-
+ if __name__ == "__main__":  # pragma: no cover
+     import sysconfig
+ 
+@@ -85,4 +83,4 @@
+     print("musl:", _get_musl_version(sys.executable))
+     print("tags:", end=" ")
+     for t in platform_tags([re.sub(r"[.-]", "_", plat.split("-", 1)[-1])]):
+-        print(t, end="\n      ")
++        print(t, end="\n      ")
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py /tmp/yqi10/mu/102768/g0/lane07/profiling_sandbox/packaging/pylock.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/pylock.py	2026-09-17 15:46:11.743716412 -0400
++++ /tmp/yqi10/mu/102768/g0/lane07/profiling_sandbox/packaging/pylock.py	2026-09-27 06:23:01.101869384 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import dataclasses
+@@ -60,31 +62,24 @@
+ def __dir__() -> list[str]:
+     return __all__
+ 
+-
+ _T = TypeVar("_T")
+ _T2 = TypeVar("_T2")
+ 
+-
+ class _FromMappingProtocol(Protocol):  # pragma: no cover
+     @classmethod
+     def _from_dict(cls, d: Mapping[str, Any]) -> Self: ...
+ 
+-
+ _FromMappingProtocolT = TypeVar("_FromMappingProtocolT", bound=_FromMappingProtocol)
+ 
+-
+ _PYLOCK_FILE_NAME_RE = re.compile(r"^pylock\.([^.]+)\.toml$")
+ 
+-
+ def is_valid_pylock_path(path: Path) -> bool:
+     """Check if the given path is a valid pylock file path."""
+     return path.name == "pylock.toml" or bool(_PYLOCK_FILE_NAME_RE.match(path.name))
+ 
+-
+ def _toml_key(key: str) -> str:
+     return key.replace("_", "-")
+ 
+-
+ def _toml_value(key: str, value: Any) -> Any:  # noqa: ANN401
+     if isinstance(value, (Version, Marker, SpecifierSet)):
+         return str(value)
+@@ -92,7 +87,6 @@
+         return [str(v) for v in value]
+     return value
+ 
+-
+ def _toml_dict_factory(data: list[tuple[str, Any]]) -> dict[str, Any]:
+     return {
+         _toml_key(key): _toml_value(key, value)
+@@ -100,7 +94,6 @@
+         if value is not None
+     }
+ 
+-
+ def _get(d: Mapping[str, Any], expected_type: type[_T], key: str) -> _T | None:
+     """Get a value from the dictionary and verify it's the expected type."""
+     if (value := d.get(key)) is None:
+@@ -116,14 +109,12 @@
+         )
+     return value
+ 
+-
+ def _get_required(d: Mapping[str, Any], expected_type: type[_T], key: str) -> _T:
+     """Get a required value from the dictionary and verify it's the expected type."""
+     if (value := _get(d, expected_type, key)) is None:
+         raise _PylockRequiredKeyError(key)
+     return value
+ 
+-
+ def _get_sequence(
+     d: Mapping[str, Any], expected_item_type: type[_T], key: str
+ ) -> Sequence[_T] | None:
+@@ -145,7 +136,6 @@
+             )
+     return value
+ 
+-
+ def _get_as(
+     d: Mapping[str, Any],
+     expected_type: type[_T],
+@@ -164,7 +154,6 @@
+     except Exception as e:
+         raise PylockValidationError(e, context=key) from e
+ 
+-
+ def _get_required_as(
+     d: Mapping[str, Any],
+     expected_type: type[_T],
+@@ -177,7 +166,6 @@
+         raise _PylockRequiredKeyError(key)
+     return value
+ 
+-
+ def _get_sequence_as(
+     d: Mapping[str, Any],
+     expected_item_type: type[_T],
+@@ -196,7 +184,6 @@
+         raise PylockValidationError(e, context=f"{key}[{len(result)}]") from e
+     return result
+ 
+-
+ def _get_object(
+     d: Mapping[str, Any], target_type: type[_FromMappingProtocolT], key: str
+ ) -> _FromMappingProtocolT | None:
+@@ -208,7 +195,6 @@
+     except Exception as e:
+         raise PylockValidationError(e, context=key) from e
+ 
+-
+ def _get_sequence_of_objects(
+     d: Mapping[str, Any], target_item_type: type[_FromMappingProtocolT], key: str
+ ) -> list[_FromMappingProtocolT] | None:
+@@ -224,7 +210,6 @@
+         raise PylockValidationError(e, context=f"{key}[{len(result)}]") from e
+     return result
+ 
+-
+ def _get_required_sequence_of_objects(
+     d: Mapping[str, Any], target_item_type: type[_FromMappingProtocolT], key: str
+ ) -> Sequence[_FromMappingProtocolT]:
+@@ -234,19 +219,16 @@
+         raise _PylockRequiredKeyError(key)
+     return result
+ 
+-
+ def _validate_normalized_name(name: str) -> NormalizedName:
+     """Validate that a string is a NormalizedName."""
+     if not is_normalized_name(name):
+         raise PylockValidationError(f"Name {name!r} is not normalized")
+     return NormalizedName(name)
+ 
+-
+ def _validate_path_url(path: str | None, url: str | None) -> None:
+     if not path and not url:
+         raise PylockValidationError("path or url must be provided")
+ 
+-
+ def _path_name(path: str | None) -> str | None:
+     if not path:
+         return None
+@@ -259,7 +241,6 @@
+     else:
+         return path
+ 
+-
+ def _url_name(url: str | None) -> str | None:
+     if not url:
+         return None
+@@ -267,7 +248,6 @@
+     # The last path component is percent-encoded, so decode it to the file name
+     return unquote(url_path.rsplit("/", 1)[-1])
+ 
+-
+ def _validate_hashes(hashes: Mapping[str, Any]) -> Mapping[str, Any]:
+     if not hashes:
+         raise PylockValidationError("At least one hash must be provided")
+@@ -275,10 +255,8 @@
+         raise PylockValidationError("Hash values must be strings")
+     return hashes
+ 
+-
+ class PylockValidationError(Exception):
+     """Raised when when input data is not spec-compliant."""
+-
+     context: str | None = None
+     message: str
+ 
+@@ -305,23 +283,19 @@
+             return f"{self.message} in {self.context!r}"
+         return self.message
+ 
+-
+ class _PylockRequiredKeyError(PylockValidationError):
+     def __init__(self, key: str) -> None:
+         super().__init__("Missing required value", context=key)
+ 
+-
+ class PylockUnsupportedVersionError(PylockValidationError):
+     """Raised when encountering an unsupported `lock_version`."""
+ 
+-
+ class PylockSelectError(Exception):
+     """Base exception for errors raised by :meth:`Pylock.select`.
+ 
+     .. versionadded:: 26.1
+     """
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class PackageVcs:
+     type: str
+@@ -362,7 +336,6 @@
+         _validate_path_url(package_vcs.path, package_vcs.url)
+         return package_vcs
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class PackageDirectory:
+     path: str
+@@ -389,7 +362,6 @@
+             subdirectory=_get(d, str, "subdirectory"),
+         )
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class PackageArchive:
+     url: str | None = None
+@@ -430,7 +402,6 @@
+         _validate_path_url(package_archive.path, package_archive.url)
+         return package_archive
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class PackageSdist:
+     name: str | None = None
+@@ -482,7 +453,6 @@
+             raise PylockValidationError("Cannot determine sdist filename")
+         return filename
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class PackageWheel:
+     name: str | None = None
+@@ -531,7 +501,6 @@
+             raise PylockValidationError("Cannot determine wheel filename")
+         return filename
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class Package:
+     name: NormalizedName
+@@ -657,7 +626,7 @@
+                 _get_required(attestation_identity, str, "kind")
+         except Exception as e:
+             raise PylockValidationError(
+-                e, context=f"attestation-identities[{i}]"
++                e, context=f"attestation-identities[{i}"
+             ) from e
+         return package
+ 
+@@ -665,7 +634,6 @@
+     def is_direct(self) -> bool:
+         return not (self.sdist or self.wheels)
+ 
+-
+ @dataclass(frozen=True, init=False)
+ class Pylock:
+     """A class representing a pylock file."""
+@@ -940,4 +908,4 @@
+ 
+             else:
+                 # Covered by lock.validate() which is a precondition for this method.
+-                raise NotImplementedError  # pragma: no cover
++                raise NotImplementedError  # pragma: no cover
+\ No newline at end of file

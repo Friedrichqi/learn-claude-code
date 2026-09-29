@@ -1,0 +1,32 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/tqdm/std.py	2026-09-27 04:22:03.547424224 -0400
+@@ -19,7 +19,7 @@
+ from ._monitor import TMonitor
+ from .utils import (
+     CallbackIOWrapper, Comparable, DisableOnWriteError, FormatReplace, SimpleTextIOWrapper,
+-    _is_ascii, _screen_shape_wrapper, _supports_unicode, _term_move_up, disp_len, disp_trim,
++    _is_ascii, _screen_shape_wrapper, _supports_unicode, _term_move_up, disp_len, disp_trim_v2,
+     envwrap)
+ 
+ __author__ = "https://github.com/tqdm/tqdm#contributions"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/tqdm/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py	2026-09-17 15:46:11.374453572 -0400
++++ /tmp/yqi10/mu/102768/g0/lane10/profiling_sandbox/tqdm/utils.py	2026-09-27 05:02:12.459380240 -0400
+@@ -32,6 +32,7 @@
+ 
+ 
+ def envwrap(name, app="", types=None, is_method=False):
++    """Wrap environment variables for configuration."""
+     """
+     Basic (env-only) version of [envwrap](https://github.com/tqdm/envwrap).
+     Install `envwrap` for config file support.
+@@ -312,7 +313,7 @@
+     return _text_width(RE_ANSI.sub('', data))
+ 
+ 
+-def disp_trim(data, length):
++def disp_trim_v2(data, length):
+     """
+     Trim a string which may contain ANSI control characters.
+     """

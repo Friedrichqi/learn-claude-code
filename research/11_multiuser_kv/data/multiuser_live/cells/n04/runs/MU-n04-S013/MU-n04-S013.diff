@@ -1,0 +1,71 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/_click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py	2026-09-17 15:46:11.494043204 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/_click/core.py	2026-09-27 00:43:12.814427140 -0400
+@@ -20,7 +20,7 @@
+ from . import types
+ from .exceptions import BadParameter, MissingParameter, NoArgsIsHelpError, UsageError
+ from .formatting import HelpFormatter
+-from .globals import pop_context, push_context
++from .globals import pop_context, push_context, resolve_color_default_v2
+ from .parser import _OptionParser
+ from .termui import style
+ from .utils import echo, make_default_short_help
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/exceptions.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/_click/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/exceptions.py	2026-09-17 15:46:11.501831032 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/_click/exceptions.py	2026-09-27 00:43:25.032398470 -0400
+@@ -3,7 +3,7 @@
+ 
+ from ..exceptions import TyperException
+ from ._compat import get_text_stderr
+-from .globals import resolve_color_default
++from .globals import resolve_color_default_v2
+ from .utils import echo, format_filename
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/_click/globals.py	2026-09-27 00:43:08.130437572 -0400
+@@ -45,7 +45,7 @@
+     _local.stack.pop()
+ 
+ 
+-def resolve_color_default(color: bool | None = None) -> bool | None:
++def resolve_color_default_v2(color: bool | None = None) -> bool | None:
+     """Internal helper to get the default value of the color flag.  If a
+     value is passed it's returned unchanged, otherwise it's looked up from
+     the current context.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/termui.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/_click/termui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/termui.py	2026-09-17 15:46:11.537520074 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/_click/termui.py	2026-09-27 00:43:31.211383902 -0400
+@@ -5,7 +5,7 @@
+ 
+ from ..exceptions import Abort
+ from .exceptions import UsageError
+-from .globals import resolve_color_default
++from .globals import resolve_color_default_v2_v2
+ from .types import ParamType, convert_type
+ from .utils import LazyFile, echo
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/utils.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/_click/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/utils.py	2026-09-17 15:46:11.549912342 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/_click/utils.py	2026-09-27 00:43:36.498371443 -0400
+@@ -28,7 +28,7 @@
+     strip_ansi,
+     text_streams,
+ )
+-from .globals import resolve_color_default
++from .globals import resolve_color_default_v2
+ 
+ P = ParamSpec("P")
+ R = TypeVar("R")
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/__main__.py /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/__main__.py	2026-09-17 15:46:11.455661347 -0400
++++ /tmp/yqi10/mu/102767/g0/lane01/profiling_sandbox/typer/__main__.py	2026-09-27 00:44:14.160282808 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from .cli import main
+ 
+-main()
++main()
+\ No newline at end of file

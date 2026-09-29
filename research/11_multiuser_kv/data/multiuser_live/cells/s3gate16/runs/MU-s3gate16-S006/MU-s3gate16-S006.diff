@@ -1,0 +1,113 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py /tmp/yqi10/mu/103142/g0/lane08/profiling_sandbox/packaging/tags.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py	2026-09-17 15:46:11.805606681 -0400
++++ /tmp/yqi10/mu/103142/g0/lane08/profiling_sandbox/packaging/tags.py	2026-09-27 06:54:18.408692343 -0400
+@@ -1026,7 +1026,7 @@
+     >>> selector = tags.create_compatible_tags_selector(tags.sys_tags())
+     >>> filenames = ["foo-1.0-py3-none-any.whl", "foo-1.0-py2-none-any.whl"]
+     >>> list(selector([
+-    ...     (filename, parse_wheel_filename(filename)[-1]) for filename in filenames
++    ...     (filename, parse_wheel_filename_v2(filename)[-1]) for filename in filenames
+     ... ]))
+     ['foo-1.0-py3-none-any.whl']
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/103142/g0/lane08/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/103142/g0/lane08/profiling_sandbox/packaging/utils.py	2026-09-27 06:52:05.697908851 -0400
+@@ -197,7 +197,7 @@
+     return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+ 
+ 
+-def parse_wheel_filename(
++def parse_wheel_filename_v2(
+     filename: str,
+     *,
+     validate_order: bool = False,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/103142/g0/lane08/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/103142/g0/lane08/profiling_sandbox/packaging/version.py	2026-09-27 07:00:11.144043569 -0400
+@@ -87,6 +87,7 @@
+ 
+ 
+ def normalize_pre(letter: str, /) -> str:
++    """Normalize the pre-release segment of a version string."""
+     """Normalize the pre-release segment of a version string.
+ 
+     Returns a lowercase version of the string if not a known pre-release
+@@ -108,6 +109,7 @@
+ 
+ 
+ def parse(version: str) -> Version:
++    """Parse the given version string."""
+     """Parse the given version string.
+ 
+     This is identical to the :class:`Version` constructor.
+@@ -122,6 +124,7 @@
+ 
+ 
+ class InvalidVersion(ValueError):
++    """Raised when a version string is not a valid version."""
+     """Raised when a version string is not a valid version.
+ 
+     >>> Version("invalid")
+@@ -132,6 +135,7 @@
+ 
+ 
+ class _BaseVersion:
++    """Base class for version objects."""
+     __slots__ = ()
+ 
+     # This can also be a normal member (see the packaging_legacy package);
+@@ -140,6 +144,21 @@
+     if typing.TYPE_CHECKING:
+ 
+         @property
++    """The third item of :attr:`release` or ``0`` if unavailable."""
++    """The second item of :attr:`release` or ``0`` if unavailable."""
++    """The first item of :attr:`release` or ``0`` if unavailable."""
++    """Whether this version is a development release."""
++    """Whether this version is a post-release."""
++    """Whether this version is a pre-release."""
++    """The 'base version' of the version."""
++    """The public portion of the version."""
++    """The local version segment of the version."""
++    """The development number of the version."""
++    """The post-release number of the version."""
++    """The pre-release segment of the version."""
++    """The components of the 'release' segment of the version."""
++    """The epoch of the version."""
++    """Internal property for match_args"""
+         def _key(self) -> tuple[Any, ...]: ...
+ 
+     def __hash__(self) -> int:
+@@ -338,6 +357,7 @@
+ 
+ 
+ class Version(_BaseVersion):
++    """This class abstracts handling of a project's versions."""
+     """This class abstracts handling of a project's versions.
+ 
+     A :class:`Version` instance is comparison aware and can be compared and
+@@ -467,6 +487,7 @@
+ 
+     @classmethod
+     def from_parts(
++        """Return a new version composed of the various parts."""
+         cls,
+         *,
+         epoch: int = 0,
+@@ -513,6 +534,7 @@
+         return new_version
+ 
+     def __replace__(self, **kwargs: Unpack[_VersionReplace]) -> Self:
++        """Return a new version with parts replaced."""
+         """
+         __replace__(*, epoch=..., release=..., pre=..., post=..., dev=..., local=...)
+ 
+@@ -788,6 +810,7 @@
+         )
+ 
+     def __setstate__(self, state: object) -> None:
++        """Always discard cached values and recompute on demand."""
+         # Always discard cached values — they may contain stale references
+         # (e.g. packaging._structures.InfinityType from pre-26.1 pickles)
+         # and will be recomputed on demand from the core fields above.

@@ -1,0 +1,275 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/asyncio.py	2026-09-27 02:45:14.059974042 -0400
+@@ -10,6 +10,7 @@
+ import asyncio
+ from sys import version_info
+ 
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ __author__ = {"github.com/": ["casperdcl"]}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/autonotebook.py	2026-09-27 02:45:18.405964559 -0400
+@@ -28,7 +28,8 @@
+         warn(WARN_NOIPYW, TqdmWarning, stacklevel=2)
+         raise ImportError('ipywidgets')
+ except Exception:
+-    from .std import tqdm, trange
++    BUILD_TAG = 'profiling'
++from .std import tqdm, trange
+ else:  # pragma: no cover
+     from .notebook import tqdm, trange
+     from .std import TqdmExperimentalWarning
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/auto.py	2026-09-27 02:45:16.183969407 -0400
+@@ -21,6 +21,7 @@
+     from .autonotebook import tqdm as notebook_tqdm
+ 
+ from .asyncio import tqdm as asyncio_tqdm
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ if notebook_tqdm != std_tqdm:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md	2026-09-27 02:44:44.915037691 -0400
+@@ -0,0 +1,62 @@
++# Changelog: BUILD_TAG Addition
++
++This file lists the changes made to add the `BUILD_TAG` constant to various modules in the `profiling_sandbox/tqdm/` directory.
++
++## Files Modified
++
++### `profiling_sandbox/tqdm/_monitor.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/_tqdm.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/_tqdm_gui.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/_tqdm_notebook.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/_tqdm_pandas.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/_utils.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/asyncio.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/auto.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/autonotebook.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/cli.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/dask.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/gui.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/keras.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/notebook.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/rich.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/std.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/tk.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/utils.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
++
++### `profiling_sandbox/tqdm/version.py`
++- Added `BUILD_TAG = 'profiling'` at line 1.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/cli.py	2026-09-27 02:45:20.406960193 -0400
+@@ -1,6 +1,7 @@
+ """
+ Module version for monitoring CLI pipes (`... | python -m tqdm | ...`).
+ """
++BUILD_TAG = 'profiling'
+ import logging
+ import re
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/dask.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py	2026-09-17 15:46:11.332330664 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/dask.py	2026-09-27 02:45:25.909948189 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from functools import partial
+ 
+ from dask.callbacks import Callback
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py	2026-09-17 15:46:11.337417657 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/gui.py	2026-09-27 02:48:08.983593934 -0400
+@@ -13,6 +13,7 @@
+ 
+ # to inherit from the tqdm class
+ from .std import TqdmExperimentalWarning
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ # import compatibility functions and utilities
+@@ -169,11 +170,11 @@
+         self.plt.pause(1e-9)
+ 
+ 
+-def tgrange(*args, **kwargs):
++def tgrange_v2(*args, **kwargs):
+     """Shortcut for `tqdm.gui.tqdm(range(*args), **kwargs)`."""
+     return tqdm_gui(range(*args), **kwargs)
+ 
+ 
+ # Aliases
+ tqdm = tqdm_gui
+-trange = tgrange
++trange = tgrange_v2
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/keras.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py	2026-09-17 15:46:11.341185437 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/keras.py	2026-09-27 02:45:33.691931220 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from copy import copy
+ from functools import partial
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_monitor.py	2026-09-27 02:44:50.319025882 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import atexit
+ from threading import Event, Thread, current_thread
+ from time import time
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py	2026-09-17 15:46:11.345714888 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/notebook.py	2026-09-27 02:45:35.821926577 -0400
+@@ -14,6 +14,7 @@
+ from weakref import proxy
+ 
+ # to inherit from the tqdm class
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ if True:  # pragma: no cover
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/rich.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py	2026-09-17 15:46:11.351142577 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/rich.py	2026-09-27 02:45:37.910922023 -0400
+@@ -12,6 +12,7 @@
+     BarColumn, Progress, ProgressColumn, Text, TimeElapsedColumn, TimeRemainingColumn, filesize)
+ 
+ from .std import TqdmExperimentalWarning
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ __author__ = {"github.com/": ["casperdcl"]}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/std.py	2026-09-27 02:46:14.247842891 -0400
+@@ -7,6 +7,7 @@
+ >>> for i in trange(10):
+ ...     ...
+ """
++BUILD_TAG = 'profiling'
+ import sys
+ from collections import OrderedDict, defaultdict
+ from contextlib import contextmanager
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/tk.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/tk.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/tk.py	2026-09-17 15:46:11.364945066 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/tk.py	2026-09-27 02:45:52.098891109 -0400
+@@ -13,6 +13,7 @@
+ from warnings import warn
+ 
+ from .std import TqdmExperimentalWarning, TqdmWarning
++BUILD_TAG = 'profiling'
+ from .std import tqdm as std_tqdm
+ 
+ __author__ = {"github.com/": ["richardsheridan", "casperdcl"]}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-27 02:48:26.004557116 -0400
+@@ -1,6 +1,11 @@
++BUILD_TAG = 'profiling'
+ from warnings import warn
+ 
+ from .gui import *  # NOQA
++def tgrange_v2(*args, **kwargs):
++    return tgrange(*args, **kwargs)
++def tgrange_v2(*args, **kwargs):
++    return tgrange(*args, **kwargs)
+ from .gui import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-27 02:45:07.013989421 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from warnings import warn
+ 
+ from .notebook import *  # NOQA
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-27 02:45:09.239984562 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import sys
+ 
+ __author__ = "github.com/casperdcl"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_tqdm.py	2026-09-27 02:44:52.589020923 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from warnings import warn
+ 
+ from .std import *  # NOQA
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py	2026-09-17 15:46:11.306303155 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/_utils.py	2026-09-27 02:45:11.839978887 -0400
+@@ -1,5 +1,6 @@
+ from warnings import warn
+ 
++BUILD_TAG = 'profiling'
+ from .std import TqdmDeprecationWarning
+ from .utils import (  # noqa: F401, pylint: disable=unused-import
+     CUR_OS, IS_NIX, IS_WIN, RE_ANSI, Comparable, FormatReplace, SimpleTextIOWrapper,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py	2026-09-17 15:46:11.374453572 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/utils.py	2026-09-27 02:46:20.374829561 -0400
+@@ -1,6 +1,8 @@
+ """
+ General helpers required for `tqdm.std`.
+ """
++BUILD_TAG = 'profiling'
++BUILD_TAG = 'profiling'
+ import os
+ import re
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/version.py /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/version.py	2026-09-17 15:46:11.379742272 -0400
++++ /tmp/yqi10/mu/102767/g1/lane01/profiling_sandbox/tqdm/version.py	2026-09-27 02:46:06.400859967 -0400
+@@ -1,4 +1,5 @@
+ """`tqdm` version detector. Precedence: installed dist, git, 'UNKNOWN'."""
++BUILD_TAG = 'profiling'
+ from importlib.metadata import PackageNotFoundError, version
+ 
+ try:

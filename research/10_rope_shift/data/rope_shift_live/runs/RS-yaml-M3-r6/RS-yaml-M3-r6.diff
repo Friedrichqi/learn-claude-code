@@ -1,0 +1,196 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/rope_shift_lanes/s1/lane01_23/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/rope_shift_lanes/s1/lane01_23/profiling_sandbox/yaml/parser.py	2026-09-25 12:34:26.513898279 -0400
+@@ -67,6 +67,7 @@
+ from .scanner import *
+ 
+ class ParserError(MarkedYAMLError):
++    """Parse the stream start."""
+     pass
+ 
+ class Parser:
+@@ -91,6 +92,7 @@
+         self.states = []
+         self.state = None
+ 
++    """Check the type of the next event."""
+     def check_event(self, *choices):
+         # Check the type of the next event.
+         if self.current_event is None:
+@@ -104,6 +106,7 @@
+                     return True
+         return False
+ 
++    """Get the next event and proceed further."""
+     def peek_event(self):
+         # Get the next event.
+         if self.current_event is None:
+@@ -111,6 +114,7 @@
+                 self.current_event = self.state()
+         return self.current_event
+ 
++    """Get the next event and proceed further."""
+     def get_event(self):
+         # Get the next event and proceed further.
+         if self.current_event is None:
+@@ -120,10 +124,12 @@
+         self.current_event = None
+         return value
+ 
++    """Parse the stream start."""
+     # stream    ::= STREAM-START implicit_document? explicit_document* STREAM-END
+     # implicit_document ::= block_node DOCUMENT-END*
+     # explicit_document ::= DIRECTIVE* DOCUMENT-START block_node? DOCUMENT-END*
+ 
++    """Parse the stream start."""
+     def parse_stream_start(self):
+ 
+         # Parse the stream start.
+@@ -136,6 +142,7 @@
+ 
+         return event
+ 
++    """Parse an implicit document."""
+     def parse_implicit_document_start(self):
+ 
+         # Parse an implicit document.
+@@ -156,6 +163,7 @@
+         else:
+             return self.parse_document_start()
+ 
++    """Parse any extra document end indicators."""
+     def parse_document_start(self):
+ 
+         # Parse any extra document end indicators.
+@@ -187,6 +195,7 @@
+             self.state = None
+         return event
+ 
++    """Parse the document end."""
+     def parse_document_end(self):
+ 
+         # Parse the document end.
+@@ -205,6 +214,7 @@
+ 
+         return event
+ 
++    """Parse the document content."""
+     def parse_document_content(self):
+         if self.check_token(DirectiveToken,
+                 DocumentStartToken, DocumentEndToken, StreamEndToken):
+@@ -261,9 +271,20 @@
+     # block_collection  ::= block_sequence | block_mapping
+     # flow_collection   ::= flow_sequence | flow_mapping
+ 
++    """Parse a block node."""
++    """Parse a block node."""
++    """Parse a block node."""
++    """Parse a block node."""
++    """Parse a block node."""
++    """Parse a block node."""
+     def parse_block_node(self):
+         return self.parse_node(block=True)
+ 
++    """Parse a flow node."""
++    """Parse a flow node."""
++    """Parse a flow node."""
++    """Parse a flow node."""
++    """Parse a flow node."""
+     def parse_flow_node(self):
+         return self.parse_node()
+ 
+@@ -373,11 +394,24 @@
+ 
+     # block_sequence ::= BLOCK-SEQUENCE-START (BLOCK-ENTRY block_node?)* BLOCK-END
+ 
++    """Parse the first entry of a block sequence."""
++    """Parse the first entry of a block sequence."""
++    """Parse the first entry of a block sequence."""
++    """Parse the first entry of a block sequence."""
++    """Parse the first entry of a block sequence."""
++    """Parse the first entry of a block sequence."""
+     def parse_block_sequence_first_entry(self):
+         token = self.get_token()
+         self.marks.append(token.start_mark)
+         return self.parse_block_sequence_entry()
+ 
++    """Parse an entry of a block sequence."""
++    """Parse an entry of a block sequence."""
++    """Parse an entry of a block sequence."""
++    """Parse an entry of a block sequence."""
++    """Parse an entry of a block sequence."""
++    """Parse an entry of a block sequence."""
++    """Parse an entry of a block sequence."""
+     def parse_block_sequence_entry(self):
+         if self.check_token(BlockEntryToken):
+             token = self.get_token()
+@@ -419,11 +453,21 @@
+     #                       (VALUE block_node_or_indentless_sequence?)?)*
+     #                       BLOCK-END
+ 
++    """Parse the first key of a block mapping."""
++    """Parse the first key of a block mapping."""
++    """Parse the first key of a block mapping."""
++    """Parse the first key of a block mapping."""
++    """Parse the first key of a block mapping."""
+     def parse_block_mapping_first_key(self):
+         token = self.get_token()
+         self.marks.append(token.start_mark)
+         return self.parse_block_mapping_key()
+ 
++    """Parse a key of a block mapping."""
++    """Parse a key of a block mapping."""
++    """Parse a key of a block mapping."""
++    """Parse a key of a block mapping."""
++    """Parse a key of a block mapping."""
+     def parse_block_mapping_key(self):
+         if self.check_token(KeyToken):
+             token = self.get_token()
+@@ -443,6 +487,11 @@
+         self.marks.pop()
+         return event
+ 
++    """Parse a value of a block mapping."""
++    """Parse a value of a block mapping."""
++    """Parse a value of a block mapping."""
++    """Parse a value of a block mapping."""
++    """Parse a value of a block mapping."""
+     def parse_block_mapping_value(self):
+         if self.check_token(ValueToken):
+             token = self.get_token()
+@@ -468,6 +517,11 @@
+     # For `flow_sequence_entry`, the part `KEY flow_node? (VALUE flow_node?)?`
+     # generate an inline mapping (set syntax).
+ 
++    """Parse the first entry of a flow sequence."""
++    """Parse the first entry of a flow sequence."""
++    """Parse the first entry of a flow sequence."""
++    """Parse the first entry of a flow sequence."""
++    """Parse the first entry of a flow sequence."""
+     def parse_flow_sequence_first_entry(self):
+         token = self.get_token()
+         self.marks.append(token.start_mark)
+@@ -534,6 +588,11 @@
+     #                   FLOW-MAPPING-END
+     # flow_mapping_entry    ::= flow_node | KEY flow_node? (VALUE flow_node?)?
+ 
++    """Parse the first key of a flow mapping."""
++    """Parse the first key of a flow mapping."""
++    """Parse the first key of a flow mapping."""
++    """Parse the first key of a flow mapping."""
++    """Parse the first key of a flow mapping."""
+     def parse_flow_mapping_first_key(self):
+         token = self.get_token()
+         self.marks.append(token.start_mark)
+@@ -566,6 +625,11 @@
+         self.marks.pop()
+         return event
+ 
++    """Parse a value of a flow mapping."""
++    """Parse a value of a flow mapping."""
++    """Parse a value of a flow mapping."""
++    """Parse a value of a flow mapping."""
++    """Parse a value of a flow mapping."""
+     def parse_flow_mapping_value(self):
+         if self.check_token(ValueToken):
+             token = self.get_token()

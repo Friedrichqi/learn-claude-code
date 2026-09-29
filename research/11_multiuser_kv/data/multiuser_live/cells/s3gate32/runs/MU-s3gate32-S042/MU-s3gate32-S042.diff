@@ -1,0 +1,21 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/103142/g1/lane26/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/103142/g1/lane26/profiling_sandbox/tqdm/std.py	2026-09-27 08:35:29.145446007 -0400
+@@ -630,7 +630,7 @@
+             full_bar = FormatReplace()
+             nobar = bar_format.format(bar=full_bar, **format_dict)  # no `{bar}`
+             if not full_bar.format_called:
+-                return disp_trim(nobar, ncols) if ncols else nobar
++                return disp_trim_v2(nobar, ncols) if ncols else nobar
+ 
+             # Formatting progress bar space available for bar's display
+             full_bar = Bar(frac,
+@@ -640,7 +640,7 @@
+             if not _is_ascii(full_bar.charset) and _is_ascii(bar_format):
+                 bar_format = str(bar_format)
+             res = bar_format.format(bar=full_bar, **format_dict)
+-            return disp_trim(res, ncols) if ncols else res
++            return disp_trim_v2(res, ncols) if ncols else res
+ 
+         elif bar_format:
+             # user-specified bar_format but no total

@@ -1,0 +1,919 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/asyncio.py	2026-09-27 08:34:47.522509889 -0400
+@@ -2,6 +2,8 @@
+ Asynchronous progress bar decorator for iterators.
+ Includes a default `range` iterator printing to `stderr`.
+ 
++BUILD_TAG = 'profiling'
++
+ Usage:
+ >>> from tqdm.asyncio import trange, tqdm
+ >>> async for i in trange(10):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/autonotebook.py	2026-09-27 08:35:26.795449615 -0400
+@@ -1,6 +1,8 @@
+ """
+ Automatically choose between `tqdm.notebook` and `tqdm.std`.
+ 
++BUILD_TAG = 'profiling'
++
+ Usage:
+ >>> from tqdm.autonotebook import trange, tqdm
+ >>> for i in trange(10):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/auto.py	2026-09-27 08:35:04.095484456 -0400
+@@ -3,6 +3,8 @@
+ 
+ Method resolution order:
+ 
++BUILD_TAG = 'profiling'
++
+ - `tqdm.autonotebook` without import warnings
+ - `tqdm.asyncio`
+ - `tqdm.std` base class
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md	2026-09-27 08:37:33.884254412 -0400
+@@ -0,0 +1,19 @@
++Changes for BUILD_TAG addition:
++
++- File: `_main.py`, Line: 2
++- File: `_monitor.py`, Line: 2
++- File: `_tqdm.py`, Line: 2
++- File: `_tqdm_gui.py`, Line: 2
++- File: `_tqdm_notebook.py`, Line: 2
++- File: `_tqdm_pandas.py`, Line: 4
++- File: `_utils.py`, Line: 2
++- File: `asyncio.py`, Line: 4
++- File: `auto.py`, Line: 4
++- File: `autonotebook.py`, Line: 4
++- File: `cli.py`, Line: 4
++- File: `dask.py`, Line: 3
++- File: `gui.py`, Line: 4
++- File: `keras.py`, Line: 4
++- File: `notebook.py`, Line: 4
++- File: `rich.py`, Line: 4
++- File: `std.py`, Line: 4
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/cli.py	2026-09-27 08:35:45.150421437 -0400
+@@ -1,5 +1,7 @@
+ """
+ Module version for monitoring CLI pipes (`... | python -m tqdm | ...`).
++
++BUILD_TAG = 'profiling'
+ """
+ import logging
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/dask.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py	2026-09-17 15:46:11.332330664 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/dask.py	2026-09-27 08:35:57.952401780 -0400
+@@ -1,5 +1,7 @@
+ from functools import partial
+ 
++BUILD_TAG = 'profiling'
++
+ from dask.callbacks import Callback
+ 
+ from .auto import tqdm as tqdm_auto
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py	2026-09-17 15:46:11.337417657 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/gui.py	2026-09-27 08:36:10.209382959 -0400
+@@ -1,6 +1,8 @@
+ """
+ Matplotlib GUI progress bar decorator for iterators.
+ 
++BUILD_TAG = 'profiling'
++
+ Usage:
+ >>> from tqdm.gui import trange, tqdm
+ >>> for i in trange(10):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/keras.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py	2026-09-17 15:46:11.341185437 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/keras.py	2026-09-27 08:36:30.172352300 -0400
+@@ -1,6 +1,8 @@
+ from copy import copy
+ from functools import partial
+ 
++BUILD_TAG = 'profiling'
++
+ from .auto import tqdm as tqdm_auto
+ 
+ try:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_main.py	2026-09-27 08:33:32.752624579 -0400
+@@ -1,5 +1,7 @@
+ from warnings import warn
+ 
++BUILD_TAG = 'profiling'
++
+ from .cli import *  # NOQA
+ from .cli import __all__  # NOQA
+ from .std import TqdmDeprecationWarning
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_monitor.py	2026-09-27 08:33:50.764596958 -0400
+@@ -3,6 +3,8 @@
+ from time import time
+ from warnings import warn
+ 
++BUILD_TAG = 'profiling'
++
+ __all__ = ["TMonitor", "TqdmSynchronisationWarning"]
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py	2026-09-17 15:46:11.345714888 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/notebook.py	2026-09-27 08:36:49.292322930 -0400
+@@ -1,5 +1,7 @@
+ """
+ IPython/Jupyter Notebook progress bar decorator for iterators.
++
++BUILD_TAG = 'profiling'
+ Includes a default `range` iterator printing to `stderr`.
+ 
+ Usage:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/rich.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py	2026-09-17 15:46:11.351142577 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/rich.py	2026-09-27 08:37:04.995298805 -0400
+@@ -1,6 +1,8 @@
+ """
+ `rich.progress` decorator for iterators.
+ 
++BUILD_TAG = 'profiling'
++
+ Usage:
+ >>> from tqdm.rich import trange, tqdm
+ >>> for i in trange(10):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/std.py	2026-09-27 08:37:24.179269327 -0400
+@@ -1,5 +1,9 @@
++from __future__ import absolute_import, division, print_function
++
+ """
+ Customisable progress bar decorator for iterators.
++
++BUILD_TAG = 'profiling'
+ Includes a default `range` iterator printing to `stderr`.
+ 
+ Usage:
+@@ -28,58 +32,40 @@
+            'TqdmExperimentalWarning', 'TqdmDeprecationWarning',
+            'TqdmMonitorWarning']
+ 
+-
+ class TqdmTypeError(TypeError):
+-    pass
++    """Custom TypeError for tqdm"""
+ 
+ 
+ class TqdmKeyError(KeyError):
+-    pass
+-
++    """Custom KeyError for tqdm"""
+ 
+ class TqdmWarning(Warning):
+-    """base class for all tqdm warnings.
+-
+-    Used for non-external-code-breaking errors, such as garbled printing.
+-    """
++    """Base class for all tqdm warnings."""
+     def __init__(self, msg, fp_write=None):  # noqa: B042
+         if fp_write is not None:
+-            fp_write("\n" + self.__class__.__name__ + ": " + str(msg).rstrip() + '\n')
++            fp_write(\n" + self.__class__.__name__ + " + str(msg).rstrip() + '\n')
+         else:
+             super().__init__(msg)
+ 
+-
+ class TqdmExperimentalWarning(TqdmWarning, FutureWarning):
+-    """beta feature, unstable API and behaviour"""
+-
++    """Warning for beta features with unstable API and behaviour."""
+ 
+ class TqdmDeprecationWarning(TqdmWarning, DeprecationWarning):
+-    """may be removed in a future release"""
+-    # not suppressed if raised
+-
++    """Warning for features that may be removed in a future release."""
+ 
+ class TqdmMonitorWarning(TqdmWarning, RuntimeWarning):
+-    """tqdm monitor errors which do not affect external functionality"""
+-
++    """Warning for tqdm monitor errors that do not affect external functionality."""
+ 
+ def TRLock(*args, **kwargs):
+-    """threading RLock"""
++    """Thread-safe RLock for cross-platform compatibility."""
+     try:
+         from threading import RLock
+         return RLock(*args, **kwargs)
+     except (ImportError, OSError):  # pragma: no cover
+         pass
+ 
+-
+ class TqdmDefaultWriteLock:
+-    """
+-    Provide a default write lock for thread and multiprocessing safety.
+-    Works only on platforms supporting `fork` (so Windows is excluded).
+-    You must initialise a `tqdm` or `TqdmDefaultWriteLock` instance
+-    before forking in order for the write lock to work.
+-    On Windows, you need to supply the lock from the parent to the children as
+-    an argument to joblib or the parallelism lib you use.
+-    """
++    """Provides a default write lock for thread and multiprocessing safety."""
+     # global thread lock so no setup required for multithreading.
+     # NB: Do not create multiprocessing lock as it sets the multiprocessing
+     # context, disallowing `spawn()`/`forkserver()`
+@@ -125,20 +111,8 @@
+         assert hasattr(cls, 'th_lock')
+         warn("create_th_lock not needed anymore", TqdmDeprecationWarning, stacklevel=2)
+ 
+-
+ class Bar:
+-    """
+-    `str.format`-able bar with format specifiers: `[width][type]`
+-
+-    - `width`
+-      + unspecified (default): use `self.default_len`
+-      + `int >= 0`: overrides `self.default_len`
+-      + `int < 0`: subtract from `self.default_len`
+-    - `type`
+-      + `a`: ascii (`charset=self.ASCII` override)
+-      + `u`: unicode (`charset=self.UTF` override)
+-      + `b`: blank (`charset="  "` override)
+-    """
++    """`str.format`-able bar with format specifiers: `[width][type]`"""
+     ASCII = " 123456789#"
+     UTF = " " + ''.join(map(chr, range(0x258F, 0x2587, -1)))
+     BLANK = "  "
+@@ -176,8 +150,7 @@
+             else:
+                 raise KeyError
+         except (KeyError, AttributeError):
+-            warn(f"Unknown colour ({value}); valid choices:"
+-                 f" [hex (#00ff00), {', '.join(self.COLOURS)}]", TqdmWarning, stacklevel=2)
++            warn(f"Unknown colour ({value}); valid choices:"\n                 f" [hex (#00ff00), {', '.join(self.COLOURS)}]", TqdmWarning, stacklevel=2)
+             self._colour = None
+ 
+     def __format__(self, format_spec):
+@@ -207,183 +180,30 @@
+             res = res + charset[frac_bar_length] + charset[0] * (N_BARS - bar_length - 1)
+         return self.colour + res + self.COLOUR_RESET if self.colour else res
+ 
+-
+ class EMA:
+-    """
+-    Exponential moving average: smoothing to give progressively lower
+-    weights to older values.
+-
+-    Parameters
+-    ----------
+-    smoothing  : float, optional
+-        Smoothing factor in range [0, 1], [default: 0.3].
+-        Increase to give more weight to recent values.
+-        Ranges from 0 (yields old value) to 1 (yields new value).
+-    """
++    """Exponential moving average for smoothing progress estimates."""
+     def __init__(self, smoothing=0.3):
+         self.alpha = smoothing
+         self.last = 0
+         self.calls = 0
+ 
+     def __call__(self, x=None):
+-        """
+-        Parameters
+-        ----------
+-        x  : float
+-            New value to include in EMA.
+-        """
++        """Update and return the EMA value."""
+         beta = 1 - self.alpha
+         if x is not None:
+             self.last = self.alpha * x + beta * self.last
+             self.calls += 1
+         return self.last / (1 - beta ** self.calls) if self.calls else self.last
+ 
+-
+ class tqdm(Comparable):
+-    """
+-    Decorate an iterable object, returning an iterator which acts exactly
+-    like the original iterable, but prints a dynamically updating
+-    progress bar every time a value is requested.
+-
+-    Parameters
+-    ----------
+-    iterable  : iterable, optional
+-        Iterable to decorate with a progress bar.
+-        Leave blank to manually manage the updates.
+-    desc  : str, optional
+-        Prefix for the progress bar.
+-    total  : int or float, optional
+-        The number of expected iterations. If unspecified,
+-        len(iterable) is used if possible. If float("inf") or as a last
+-        resort, only basic progress statistics are displayed
+-        (no ETA, no progress bar).
+-        If `gui` is True and this parameter needs subsequent updating,
+-        specify an initial arbitrary large positive number,
+-        e.g. 9e9.
+-    leave  : bool, optional
+-        If [default: True], keeps all traces of the progress bar
+-        upon termination of iteration.
+-        If `None`, will leave only if `position` is `0`.
+-    file  : `io.TextIOWrapper` or `io.StringIO`, optional
+-        Specifies where to output the progress messages
+-        (default: sys.stderr). Uses `file.write(str)` and `file.flush()`
+-        methods.  For encoding, see `write_bytes`.
+-    ncols  : int, optional
+-        The width of the entire output message. If specified,
+-        dynamically resizes the progress bar to stay within this bound.
+-        If unspecified, attempts to use environment width. The
+-        fallback is a meter width of 10 and no limit for the counter and
+-        statistics. If 0, will not print any meter (only stats).
+-    mininterval  : float, optional
+-        Minimum progress display update interval [default: 0.1] seconds.
+-    maxinterval  : float, optional
+-        Maximum progress display update interval [default: 10] seconds.
+-        Automatically adjusts `miniters` to correspond to `mininterval`
+-        after long display update lag. Only works if `dynamic_miniters`
+-        or monitor thread is enabled.
+-    miniters  : int or float, optional
+-        Minimum progress display update interval, in iterations.
+-        If 0 and `dynamic_miniters`, will automatically adjust to equal
+-        `mininterval` (more CPU efficient, good for tight loops).
+-        If > 0, will skip display of specified number of iterations.
+-        Tweak this and `mininterval` to get very efficient loops.
+-        If your progress is erratic with both fast and slow iterations
+-        (network, skipping items, etc) you should set miniters=1.
+-    ascii  : bool or str, optional
+-        If unspecified or False, use unicode (smooth blocks) to fill
+-        the meter. The fallback is to use ASCII characters " 123456789#".
+-    disable  : bool, optional
+-        Whether to disable the entire progress bar wrapper
+-        [default: False]. If set to None, disable on non-TTY.
+-    unit  : str, optional
+-        String that will be used to define the unit of each iteration
+-        [default: it].
+-    unit_scale  : bool or int or float, optional
+-        If 1 or True, the number of iterations will be reduced/scaled
+-        automatically and a metric prefix following the
+-        International System of Units standard will be added
+-        (kilo, mega, etc.) [default: False]. If any other non-zero
+-        number, will scale `total` and `n`.
+-    dynamic_ncols  : bool, optional
+-        If set, constantly alters `ncols` and `nrows` to the
+-        environment (allowing for window resizes) [default: False].
+-    smoothing  : float, optional
+-        Exponential moving average smoothing factor for speed estimates
+-        (ignored in GUI mode). Ranges from 0 (average speed) to 1
+-        (current/instantaneous speed) [default: 0.3].
+-    bar_format  : str, optional
+-        Specify a custom bar string formatting. May impact performance.
+-        [default: '{l_bar}{bar}{r_bar}'], where
+-        l_bar='{desc}: {percentage:3.0f}%|' and
+-        r_bar='| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, '
+-            '{rate_fmt}{postfix}]'
+-        Possible vars: l_bar, bar, r_bar, n, n_fmt, total, total_fmt,
+-            percentage, elapsed, elapsed_s, ncols, nrows, desc, unit,
+-            rate, rate_fmt, rate_noinv, rate_noinv_fmt,
+-            rate_inv, rate_inv_fmt, postfix, unit_divisor,
+-            remaining, remaining_s, eta.
+-        Note that a trailing ": " is automatically removed after {desc}
+-        if the latter is empty.
+-    initial  : int or float, optional
+-        The initial counter value. Useful when restarting a progress
+-        bar [default: 0]. If using float, consider specifying `{n:.3f}`
+-        or similar in `bar_format`, or specifying `unit_scale`.
+-    position  : int, optional
+-        Specify the line offset to print this bar (starting from 0)
+-        Automatic if unspecified.
+-        Useful to manage multiple bars at once (eg, from threads).
+-    postfix  : dict or *, optional
+-        Specify additional stats to display at the end of the bar.
+-        Calls `set_postfix(**postfix)` if possible (dict).
+-    unit_divisor  : float, optional
+-        [default: 1000], ignored unless `unit_scale` is True.
+-    write_bytes  : bool, optional
+-        Whether to write bytes. If (default: False) will write unicode.
+-    lock_args  : tuple, optional
+-        Passed to `refresh` for intermediate output
+-        (initialisation, iterating, and updating).
+-    nrows  : int, optional
+-        The screen height. If specified, hides nested bars outside this
+-        bound. If unspecified, attempts to use environment height.
+-        The fallback is 20.
+-    colour  : str, optional
+-        Bar colour (e.g. 'green', '#00ff00').
+-    delay  : float, optional
+-        Don't display until [default: 0] seconds have elapsed.
+-    gui  : bool, optional
+-        WARNING: internal parameter - do not use.
+-        Use tqdm.gui.tqdm(...) instead. If set, will attempt to use
+-        matplotlib animations for a graphical output [default: False].
+-
+-    Returns
+-    -------
+-    out  : decorated iterator.
+-    """
+-
++    """Decorate an iterable object with a dynamically updating progress bar."""
+     monitor_interval = 10  # set to 0 to disable the thread
+     monitor = None
+     _instances = WeakSet()
+ 
+     @staticmethod
+     def format_sizeof(num, suffix='', divisor=1000):
+-        """
+-        Formats a number (greater than unity) with SI Order of Magnitude
+-        prefixes.
+-
+-        Parameters
+-        ----------
+-        num  : float
+-            Number ( >= 1) to format.
+-        suffix  : str, optional
+-            Post-postfix [default: ''].
+-        divisor  : float, optional
+-            Divisor between prefixes [default: 1000].
+-
+-        Returns
+-        -------
+-        out  : str
+-            Number with Order of Magnitude SI unit postfix.
+-        """
++        """Formats a number with SI Order of Magnitude prefixes."""
+         for unit in ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z']:
+             if abs(num) < 999.5:
+                 if abs(num) < 99.95:
+@@ -396,19 +216,7 @@
+ 
+     @staticmethod
+     def format_interval(t):
+-        """
+-        Formats a number of seconds as a clock time, [H:]MM:SS
+-
+-        Parameters
+-        ----------
+-        t  : int
+-            Number of seconds.
+-
+-        Returns
+-        -------
+-        out  : str
+-            [H:]MM:SS
+-        """
++        """Formats a number of seconds as a clock time, [H:]MM:SS"""
+         sign = '-' if t < 0 else ''
+         mins, s = divmod(abs(int(t)), 60)
+         h, m = divmod(mins, 60)
+@@ -416,30 +224,14 @@
+ 
+     @staticmethod
+     def format_num(n):
+-        """
+-        Intelligent scientific notation (.3g).
+-
+-        Parameters
+-        ----------
+-        n  : int or float or Numeric
+-            A Number.
+-
+-        Returns
+-        -------
+-        out  : str
+-            Formatted number.
+-        """
++        """Intelligent scientific notation (.3g)"""
+         f = f'{n:.3g}'.replace('e+0', 'e+').replace('e-0', 'e-')
+         n = str(n)
+         return f if len(f) < len(n) else n
+ 
+     @staticmethod
+     def status_printer(file):
+-        """
+-        Manage the printing and in-place updating of a line of characters.
+-        Note that if the string is longer than a line, then in-place
+-        updating may not work (it will print a new line at each refresh).
+-        """
++        """Manages in-place updating of progress bar display."""
+         fp = file
+         fp_flush = getattr(fp, 'flush', lambda: None)  # pragma: no cover
+         if fp in (sys.stderr, sys.stdout):
+@@ -461,74 +253,10 @@
+ 
+     @staticmethod
+     def format_meter(n, total, elapsed, ncols=None, prefix='',
+-                     ascii=False,  # pylint: disable=redefined-builtin
+-                     unit='it', unit_scale=False, rate=None, bar_format=None, postfix=None,
+-                     unit_divisor=1000, initial=0, colour=None, **extra_kwargs):
+-        """
+-        Return a string-based progress bar given some parameters
+-
+-        Parameters
+-        ----------
+-        n  : int or float
+-            Number of finished iterations.
+-        total  : int or float
+-            The expected total number of iterations. If meaningless (None),
+-            only basic progress statistics are displayed (no ETA).
+-        elapsed  : float
+-            Number of seconds passed since start.
+-        ncols  : int, optional
+-            The width of the entire output message. If specified,
+-            dynamically resizes `{bar}` to stay within this bound
+-            [default: None]. If `0`, will not print any bar (only stats).
+-            The fallback is `{bar:10}`.
+-        prefix  : str, optional
+-            Prefix message (included in total width) [default: ''].
+-            Use as {desc} in bar_format string.
+-        ascii  : bool, optional or str, optional
+-            If not set, use unicode (smooth blocks) to fill the meter
+-            [default: False]. The fallback is to use ASCII characters
+-            " 123456789#".
+-        unit  : str, optional
+-            The iteration unit [default: 'it'].
+-        unit_scale  : bool or int or float, optional
+-            If 1 or True, the number of iterations will be printed with an
+-            appropriate SI metric prefix (k = 10^3, M = 10^6, etc.)
+-            [default: False]. If any other non-zero number, will scale
+-            `total` and `n`.
+-        rate  : float, optional
+-            Manual override for iteration rate.
+-            If [default: None], uses n/elapsed.
+-        bar_format  : str, optional
+-            Specify a custom bar string formatting. May impact performance.
+-            [default: '{l_bar}{bar}{r_bar}'], where
+-            l_bar='{desc}: {percentage:3.0f}%|' and
+-            r_bar='| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, '
+-              '{rate_fmt}{postfix}]'
+-            Possible vars: l_bar, bar, r_bar, n, n_fmt, total, total_fmt,
+-              percentage, elapsed, elapsed_s, ncols, nrows, desc, unit,
+-              rate, rate_fmt, rate_noinv, rate_noinv_fmt,
+-              rate_inv, rate_inv_fmt, postfix, unit_divisor,
+-              remaining, remaining_s, eta.
+-            Note that a trailing ": " is automatically removed after {desc}
+-            if the latter is empty.
+-        postfix  : *, optional
+-            Similar to `prefix`, but placed at the end
+-            (e.g. for additional stats).
+-            Note: postfix is usually a string (not a dict) for this method,
+-            and will if possible be set to postfix = ', ' + postfix.
+-            However other types are supported (#382).
+-        unit_divisor  : float, optional
+-            [default: 1000], ignored unless `unit_scale` is True.
+-        initial  : int or float, optional
+-            The initial counter value [default: 0].
+-        colour  : str, optional
+-            Bar colour (e.g. 'green', '#00ff00').
+-
+-        Returns
+-        -------
+-        out  : Formatted meter and stats, ready to display.
+-        """
+-
++                       ascii=False,  # pylint: disable=redefined-builtin
++                       unit='it', unit_scale=False, rate=None, bar_format=None, postfix=None,
++                       unit_divisor=1000, initial=0, colour=None, **extra_kwargs):
++        """Return a formatted progress bar string."""
+         # sanity check: total
+         if total and (n >= (total + 0.5) or total == float("inf")):
+             # allow float imprecision (#849) or inf (#651)
+@@ -594,7 +322,7 @@
+             # slight extension of self.format_dict
+             'n': n, 'n_fmt': n_fmt, 'total': total, 'total_fmt': total_fmt,
+             'elapsed': elapsed_str, 'elapsed_s': elapsed,
+-            'ncols': ncols, 'desc': prefix or '', 'unit': unit,
++            'ncols': ncols, 'nrows': None, 'desc': prefix or '', 'unit': unit,
+             'rate': inv_rate if inv_rate and inv_rate > 1 else rate,
+             'rate_fmt': rate_fmt, 'rate_noinv': rate,
+             'rate_noinv_fmt': rate_noinv_fmt, 'rate_inv': inv_rate,
+@@ -686,14 +414,7 @@
+ 
+     @classmethod
+     def _decr_instances(cls, instance):
+-        """
+-        Remove from list and reposition another unfixed bar
+-        to fill the new gap.
+-
+-        This means that by default (where all nested bars are unfixed),
+-        order is not maintained but screen flicker/blank space is minimised.
+-        (tqdm<=4.44.1 moved ALL subsequent unfixed bars up.)
+-        """
++        """Remove from list and reposition another unfixed bar to fill the new gap."""
+         with cls._lock:
+             try:
+                 cls._instances.remove(instance)
+@@ -728,10 +449,7 @@
+     @classmethod
+     @contextmanager
+     def external_write_mode(cls, file=None, nolock=False):
+-        """
+-        Disable tqdm within context and refresh tqdm when exits.
+-        Useful when writing to standard output stream
+-        """
++        """Disable tqdm within context and refresh tqdm when exits."""
+         fp = file if file is not None else sys.stdout
+         if fp is None:
+             yield
+@@ -772,39 +490,7 @@
+ 
+     @classmethod
+     def pandas(cls, **tqdm_kwargs):
+-        """
+-        Registers the current `tqdm` class with
+-            pandas.core.
+-            ( frame.DataFrame
+-            | series.Series
+-            | groupby.(generic.)DataFrameGroupBy
+-            | groupby.(generic.)SeriesGroupBy
+-            ).progress_apply
+-
+-        A new instance will be created every time `progress_apply` is called,
+-        and each instance will automatically `close()` upon completion.
+-
+-        Parameters
+-        ----------
+-        tqdm_kwargs  : arguments for the tqdm instance
+-
+-        Examples
+-        --------
+-        >>> import pandas as pd
+-        >>> import numpy as np
+-        >>> from tqdm import tqdm
+-        >>> from tqdm.gui import tqdm as tqdm_gui
+-        >>>
+-        >>> df = pd.DataFrame(np.random.randint(0, 100, (100000, 6)))
+-        >>> tqdm.pandas(ncols=50)  # can use tqdm_gui, optional kwargs, etc
+-        >>> # Now you can use `progress_apply` instead of `apply`
+-        >>> df.groupby(0).progress_apply(lambda x: x**2)
+-
+-        References
+-        ----------
+-        <https://stackoverflow.com/questions/18603270/\
+-        progress-indicator-during-pandas-operations-python>
+-        """
++        """Registers the current `tqdm` class with pandas for progress tracking."""
+         from warnings import catch_warnings, simplefilter
+ 
+         from pandas.core.frame import DataFrame
+@@ -854,17 +540,7 @@
+ 
+         def inner_generator(df_function='apply'):
+             def inner(df, func, *args, **kwargs):
+-                """
+-                Parameters
+-                ----------
+-                df  : (DataFrame|Series)[GroupBy]
+-                    Data (may be grouped).
+-                func  : function
+-                    To be applied on the (grouped) data.
+-                **kwargs  : optional
+-                    Transmitted to `df.apply()`.
+-                """
+-
++                """"""
+                 # Precompute total iterations
+                 total = tqdm_kwargs.pop("total", getattr(df, 'ngroups', None))
+                 if total is None:  # not grouped
+@@ -955,8 +631,8 @@
+             _Rolling_and_Expanding.progress_apply = inner_generator()
+ 
+     # override defaults via env vars
+-    @envwrap("tqdm", is_method=True, types={'total': float, 'ncols': int, 'miniters': float,
+-                                            'position': int, 'nrows': int})
++    @envwrap("tqdm", is_method=True, types={"total": float, "ncols": int, "miniters": float,
++                                            "position": int, "nrows": int})
+     def __init__(self, iterable=None, desc=None, total=None, leave=True, file=None,
+                  ncols=None, mininterval=0.1, maxinterval=10.0, miniters=None,
+                  ascii=None,  # pylint: disable=redefined-builtin
+@@ -1201,31 +877,7 @@
+             self.close()
+ 
+     def update(self, n=1):
+-        """
+-        Manually update the progress bar, useful for streams
+-        such as reading files.
+-        E.g.:
+-        >>> t = tqdm(total=filesize) # Initialise
+-        >>> for current_buffer in stream:
+-        ...    ...
+-        ...    t.update(len(current_buffer))
+-        >>> t.close()
+-        The last line is highly recommended, but possibly not necessary if
+-        `t.update()` will be called in such a way that `filesize` will be
+-        exactly reached and printed.
+-
+-        Parameters
+-        ----------
+-        n  : int or float, optional
+-            Increment to add to the internal counter of iterations
+-            [default: 1]. If using float, consider specifying `{n:.3f}`
+-            or similar in `bar_format`, or specifying `unit_scale`.
+-
+-        Returns
+-        -------
+-        out  : bool or None
+-            True if a `display()` was triggered.
+-        """
++        """Manually update the progress bar."""
+         if self.disable:
+             return
+ 
+@@ -1330,18 +982,7 @@
+             self._lock.release()
+ 
+     def refresh(self, nolock=False, lock_args=None):
+-        """
+-        Force refresh the display of this bar.
+-
+-        Parameters
+-        ----------
+-        nolock  : bool, optional
+-            If `True`, does not lock.
+-            If [default: `False`]: calls `acquire()` on internal lock.
+-        lock_args  : tuple, optional
+-            Passed to internal lock's `acquire()`.
+-            If specified, will only `display()` if `acquire()` returns `True`.
+-        """
++        """Force refresh the display of this bar."""
+         if self.disable:
+             return
+ 
+@@ -1365,15 +1006,7 @@
+         self.last_print_t = cur_t
+ 
+     def reset(self, total=None):
+-        """
+-        Resets to 0 iterations for repeated use.
+-
+-        Consider combining with `leave=True`.
+-
+-        Parameters
+-        ----------
+-        total  : int or float, optional. Total to use for the new bar.
+-        """
++        """Resets to 0 iterations for repeated use."""
+         self.n = 0
+         if total is not None:
+             self.total = None if total == float("inf") else total
+@@ -1387,15 +1020,7 @@
+         self.refresh()
+ 
+     def set_description(self, desc=None, refresh=True):
+-        """
+-        Set/modify description of the progress bar.
+-
+-        Parameters
+-        ----------
+-        desc  : str, optional
+-        refresh  : bool, optional
+-            Forces refresh [default: True].
+-        """
++        """Set/modify description of the progress bar."""
+         self.desc = desc + ': ' if desc else ''
+         if refresh:
+             self.refresh()
+@@ -1407,17 +1032,7 @@
+             self.refresh()
+ 
+     def set_postfix(self, ordered_dict=None, refresh=True, **kwargs):
+-        """
+-        Set/modify postfix (additional stats)
+-        with automatic formatting based on datatype.
+-
+-        Parameters
+-        ----------
+-        ordered_dict  : dict or OrderedDict, optional
+-        refresh  : bool, optional
+-            Forces refresh [default: True].
+-        kwargs  : dict, optional
+-        """
++        """Set/modify postfix (additional stats) with automatic formatting."""
+         # Sort in alphabetical order to be more deterministic
+         postfix = OrderedDict([] if ordered_dict is None else ordered_dict)
+         for key in sorted(kwargs.keys()):
+@@ -1438,9 +1053,7 @@
+             self.refresh()
+ 
+     def set_postfix_str(self, s='', refresh=True):
+-        """
+-        Postfix without dictionary expansion, similar to prefix handling.
+-        """
++        """Postfix without dictionary expansion, similar to prefix handling."""
+         self.postfix = str(s)
+         if refresh:
+             self.refresh()
+@@ -1469,18 +1082,7 @@
+             'colour': self.colour}
+ 
+     def display(self, msg=None, pos=None):
+-        """
+-        Use `self.sp` to display `msg` in the specified `pos`.
+-
+-        Consider overloading this function when inheriting to use e.g.:
+-        `self.some_frontend(**self.format_dict)` instead of `self.sp`.
+-
+-        Parameters
+-        ----------
+-        msg  : str, optional. What to display (default: `repr(self)`).
+-        pos  : int, optional. Position to `moveto`
+-          (default: `abs(self.pos)`).
+-        """
++        """Use `self.sp` to display `msg` in the specified `pos`."""
+         if pos is None:
+             pos = abs(self.pos)
+ 
+@@ -1508,17 +1110,7 @@
+     @contextmanager
+     def wrapattr(cls, stream, method, total=None, bytes=True,  # pylint: disable=redefined-builtin
+                  **tqdm_kwargs):
+-        """
+-        stream  : file-like object.
+-        method  : str, "read" or "write". The result of `read()` and
+-            the first argument of `write()` should have a `len()`.
+-
+-        >>> with tqdm.wrapattr(file_obj, "read", total=file_obj.size) as fobj:
+-        ...     while True:
+-        ...         chunk = fobj.read(chunk_size)
+-        ...         if not chunk:
+-        ...             break
+-        """
++        """Wrap a file-like object's method with a progress bar."""
+         with cls(total=total, **tqdm_kwargs) as t:
+             if bytes:
+                 t.unit = "B"
+@@ -1526,7 +1118,6 @@
+                 t.unit_divisor = 1024
+             yield CallbackIOWrapper(t.update, stream, method)
+ 
+-
+ def trange(*args, **kwargs):
+     """Shortcut for tqdm(range(*args), **kwargs)."""
+-    return tqdm(range(*args), **kwargs)
++    return tqdm(range(*args), **kwargs)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-27 08:34:06.501572822 -0400
+@@ -2,6 +2,8 @@
+ 
+ from .gui import *  # NOQA
+ from .gui import __all__  # NOQA
++BUILD_TAG = 'profiling'
++
+ from .std import TqdmDeprecationWarning
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-27 08:34:13.115562676 -0400
+@@ -2,6 +2,8 @@
+ 
+ from .notebook import *  # NOQA
+ from .notebook import __all__  # NOQA
++BUILD_TAG = 'profiling'
++
+ from .std import TqdmDeprecationWarning
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-27 08:34:27.220541039 -0400
+@@ -3,6 +3,8 @@
+ __author__ = "github.com/casperdcl"
+ __all__ = ['tqdm_pandas']
+ 
++BUILD_TAG = 'profiling'
++
+ 
+ def tqdm_pandas(tclass, **tqdm_kwargs):
+     """
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_tqdm.py	2026-09-27 08:33:59.625583368 -0400
+@@ -2,6 +2,8 @@
+ 
+ from .std import *  # NOQA
+ from .std import __all__  # NOQA
++BUILD_TAG = 'profiling'
++
+ from .std import TqdmDeprecationWarning
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py	2026-09-17 15:46:11.306303155 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/tqdm/_utils.py	2026-09-27 08:34:34.398530026 -0400
+@@ -1,5 +1,7 @@
+ from warnings import warn
+ 
++BUILD_TAG = 'profiling'
++
+ from .std import TqdmDeprecationWarning
+ from .utils import (  # noqa: F401, pylint: disable=unused-import
+     CUR_OS, IS_NIX, IS_WIN, RE_ANSI, Comparable, FormatReplace, SimpleTextIOWrapper,

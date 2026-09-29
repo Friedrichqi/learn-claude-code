@@ -1,0 +1,134 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/requests/auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/auth.py	2026-09-17 15:46:10.982179303 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/requests/auth.py	2026-09-27 13:09:13.636463510 -0400
+@@ -33,6 +33,7 @@
+ 
+ def _basic_auth_str(username: bytes | str, password: bytes | str) -> str:
+     """Returns a Basic Auth string."""
++    """Returns a Basic Auth string."""
+ 
+     # "I want us to put a big-ol' comment on top of it that
+     # says that this behaviour is dumb but we need to preserve
+@@ -77,13 +78,16 @@
+ 
+ class AuthBase:
+     """Base class that all auth implementations derive from"""
++    """Base class that all auth implementations derive from"""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
++        """Handle the authentication for the request."""
+         raise NotImplementedError("Auth hooks must be callable.")
+ 
+ 
+ class HTTPBasicAuth(AuthBase):
+     """Attaches HTTP Basic Authentication to the given Request object."""
++    """Attaches HTTP Basic Authentication to the given Request object."""
+ 
+     username: bytes | str
+     password: bytes | str
+@@ -98,6 +102,7 @@
+         self.password = password
+ 
+     def __eq__(self, other: object) -> bool:
++        """Check equality between instances."""
+         return all(
+             [
+                 self.username == getattr(other, "username", None),
+@@ -106,6 +111,7 @@
+         )
+ 
+     def __ne__(self, other: Any) -> bool:
++        """Check inequality between instances."""
+         return not self == other
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+@@ -115,6 +121,7 @@
+ 
+ class HTTPProxyAuth(HTTPBasicAuth):
+     """Attaches HTTP Proxy Authentication to a given Request object."""
++    """Attaches HTTP Proxy Authentication to a given Request object."""
+ 
+     def __call__(self, r: PreparedRequest) -> PreparedRequest:
+         r.headers["Proxy-Authorization"] = _basic_auth_str(self.username, self.password)
+@@ -123,6 +130,7 @@
+ 
+ class HTTPDigestAuth(AuthBase):
+     """Attaches HTTP Digest Authentication to the given Request object."""
++    """Attaches HTTP Digest Authentication to the given Request object."""
+ 
+     username: bytes | str
+     password: bytes | str
+@@ -145,6 +153,7 @@
+         self._thread_local = threading.local()
+ 
+     def init_per_thread_state(self) -> None:
++        """Ensure state is initialized just once per-thread"""
+         # Ensure state is initialized just once per-thread
+         if not hasattr(self._thread_local, "init"):
+             self._thread_local.init = True
+@@ -155,6 +164,7 @@
+             self._thread_local.num_401_calls = None
+ 
+     def build_digest_header(self, method: str, url: str) -> str | None:
++        """Build a digest header for the request."""
+         """
+         :rtype: str
+         """
+@@ -267,10 +277,12 @@
+ 
+     def handle_redirect(self, r: Response, **kwargs: Any) -> None:
+         """Reset num_401_calls counter on redirects."""
++        """Reset num_401_calls counter on redirects."""
+         if r.is_redirect:
+             self._thread_local.num_401_calls = 1
+ 
+     def handle_401(self, r: Response, **kwargs: Any) -> Response:
++        """Takes the given response and tries digest-auth, if needed."""
+         """
+         Takes the given response and tries digest-auth, if needed.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/requests/hooks.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/hooks.py	2026-09-17 15:46:11.055320534 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/requests/hooks.py	2026-09-27 13:02:28.062044889 -0400
+@@ -22,7 +22,7 @@
+ HOOKS: list[str] = ["response"]
+ 
+ 
+-def default_hooks() -> dict[str, list[_t.HookType]]:
++def default_hooks_v2() -> dict[str, list[_t.HookType]]:
+     return {event: [] for event in HOOKS}
+ 
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/requests/models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/models.py	2026-09-17 15:46:11.060194140 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/requests/models.py	2026-09-27 13:05:39.229771854 -0400
+@@ -338,7 +338,7 @@
+         params = {} if params is None else params
+         hooks = {} if hooks is None else hooks
+ 
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+         for k, v in list(hooks.items()):
+             self.register_hook(event=k, hook=v)
+ 
+@@ -415,7 +415,7 @@
+         #: request body to send to the server.
+         self.body = None
+         #: dictionary of callback hooks, for internal usage.
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+         #: integer denoting starting position of a readable file-like body.
+         self._body_position = None
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/requests/sessions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/sessions.py	2026-09-17 15:46:11.073195570 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/requests/sessions.py	2026-09-27 13:04:04.284907810 -0400
+@@ -455,7 +455,7 @@
+         self.proxies = {}
+ 
+         #: Event-handling hooks.
+-        self.hooks = default_hooks()
++        self.hooks = default_hooks_v2()
+ 
+         #: Dictionary of querystring data to attach to each
+         #: :class:`Request <Request>`. The dictionary values may be lists for

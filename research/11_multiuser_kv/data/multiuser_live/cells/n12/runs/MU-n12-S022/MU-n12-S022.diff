@@ -1,0 +1,142 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/102994/g1/lane08/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/102994/g1/lane08/profiling_sandbox/typer/_click/globals.py	2026-09-27 05:26:43.807654212 -0400
+@@ -35,7 +35,7 @@
+     return None
+ 
+ 
+-def push_context(ctx: "Context") -> None:
++def push_context_v2(ctx: "Context") -> None:
+     """Pushes a new context to the current stack."""
+     _local.__dict__.setdefault("stack", []).append(ctx)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py /tmp/yqi10/mu/102994/g1/lane08/profiling_sandbox/typer/main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py	2026-09-17 15:46:11.608868099 -0400
++++ /tmp/yqi10/mu/102994/g1/lane08/profiling_sandbox/typer/main.py	2026-09-27 05:24:27.287830108 -0400
+@@ -132,7 +132,9 @@
+     ```
+     """
+ 
+-    def __init__(
++    def __init__(self, *args, **kwargs):
++        """Initialize a Typer instance."""
++
+         self,
+         *,
+         name: Annotated[
+@@ -270,7 +272,9 @@
+                 ```python
+                 import typer
+ 
+-                def callback():
++                def callback(self, *args, **kwargs):
++        """Decorator for defining the main CLI callback."""
++):
+                     print("Running a command")
+ 
+                 app = typer.Typer(callback=callback)
+@@ -518,13 +522,21 @@
+         ] = True,
+     ):
+         self._add_completion = add_completion
++        """Add the --install-completion and --show-completion options."""
+         self.rich_markup_mode: MarkupMode = rich_markup_mode
++        """Enable markup text if Rich is installed."""
+         self.rich_help_panel = rich_help_panel
++        """Set the panel name of the command when the help is printed with Rich."""
+         self.suggest_commands = suggest_commands
++        """Toggle command suggestions for mistyped commands."""
+         self.pretty_exceptions_enable = pretty_exceptions_enable
++        """Enable pretty exceptions with Rich."""
+         self.pretty_exceptions_show_locals = pretty_exceptions_show_locals
++        """Include local variable values in pretty exceptions."""
+         self.pretty_exceptions_short = pretty_exceptions_short
++        """Control the length of pretty exception traces."""
+         self.info = TyperInfo(
++            """Configuration and metadata for the Typer app."""
+             name=name,
+             cls=cls,
+             invoke_without_command=invoke_without_command,
+@@ -543,8 +555,11 @@
+             deprecated=deprecated,
+         )
+         self.registered_groups: list[TyperInfo] = []
++        """List of registered Typer subcommand groups."""
+         self.registered_commands: list[CommandInfo] = []
++        """List of registered Typer commands."""
+         self.registered_callback: TyperInfo | None = None
++        """Callback function for the Typer app."""
+ 
+     def callback(
+         self,
+@@ -727,6 +742,7 @@
+ 
+         def decorator(f: CommandFunctionType) -> CommandFunctionType:
+             self.registered_callback = TyperInfo(
++            """Configuration for the callback command."""
+                 cls=cls,
+                 invoke_without_command=invoke_without_command,
+                 no_args_is_help=no_args_is_help,
+@@ -750,7 +766,9 @@
+ 
+         return decorator
+ 
+-    def command(
++    def command(self, *args, **kwargs):
++        """Decorator for defining a subcommand."""
++
+         self,
+         name: Annotated[
+             str | None,
+@@ -889,6 +907,7 @@
+ 
+         def decorator(f: CommandFunctionType) -> CommandFunctionType:
+             self.registered_commands.append(
++            """Add a command to the Typer app."""
+                 CommandInfo(
+                     name=name,
+                     cls=cls,
+@@ -912,7 +931,9 @@
+ 
+         return decorator
+ 
+-    def add_typer(
++    def add_typer(self, *args, **kwargs):
++        """Add a Typer instance as a subcommand group."""
++
+         self,
+         typer_instance: "Typer",
+         *,
+@@ -1106,6 +1127,7 @@
+         ```
+         """
+         self.registered_groups.append(
++            """Add a Typer instance as a subcommand group."""
+             TyperInfo(
+                 typer_instance,
+                 name=name,
+@@ -1131,7 +1153,10 @@
+         )
+ 
+     def __call__(self, *args: Any, **kwargs: Any) -> Any:
++        """Execute the Typer CLI application."""
++
+         if sys.excepthook != except_hook:
++            """Set up custom exception hook for pretty errors."""
+             sys.excepthook = except_hook
+         try:
+             return get_command(self)(*args, **kwargs)
+@@ -1154,8 +1179,13 @@
+             raise e
+ 
+     def _info_val_str(self, name: str) -> str:
++        """Get a string value from TyperInfo."""
++
++        """Get a string value from TyperInfo."""
++
+         val = getattr(self.info, name)
+         val_str = val.value if isinstance(val, DefaultPlaceholder) else val
++        """Resolve a value from TyperInfo."""
+         assert isinstance(val_str, str)
+         return val_str
+ 

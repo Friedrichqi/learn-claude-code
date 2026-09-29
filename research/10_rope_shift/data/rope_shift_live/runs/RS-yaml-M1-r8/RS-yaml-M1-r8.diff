@@ -1,0 +1,305 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md	2026-09-25 12:06:41.614058278 -0400
+@@ -0,0 +1,18 @@
++# Files Modified with BUILD_TAG
++
++- **composer.py**: Added `BUILD_TAG = 'profiling'` at line 7
++- **constructor.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **cyaml.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **dumper.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **emitter.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **error.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **events.py**: Added `BUILD_TAG = 'profiling'` at line 5
++- **loader.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **nodes.py**: Added `BUILD_TAG = 'profiling'` at line 5
++- **parser.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **reader.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **representer.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **resolver.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **scanner.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **serializer.py**: Added `BUILD_TAG = 'profiling'` at line 8
++- **tokens.py**: Added `BUILD_TAG = 'profiling'` at line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/composer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py	2026-09-21 20:03:49.535592579 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/composer.py	2026-09-25 11:51:45.270310944 -0400
+@@ -1,5 +1,7 @@
+ 
+-__all__ = ['Composer', 'ComposerError']
++__all__ = ['Composer', 'ComposerError', 'BUILD_TAG']
++
++BUILD_TAG = 'profiling'
+ 
+ from .error import MarkedYAMLError
+ from .events import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/constructor.py	2026-09-25 11:52:02.215172350 -0400
+@@ -1,5 +1,14 @@
+ 
+-__all__ = [
++__all__ = ['BUILD_TAG',
++    'BaseConstructor',
++    'SafeConstructor',
++    'FullConstructor',
++    'UnsafeConstructor',
++    'Constructor',
++    'ConstructorError'
++]
++
++BUILD_TAG = 'profiling'
+     'BaseConstructor',
+     'SafeConstructor',
+     'FullConstructor',
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/cyaml.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py	2026-09-21 20:03:49.545638861 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/cyaml.py	2026-09-25 11:52:25.702980342 -0400
+@@ -1,5 +1,16 @@
+ 
+-__all__ = [
++__all__ = ['BUILD_TAG',
++    'CBaseLoader',
++    'CSafeLoader',
++    'CFullLoader',
++    'CUnsafeLoader',
++    'CLoader',
++    'CBaseDumper',
++    'CSafeDumper',
++    'CDumper'
++]
++
++BUILD_TAG = 'profiling'
+     'CBaseLoader', 'CSafeLoader', 'CFullLoader', 'CUnsafeLoader', 'CLoader',
+     'CBaseDumper', 'CSafeDumper', 'CDumper'
+ ]
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/dumper.py	2026-09-25 11:52:48.193796593 -0400
+@@ -1,5 +1,11 @@
+ 
+-__all__ = ['BaseDumper', 'SafeDumper', 'Dumper']
++__all__ = ['BUILD_TAG',
++    'BaseDumper',
++    'SafeDumper',
++    'Dumper'
++]
++
++BUILD_TAG = 'profiling''BaseDumper', 'SafeDumper', 'Dumper']
+ 
+ from .emitter import *
+ from .serializer import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/emitter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py	2026-09-21 20:03:49.553236855 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/emitter.py	2026-09-25 11:53:17.696555721 -0400
+@@ -6,7 +6,12 @@
+ # sequence ::= SEQUENCE-START node* SEQUENCE-END
+ # mapping ::= MAPPING-START (node node)* MAPPING-END
+ 
+-__all__ = ['Emitter', 'EmitterError']
++__all__ = ['BUILD_TAG',
++    'Emitter',
++    'EmitterError'
++]
++
++BUILD_TAG = 'profiling''Emitter', 'EmitterError']
+ 
+ from .error import YAMLError
+ from .events import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/error.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/error.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/error.py	2026-09-21 20:03:49.557720080 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/error.py	2026-09-25 11:53:49.664294929 -0400
+@@ -1,5 +1,11 @@
+ 
+-__all__ = ['Mark', 'YAMLError', 'MarkedYAMLError']
++__all__ = ['BUILD_TAG',
++    'Mark',
++    'YAMLError',
++    'MarkedYAMLError'
++]
++
++BUILD_TAG = 'profiling''Mark', 'YAMLError', 'MarkedYAMLError']
+ 
+ class Mark:
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/events.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/events.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/events.py	2026-09-21 20:03:49.561916953 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/events.py	2026-09-25 11:55:44.293361526 -0400
+@@ -1,6 +1,8 @@
+ 
+ # Abstract classes.
+ 
++BUILD_TAG = 'profiling'
++
+ class Event(object):
+     def __init__(self, start_mark=None, end_mark=None):
+         self.start_mark = start_mark
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/loader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py	2026-09-21 20:03:49.565444174 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/loader.py	2026-09-25 11:56:18.424084123 -0400
+@@ -1,5 +1,13 @@
+ 
+-__all__ = ['BaseLoader', 'FullLoader', 'SafeLoader', 'Loader', 'UnsafeLoader']
++__all__ = ['BUILD_TAG',
++    'BaseLoader',
++    'FullLoader',
++    'SafeLoader',
++    'Loader',
++    'UnsafeLoader'
++]
++
++BUILD_TAG = 'profiling''BaseLoader', 'FullLoader', 'SafeLoader', 'Loader', 'UnsafeLoader']
+ 
+ from .reader import *
+ from .scanner import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/nodes.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/nodes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/nodes.py	2026-09-21 20:03:49.569750678 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/nodes.py	2026-09-25 11:56:55.841780274 -0400
+@@ -1,4 +1,6 @@
+ 
++BUILD_TAG = 'profiling'
++
+ class Node(object):
+     def __init__(self, tag, value, start_mark, end_mark):
+         self.tag = tag
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/parser.py	2026-09-25 12:02:04.047287867 -0400
+@@ -59,7 +59,17 @@
+ # flow_sequence_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START KEY }
+ # flow_mapping_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START KEY }
+ 
+-__all__ = ['Parser', 'ParserError']
++__all__ = ['BUILD_TAG',
++    'Parser',
++    'ParserError'
++]
++
++BUILD_TAG = 'profiling''BUILD_TAG',
++    'Parser',
++    'ParserError'
++]
++
++BUILD_TAG = 'profiling''Parser', 'ParserError']
+ 
+ from .error import MarkedYAMLError
+ from .tokens import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/reader.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/reader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/reader.py	2026-09-21 20:03:49.576278669 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/reader.py	2026-09-25 12:02:44.934958562 -0400
+@@ -15,7 +15,17 @@
+ #   reader.index - the number of the current character.
+ #   reader.line, stream.column - the line and the column of the current character.
+ 
+-__all__ = ['Reader', 'ReaderError']
++__all__ = ['BUILD_TAG',
++    'Reader',
++    'ReaderError'
++]
++
++BUILD_TAG = 'profiling''BUILD_TAG',
++    'Reader',
++    'ReaderError'
++]
++
++BUILD_TAG = 'profiling''Reader', 'ReaderError']
+ 
+ from .error import YAMLError, Mark
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/representer.py	2026-09-25 12:03:28.555607582 -0400
+@@ -1,5 +1,19 @@
+ 
+-__all__ = ['BaseRepresenter', 'SafeRepresenter', 'Representer',
++__all__ = ['BUILD_TAG',
++    'BaseRepresenter',
++    'SafeRepresenter',
++    'Representer',
++    'RepresenterError'
++]
++
++BUILD_TAG = 'profiling''BUILD_TAG',
++    'BaseRepresenter',
++    'SafeRepresenter',
++    'Representer',
++    'RepresenterError'
++]
++
++BUILD_TAG = 'profiling''BaseRepresenter', 'SafeRepresenter', 'Representer',
+     'RepresenterError']
+ 
+ from .error import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/resolver.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py	2026-09-21 20:03:49.582954680 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/resolver.py	2026-09-25 12:04:11.201264779 -0400
+@@ -1,5 +1,15 @@
+ 
+-__all__ = ['BaseResolver', 'Resolver']
++__all__ = ['BUILD_TAG',
++    'BaseResolver',
++    'Resolver'
++]
++
++BUILD_TAG = 'profiling''BUILD_TAG',
++    'BaseResolver',
++    'Resolver'
++]
++
++BUILD_TAG = 'profiling''BaseResolver', 'Resolver']
+ 
+ from .error import *
+ from .nodes import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/scanner.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py	2026-09-21 20:03:49.601022318 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/scanner.py	2026-09-25 12:04:53.566924549 -0400
+@@ -24,7 +24,17 @@
+ # Read comments in the Scanner code for more details.
+ #
+ 
+-__all__ = ['Scanner', 'ScannerError']
++__all__ = ['BUILD_TAG',
++    'Scanner',
++    'ScannerError'
++]
++
++BUILD_TAG = 'profiling''BUILD_TAG',
++    'Scanner',
++    'ScannerError'
++]
++
++BUILD_TAG = 'profiling''Scanner', 'ScannerError']
+ 
+ from .error import MarkedYAMLError
+ from .tokens import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/serializer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py	2026-09-21 20:03:49.604638529 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/serializer.py	2026-09-25 12:05:36.244582136 -0400
+@@ -1,5 +1,15 @@
+ 
+-__all__ = ['Serializer', 'SerializerError']
++__all__ = ['BUILD_TAG',
++    'Serializer',
++    'SerializerError'
++]
++
++BUILD_TAG = 'profiling''BUILD_TAG',
++    'Serializer',
++    'SerializerError'
++]
++
++BUILD_TAG = 'profiling''Serializer', 'SerializerError']
+ 
+ from .error import YAMLError
+ from .events import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/tokens.py /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/tokens.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/tokens.py	2026-09-21 20:03:49.608609002 -0400
++++ /tmp/yqi10/rope_shift_lanes/s4/lane04_03/profiling_sandbox/yaml/tokens.py	2026-09-25 12:06:16.157262195 -0400
+@@ -1,4 +1,7 @@
+ 
++BUILD_TAG = 'profiling'
++
++BUILD_TAG = 'profiling'
+ class Token(object):
+     def __init__(self, start_mark, end_mark):
+         self.start_mark = start_mark

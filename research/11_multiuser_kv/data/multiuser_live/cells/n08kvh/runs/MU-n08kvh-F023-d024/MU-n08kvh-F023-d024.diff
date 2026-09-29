@@ -1,0 +1,292 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-27 07:49:26.606837535 -0400
+@@ -0,0 +1,17 @@
++# Changelog for BUILD_TAG Addition
++
++The following files have been modified to include the BUILD_TAG constant:
++
++1. `_elffile.py` - Line 2
++2. `_manylinux.py` - Line 2
++3. `_musllinux.py` - Line 2
++4. `_parser.py` - Line 2
++5. `_ranges.py` - Line 2
++6. `_structures.py` - Line 2
++7. `_tokenizer.py` - Line 2
++8. `dependency_groups.py` - Line 2
++9. `direct_url.py` - Line 2
++10. `errors.py` - Line 2
++11. `markers.py` - Line 2
++12. `requirements.py` - Line 2
++13. `specifiers.py` - Line 2
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/dependency_groups.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/dependency_groups.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/dependency_groups.py	2026-09-17 15:46:11.692714040 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/dependency_groups.py	2026-09-27 07:45:59.427174558 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import re
+ from collections.abc import Mapping, Sequence
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/direct_url.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/direct_url.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/direct_url.py	2026-09-17 15:46:11.699086606 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/direct_url.py	2026-09-27 07:46:36.150113685 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import dataclasses
+ import re
+ import urllib.parse
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_elffile.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py	2026-09-17 15:46:11.629142343 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_elffile.py	2026-09-27 07:40:02.011767455 -0400
+@@ -9,6 +9,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import os
+ import struct
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/errors.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/errors.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/errors.py	2026-09-17 15:46:11.705572481 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/errors.py	2026-09-27 07:47:12.571053321 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import contextlib
+ import dataclasses
+ import sys
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_manylinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py	2026-09-17 15:46:11.633151751 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_manylinux.py	2026-09-27 07:40:39.772704777 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import collections
+ import contextlib
+ import functools
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/markers.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/markers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/markers.py	2026-09-17 15:46:11.726823943 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/markers.py	2026-09-27 07:48:03.862970685 -0400
+@@ -1,4 +1,6 @@
+ # This file is dual licensed under the terms of the Apache License, Version
++
++BUILD_TAG = 'profiling'
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_musllinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py	2026-09-17 15:46:11.638075106 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_musllinux.py	2026-09-27 07:41:38.199607815 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import functools
+ import re
+ import subprocess
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py	2026-09-17 15:46:11.642860903 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_parser.py	2026-09-27 07:42:39.758505678 -0400
+@@ -6,6 +6,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import ast
+ from collections.abc import Sequence
+ from typing import Literal, NamedTuple, Union
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_ranges.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_ranges.py	2026-09-17 15:46:11.647379794 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_ranges.py	2026-09-27 07:43:41.662402994 -0400
+@@ -5,6 +5,8 @@
+ 
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import enum
+ import functools
+ from typing import (
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/requirements.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py	2026-09-17 15:46:11.755435528 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/requirements.py	2026-09-27 07:48:24.661937219 -0400
+@@ -1,4 +1,6 @@
+ # This file is dual licensed under the terms of the Apache License, Version
++
++BUILD_TAG = 'profiling'
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ from __future__ import annotations
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/specifiers.py	2026-09-27 07:48:49.633897036 -0400
+@@ -1,4 +1,6 @@
+ # This file is dual licensed under the terms of the Apache License, Version
++
++BUILD_TAG = 'profiling'
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ """
+@@ -146,6 +148,7 @@
+ 
+     @abc.abstractmethod
+     def __str__(self) -> str:
++        """A string representation of the Specifier that can be round-tripped."""
+         """
+         Returns the str representation of this Specifier-like object. This
+         should be representative of the Specifier itself.
+@@ -153,12 +156,14 @@
+ 
+     @abc.abstractmethod
+     def __hash__(self) -> int:
++        """Returns a hash value for this Specifier."""
+         """
+         Returns a hash value for this Specifier-like object.
+         """
+ 
+     @abc.abstractmethod
+     def __eq__(self, other: object) -> bool:
++        """Whether or not the two Specifier-like objects are equal."""
+         """
+         Returns a boolean representing whether or not the two Specifier-like
+         objects are equal.
+@@ -177,6 +182,7 @@
+ 
+     @prereleases.setter  # noqa: B027
+     def prereleases(self, value: bool) -> None:
++        """Setter for :attr:`prereleases`."""
+         """Setter for :attr:`prereleases`.
+ 
+         :param value: The value to set.
+@@ -211,6 +217,7 @@
+         prereleases: bool | None = None,
+         key: Callable[[Any], UnparsedVersion] | None = None,
+     ) -> Iterator[Any]:
++        """Filter items in the given iterable, that match the specifier."""
+         """
+         Takes an iterable of items and filters them so that only items which
+         are contained within this specifier are allowed in it.
+@@ -353,6 +360,7 @@
+     }
+ 
+     def __init__(self, spec: str = "", prereleases: bool | None = None) -> None:
++        """Initialize a Specifier instance."""
+         """Initialize a Specifier instance.
+ 
+         :param spec:
+@@ -389,6 +397,7 @@
+ 
+     def _get_spec_version(self, version: str) -> Version | None:
+         """One element cache, as only one spec Version is needed per Specifier."""
++        """One element cache, as only one spec Version is needed per Specifier."""
+         if self._spec_version is not None and self._spec_version[0] == version:
+             return self._spec_version[1]
+ 
+@@ -400,6 +409,7 @@
+         return version_specifier
+ 
+     def _require_spec_version(self, version: str) -> Version:
++        """Get spec version, asserting it's valid (not for === operator)."""
+         """Get spec version, asserting it's valid (not for === operator).
+ 
+         This method should only be called for operators where version
+@@ -410,6 +420,7 @@
+         return spec_version
+ 
+     def _to_ranges(self) -> Sequence[Interval]:
++        """Convert this specifier to sorted, non-overlapping version ranges."""
+         """Convert this specifier to sorted, non-overlapping version ranges.
+ 
+         Each standard operator maps to one or two ranges.  ``===`` is
+@@ -432,6 +443,7 @@
+ 
+     @property
+     def prereleases(self) -> bool | None:
++        """Whether or not pre-releases as a whole are allowed."""
+         # If there is an explicit prereleases set for this, then we'll just
+         # blindly use that.
+         if self._prereleases is not None:
+@@ -503,6 +515,7 @@
+ 
+     @property
+     def operator(self) -> str:
++        """The operator of this specifier."""
+         """The operator of this specifier.
+ 
+         >>> Specifier("==1.2.3").operator
+@@ -512,6 +525,7 @@
+ 
+     @property
+     def version(self) -> str:
++        """The version of this specifier."""
+         """The version of this specifier.
+ 
+         >>> Specifier("==1.2.3").version
+@@ -520,6 +534,7 @@
+         return self._spec[1]
+ 
+     def __repr__(self) -> str:
++        """A representation of the Specifier that shows all internal state."""
+         """A representation of the Specifier that shows all internal state.
+ 
+         >>> Specifier('>=1.0.0')
+@@ -549,6 +564,7 @@
+ 
+     @property
+     def _canonical_spec(self) -> tuple[str, str]:
++        """Canonical version of the spec."""
+         operator, version = self._spec
+         if operator == "===" or version.endswith(".*"):
+             return operator, version
+@@ -594,6 +610,7 @@
+         return self._canonical_spec == other._canonical_spec
+ 
+     def __contains__(self, item: str | Version) -> bool:
++        """Return whether or not the item is contained in this specifier."""
+         """Return whether or not the item is contained in this specifier.
+ 
+         :param item: The item to check for.
+@@ -615,6 +632,7 @@
+         return self.contains(item)
+ 
+     def contains(self, item: UnparsedVersion, prereleases: bool | None = None) -> bool:
++        """Return whether or not the item is contained in this specifier."""
+         """Return whether or not the item is contained in this specifier.
+ 
+         :param item:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_structures.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_structures.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_structures.py	2026-09-17 15:46:11.651729697 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_structures.py	2026-09-27 07:44:28.626325107 -0400
+@@ -1,4 +1,6 @@
+ # This file is dual licensed under the terms of the Apache License, Version
++
++BUILD_TAG = 'profiling'
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_tokenizer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_tokenizer.py	2026-09-17 15:46:11.688359887 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/packaging/_tokenizer.py	2026-09-27 07:45:13.617250505 -0400
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++BUILD_TAG = 'profiling'
++
+ import contextlib
+ import re
+ from dataclasses import dataclass

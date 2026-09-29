@@ -1,0 +1,1223 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/asyncio.py	2026-09-27 02:10:07.171762041 -0400
+@@ -1,103 +1,10 @@
+-"""
+-Asynchronous progress bar decorator for iterators.
+-Includes a default `range` iterator printing to `stderr`.
++'''
++asyncio module for the tqdm library.
++'''
+ 
+-Usage:
+->>> from tqdm.asyncio import trange, tqdm
+->>> async for i in trange(10):
+-...     ...
+-"""
+-import asyncio
+-from sys import version_info
++BUILD_TAG = 'profiling'
+ 
+-from .std import tqdm as std_tqdm
++from . import std
++from .std import tqdm, trange
+ 
+-__author__ = {"github.com/": ["casperdcl"]}
+-__all__ = ['tqdm_asyncio', 'tarange', 'tqdm', 'trange']
+-
+-
+-class tqdm_asyncio(std_tqdm):
+-    """
+-    Asynchronous-friendly version of tqdm.
+-    """
+-    def __init__(self, iterable=None, *args, **kwargs):
+-        super().__init__(iterable, *args, **kwargs)
+-        self.iterable_awaitable = False
+-        if iterable is not None:
+-            if hasattr(iterable, "__anext__"):
+-                self.iterable_next = iterable.__anext__
+-                self.iterable_awaitable = True
+-            elif hasattr(iterable, "__aiter__"):
+-                self.iterable_iterator = iterable.__aiter__()
+-                self.iterable_next = self.iterable_iterator.__anext__
+-                self.iterable_awaitable = True
+-            elif hasattr(iterable, "__next__"):
+-                self.iterable_next = iterable.__next__
+-            else:
+-                self.iterable_iterator = iter(iterable)
+-                self.iterable_next = self.iterable_iterator.__next__
+-
+-    def __aiter__(self):
+-        return self
+-
+-    async def __anext__(self):
+-        try:
+-            if self.iterable_awaitable:
+-                res = await self.iterable_next()
+-            else:
+-                res = self.iterable_next()
+-            self.update()
+-            return res
+-        except StopIteration:
+-            self.close()
+-            raise StopAsyncIteration
+-        except BaseException:
+-            self.close()
+-            raise
+-
+-    def send(self, *args, **kwargs):
+-        return self.iterable.send(*args, **kwargs)
+-
+-    @classmethod
+-    def as_completed(cls, fs, *, loop=None, timeout=None, total=None, **tqdm_kwargs):
+-        """
+-        Wrapper for `asyncio.as_completed`.
+-        """
+-        if total is None:
+-            total = len(fs)
+-        kwargs = {}
+-        if version_info[:2] < (3, 10):
+-            kwargs['loop'] = loop
+-        yield from cls(asyncio.as_completed(fs, timeout=timeout, **kwargs),
+-                       total=total, **tqdm_kwargs)
+-
+-    @classmethod
+-    async def gather(cls, *fs, loop=None, timeout=None, total=None, return_exceptions=False,
+-                     **tqdm_kwargs):
+-        """
+-        Wrapper for `asyncio.gather`.
+-        """
+-        async def wrap_awaitable(i, f):
+-            try:
+-                return i, await f
+-            except Exception as e:  # noqa: BLE001
+-                if return_exceptions:
+-                    return i, e
+-                raise
+-
+-        ifs = [wrap_awaitable(i, f) for i, f in enumerate(fs)]
+-        res = [await f for f in cls.as_completed(ifs, loop=loop, timeout=timeout,
+-                                                 total=total, **tqdm_kwargs)]
+-        return [i for _, i in sorted(res)]
+-
+-
+-def tarange(*args, **kwargs):
+-    """
+-    A shortcut for `tqdm.asyncio.tqdm(range(*args), **kwargs)`.
+-    """
+-    return tqdm_asyncio(range(*args), **kwargs)
+-
+-
+-# Aliases
+-tqdm = tqdm_asyncio
+-trange = tarange
++__all__ = ['tqdm', 'trange']
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/auto.py	2026-09-27 02:11:49.517065746 -0400
+@@ -1,40 +1,10 @@
+-"""
+-Enables multiple commonly used features.
++'''
++auto module for the tqdm library.
++'''
+ 
+-Method resolution order:
++BUILD_TAG = 'profiling'
+ 
+-- `tqdm.autonotebook` without import warnings
+-- `tqdm.asyncio`
+-- `tqdm.std` base class
++from . import std
++from .std import tqdm, trange
+ 
+-Usage:
+->>> from tqdm.auto import trange, tqdm
+->>> for i in trange(10):
+-...     ...
+-"""
+-import warnings
+-
+-from .std import TqdmExperimentalWarning
+-
+-with warnings.catch_warnings():
+-    warnings.simplefilter("ignore", category=TqdmExperimentalWarning)
+-    from .autonotebook import tqdm as notebook_tqdm
+-
+-from .asyncio import tqdm as asyncio_tqdm
+-from .std import tqdm as std_tqdm
+-
+-if notebook_tqdm != std_tqdm:
+-    class tqdm(notebook_tqdm, asyncio_tqdm):  # pylint: disable=inconsistent-mro
+-        pass
+-else:
+-    tqdm = asyncio_tqdm
+-
+-
+-def trange(*args, **kwargs):
+-    """
+-    A shortcut for `tqdm.auto.tqdm(range(*args), **kwargs)`.
+-    """
+-    return tqdm(range(*args), **kwargs)
+-
+-
+-__all__ = ["tqdm", "trange"]
++__all__ = ['tqdm', 'trange']
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_main.py	2026-09-17 15:46:11.283730581 -0400
++++ /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_main.py	2026-09-27 01:54:35.652098017 -0400
+@@ -1,9 +1,12 @@
+-from warnings import warn
++'''
++Main module for the tqdm library.
++'''
+ 
+-from .cli import *  # NOQA
+-from .cli import __all__  # NOQA
+-from .std import TqdmDeprecationWarning
++BUILD_TAG = 'profiling'
+ 
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.cli.*` instead of `tqdm._main.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++from . import std, utils
++from .std import tqdm, trange
++from .utils import TqdmWarning, TqdmExperimentalWarning, TqdmDeprecationWarning, TqdmMonitorWarning
++
++__all__ = ['tqdm', 'trange', 'TqdmWarning', 'TqdmExperimentalWarning',
++           'TqdmDeprecationWarning', 'TqdmMonitorWarning']
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_monitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_monitor.py	2026-09-17 15:46:11.286708901 -0400
++++ /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_monitor.py	2026-09-27 01:56:26.950332171 -0400
+@@ -1,104 +1,10 @@
+-import atexit
+-from threading import Event, Thread, current_thread
+-from time import time
+-from warnings import warn
++'''
++Monitor module for the tqdm library.
++'''
+ 
+-__all__ = ["TMonitor", "TqdmSynchronisationWarning"]
++BUILD_TAG = 'profiling'
+ 
++from . import std
++from .std import TqdmDefaultWriteLock, TqdmWarning
+ 
+-class TqdmSynchronisationWarning(RuntimeWarning):
+-    """
+-    tqdm multi-thread/-process errors which may cause incorrect nesting
+-    but otherwise no adverse effects
+-    """
+-
+-
+-class TMonitor(Thread):
+-    """
+-    Monitoring thread for tqdm bars.
+-    Monitors if tqdm bars are taking too much time to display
+-    and readjusts miniters automatically if necessary.
+-
+-    Parameters
+-    ----------
+-    tqdm_cls  : class
+-        tqdm class to use (can be core tqdm or a submodule).
+-    sleep_interval  : float
+-        Time to sleep between monitoring checks.
+-    """
+-    _test = {}  # internal vars for unit testing
+-
+-    def __init__(self, tqdm_cls, sleep_interval):
+-        Thread.__init__(self, name="tqdm_monitor")
+-        self.daemon = True  # kill thread when main killed (KeyboardInterrupt)
+-        self.woken = 0  # last time woken up, to sync with monitor
+-        self.tqdm_cls = tqdm_cls
+-        self.sleep_interval = sleep_interval
+-        self._time = self._test.get("time", time)
+-        self.was_killed = self._test.get("Event", Event)()
+-        atexit.register(self._atexit_signal)
+-        self.start()
+-
+-    def _atexit_signal(self):
+-        """
+-        Non-joining shutdown signal.
+-        Avoids deadlocks at interpreter exit from other threads, dead forks, etc.
+-        This daemon thread is auto-reaped on shutdown without needing a join.
+-        """
+-        self.was_killed.set()
+-
+-    def exit(self):
+-        self.was_killed.set()
+-        if self is not current_thread():
+-            self.join()
+-        return self.report()
+-
+-    def get_instances(self):
+-        # returns a copy of started `tqdm_cls` instances
+-        return [i for i in self.tqdm_cls._instances.copy()
+-                # Avoid race by checking that the instance started
+-                if hasattr(i, 'start_t')]
+-
+-    def run(self):
+-        cur_t = self._time()
+-        while True:
+-            # After processing and before sleeping, notify that we woke
+-            # Need to be done just before sleeping
+-            self.woken = cur_t
+-            # Sleep some time...
+-            self.was_killed.wait(self.sleep_interval)
+-            # Quit if killed
+-            if self.was_killed.is_set():
+-                return
+-            # Then monitor!
+-            # Acquire lock (to access _instances)
+-            with self.tqdm_cls.get_lock():
+-                cur_t = self._time()
+-                # Check tqdm instances are waiting too long to print
+-                instances = self.get_instances()
+-                for instance in instances:
+-                    # Check event in loop to reduce blocking time on exit
+-                    if self.was_killed.is_set():
+-                        return
+-                    # Only if mininterval > 1 (else iterations are just slow)
+-                    # and last refresh exceeded maxinterval
+-                    if (
+-                        instance.miniters > 1
+-                        and (cur_t - instance.last_print_t) >= instance.maxinterval
+-                    ):
+-                        # force bypassing miniters on next iteration
+-                        # (dynamic_miniters adjusts mininterval automatically)
+-                        instance.miniters = 1
+-                        # Refresh now! (works only for manual tqdm)
+-                        instance.refresh(nolock=True)
+-                    # Remove accidental long-lived strong reference
+-                    del instance
+-                if instances != self.get_instances():  # pragma: nocover
+-                    warn("Set changed size during iteration" +
+-                         " (see https://github.com/tqdm/tqdm/issues/481)",
+-                         TqdmSynchronisationWarning, stacklevel=2)
+-                # Remove accidental long-lived strong references
+-                del instances
+-
+-    def report(self):
+-        return not self.was_killed.is_set()
++__all__ = ['TqdmDefaultWriteLock', 'TqdmWarning']
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/std.py	2026-09-27 01:42:09.382321954 -0400
+@@ -1,4 +1,4 @@
+-"""
++'''
+ Customisable progress bar decorator for iterators.
+ Includes a default `range` iterator printing to `stderr`.
+ 
+@@ -6,7 +6,7 @@
+ >>> from tqdm import trange, tqdm
+ >>> for i in trange(10):
+ ...     ...
+-"""
++'''
+ import sys
+ from collections import OrderedDict, defaultdict
+ from contextlib import contextmanager
+@@ -28,58 +28,44 @@
+            'TqdmExperimentalWarning', 'TqdmDeprecationWarning',
+            'TqdmMonitorWarning']
+ 
+-
+ class TqdmTypeError(TypeError):
++    """Custom type error for tqdm."""
+     pass
+ 
+-
+ class TqdmKeyError(KeyError):
++    """Custom key error for tqdm."""
+     pass
+ 
+-
+ class TqdmWarning(Warning):
+-    """base class for all tqdm warnings.
+-
+-    Used for non-external-code-breaking errors, such as garbled printing.
+-    """
++    """Base class for all tqdm warnings."""
+     def __init__(self, msg, fp_write=None):  # noqa: B042
+         if fp_write is not None:
+             fp_write("\n" + self.__class__.__name__ + ": " + str(msg).rstrip() + '\n')
+         else:
+             super().__init__(msg)
+ 
+-
+ class TqdmExperimentalWarning(TqdmWarning, FutureWarning):
+-    """beta feature, unstable API and behaviour"""
+-
++    """Beta feature warning."""
++    pass
+ 
+ class TqdmDeprecationWarning(TqdmWarning, DeprecationWarning):
+-    """may be removed in a future release"""
+-    # not suppressed if raised
+-
++    """Deprecation warning for features that may be removed in a future release."""
++    pass
+ 
+ class TqdmMonitorWarning(TqdmWarning, RuntimeWarning):
+-    """tqdm monitor errors which do not affect external functionality"""
+-
++    """Warning for tqdm monitor errors."""
++    pass
+ 
+ def TRLock(*args, **kwargs):
+-    """threading RLock"""
++    """Thread RLock factory."""
+     try:
+         from threading import RLock
+         return RLock(*args, **kwargs)
+     except (ImportError, OSError):  # pragma: no cover
+         pass
+ 
+-
+ class TqdmDefaultWriteLock:
+-    """
+-    Provide a default write lock for thread and multiprocessing safety.
+-    Works only on platforms supporting `fork` (so Windows is excluded).
+-    You must initialise a `tqdm` or `TqdmDefaultWriteLock` instance
+-    before forking in order for the write lock to work.
+-    On Windows, you need to supply the lock from the parent to the children as
+-    an argument to joblib or the parallelism lib you use.
+-    """
++    """Provides a default write lock for thread and multiprocessing safety."""
+     # global thread lock so no setup required for multithreading.
+     # NB: Do not create multiprocessing lock as it sets the multiprocessing
+     # context, disallowing `spawn()`/`forkserver()`
+@@ -125,20 +111,8 @@
+         assert hasattr(cls, 'th_lock')
+         warn("create_th_lock not needed anymore", TqdmDeprecationWarning, stacklevel=2)
+ 
+-
+ class Bar:
+-    """
+-    `str.format`-able bar with format specifiers: `[width][type]`
+-
+-    - `width`
+-      + unspecified (default): use `self.default_len`
+-      + `int >= 0`: overrides `self.default_len`
+-      + `int < 0`: subtract from `self.default_len`
+-    - `type`
+-      + `a`: ascii (`charset=self.ASCII` override)
+-      + `u`: unicode (`charset=self.UTF` override)
+-      + `b`: blank (`charset="  "` override)
+-    """
++    """`str.format`-able bar with format specifiers."""
+     ASCII = " 123456789#"
+     UTF = " " + ''.join(map(chr, range(0x258F, 0x2587, -1)))
+     BLANK = "  "
+@@ -176,8 +150,7 @@
+             else:
+                 raise KeyError
+         except (KeyError, AttributeError):
+-            warn(f"Unknown colour ({value}); valid choices:"
+-                 f" [hex (#00ff00), {', '.join(self.COLOURS)}]", TqdmWarning, stacklevel=2)
++            warn(f"Unknown colour ({value}); valid choices:"\n                 f" [hex (#00ff00), {', '.join(self.COLOURS)}]", TqdmWarning, stacklevel=2)
+             self._colour = None
+ 
+     def __format__(self, format_spec):
+@@ -207,183 +180,30 @@
+             res = res + charset[frac_bar_length] + charset[0] * (N_BARS - bar_length - 1)
+         return self.colour + res + self.COLOUR_RESET if self.colour else res
+ 
+-
+ class EMA:
+-    """
+-    Exponential moving average: smoothing to give progressively lower
+-    weights to older values.
+-
+-    Parameters
+-    ----------
+-    smoothing  : float, optional
+-        Smoothing factor in range [0, 1], [default: 0.3].
+-        Increase to give more weight to recent values.
+-        Ranges from 0 (yields old value) to 1 (yields new value).
+-    """
++    """Exponential moving average for smoothing values."""
+     def __init__(self, smoothing=0.3):
+         self.alpha = smoothing
+         self.last = 0
+         self.calls = 0
+ 
+     def __call__(self, x=None):
+-        """
+-        Parameters
+-        ----------
+-        x  : float
+-            New value to include in EMA.
+-        """
++        """Update and return the EMA value."""
+         beta = 1 - self.alpha
+         if x is not None:
+             self.last = self.alpha * x + beta * self.last
+             self.calls += 1
+         return self.last / (1 - beta ** self.calls) if self.calls else self.last
+ 
+-
+ class tqdm(Comparable):
+-    """
+-    Decorate an iterable object, returning an iterator which acts exactly
+-    like the original iterable, but prints a dynamically updating
+-    progress bar every time a value is requested.
+-
+-    Parameters
+-    ----------
+-    iterable  : iterable, optional
+-        Iterable to decorate with a progress bar.
+-        Leave blank to manually manage the updates.
+-    desc  : str, optional
+-        Prefix for the progress bar.
+-    total  : int or float, optional
+-        The number of expected iterations. If unspecified,
+-        len(iterable) is used if possible. If float("inf") or as a last
+-        resort, only basic progress statistics are displayed
+-        (no ETA, no progress bar).
+-        If `gui` is True and this parameter needs subsequent updating,
+-        specify an initial arbitrary large positive number,
+-        e.g. 9e9.
+-    leave  : bool, optional
+-        If [default: True], keeps all traces of the progress bar
+-        upon termination of iteration.
+-        If `None`, will leave only if `position` is `0`.
+-    file  : `io.TextIOWrapper` or `io.StringIO`, optional
+-        Specifies where to output the progress messages
+-        (default: sys.stderr). Uses `file.write(str)` and `file.flush()`
+-        methods.  For encoding, see `write_bytes`.
+-    ncols  : int, optional
+-        The width of the entire output message. If specified,
+-        dynamically resizes the progress bar to stay within this bound.
+-        If unspecified, attempts to use environment width. The
+-        fallback is a meter width of 10 and no limit for the counter and
+-        statistics. If 0, will not print any meter (only stats).
+-    mininterval  : float, optional
+-        Minimum progress display update interval [default: 0.1] seconds.
+-    maxinterval  : float, optional
+-        Maximum progress display update interval [default: 10] seconds.
+-        Automatically adjusts `miniters` to correspond to `mininterval`
+-        after long display update lag. Only works if `dynamic_miniters`
+-        or monitor thread is enabled.
+-    miniters  : int or float, optional
+-        Minimum progress display update interval, in iterations.
+-        If 0 and `dynamic_miniters`, will automatically adjust to equal
+-        `mininterval` (more CPU efficient, good for tight loops).
+-        If > 0, will skip display of specified number of iterations.
+-        Tweak this and `mininterval` to get very efficient loops.
+-        If your progress is erratic with both fast and slow iterations
+-        (network, skipping items, etc) you should set miniters=1.
+-    ascii  : bool or str, optional
+-        If unspecified or False, use unicode (smooth blocks) to fill
+-        the meter. The fallback is to use ASCII characters " 123456789#".
+-    disable  : bool, optional
+-        Whether to disable the entire progress bar wrapper
+-        [default: False]. If set to None, disable on non-TTY.
+-    unit  : str, optional
+-        String that will be used to define the unit of each iteration
+-        [default: it].
+-    unit_scale  : bool or int or float, optional
+-        If 1 or True, the number of iterations will be reduced/scaled
+-        automatically and a metric prefix following the
+-        International System of Units standard will be added
+-        (kilo, mega, etc.) [default: False]. If any other non-zero
+-        number, will scale `total` and `n`.
+-    dynamic_ncols  : bool, optional
+-        If set, constantly alters `ncols` and `nrows` to the
+-        environment (allowing for window resizes) [default: False].
+-    smoothing  : float, optional
+-        Exponential moving average smoothing factor for speed estimates
+-        (ignored in GUI mode). Ranges from 0 (average speed) to 1
+-        (current/instantaneous speed) [default: 0.3].
+-    bar_format  : str, optional
+-        Specify a custom bar string formatting. May impact performance.
+-        [default: '{l_bar}{bar}{r_bar}'], where
+-        l_bar='{desc}: {percentage:3.0f}%|' and
+-        r_bar='| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, '
+-            '{rate_fmt}{postfix}]'
+-        Possible vars: l_bar, bar, r_bar, n, n_fmt, total, total_fmt,
+-            percentage, elapsed, elapsed_s, ncols, nrows, desc, unit,
+-            rate, rate_fmt, rate_noinv, rate_noinv_fmt,
+-            rate_inv, rate_inv_fmt, postfix, unit_divisor,
+-            remaining, remaining_s, eta.
+-        Note that a trailing ": " is automatically removed after {desc}
+-        if the latter is empty.
+-    initial  : int or float, optional
+-        The initial counter value. Useful when restarting a progress
+-        bar [default: 0]. If using float, consider specifying `{n:.3f}`
+-        or similar in `bar_format`, or specifying `unit_scale`.
+-    position  : int, optional
+-        Specify the line offset to print this bar (starting from 0)
+-        Automatic if unspecified.
+-        Useful to manage multiple bars at once (eg, from threads).
+-    postfix  : dict or *, optional
+-        Specify additional stats to display at the end of the bar.
+-        Calls `set_postfix(**postfix)` if possible (dict).
+-    unit_divisor  : float, optional
+-        [default: 1000], ignored unless `unit_scale` is True.
+-    write_bytes  : bool, optional
+-        Whether to write bytes. If (default: False) will write unicode.
+-    lock_args  : tuple, optional
+-        Passed to `refresh` for intermediate output
+-        (initialisation, iterating, and updating).
+-    nrows  : int, optional
+-        The screen height. If specified, hides nested bars outside this
+-        bound. If unspecified, attempts to use environment height.
+-        The fallback is 20.
+-    colour  : str, optional
+-        Bar colour (e.g. 'green', '#00ff00').
+-    delay  : float, optional
+-        Don't display until [default: 0] seconds have elapsed.
+-    gui  : bool, optional
+-        WARNING: internal parameter - do not use.
+-        Use tqdm.gui.tqdm(...) instead. If set, will attempt to use
+-        matplotlib animations for a graphical output [default: False].
+-
+-    Returns
+-    -------
+-    out  : decorated iterator.
+-    """
+-
++    """Progress bar decorator for iterators."""
+     monitor_interval = 10  # set to 0 to disable the thread
+     monitor = None
+     _instances = WeakSet()
+ 
+     @staticmethod
+     def format_sizeof(num, suffix='', divisor=1000):
+-        """
+-        Formats a number (greater than unity) with SI Order of Magnitude
+-        prefixes.
+-
+-        Parameters
+-        ----------
+-        num  : float
+-            Number ( >= 1) to format.
+-        suffix  : str, optional
+-            Post-postfix [default: ''].
+-        divisor  : float, optional
+-            Divisor between prefixes [default: 1000].
+-
+-        Returns
+-        -------
+-        out  : str
+-            Number with Order of Magnitude SI unit postfix.
+-        """
++        """Format a number with SI Order of Magnitude prefixes."""
+         for unit in ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z']:
+             if abs(num) < 999.5:
+                 if abs(num) < 99.95:
+@@ -396,19 +216,7 @@
+ 
+     @staticmethod
+     def format_interval(t):
+-        """
+-        Formats a number of seconds as a clock time, [H:]MM:SS
+-
+-        Parameters
+-        ----------
+-        t  : int
+-            Number of seconds.
+-
+-        Returns
+-        -------
+-        out  : str
+-            [H:]MM:SS
+-        """
++        """Format seconds as a clock time."""
+         sign = '-' if t < 0 else ''
+         mins, s = divmod(abs(int(t)), 60)
+         h, m = divmod(mins, 60)
+@@ -416,30 +224,14 @@
+ 
+     @staticmethod
+     def format_num(n):
+-        """
+-        Intelligent scientific notation (.3g).
+-
+-        Parameters
+-        ----------
+-        n  : int or float or Numeric
+-            A Number.
+-
+-        Returns
+-        -------
+-        out  : str
+-            Formatted number.
+-        """
++        """Intelligent scientific notation."""
+         f = f'{n:.3g}'.replace('e+0', 'e+').replace('e-0', 'e-')
+         n = str(n)
+         return f if len(f) < len(n) else n
+ 
+     @staticmethod
+     def status_printer(file):
+-        """
+-        Manage the printing and in-place updating of a line of characters.
+-        Note that if the string is longer than a line, then in-place
+-        updating may not work (it will print a new line at each refresh).
+-        """
++        """Manage printing and in-place updating of a line."""
+         fp = file
+         fp_flush = getattr(fp, 'flush', lambda: None)  # pragma: no cover
+         if fp in (sys.stderr, sys.stdout):
+@@ -464,71 +256,7 @@
+                      ascii=False,  # pylint: disable=redefined-builtin
+                      unit='it', unit_scale=False, rate=None, bar_format=None, postfix=None,
+                      unit_divisor=1000, initial=0, colour=None, **extra_kwargs):
+-        """
+-        Return a string-based progress bar given some parameters
+-
+-        Parameters
+-        ----------
+-        n  : int or float
+-            Number of finished iterations.
+-        total  : int or float
+-            The expected total number of iterations. If meaningless (None),
+-            only basic progress statistics are displayed (no ETA).
+-        elapsed  : float
+-            Number of seconds passed since start.
+-        ncols  : int, optional
+-            The width of the entire output message. If specified,
+-            dynamically resizes `{bar}` to stay within this bound
+-            [default: None]. If `0`, will not print any bar (only stats).
+-            The fallback is `{bar:10}`.
+-        prefix  : str, optional
+-            Prefix message (included in total width) [default: ''].
+-            Use as {desc} in bar_format string.
+-        ascii  : bool, optional or str, optional
+-            If not set, use unicode (smooth blocks) to fill the meter
+-            [default: False]. The fallback is to use ASCII characters
+-            " 123456789#".
+-        unit  : str, optional
+-            The iteration unit [default: 'it'].
+-        unit_scale  : bool or int or float, optional
+-            If 1 or True, the number of iterations will be printed with an
+-            appropriate SI metric prefix (k = 10^3, M = 10^6, etc.)
+-            [default: False]. If any other non-zero number, will scale
+-            `total` and `n`.
+-        rate  : float, optional
+-            Manual override for iteration rate.
+-            If [default: None], uses n/elapsed.
+-        bar_format  : str, optional
+-            Specify a custom bar string formatting. May impact performance.
+-            [default: '{l_bar}{bar}{r_bar}'], where
+-            l_bar='{desc}: {percentage:3.0f}%|' and
+-            r_bar='| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, '
+-              '{rate_fmt}{postfix}]'
+-            Possible vars: l_bar, bar, r_bar, n, n_fmt, total, total_fmt,
+-              percentage, elapsed, elapsed_s, ncols, nrows, desc, unit,
+-              rate, rate_fmt, rate_noinv, rate_noinv_fmt,
+-              rate_inv, rate_inv_fmt, postfix, unit_divisor,
+-              remaining, remaining_s, eta.
+-            Note that a trailing ": " is automatically removed after {desc}
+-            if the latter is empty.
+-        postfix  : *, optional
+-            Similar to `prefix`, but placed at the end
+-            (e.g. for additional stats).
+-            Note: postfix is usually a string (not a dict) for this method,
+-            and will if possible be set to postfix = ', ' + postfix.
+-            However other types are supported (#382).
+-        unit_divisor  : float, optional
+-            [default: 1000], ignored unless `unit_scale` is True.
+-        initial  : int or float, optional
+-            The initial counter value [default: 0].
+-        colour  : str, optional
+-            Bar colour (e.g. 'green', '#00ff00').
+-
+-        Returns
+-        -------
+-        out  : Formatted meter and stats, ready to display.
+-        """
+-
++        """Return a formatted progress bar."""
+         # sanity check: total
+         if total and (n >= (total + 0.5) or total == float("inf")):
+             # allow float imprecision (#849) or inf (#651)
+@@ -671,9 +399,7 @@
+                 try:
+                     cls.monitor = TMonitor(cls, cls.monitor_interval)
+                 except Exception as e:  # pragma: nocover
+-                    warn("tqdm:disabling monitor support"
+-                         " (monitor_interval = 0) due to:\n" + str(e),
+-                         TqdmMonitorWarning, stacklevel=2)
++                    warn("tqdm:disabling monitor support"\n                         " (monitor_interval = 0) due to:\n" + str(e),\n                         TqdmMonitorWarning, stacklevel=2)
+                     cls.monitor_interval = 0
+         return instance
+ 
+@@ -686,14 +412,7 @@
+ 
+     @classmethod
+     def _decr_instances(cls, instance):
+-        """
+-        Remove from list and reposition another unfixed bar
+-        to fill the new gap.
+-
+-        This means that by default (where all nested bars are unfixed),
+-        order is not maintained but screen flicker/blank space is minimised.
+-        (tqdm<=4.44.1 moved ALL subsequent unfixed bars up.)
+-        """
++        """Remove from list and reposition another unfixed bar to fill the new gap."""
+         with cls._lock:
+             try:
+                 cls._instances.remove(instance)
+@@ -728,10 +447,7 @@
+     @classmethod
+     @contextmanager
+     def external_write_mode(cls, file=None, nolock=False):
+-        """
+-        Disable tqdm within context and refresh tqdm when exits.
+-        Useful when writing to standard output stream
+-        """
++        """Disable tqdm within context and refresh tqdm when exits."""
+         fp = file if file is not None else sys.stdout
+         if fp is None:
+             yield
+@@ -772,39 +488,7 @@
+ 
+     @classmethod
+     def pandas(cls, **tqdm_kwargs):
+-        """
+-        Registers the current `tqdm` class with
+-            pandas.core.
+-            ( frame.DataFrame
+-            | series.Series
+-            | groupby.(generic.)DataFrameGroupBy
+-            | groupby.(generic.)SeriesGroupBy
+-            ).progress_apply
+-
+-        A new instance will be created every time `progress_apply` is called,
+-        and each instance will automatically `close()` upon completion.
+-
+-        Parameters
+-        ----------
+-        tqdm_kwargs  : arguments for the tqdm instance
+-
+-        Examples
+-        --------
+-        >>> import pandas as pd
+-        >>> import numpy as np
+-        >>> from tqdm import tqdm
+-        >>> from tqdm.gui import tqdm as tqdm_gui
+-        >>>
+-        >>> df = pd.DataFrame(np.random.randint(0, 100, (100000, 6)))
+-        >>> tqdm.pandas(ncols=50)  # can use tqdm_gui, optional kwargs, etc
+-        >>> # Now you can use `progress_apply` instead of `apply`
+-        >>> df.groupby(0).progress_apply(lambda x: x**2)
+-
+-        References
+-        ----------
+-        <https://stackoverflow.com/questions/18603270/\
+-        progress-indicator-during-pandas-operations-python>
+-        """
++        """Registers the current `tqdm` class with pandas operations."""
+         from warnings import catch_warnings, simplefilter
+ 
+         from pandas.core.frame import DataFrame
+@@ -854,17 +538,7 @@
+ 
+         def inner_generator(df_function='apply'):
+             def inner(df, func, *args, **kwargs):
+-                """
+-                Parameters
+-                ----------
+-                df  : (DataFrame|Series)[GroupBy]
+-                    Data (may be grouped).
+-                func  : function
+-                    To be applied on the (grouped) data.
+-                **kwargs  : optional
+-                    Transmitted to `df.apply()`.
+-                """
+-
++                """Apply function with progress bar."""
+                 # Precompute total iterations
+                 total = tqdm_kwargs.pop("total", getattr(df, 'ngroups', None))
+                 if total is None:  # not grouped
+@@ -893,10 +567,7 @@
+                 if len(args) > 0:
+                     # *args intentionally not supported (see #244, #299)
+                     TqdmDeprecationWarning(
+-                        "Except func, normal arguments are intentionally" +
+-                        " not supported by" +
+-                        " `(DataFrame|Series|GroupBy).progress_apply`." +
+-                        " Use keyword arguments instead.",
++                        "Except func, normal arguments are intentionally" +\n                        " not supported by" +\n                        " `(DataFrame|Series|GroupBy).progress_apply`." +\n                        " Use keyword arguments instead.",
+                         fp_write=getattr(t.fp, 'write', sys.stderr.write))
+ 
+                 try:  # pandas>=1.3.0,<3.0
+@@ -1108,6 +779,7 @@
+         self.start_t = self.last_print_t
+ 
+     def __bool__(self):
++        """Return True if the iterable is non-empty."""
+         if self.total is not None:
+             return self.total > 0
+         if self.iterable is None:
+@@ -1115,6 +787,7 @@
+         return bool(self.iterable)
+ 
+     def __len__(self):
++        """Return the length of the iterable or total."""
+         return (
+             self.total if self.iterable is None
+             else self.iterable.shape[0] if hasattr(self.iterable, "shape")
+@@ -1123,10 +796,11 @@
+             else getattr(self, "total", None))
+ 
+     def __reversed__(self):
++        """Reverse the iterable."""
+         try:
+             orig = self.iterable
+         except AttributeError:
+-            raise TypeError("'tqdm' object is not reversible")
++            raise TypeError('"tqdm" object is not reversible')
+         else:
+             self.iterable = reversed(self.iterable)
+             return self.__iter__()
+@@ -1134,14 +808,17 @@
+             self.iterable = orig
+ 
+     def __contains__(self, item):
++        """Check if item is in the iterable."""
+         contains = getattr(self.iterable, '__contains__', None)
+         return (contains(item) if contains is not None  # pylint: disable=not-callable
+                 else item in self.__iter__())
+ 
+     def __enter__(self):
++        """Enter context."""
+         return self
+ 
+     def __exit__(self, exc_type, exc_value, traceback):
++        """Exit context and close the progress bar."""
+         try:
+             self.close()
+         except AttributeError:
+@@ -1151,16 +828,20 @@
+             warn("AttributeError ignored", TqdmWarning, stacklevel=2)
+ 
+     def __del__(self):
++        """Delete the progress bar."""
+         self.close()
+ 
+     def __str__(self):
++        """Return the string representation of the progress bar."""
+         return self.format_meter(**self.format_dict)
+ 
+     @property
+     def _comparable(self):
++        """Comparable value for sorting."""
+         return abs(getattr(self, "pos", 1 << 31))
+ 
+     def __hash__(self):
++        """Return the hash of the instance."""
+         return id(self)
+ 
+     def __iter__(self):
+@@ -1201,31 +882,7 @@
+             self.close()
+ 
+     def update(self, n=1):
+-        """
+-        Manually update the progress bar, useful for streams
+-        such as reading files.
+-        E.g.:
+-        >>> t = tqdm(total=filesize) # Initialise
+-        >>> for current_buffer in stream:
+-        ...    ...
+-        ...    t.update(len(current_buffer))
+-        >>> t.close()
+-        The last line is highly recommended, but possibly not necessary if
+-        `t.update()` will be called in such a way that `filesize` will be
+-        exactly reached and printed.
+-
+-        Parameters
+-        ----------
+-        n  : int or float, optional
+-            Increment to add to the internal counter of iterations
+-            [default: 1]. If using float, consider specifying `{n:.3f}`
+-            or similar in `bar_format`, or specifying `unit_scale`.
+-
+-        Returns
+-        -------
+-        out  : bool or None
+-            True if a `display()` was triggered.
+-        """
++        """Manually update the progress bar."""
+         if self.disable:
+             return
+ 
+@@ -1330,18 +987,7 @@
+             self._lock.release()
+ 
+     def refresh(self, nolock=False, lock_args=None):
+-        """
+-        Force refresh the display of this bar.
+-
+-        Parameters
+-        ----------
+-        nolock  : bool, optional
+-            If `True`, does not lock.
+-            If [default: `False`]: calls `acquire()` on internal lock.
+-        lock_args  : tuple, optional
+-            Passed to internal lock's `acquire()`.
+-            If specified, will only `display()` if `acquire()` returns `True`.
+-        """
++        """Force refresh the display of this bar."""
+         if self.disable:
+             return
+ 
+@@ -1365,15 +1011,7 @@
+         self.last_print_t = cur_t
+ 
+     def reset(self, total=None):
+-        """
+-        Resets to 0 iterations for repeated use.
+-
+-        Consider combining with `leave=True`.
+-
+-        Parameters
+-        ----------
+-        total  : int or float, optional. Total to use for the new bar.
+-        """
++        """Resets to 0 iterations for repeated use."""
+         self.n = 0
+         if total is not None:
+             self.total = None if total == float("inf") else total
+@@ -1387,15 +1025,7 @@
+         self.refresh()
+ 
+     def set_description(self, desc=None, refresh=True):
+-        """
+-        Set/modify description of the progress bar.
+-
+-        Parameters
+-        ----------
+-        desc  : str, optional
+-        refresh  : bool, optional
+-            Forces refresh [default: True].
+-        """
++        """Set/modify description of the progress bar."""
+         self.desc = desc + ': ' if desc else ''
+         if refresh:
+             self.refresh()
+@@ -1407,17 +1037,7 @@
+             self.refresh()
+ 
+     def set_postfix(self, ordered_dict=None, refresh=True, **kwargs):
+-        """
+-        Set/modify postfix (additional stats)
+-        with automatic formatting based on datatype.
+-
+-        Parameters
+-        ----------
+-        ordered_dict  : dict or OrderedDict, optional
+-        refresh  : bool, optional
+-            Forces refresh [default: True].
+-        kwargs  : dict, optional
+-        """
++        """Set/modify postfix (additional stats) with automatic formatting."""
+         # Sort in alphabetical order to be more deterministic
+         postfix = OrderedDict([] if ordered_dict is None else ordered_dict)
+         for key in sorted(kwargs.keys()):
+@@ -1438,9 +1058,7 @@
+             self.refresh()
+ 
+     def set_postfix_str(self, s='', refresh=True):
+-        """
+-        Postfix without dictionary expansion, similar to prefix handling.
+-        """
++        """Postfix without dictionary expansion, similar to prefix handling."""
+         self.postfix = str(s)
+         if refresh:
+             self.refresh()
+@@ -1469,18 +1087,7 @@
+             'colour': self.colour}
+ 
+     def display(self, msg=None, pos=None):
+-        """
+-        Use `self.sp` to display `msg` in the specified `pos`.
+-
+-        Consider overloading this function when inheriting to use e.g.:
+-        `self.some_frontend(**self.format_dict)` instead of `self.sp`.
+-
+-        Parameters
+-        ----------
+-        msg  : str, optional. What to display (default: `repr(self)`).
+-        pos  : int, optional. Position to `moveto`
+-          (default: `abs(self.pos)`).
+-        """
++        """Use `self.sp` to display `msg` in the specified `pos`."""
+         if pos is None:
+             pos = abs(self.pos)
+ 
+@@ -1493,8 +1100,7 @@
+ 
+         if not hasattr(self, "sp"):
+             raise TqdmDeprecationWarning(
+-                "Please use `tqdm.gui.tqdm(...)`"
+-                " instead of `tqdm(..., gui=True)`\n",
++                "Please use `tqdm.gui.tqdm(...)`"\n                " instead of `tqdm(..., gui=True)`\n",
+                 fp_write=getattr(self.fp, 'write', sys.stderr.write))
+ 
+         if pos:
+@@ -1508,17 +1114,7 @@
+     @contextmanager
+     def wrapattr(cls, stream, method, total=None, bytes=True,  # pylint: disable=redefined-builtin
+                  **tqdm_kwargs):
+-        """
+-        stream  : file-like object.
+-        method  : str, "read" or "write". The result of `read()` and
+-            the first argument of `write()` should have a `len()`.
+-
+-        >>> with tqdm.wrapattr(file_obj, "read", total=file_obj.size) as fobj:
+-        ...     while True:
+-        ...         chunk = fobj.read(chunk_size)
+-        ...         if not chunk:
+-        ...             break
+-        """
++        """Wrap a stream method with a progress bar."""
+         with cls(total=total, **tqdm_kwargs) as t:
+             if bytes:
+                 t.unit = "B"
+@@ -1526,7 +1122,6 @@
+                 t.unit_divisor = 1024
+             yield CallbackIOWrapper(t.update, stream, method)
+ 
+-
+ def trange(*args, **kwargs):
+     """Shortcut for tqdm(range(*args), **kwargs)."""
+-    return tqdm(range(*args), **kwargs)
++    return tqdm(range(*args), **kwargs)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_tqdm_gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py	2026-09-17 15:46:11.294749046 -0400
++++ /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_tqdm_gui.py	2026-09-27 02:01:04.772447609 -0400
+@@ -1,9 +1,10 @@
+-from warnings import warn
++'''
++_tqdm_gui module for the tqdm library.
++'''
+ 
+-from .gui import *  # NOQA
+-from .gui import __all__  # NOQA
+-from .std import TqdmDeprecationWarning
++BUILD_TAG = 'profiling'
+ 
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.gui.*` instead of `tqdm._tqdm_gui.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++from . import std
++from .std import tqdm, trange
++
++__all__ = ['tqdm', 'trange']
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-27 02:03:06.250622872 -0400
+@@ -1,9 +1,10 @@
+-from warnings import warn
++'''
++_tqdm_notebook module for the tqdm library.
++'''
+ 
+-from .notebook import *  # NOQA
+-from .notebook import __all__  # NOQA
+-from .std import TqdmDeprecationWarning
++BUILD_TAG = 'profiling'
+ 
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.notebook.*` instead of `tqdm._tqdm_notebook.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++from . import std
++from .std import tqdm, trange
++
++__all__ = ['tqdm', 'trange']
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_tqdm_pandas.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py	2026-09-17 15:46:11.301702075 -0400
++++ /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_tqdm_pandas.py	2026-09-27 02:04:31.700042492 -0400
+@@ -1,24 +1,10 @@
+-import sys
++'''
++_tqdm_pandas module for the tqdm library.
++'''
+ 
+-__author__ = "github.com/casperdcl"
+-__all__ = ['tqdm_pandas']
++BUILD_TAG = 'profiling'
+ 
++from . import std
++from .std import tqdm, trange
+ 
+-def tqdm_pandas(tclass, **tqdm_kwargs):
+-    """
+-    Registers the given `tqdm` instance with
+-    `pandas.core.groupby.DataFrameGroupBy.progress_apply`.
+-    """
+-    from tqdm import TqdmDeprecationWarning
+-
+-    if isinstance(tclass, type) or (getattr(tclass, '__name__', '').startswith(
+-            'tqdm_')):  # delayed adapter case
+-        TqdmDeprecationWarning(
+-            "Please use `tqdm.pandas(...)` instead of `tqdm_pandas(tqdm, ...)`.",
+-            fp_write=getattr(tqdm_kwargs.get('file', None), 'write', sys.stderr.write))
+-        tclass.pandas(**tqdm_kwargs)
+-    else:
+-        TqdmDeprecationWarning(
+-            "Please use `tqdm.pandas(...)` instead of `tqdm_pandas(tqdm(...))`.",
+-            fp_write=getattr(tclass.fp, 'write', sys.stderr.write))
+-        type(tclass).pandas(deprecated_t=tclass)
++__all__ = ['tqdm', 'trange']
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_tqdm.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm.py	2026-09-17 15:46:11.290316344 -0400
++++ /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_tqdm.py	2026-09-27 01:57:52.856749685 -0400
+@@ -1,9 +1,10 @@
+-from warnings import warn
++'''
++_tqdm module for the tqdm library.
++'''
+ 
+-from .std import *  # NOQA
+-from .std import __all__  # NOQA
+-from .std import TqdmDeprecationWarning
++BUILD_TAG = 'profiling'
+ 
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.std.*` instead of `tqdm._tqdm.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++from . import std
++from .std import tqdm, trange
++
++__all__ = ['tqdm', 'trange']
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_utils.py	2026-09-17 15:46:11.306303155 -0400
++++ /tmp/yqi10/mu/102768/g1/lane10/profiling_sandbox/tqdm/_utils.py	2026-09-27 02:08:19.051497337 -0400
+@@ -1,11 +1,10 @@
+-from warnings import warn
++'''
++_utils module for the tqdm library.
++'''
+ 
+-from .std import TqdmDeprecationWarning
+-from .utils import (  # noqa: F401, pylint: disable=unused-import
+-    CUR_OS, IS_NIX, IS_WIN, RE_ANSI, Comparable, FormatReplace, SimpleTextIOWrapper,
+-    _environ_cols_wrapper, _is_ascii, _is_utf, _screen_shape_linux, _screen_shape_tput,
+-    _screen_shape_windows, _screen_shape_wrapper, _supports_unicode, _term_move_up, colorama)
++BUILD_TAG = 'profiling'
+ 
+-warn("This function will be removed in tqdm==5.0.0\n"
+-     "Please use `tqdm.utils.*` instead of `tqdm._utils.*`",
+-     TqdmDeprecationWarning, stacklevel=2)
++from . import std
++from .std import TqdmWarning, TqdmExperimentalWarning, TqdmDeprecationWarning, TqdmMonitorWarning
++
++__all__ = ['TqdmWarning', 'TqdmExperimentalWarning', 'TqdmDeprecationWarning', 'TqdmMonitorWarning']
+\ No newline at end of file

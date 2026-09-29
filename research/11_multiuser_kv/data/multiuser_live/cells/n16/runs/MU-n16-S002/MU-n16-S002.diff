@@ -1,0 +1,99 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/s15_harness/CHANGES_BUILD_TAG.md	2026-09-26 22:47:16.236021331 -0400
+@@ -0,0 +1,3 @@
++## Build Tag Addition Changelog
++
++Added `BUILD_TAG = 'profiling'` to the following files:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/s15_harness/trace_runtime.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_runtime.py	2026-09-21 17:15:01.589007324 -0400
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/s15_harness/trace_runtime.py	2026-09-27 00:00:08.192104275 -0400
+@@ -44,12 +44,14 @@
+ )
+ 
+ 
++"""Returns the current time in UTC as an ISO-formatted string."""
+ def _utc_now() -> str:
+     return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace(
+         "+00:00", "Z"
+     )
+ 
+ 
++"""Default JSON serializer for non-serializable objects."""
+ def _json_default(value: Any) -> Any:
+     if isinstance(value, Path):
+         return str(value)
+@@ -66,6 +68,7 @@
+     return str(value)
+ 
+ 
++"""Convert a value to a JSON string, with error handling."""
+ def _json_text(value: Any) -> str:
+     try:
+         return json.dumps(
+@@ -75,6 +78,7 @@
+         return repr(value)
+ 
+ 
++"""Redact sensitive information from a string."""
+ def _redact_text(value: str) -> str:
+     redacted = value
+     for index, pattern in enumerate(_SECRET_TEXT_PATTERNS):
+@@ -87,12 +91,14 @@
+     return redacted
+ 
+ 
++"""Safely get a value from a block using a key."""
+ def _block_value(block: Any, key: str, default: Any = None) -> Any:
+     if isinstance(block, dict):
+         return block.get(key, default)
+     return getattr(block, key, default)
+ 
+ 
++"""Get the version of a package by name."""
+ def _package_version(name: str) -> str | None:
+     try:
+         return importlib.metadata.version(name)
+@@ -102,6 +108,7 @@
+ 
+ @dataclass
+ class SpanHandle:
++    """Handles a span in the trace recorder."""
+     recorder: "BaseTraceRecorder"
+     start_event: str
+     end_event: str
+@@ -110,19 +117,23 @@
+     end_data: dict[str, Any] = field(default_factory=dict)
+     _token: contextvars.Token | None = None
+ 
+-    def finish(self, **data: Any) -> None:
++    """Finish the span with additional data."""
++def finish(self, **data: Any) -> None:
+         self.end_data.update(data)
+ 
+ 
+ class BaseTraceRecorder:
++    """Base class for trace recorders."""
+     enabled = False
+     run_id: str | None = None
+     path: Path | None = None
+ 
+-    def new_id(self, prefix: str) -> str:
++    """Generate a new ID with the given prefix."""
++def new_id(self, prefix: str) -> str:
+         return f"{prefix}_000000"
+ 
+-    def emit(self, event: str, data: dict[str, Any] | None = None, **_: Any) -> str:
++    """Emit an event with associated data."""
++def emit(self, event: str, data: dict[str, Any] | None = None, **_: Any) -> str:
+         return "evt_000000"
+ 
+     @contextlib.contextmanager
+@@ -133,6 +144,7 @@
+         data: dict[str, Any] | None = None,
+         **_: Any,
+     ) -> Iterator[SpanHandle]:
++        """Create and manage a span context."""
+         yield SpanHandle(self, start_event, end_event)
+ 
+     @contextlib.contextmanager

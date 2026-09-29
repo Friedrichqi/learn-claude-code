@@ -1,0 +1,351 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/async_utils.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/async_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/async_utils.py	2026-09-17 15:46:11.726487027 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/async_utils.py	2026-09-26 22:34:26.147514579 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import inspect
+ import typing as t
+ from functools import WRAPPER_ASSIGNMENTS
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/bccache.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/bccache.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/bccache.py	2026-09-17 15:46:11.732510579 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/bccache.py	2026-09-26 22:34:32.774506097 -0400
+@@ -6,6 +6,7 @@
+ are initialized on the first request.
+ """
+ 
++BUILD_TAG = 'profiling'
+ import errno
+ import fnmatch
+ import marshal
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/CHANGES_BUILD_TAG.md	2026-09-26 22:37:07.245310422 -0400
+@@ -0,0 +1,18 @@
++Changes for BUILD_TAG:
++- Added BUILD_TAG to profiling_sandbox/jinja2/_identifier.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/async_utils.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/bccache.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/compiler.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/constants.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/debug.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/defaults.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/environment.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/exceptions.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/lexer.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/loaders.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/nodes.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/parser.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/runtime.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/sandbox.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/utils.py at line 1
++- Added BUILD_TAG to profiling_sandbox/jinja2/visitor.py at line 1
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/compiler.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/compiler.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/compiler.py	2026-09-17 15:46:11.742366999 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/compiler.py	2026-09-26 22:34:39.483497517 -0400
+@@ -1,5 +1,6 @@
+ """Compiles nodes from the parser into Python code."""
+ 
++BUILD_TAG = 'profiling'
+ import typing as t
+ from contextlib import contextmanager
+ from functools import update_wrapper
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/constants.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/constants.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/constants.py	2026-09-17 15:46:11.747708149 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/constants.py	2026-09-26 22:34:47.058487838 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ #: list of lorem ipsum words used by the lipsum() helper function
+ LOREM_IPSUM_WORDS = """\
+ a ac accumsan ad adipiscing aenean aliquam aliquet amet ante aptent arcu at
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/debug.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/debug.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/debug.py	2026-09-17 15:46:11.754146845 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/debug.py	2026-09-26 22:34:54.757478011 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import sys
+ import typing as t
+ from types import CodeType
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/defaults.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/defaults.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/defaults.py	2026-09-17 15:46:11.759208679 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/defaults.py	2026-09-26 22:35:02.927467594 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import typing as t
+ 
+ from .filters import FILTERS as DEFAULT_FILTERS  # noqa: F401
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/environment.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/environment.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/environment.py	2026-09-17 15:46:11.765695234 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/environment.py	2026-09-26 22:35:14.131453326 -0400
+@@ -2,6 +2,7 @@
+ options.
+ """
+ 
++BUILD_TAG = 'profiling'
+ import os
+ import typing
+ import typing as t
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/exceptions.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/exceptions.py	2026-09-17 15:46:11.770571430 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/exceptions.py	2026-09-26 22:35:23.188441808 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import typing as t
+ 
+ if t.TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/_identifier.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/_identifier.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/_identifier.py	2026-09-17 15:46:11.633366768 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/_identifier.py	2026-09-26 22:34:20.350522005 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import re
+ 
+ # generated by scripts/generate_identifier_pattern.py
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/lexer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/lexer.py	2026-09-17 15:46:11.844896526 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/lexer.py	2026-09-26 22:35:33.626428550 -0400
+@@ -4,6 +4,7 @@
+ template code and python code in expressions.
+ """
+ 
++BUILD_TAG = 'profiling'
+ import re
+ import typing as t
+ from ast import literal_eval
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/loaders.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/loaders.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/loaders.py	2026-09-17 15:46:11.849691733 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/loaders.py	2026-09-26 22:35:43.868415558 -0400
+@@ -2,6 +2,7 @@
+ sources.
+ """
+ 
++BUILD_TAG = 'profiling'
+ import importlib.util
+ import os
+ import posixpath
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/nodes.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/nodes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/nodes.py	2026-09-17 15:46:11.870517090 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/nodes.py	2026-09-26 22:35:55.427400916 -0400
+@@ -3,6 +3,7 @@
+ to normalize nodes.
+ """
+ 
++BUILD_TAG = 'profiling'
+ import inspect
+ import operator
+ import typing as t
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/parser.py	2026-09-17 15:46:11.883102845 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/parser.py	2026-09-26 22:36:07.098386154 -0400
+@@ -1,5 +1,6 @@
+ """Parse tokens from the lexer into nodes for the compiler."""
+ 
++BUILD_TAG = 'profiling'
+ import typing
+ import typing as t
+ 
+@@ -136,7 +137,8 @@
+         """
+         self._fail_ut_eof(name, self._end_token_stack, lineno)
+ 
+-    def fail_eof(
++    def fail_eof(self):
++        """Handle end-of-file errors."""
+         self,
+         end_tokens: t.Optional[t.Tuple[str, ...]] = None,
+         lineno: t.Optional[int] = None,
+@@ -147,7 +149,8 @@
+             stack.append(end_tokens)
+         self._fail_ut_eof(None, stack, lineno)
+ 
+-    def is_tuple_end(
++    def is_tuple_end(self):
++        """Check if we are at the end of a tuple."""
+         self, extra_end_rules: t.Optional[t.Tuple[str, ...]] = None
+     ) -> bool:
+         """Are we at the end of a tuple?"""
+@@ -157,14 +160,16 @@
+             return self.stream.current.test_any(extra_end_rules)  # type: ignore
+         return False
+ 
+-    def free_identifier(self, lineno: t.Optional[int] = None) -> nodes.InternalName:
++    def free_identifier(self):
++        """Generate a new free identifier."""self, lineno: t.Optional[int] = None) -> nodes.InternalName:
+         """Return a new free identifier as :class:`~jinja2.nodes.InternalName`."""
+         self._last_identifier += 1
+         rv = object.__new__(nodes.InternalName)
+         nodes.Node.__init__(rv, f"fi{self._last_identifier}", lineno=lineno)
+         return rv
+ 
+-    def parse_statement(self) -> t.Union[nodes.Node, t.List[nodes.Node]]:
++    def parse_statement(self):
++        """Parse a single statement."""self) -> t.Union[nodes.Node, t.List[nodes.Node]]:
+         """Parse a single statement."""
+         token = self.stream.current
+         if token.type != "name":
+@@ -193,7 +198,8 @@
+             if pop_tag:
+                 self._tag_stack.pop()
+ 
+-    def parse_statements(
++    def parse_statements(self, end_tokens: t.Tuple[str, ...], drop_needle: bool = False) -> t.List[nodes.Node]:
++        """Parse multiple statements into a list until one of the end tokens is reached."""
+         self, end_tokens: t.Tuple[str, ...], drop_needle: bool = False
+     ) -> t.List[nodes.Node]:
+         """Parse multiple statements into a list until one of the end tokens
+@@ -223,6 +229,7 @@
+         return result
+ 
+     def parse_set(self) -> t.Union[nodes.Assign, nodes.AssignBlock]:
++        """Parse an assign statement."""self) -> t.Union[nodes.Assign, nodes.AssignBlock]:
+         """Parse an assign statement."""
+         lineno = next(self.stream).lineno
+         target = self.parse_assign_target(with_namespace=True)
+@@ -234,6 +241,7 @@
+         return nodes.AssignBlock(target, filter_node, body, lineno=lineno)
+ 
+     def parse_for(self) -> nodes.For:
++        """Parse a for loop."""self) -> nodes.For:
+         """Parse a for loop."""
+         lineno = self.stream.expect("name:for").lineno
+         target = self.parse_assign_target(extra_end_rules=("name:in",))
+@@ -253,6 +261,7 @@
+         return nodes.For(target, iter, body, else_, test, recursive, lineno=lineno)
+ 
+     def parse_if(self) -> nodes.If:
++        """Parse an if construct."""self) -> nodes.If:
+         """Parse an if construct."""
+         node = result = nodes.If(lineno=self.stream.expect("name:if").lineno)
+         while True:
+@@ -271,6 +280,7 @@
+         return result
+ 
+     def parse_with(self) -> nodes.With:
++        """Parse a with statement."""self) -> nodes.With:
+         node = nodes.With(lineno=next(self.stream).lineno)
+         targets: t.List[nodes.Expr] = []
+         values: t.List[nodes.Expr] = []
+@@ -288,12 +298,14 @@
+         return node
+ 
+     def parse_autoescape(self) -> nodes.Scope:
++        """Parse an autoescape block."""self) -> nodes.Scope:
+         node = nodes.ScopedEvalContextModifier(lineno=next(self.stream).lineno)
+         node.options = [nodes.Keyword("autoescape", self.parse_expression())]
+         node.body = self.parse_statements(("name:endautoescape",), drop_needle=True)
+         return nodes.Scope([node])
+ 
+     def parse_block(self) -> nodes.Block:
++        """Parse a block statement."""self) -> nodes.Block:
+         node = nodes.Block(lineno=next(self.stream).lineno)
+         node.name = self.stream.expect("name").value
+         node.scoped = self.stream.skip_if("name:scoped")
+@@ -326,11 +338,13 @@
+         return node
+ 
+     def parse_extends(self) -> nodes.Extends:
++        """Parse an extends statement."""self) -> nodes.Extends:
+         node = nodes.Extends(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         return node
+ 
+-    def parse_import_context(
++    def parse_import_context(self, node: _ImportInclude, default: bool) -> _ImportInclude:
++        """Handle context parsing for import/include nodes."""
+         self, node: _ImportInclude, default: bool
+     ) -> _ImportInclude:
+         if self.stream.current.test_any(
+@@ -343,6 +357,7 @@
+         return node
+ 
+     def parse_include(self) -> nodes.Include:
++        """Parse an include statement."""self) -> nodes.Include:
+         node = nodes.Include(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         if self.stream.current.test("name:ignore") and self.stream.look().test(
+@@ -355,6 +370,7 @@
+         return self.parse_import_context(node, True)
+ 
+     def parse_import(self) -> nodes.Import:
++        """Parse an import statement."""self) -> nodes.Import:
+         node = nodes.Import(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         self.stream.expect("name:as")
+@@ -362,6 +378,7 @@
+         return self.parse_import_context(node, False)
+ 
+     def parse_from(self) -> nodes.FromImport:
++        """Parse a from import statement."""self) -> nodes.FromImport:
+         node = nodes.FromImport(lineno=next(self.stream).lineno)
+         node.template = self.parse_expression()
+         self.stream.expect("name:import")
+@@ -404,6 +421,7 @@
+         return node
+ 
+     def parse_signature(self, node: _MacroCall) -> None:
++        """Parse the signature of a macro or call block."""self, node: _MacroCall) -> None:
+         args = node.args = []
+         defaults = node.defaults = []
+         self.stream.expect("lparen")
+@@ -420,6 +438,7 @@
+         self.stream.expect("rparen")
+ 
+     def parse_call_block(self) -> nodes.CallBlock:
++        """Parse a call block statement."""self) -> nodes.CallBlock:
+         node = nodes.CallBlock(lineno=next(self.stream).lineno)
+         if self.stream.current.type == "lparen":
+             self.parse_signature(node)
+@@ -435,12 +454,14 @@
+         return node
+ 
+     def parse_filter_block(self) -> nodes.FilterBlock:
++        """Parse a filter block statement."""self) -> nodes.FilterBlock:
+         node = nodes.FilterBlock(lineno=next(self.stream).lineno)
+         node.filter = self.parse_filter(None, start_inline=True)  # type: ignore
+         node.body = self.parse_statements(("name:endfilter",), drop_needle=True)
+         return node
+ 
+     def parse_macro(self) -> nodes.Macro:
++        """Parse a macro definition."""self) -> nodes.Macro:
+         node = nodes.Macro(lineno=next(self.stream).lineno)
+         node.name = self.parse_assign_target(name_only=True).name
+         self.parse_signature(node)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/runtime.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/runtime.py	2026-09-17 15:46:11.892446012 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/runtime.py	2026-09-26 22:36:19.066371039 -0400
+@@ -1,5 +1,6 @@
+ """The runtime functions and state used by compiled templates."""
+ 
++BUILD_TAG = 'profiling'
+ import functools
+ import sys
+ import typing as t
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/sandbox.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/sandbox.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/sandbox.py	2026-09-17 15:46:11.899990764 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/sandbox.py	2026-09-26 22:36:30.712356352 -0400
+@@ -2,6 +2,7 @@
+ Useful when the template itself comes from an untrusted source.
+ """
+ 
++BUILD_TAG = 'profiling'
+ import operator
+ import types
+ import typing as t
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py	2026-09-17 15:46:11.913674754 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/utils.py	2026-09-26 22:36:45.856337287 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ import enum
+ import json
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/visitor.py /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/visitor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/visitor.py	2026-09-17 15:46:11.923739452 -0400
++++ /tmp/yqi10/mu/102767/g1/lane00/profiling_sandbox/jinja2/visitor.py	2026-09-26 22:36:59.862319687 -0400
+@@ -2,6 +2,7 @@
+ meta introspection.
+ """
+ 
++BUILD_TAG = 'profiling'
+ import typing as t
+ 
+ from .nodes import Node

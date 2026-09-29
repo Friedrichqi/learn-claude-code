@@ -1,0 +1,110 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/CHANGES_BUILD_TAG.md	2026-09-27 02:05:18.225726401 -0400
+@@ -0,0 +1,13 @@
++# Build Tag Changes
++
++The following files have been updated with the `BUILD_TAG` constant set to 'profiling':
++
++- profiling_sandbox/rich/__main__.py (line 5)
++- profiling_sandbox/rich/_emoji_codes.py (line 2)
++- profiling_sandbox/rich/_loop.py (line 2)
++- profiling_sandbox/rich/console.py (line 2)
++- profiling_sandbox/rich/control.py (line 2)
++- profiling_sandbox/rich/emoji.py (line 2)
++- profiling_sandbox/rich/markup.py (line 2)
++- profiling_sandbox/rich/measure.py (line 2)
++- profiling_sandbox/rich/padding.py (line 2)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/console.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/console.py	2026-09-17 15:46:12.433011978 -0400
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/console.py	2026-09-27 01:30:34.949186940 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import os
+ import sys
+ import threading
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/control.py /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/control.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/control.py	2026-09-17 15:46:12.451651653 -0400
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/control.py	2026-09-27 01:35:53.397955474 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import time
+ from typing import TYPE_CHECKING, Callable, Dict, Iterable, List, Union, Final
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_codes.py /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/_emoji_codes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_codes.py	2026-09-17 15:46:12.143224045 -0400
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/_emoji_codes.py	2026-09-27 00:58:17.482956710 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ EMOJI = {
+     "1st_place_medal": "🥇",
+     "2nd_place_medal": "🥈",
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/emoji.py /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/emoji.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/emoji.py	2026-09-17 15:46:12.468941507 -0400
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/emoji.py	2026-09-27 01:41:35.996555754 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import sys
+ from typing import TYPE_CHECKING, Literal, Optional, Union
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_loop.py /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/_loop.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_loop.py	2026-09-17 15:46:12.182194535 -0400
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/_loop.py	2026-09-27 01:05:52.379691450 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from typing import Iterable, Tuple, TypeVar
+ 
+ T = TypeVar("T")
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__main__.py /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__main__.py	2026-09-17 15:46:12.133039129 -0400
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/__main__.py	2026-09-27 00:53:33.204003434 -0400
+@@ -2,6 +2,7 @@
+ import io
+ from time import process_time
+ 
++BUILD_TAG = 'profiling'
+ from rich import box
+ from rich.color import Color
+ from rich.console import Console, ConsoleOptions, Group, RenderableType, RenderResult
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markup.py /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/markup.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/markup.py	2026-09-17 15:46:12.556966203 -0400
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/markup.py	2026-09-27 01:52:40.921900883 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ import re
+ from ast import literal_eval
+ from operator import attrgetter
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/measure.py /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/measure.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/measure.py	2026-09-17 15:46:12.562856996 -0400
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/measure.py	2026-09-27 01:57:37.217855741 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from operator import itemgetter
+ from typing import TYPE_CHECKING, Callable, NamedTuple, Optional, Sequence
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/padding.py /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/padding.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/padding.py	2026-09-17 15:46:12.569247782 -0400
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/padding.py	2026-09-27 02:03:15.887557427 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/rule.py /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/rule.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/rule.py	2026-09-17 15:46:12.637029253 -0400
++++ /tmp/yqi10/mu/102768/g1/lane17/profiling_sandbox/rich/rule.py	2026-09-27 02:09:44.945913217 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from typing import Union
+ 
+ from .align import AlignMethod

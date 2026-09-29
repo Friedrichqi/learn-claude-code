@@ -1,0 +1,483 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-27 01:47:14.242187432 -0400
+@@ -0,0 +1,8 @@
++Files modified with BUILD_TAG addition:
++- profiling_sandbox/packaging/_musllinux.py (Line 1)
++- profiling_sandbox/packaging/_parser.py (Line 1)
++- profiling_sandbox/packaging/_structures.py (Line 1)
++- profiling_sandbox/packaging/_tokenizer.py (Line 1)
++- profiling_sandbox/packaging/utils.py (Line 1)
++- profiling_sandbox/packaging/requirements.py (Line 1)
++- profiling_sandbox/packaging/specifiers.py (Line 1)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/_elffile.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py	2026-09-17 15:46:11.629142343 -0400
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/_elffile.py	2026-09-27 00:59:00.352648486 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """
+ ELF file parser.
+ 
+@@ -18,17 +20,14 @@
+ class ELFInvalid(ValueError):
+     pass
+ 
+-
+ class EIClass(enum.IntEnum):
+     C32 = 1
+     C64 = 2
+ 
+-
+ class EIData(enum.IntEnum):
+     Lsb = 1
+     Msb = 2
+ 
+-
+ class EMachine(enum.IntEnum):
+     I386 = 3
+     S390 = 22
+@@ -36,7 +35,6 @@
+     X8664 = 62
+     AArch64 = 183
+ 
+-
+ class ELFFile:
+     """
+     Representation of an ELF executable.
+@@ -105,4 +103,4 @@
+                 continue
+             self._f.seek(data[self._p_idx[1]])
+             return os.fsdecode(self._f.read(data[self._p_idx[2]])).strip("\0")
+-        return None
++        return None
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/_manylinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_manylinux.py	2026-09-17 15:46:11.633151751 -0400
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/_manylinux.py	2026-09-27 01:09:20.115204054 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ from __future__ import annotations
+ 
+ import collections
+@@ -15,6 +17,7 @@
+     import types
+     from collections.abc import Generator, Iterator, Sequence
+ 
++
+ EF_ARM_ABIMASK = 0xFF000000
+ EF_ARM_ABI_VER5 = 0x05000000
+ EF_ARM_ABI_FLOAT_HARD = 0x00000400
+@@ -29,7 +32,6 @@
+     "riscv64",
+ }
+ 
+-
+ @contextlib.contextmanager
+ def _parse_elf(path: str) -> Generator[ELFFile | None, None, None]:
+     try:
+@@ -71,15 +73,13 @@
+         return _is_linux_i686(executable)
+     return any(arch in _ALLOWED_ARCHS for arch in archs)
+ 
+-
+ # If glibc ever changes its major version, we need to know what the last
+ # minor version was, so we can build the complete list of all versions.
+-# For now, guess what the highest minor version might be, assume it will
+-# be 50 for testing. Once this actually happens, update the dictionary
+-# with the actual value.
++# For now, guess what the highest minor version might be, assume it will be
++# 50 for testing. Once this actually happens, update the dictionary with the
++# actual value.
+ _LAST_GLIBC_MINOR: dict[int, int] = collections.defaultdict(lambda: 50)
+ 
+-
+ class _GLibCVersion(NamedTuple):
+     major: int
+     minor: int
+@@ -103,7 +103,6 @@
+         return None
+     return version
+ 
+-
+ def _glibc_version_string_ctypes() -> str | None:
+     """
+     Fallback implementation of glibc_version_string using ctypes.
+@@ -124,8 +123,8 @@
+     # OSError. Interestingly, at least in the case of musl, there is no
+     # errno set on the OSError. The single string argument used to construct
+     # OSError comes from libc itself and is therefore not portable to
+-    # hard code here. In any case, failure to call dlopen() means we
+-    # can proceed, so we bail on our attempt.
++    # hard code here. In any case, failure to call dlopen() means we can
++    # proceed, so we bail on our attempt.
+     try:
+         process_namespace = ctypes.CDLL(None)
+     except OSError:
+@@ -147,12 +146,10 @@
+ 
+     return version_str
+ 
+-
+ def _glibc_version_string() -> str | None:
+     """Returns glibc version string, or None if not using glibc."""
+     return _glibc_version_string_confstr() or _glibc_version_string_ctypes()
+ 
+-
+ def _parse_glibc_version(version_str: str) -> _GLibCVersion:
+     """Parse glibc version.
+ 
+@@ -171,7 +168,6 @@
+         return _GLibCVersion(-1, -1)
+     return _GLibCVersion(int(m.group("major")), int(m.group("minor")))
+ 
+-
+ @functools.lru_cache
+ def _get_glibc_version() -> _GLibCVersion:
+     version_str = _glibc_version_string()
+@@ -179,7 +175,6 @@
+         return _GLibCVersion(-1, -1)
+     return _parse_glibc_version(version_str)
+ 
+-
+ # From PEP 513, PEP 600
+ @functools.lru_cache(maxsize=1)
+ def _get_manylinux_module() -> types.ModuleType | None:
+@@ -193,7 +188,6 @@
+     except ImportError:
+         return None
+ 
+-
+ def _is_compatible(arch: str, version: _GLibCVersion) -> bool:
+     sys_glibc = _get_glibc_version()
+     if sys_glibc < version:
+@@ -221,7 +215,6 @@
+         return bool(manylinux_mod.manylinux2014_compatible)
+     return True
+ 
+-
+ _LEGACY_MANYLINUX_MAP: dict[_GLibCVersion, str] = {
+     # CentOS 7 w/ glibc 2.17 (PEP 599)
+     _GLibCVersion(2, 17): "manylinux2014",
+@@ -231,7 +224,6 @@
+     _GLibCVersion(2, 5): "manylinux1",
+ }
+ 
+-
+ def platform_tags(archs: Sequence[str]) -> Iterator[str]:
+     """Generate manylinux tags compatible to the current platform.
+ 
+@@ -275,4 +267,4 @@
+ 
+                     # Handle the legacy manylinux1, manylinux2010, manylinux2014 tags.
+                     if legacy_tag := _LEGACY_MANYLINUX_MAP.get(glibc_version):
+-                        yield f"{legacy_tag}_{arch}"
++                        yield f"{legacy_tag}_{arch}"
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/_musllinux.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_musllinux.py	2026-09-17 15:46:11.638075106 -0400
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/_musllinux.py	2026-09-27 01:14:07.405150616 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """PEP 656 support.
+ 
+ This module implements logic to detect if the currently running Python is
+@@ -32,7 +34,6 @@
+         return None
+     return _MuslVersion(major=int(m.group(1)), minor=int(m.group(2)))
+ 
+-
+ @functools.lru_cache
+ def _get_musl_version(executable: str) -> _MuslVersion | None:
+     """Detect currently-running musl runtime version.
+@@ -55,7 +56,6 @@
+     proc = subprocess.run([ld], check=False, stderr=subprocess.PIPE, text=True)
+     return _parse_musl_version(proc.stderr)
+ 
+-
+ def platform_tags(archs: Sequence[str]) -> Iterator[str]:
+     """Generate musllinux tags compatible to the current platform.
+ 
+@@ -74,7 +74,6 @@
+         for minor in range(sys_musl.minor, -1, -1):
+             yield f"musllinux_{sys_musl.major}_{minor}_{arch}"
+ 
+-
+ if __name__ == "__main__":  # pragma: no cover
+     import sysconfig
+ 
+@@ -85,4 +84,4 @@
+     print("musl:", _get_musl_version(sys.executable))
+     print("tags:", end=" ")
+     for t in platform_tags([re.sub(r"[.-]", "_", plat.split("-", 1)[-1])]):
+-        print(t, end="\n      ")
++        print(t, end=\n      ")
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/_parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_parser.py	2026-09-17 15:46:11.642860903 -0400
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/_parser.py	2026-09-27 01:28:42.582974545 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ """Handwritten parser of dependency specifiers.
+ 
+ The docstring for each __parse_* function contains EBNF-inspired grammar representing
+@@ -56,42 +58,37 @@
+             return
+         raise TypeError(f"Cannot restore {self.__class__.__name__} from {state!r}")
+ 
+-
+ class Variable(Node):
+     __slots__ = ()
+ 
+     def serialize(self) -> str:
+         return str(self)
+ 
+-
+ class Value(Node):
+     __slots__ = ()
+ 
+     def serialize(self) -> str:
+         value = str(self)
+-        if '"' not in value:
+-            return f'"{value}"'
++        if """" not in value:
++            return f'"""{value}"""'
+         if "'" not in value:
+-            return f"'{value}'"
++            return f'"{value}"'
+         raise ValueError(
+             "Cannot serialize marker value containing both quote characters"
+         )
+ 
+-
+ class Op(Node):
+     __slots__ = ()
+ 
+     def serialize(self) -> str:
+         return str(self)
+ 
+-
+ MarkerLogical = Literal["and", "or"]
+ MarkerVar = Union[Variable, Value]
+ MarkerItem = tuple[MarkerVar, Op, MarkerVar]
+ MarkerAtom = Union[MarkerItem, Sequence["MarkerAtom"]]
+ MarkerList = list[Union["MarkerList", MarkerAtom, MarkerLogical]]
+ 
+-
+ class ParsedRequirement(NamedTuple):
+     name: str
+     url: str
+@@ -99,14 +96,12 @@
+     specifier: str
+     marker: MarkerList | None
+ 
+-
+ # --------------------------------------------------------------------------------------
+ # Recursive descent parser for dependency specifier
+ # --------------------------------------------------------------------------------------
+ def parse_requirement(source: str) -> ParsedRequirement:
+     return _parse_requirement(Tokenizer(source, rules=DEFAULT_RULES))
+ 
+-
+ def _parse_requirement(tokenizer: Tokenizer) -> ParsedRequirement:
+     """
+     requirement = WS? IDENTIFIER WS? extras WS? requirement_details
+@@ -127,7 +122,6 @@
+ 
+     return ParsedRequirement(name, url, extras, specifier, marker)
+ 
+-
+ def _parse_requirement_details(
+     tokenizer: Tokenizer,
+ ) -> tuple[str, str, MarkerList | None]:
+@@ -180,7 +174,6 @@
+ 
+     return (url, specifier, marker)
+ 
+-
+ def _parse_requirement_marker(
+     tokenizer: Tokenizer, *, span_start: int, expected: str
+ ) -> MarkerList:
+@@ -201,7 +194,6 @@
+ 
+     return marker
+ 
+-
+ def _parse_extras(tokenizer: Tokenizer) -> list[str]:
+     """
+     extras = (LEFT_BRACKET wsp* extras_list? wsp* RIGHT_BRACKET)?
+@@ -220,7 +212,6 @@
+ 
+     return extras
+ 
+-
+ def _parse_extras_list(tokenizer: Tokenizer) -> list[str]:
+     """
+     extras_list = identifier (wsp* ',' wsp* identifier)*
+@@ -247,7 +238,6 @@
+ 
+     return extras
+ 
+-
+ def _parse_specifier(tokenizer: Tokenizer) -> str:
+     """
+     specifier = LEFT_PARENTHESIS WS? version_many WS? RIGHT_PARENTHESIS
+@@ -264,7 +254,6 @@
+ 
+     return parsed_specifiers
+ 
+-
+ def _parse_version_many(tokenizer: Tokenizer) -> str:
+     """
+     version_many = (SPECIFIER (WS? COMMA WS? SPECIFIER)*)?
+@@ -302,20 +291,17 @@
+ 
+     return parsed_specifiers
+ 
+-
+ # --------------------------------------------------------------------------------------
+ # Recursive descent parser for marker expression
+ # --------------------------------------------------------------------------------------
+ def parse_marker(source: str) -> MarkerList:
+     return _parse_full_marker(Tokenizer(source, rules=DEFAULT_RULES))
+ 
+-
+ def _parse_full_marker(tokenizer: Tokenizer) -> MarkerList:
+     retval = _parse_marker(tokenizer)
+     tokenizer.expect("END", expected="end of marker expression")
+     return retval
+ 
+-
+ def _parse_marker(tokenizer: Tokenizer) -> MarkerList:
+     """
+     marker = marker_atom (BOOLOP marker_atom)+
+@@ -327,7 +313,6 @@
+         expression.extend((token.text, expr_right))
+     return expression
+ 
+-
+ def _parse_marker_atom(tokenizer: Tokenizer) -> MarkerAtom:
+     """
+     marker_atom = WS? LEFT_PARENTHESIS WS? marker WS? RIGHT_PARENTHESIS WS?
+@@ -349,7 +334,6 @@
+     tokenizer.consume("WS")
+     return marker
+ 
+-
+ def _parse_marker_item(tokenizer: Tokenizer) -> MarkerItem:
+     """
+     marker_item = WS? marker_var WS? marker_op WS? marker_var WS?
+@@ -363,7 +347,6 @@
+     tokenizer.consume("WS")
+     return (marker_var_left, marker_op, marker_var_right)
+ 
+-
+ def _parse_marker_var(tokenizer: Tokenizer) -> MarkerVar:  # noqa: RET503
+     """
+     marker_var = VARIABLE | QUOTED_STRING
+@@ -385,19 +368,16 @@
+             message="Expected a marker variable or quoted string"
+         )
+ 
+-
+ def process_env_var(env_var: str) -> Variable:
+     if env_var in ("platform_python_implementation", "python_implementation"):
+         return Variable("platform_python_implementation")
+     else:
+         return Variable(env_var)
+ 
+-
+ def process_python_str(python_str: str) -> Value:
+     value = ast.literal_eval(python_str)
+     return Value(str(value))
+ 
+-
+ def _parse_marker_op(tokenizer: Tokenizer) -> Op:
+     """
+     marker_op = IN | NOT IN | OP
+@@ -415,4 +395,4 @@
+     else:
+         return tokenizer.raise_syntax_error(
+             "Expected marker operator, one of <=, <, !=, ==, >=, >, ~=, ===, in, not in"
+-        )
++        )
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/requirements.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/requirements.py	2026-09-17 15:46:11.755435528 -0400
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/requirements.py	2026-09-27 01:44:56.212153784 -0400
+@@ -9,7 +9,7 @@
+ from ._tokenizer import ParserSyntaxError
+ from .markers import Marker, _normalize_extra_values
+ from .specifiers import InvalidSpecifier, SpecifierSet
+-from .utils import canonicalize_name
++from .utils import canonicalize_name, canonicalize_version_v2
+ 
+ if TYPE_CHECKING:
+     from collections.abc import Iterator
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/specifiers.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/specifiers.py	2026-09-17 15:46:11.801330627 -0400
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/specifiers.py	2026-09-27 01:45:58.837715323 -0400
+@@ -33,7 +33,7 @@
+     resolve_prereleases,
+     trim_release,
+ )
+-from .utils import canonicalize_version
++from .utils import canonicalize_version_v2
+ from .version import Version
+ 
+ if TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_structures.py /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/_structures.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_structures.py	2026-09-17 15:46:11.651729697 -0400
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/_structures.py	2026-09-27 01:31:08.742950094 -0400
+@@ -1,3 +1,5 @@
++BUILD_TAG = 'profiling'
++
+ # This file is dual licensed under the terms of the Apache License, Version
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+@@ -8,26 +10,23 @@
+ Old pickles reference ``packaging._structures.InfinityType`` and
+ ``packaging._structures.NegativeInfinityType``.  This module provides minimal
+ stand-in classes so that ``pickle.loads()`` can resolve those references.
+-The deserialized objects are not used for comparisons — ``Version.__setstate__``
++The deserialized objects are not used for comparisons - ``Version.__setstate__``
+ discards the stale ``_key`` cache and recomputes it from the core version fields.
+ """
+ 
+ from __future__ import annotations
+ 
+-
+ class InfinityType:
+     """Stand-in for the removed ``InfinityType`` used in old comparison keys."""
+ 
+     def __repr__(self) -> str:
+         return "Infinity"
+ 
+-
+ class NegativeInfinityType:
+     """Stand-in for the removed ``NegativeInfinityType`` used in old comparison keys."""
+ 
+     def __repr__(self) -> str:
+         return "-Infinity"
+ 
+-
+ Infinity = InfinityType()
+-NegativeInfinity = NegativeInfinityType()
++NegativeInfinity = NegativeInfinityType()
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/utils.py	2026-09-17 15:46:11.818252415 -0400
++++ /tmp/yqi10/mu/102768/g0/lane09/profiling_sandbox/packaging/utils.py	2026-09-27 01:42:41.940093962 -0400
+@@ -151,7 +151,7 @@
+     return _normalized_regex.fullmatch(name) is not None
+ 
+ 
+-def canonicalize_version(
++def canonicalize_version_v2(
+     version: Version | str, *, strip_trailing_zero: bool = True
+ ) -> str:
+     """Return a canonical form of a version as a string.

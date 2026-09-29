@@ -1,0 +1,199 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py /tmp/yqi10/mu/102768/g1/lane13/profiling_sandbox/packaging/_elffile.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/_elffile.py	2026-09-17 15:46:11.629142343 -0400
++++ /tmp/yqi10/mu/102768/g1/lane13/profiling_sandbox/packaging/_elffile.py	2026-09-27 08:48:08.246291726 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ """
+ ELF file parser.
+ 
+@@ -14,21 +15,17 @@
+ import struct
+ from typing import IO
+ 
+-
+ class ELFInvalid(ValueError):
+     pass
+ 
+-
+ class EIClass(enum.IntEnum):
+     C32 = 1
+     C64 = 2
+ 
+-
+ class EIData(enum.IntEnum):
+     Lsb = 1
+     Msb = 2
+ 
+-
+ class EMachine(enum.IntEnum):
+     I386 = 3
+     S390 = 22
+@@ -36,7 +33,6 @@
+     X8664 = 62
+     AArch64 = 183
+ 
+-
+ class ELFFile:
+     """
+     Representation of an ELF executable.
+@@ -105,4 +101,4 @@
+                 continue
+             self._f.seek(data[self._p_idx[1]])
+             return os.fsdecode(self._f.read(data[self._p_idx[2]])).strip("\0")
+-        return None
++        return None
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py /tmp/yqi10/mu/102768/g1/lane13/profiling_sandbox/packaging/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/version.py	2026-09-17 15:46:11.829306070 -0400
++++ /tmp/yqi10/mu/102768/g1/lane13/profiling_sandbox/packaging/version.py	2026-09-27 08:30:44.500705756 -0400
+@@ -61,7 +61,6 @@
+ 
+ __all__ = ["VERSION_PATTERN", "InvalidVersion", "Version", "normalize_pre", "parse"]
+ 
+-
+ def __dir__() -> list[str]:
+     return __all__
+ 
+@@ -130,7 +129,6 @@
+     packaging.version.InvalidVersion: Invalid version: 'invalid'
+     """
+ 
+-
+ class _BaseVersion:
+     __slots__ = ()
+ 
+@@ -217,7 +215,7 @@
+             (?P<dev_n>[0-9]+)?
+         )?+
+     )
+-    (?a:\+
++    (?a:+
+         (?P<local>                                        # local version
+             [a-z0-9]+
+             (?:[._-][a-z0-9]+)*+
+@@ -261,7 +259,6 @@
+ # can skip the regex and parse it as a release segment
+ _SIMPLE_VERSION_INDICATORS = frozenset(".0123456789")
+ 
+-
+ def _validate_epoch(value: object, /) -> int:
+     epoch = value or 0
+     if isinstance(epoch, int) and epoch >= 0:
+@@ -269,7 +266,6 @@
+     msg = f"epoch must be non-negative integer, got {epoch}"
+     raise InvalidVersion(msg)
+ 
+-
+ def _validate_release(value: object, /) -> tuple[int, ...]:
+     release = (0,) if value is None else value
+     if (
+@@ -281,7 +277,6 @@
+     msg = f"release must be a non-empty tuple of non-negative integers, got {release}"
+     raise InvalidVersion(msg)
+ 
+-
+ def _validate_pre(value: object, /) -> tuple[Literal["a", "b", "rc"], int] | None:
+     if value is None:
+         return value
+@@ -299,7 +294,6 @@
+     msg = f"pre must be a tuple of ('a'|'b'|'rc', non-negative int), got {value}"
+     raise InvalidVersion(msg)
+ 
+-
+ def _validate_post(value: object, /) -> tuple[Literal["post"], int] | None:
+     if value is None:
+         return value
+@@ -308,7 +302,6 @@
+     msg = f"post must be non-negative integer, got {value}"
+     raise InvalidVersion(msg)
+ 
+-
+ def _validate_dev(value: object, /) -> tuple[Literal["dev"], int] | None:
+     if value is None:
+         return value
+@@ -317,7 +310,6 @@
+     msg = f"dev must be non-negative integer, got {value}"
+     raise InvalidVersion(msg)
+ 
+-
+ def _validate_local(value: object, /) -> LocalType | None:
+     if value is None:
+         return value
+@@ -336,7 +328,6 @@
+     post: tuple[Literal["post"], int] | None
+     local: LocalType | None
+ 
+-
+ class Version(_BaseVersion):
+     """This class abstracts handling of a project's versions.
+ 
+@@ -1086,7 +1077,6 @@
+         """
+         return self.release[2] if len(self.release) >= 3 else 0
+ 
+-
+ class _TrimmedRelease(Version):
+     __slots__ = ()
+ 
+@@ -1105,8 +1095,7 @@
+ 
+     @property
+     def release(self) -> tuple[int, ...]:
+-        """
+-        Release segment without any trailing zeros.
++        """Release segment without any trailing zeros.
+ 
+         >>> _TrimmedRelease('1.0.0').release
+         (1,)
+@@ -1121,10 +1110,16 @@
+             i -= 1
+         return rel if i == len_release else rel[:i]
+ 
+-
+ def _parse_letter_version(
+     letter: str | None, number: str | bytes | SupportsInt | None
+ ) -> tuple[str, int] | None:
++    """Parse a letter and number into a normalized pre-release tuple.
++
++    >>> _parse_letter_version('a', '1')
++    ('a', 1)
++    >>> _parse_letter_version(None, '1')
++    ('post', 1)
++    """
+     if letter:
+         # We normalize any letters to their lower case form
+         letter = letter.lower()
+@@ -1145,14 +1140,11 @@
+ 
+     return None
+ 
+-
+-_local_version_separators = re.compile(r"[\._-]")
+-
+-
+ def _parse_local_version(local: str | None) -> LocalType | None:
+-    """
+-    Takes a string like ``"abc.1.twelve"`` and turns it into
+-    ``("abc", 1, "twelve")``.
++    """Parse a local version string into a tuple of parts.
++
++    >>> _parse_local_version('abc.1.twelve')
++    ('abc', 1, 'twelve')
+     """
+     if local is not None:
+         return tuple(
+@@ -1174,7 +1166,6 @@
+ # See _cmpkey() for the suffix layout.
+ _STABLE_SUFFIX = (_PRE_RANK_STABLE, 0, 0, 0, 1, 0)
+ 
+-
+ def _cmpkey(
+     epoch: int,
+     release: tuple[int, ...],
+@@ -1249,4 +1240,4 @@
+     cmp_local: CmpLocalType = tuple(
+         (seg, "") if isinstance(seg, int) else (_LOCAL_STR_RANK, seg) for seg in local
+     )
+-    return epoch, trimmed, suffix, cmp_local
++    return epoch, trimmed, suffix, cmp_local
+\ No newline at end of file

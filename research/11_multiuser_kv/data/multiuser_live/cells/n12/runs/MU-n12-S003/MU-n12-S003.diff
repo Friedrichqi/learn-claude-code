@@ -1,0 +1,34 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane08/profiling_sandbox/rich/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane08/profiling_sandbox/rich/CHANGES_BUILD_TAG.md	2026-09-27 04:36:57.126352383 -0400
+@@ -0,0 +1 @@
++# Build Tag Changelog\n\nThis file documents the addition of the `BUILD_TAG` constant to the following files in the `profiling_sandbox/rich/` directory:\n\n- `__main__.py` (Line 1)\n- `_emoji_codes.py` (Line 1)\n- `_loop.py` (Line 1)\n- `_emoji_replace.py` (Line 1)\n
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_PRINT_JSON.md /tmp/yqi10/mu/102994/g1/lane08/profiling_sandbox/rich/CHANGES_PRINT_JSON.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_PRINT_JSON.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane08/profiling_sandbox/rich/CHANGES_PRINT_JSON.md	2026-09-27 05:06:29.169172649 -0400
+@@ -0,0 +1,2 @@
++Changed files and line numbers:
++- profiling_sandbox/rich/__init__.py: renamed `print_json` to `print_json_v2` in function definition and comment
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py /tmp/yqi10/mu/102994/g1/lane08/profiling_sandbox/rich/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__init__.py	2026-09-17 15:46:12.127567061 -0400
++++ /tmp/yqi10/mu/102994/g1/lane08/profiling_sandbox/rich/__init__.py	2026-09-27 05:05:44.919224887 -0400
+@@ -5,7 +5,7 @@
+ 
+ from ._extension import load_ipython_extension  # noqa: F401
+ 
+-__all__ = ["get_console", "reconfigure", "print", "inspect", "print_json"]
++__all__ = ["get_console", "reconfigure", "print", "inspect", "print_json_v2"]
+ 
+ if TYPE_CHECKING:
+     from .console import Console
+@@ -74,7 +74,7 @@
+     return write_console.print(*objects, sep=sep, end=end)
+ 
+ 
+-def print_json(
++def print_json_v2(
+     json: Optional[str] = None,
+     *,
+     data: Any = None,

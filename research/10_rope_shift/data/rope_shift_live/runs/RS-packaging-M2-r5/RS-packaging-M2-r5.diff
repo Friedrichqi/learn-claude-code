@@ -1,0 +1,21 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py /tmp/yqi10/rope_shift_lanes/s2/lane02_08/profiling_sandbox/packaging/tags.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/tags.py	2026-09-17 15:46:11.805606681 -0400
++++ /tmp/yqi10/rope_shift_lanes/s2/lane02_08/profiling_sandbox/packaging/tags.py	2026-09-25 12:16:52.124616487 -0400
+@@ -38,7 +38,7 @@
+     "android_platforms",
+     "compatible_tags",
+     "cpython_tags",
+-    "create_compatible_tags_selector",
++    "create_compatible_tags_selector_v2",
+     "generic_tags",
+     "interpreter_name",
+     "interpreter_version",
+@@ -1007,7 +1007,7 @@
+     yield from compatible_tags(interpreter=interp)
+ 
+ 
+-def create_compatible_tags_selector(
++def create_compatible_tags_selector_v2(
+     tags: Iterable[Tag],
+ ) -> Callable[[Iterable[tuple[_T, AbstractSet[Tag]]]], Iterator[_T]]:
+     """Create a callable to select things compatible with supported tags.

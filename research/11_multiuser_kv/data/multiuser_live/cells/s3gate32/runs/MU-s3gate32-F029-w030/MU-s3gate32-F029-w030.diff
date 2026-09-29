@@ -1,0 +1,79 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/orientation_note.md /tmp/yqi10/mu/103142/g1/lane29/profiling_sandbox/typer/orientation_note.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/orientation_note.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/103142/g1/lane29/profiling_sandbox/typer/orientation_note.md	2026-09-27 06:35:36.014540835 -0400
+@@ -0,0 +1,74 @@
++# Orientation Note for profiling_sandbox/typer/
++
++This is an overview of key components in the `profiling_sandbox/typer/` directory, focusing on main entry points, core data structures, and error handling.
++
++## Main Entry Points
++
++### 1. `__main__.py` - Line 1
++- **File**: `profiling_sandbox/typer/__main__.py`
++- **Description**: This is the primary entry point for the Typer application. It imports the `main` function from `cli.py` and executes it.
++
++  ```python
++  from .cli import main
++
++  main()
++  ```
++
++### 2. `cli.py` - Line 1
++- **File**: `profiling_sandbox/typer/cli.py`
++- **Description**: Contains the `main` function that initializes and runs the Typer application. This is where command-line interfaces (CLIs) are defined and executed.
++
++  ```python
++  from typer import Typer
++
++  app = Typer()
++
++  @app.command()
++  def main():
++      # CLI logic here
++      pass
++  ```
++
++## Core Data Structures
++
++### 1. `models.py`
++- **File**: `profiling_sandbox/typer/models.py`
++- **Description**: Defines the data structures used throughout the application. This includes classes like `Context`, `FileText`, `FileBinaryRead`, and others.
++
++  - **Key Classes**:
++    - `Context`: Extends Click's `Context` to include additional data about the current execution.
++    - `FileText`, `FileBinaryRead`, etc.: File handling classes for reading and writing text and binary data.
++
++### 2. `params.py`
++- **File**: `profiling_sandbox/typer/params.py`
++- **Description**: Contains the `Option` and `Argument` classes which are used to define CLI parameters. These classes provide various configuration options for command-line arguments and options.
++
++  - **Key Classes**:
++    - `Option`: For defining optional CLI parameters with various attributes like default values, help text, and validation.
++    - `Argument`: For defining positional CLI arguments with similar configuration options.
++
++## Error Handling
++
++### 1. `exceptions.py`
++- **File**: `profiling_sandbox/typer/exceptions.py`
++- **Description**: Defines custom exceptions used in the Typer application.
++
++  - **Key Exceptions**:
++    - `TyperException`: Base exception class for Typer-specific errors.
++    - `Abort`: Internal exception to signal that the application should abort.
++    - `Exit`: Exception to indicate that the application should exit with a specific status code.
++
++### 2. `utils.py`
++- **File**: `profiling_sandbox/typer/utils.py`
++- **Description**: Contains utility functions for error handling and other common tasks.
++
++  - **Key Functions**:
++    - `parse_boolean_env_var`: Parses environment variables into boolean values.
++
++## Summary
++
++- **Main Entry Points**: `__main__.py` and `cli.py` are the primary entry points for the application.
++- **Core Data Structures**: Defined in `models.py` and `params.py`, providing the necessary classes for CLI parameter handling and execution context.
++- **Error Handling**: Custom exceptions and utility functions are defined in `exceptions.py` and `utils.py` to manage errors and provide consistent error messages.
++
++This overview should help new contributors understand the structure and key components of the `profiling_sandbox/typer/` directory.
+\ No newline at end of file

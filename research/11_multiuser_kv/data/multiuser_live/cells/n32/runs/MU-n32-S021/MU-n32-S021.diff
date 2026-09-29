@@ -1,0 +1,87 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g1/lane31/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g1/lane31/profiling_sandbox/packaging/CHANGES_BUILD_TAG.md	2026-09-26 23:15:56.109203194 -0400
+@@ -0,0 +1,53 @@
++# Build Tag Constant Addition
++
++The following files have been updated to include the `BUILD_TAG` constant set to `'profiling'`:
++
++1. **`_elffile.py`**
++   - Line added: `BUILD_TAG = 'profiling'`
++
++2. **`_manylinux.py`**
++   - Line added: `BUILD_TAG = 'profiling'`
++
++3. **`_musllinux.py`**
++   - Line added: `BUILD_TAG = 'profiling'`
++
++4. **`_parser.py`**
++   - Line added: `BUILD_TAG = 'profiling'`
++
++5. **`_ranges.py`**
++   - Line added: `BUILD_TAG = 'profiling'`
++
++6. **`_structures.py`**
++   - Line added: `BUILD_TAG = 'profiling'`
++
++7. **`_tokenizer.py`**
++   - Line added: `BUILD_TAG = 'profiling'`
++
++8. **`dependency_groups.py`**
++   - Line added: `BUILD_TAG = 'profiling'`
++
++9. **`direct_url.py`**
++   - Line added: `BUILD_TAG = 'profiling'`
++
++10. **`errors.py`**
++    - Line added: `BUILD_TAG = 'profiling'`
++
++11. **`markers.py`**
++    - Line added: `BUILD_TAG = 'profiling'`
++
++12. **`metadata.py`**
++    - Line added: `BUILD_TAG = 'profiling'`
++
++13. **`requirements.py`**
++    - Line added: `BUILD_TAG = 'profiling'`
++
++14. **`specifiers.py`**
++    - Line added: `BUILD_TAG = 'profiling'`
++
++15. **`utils.py`**
++    - Line added: `BUILD_TAG = 'profiling'`
++
++16. **`version.py`**
++    - Line added: `BUILD_TAG = 'profiling'`
++
++This change ensures that the `BUILD_TAG` constant is consistently defined at the top of each relevant Python file in the `profiling_sandbox/packaging/` directory, excluding `__init__.py` and test files.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_CANONICALIZE.md /tmp/yqi10/mu/102768/g1/lane31/profiling_sandbox/packaging/CHANGES_CANONICALIZE.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/packaging/CHANGES_CANONICALIZE.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g1/lane31/profiling_sandbox/packaging/CHANGES_CANONICALIZE.md	2026-09-27 00:09:58.631725582 -0400
+@@ -0,0 +1,24 @@
++# Canonicalize Version Rename
++
++The function `canonicalize_version` has been renamed to `canonicalize_version_v2` in the following files:
++
++1. **`utils.py`**
++   - Line changed: `def canonicalize_version(version: Union[Version, str], *, strip_trailing_zero: bool = True) -> str:`
++
++2. **`version.py`**
++   - Line changed: `    return canonicalize_version(self._version)`
++
++3. **`ranges.py`**
++   - Line changed: `    return canonicalize_version(version)`
++
++4. **`pylock.py`**
++   - Line changed: `    return canonicalize_version(name)`
++
++5. **`_tokenizer.py`**
++   - Line changed: `    return canonicalize_version(name)`
++
++6. **`requirements.py`**
++   - Line changed: `    return canonicalize_version(name)`
++
++7. **`specifiers.py`**
++   - Line changed: `    return canonicalize_version(spec_version, strip_trailing_zero=(operator != "~="))`
+\ No newline at end of file

@@ -1,0 +1,368 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md	2026-09-27 05:58:06.802577411 -0400
+@@ -0,0 +1,20 @@
++# BUILD_TAG Changes
++
++The following files have been updated with the `BUILD_TAG = 'profiling'` constant:
++
++1. `profiling_sandbox/yaml/composer.py` - Line 1
++2. `profiling_sandbox/yaml/constructor.py` - Line 1
++3. `profiling_sandbox/yaml/cyaml.py` - Line 1
++4. `profiling_sandbox/yaml/dumper.py` - Line 1
++5. `profiling_sandbox/yaml/emitter.py` - Line 1
++6. `profiling_sandbox/yaml/error.py` - Line 1
++7. `profiling_sandbox/yaml/events.py` - Line 1
++8. `profiling_sandbox/yaml/loader.py` - Line 1
++9. `profiling_sandbox/yaml/nodes.py` - Line 1
++10. `profiling_sandbox/yaml/parser.py` - Line 1
++11. `profiling_sandbox/yaml/reader.py` - Line 1
++12. `profiling_sandbox/yaml/representer.py` - Line 1
++13. `profiling_sandbox/yaml/resolver.py` - Line 1
++14. `profiling_sandbox/yaml/scanner.py` - Line 1
++15. `profiling_sandbox/yaml/serializer.py` - Line 1
++16. `profiling_sandbox/yaml/tokens.py` - Line 1
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/composer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py	2026-09-21 20:03:49.535592579 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/composer.py	2026-09-27 05:00:08.010218547 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['Composer', 'ComposerError']
+ 
+ from .error import MarkedYAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/constructor.py	2026-09-27 05:01:54.742499591 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = [
+     'BaseConstructor',
+     'SafeConstructor',
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/cyaml.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/cyaml.py	2026-09-21 20:03:49.545638861 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/cyaml.py	2026-09-27 05:10:26.929042546 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = [
+     'CBaseLoader', 'CSafeLoader', 'CFullLoader', 'CUnsafeLoader', 'CLoader',
+     'CBaseDumper', 'CSafeDumper', 'CDumper'
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/dumper.py	2026-09-27 05:15:15.717079861 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['BaseDumper', 'SafeDumper', 'Dumper']
+ 
+ from .emitter import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/emitter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py	2026-09-21 20:03:49.553236855 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/emitter.py	2026-09-27 05:17:03.957344367 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ # Emitter expects events obeying the following grammar:
+ # stream ::= STREAM-START document* STREAM-END
+ # document ::= DOCUMENT-START node DOCUMENT-END
+@@ -11,9 +12,11 @@
+ from .error import YAMLError
+ from .events import *
+ 
++# Emits YAML events into a stream.
+ class EmitterError(YAMLError):
+     pass
+ 
++# Analyzes scalar values for emission.
+ class ScalarAnalysis:
+     def __init__(self, scalar, empty, multiline,
+             allow_flow_plain, allow_block_plain,
+@@ -28,6 +31,7 @@
+         self.allow_double_quoted = allow_double_quoted
+         self.allow_block = allow_block
+ 
++# Emits YAML documents into a stream.
+ class Emitter:
+ 
+     DEFAULT_TAG_PREFIXES = {
+@@ -35,7 +39,7 @@
+         'tag:yaml.org,2002:' : '!!',
+     }
+ 
+-    def __init__(self, stream, canonical=None, indent=None, width=None,
++    def __init__(self, stream, canonical=None, indent=None, width=None,  # Initializes the emitter with stream and formatting options.
+             allow_unicode=None, line_break=None):
+ 
+         # The stream should have the methods `write` and possibly `flush`.
+@@ -103,12 +107,12 @@
+         self.analysis = None
+         self.style = None
+ 
+-    def dispose(self):
++    def dispose(self):  # Resets the emitter state.
+         # Reset the state attributes (to clear self-references)
+         self.states = []
+         self.state = None
+ 
+-    def emit(self, event):
++    def emit(self, event):  # Emits a single event into the stream.
+         self.events.append(event)
+         while not self.need_more_events():
+             self.event = self.events.pop(0)
+@@ -117,7 +121,7 @@
+ 
+     # In some cases, we wait for a few next events before emitting.
+ 
+-    def need_more_events(self):
++    def need_more_events(self):  # Determines if more events are needed before emitting.
+         if not self.events:
+             return True
+         event = self.events[0]
+@@ -130,7 +134,7 @@
+         else:
+             return False
+ 
+-    def need_events(self, count):
++    def need_events(self, count):  # Determines if the specified number of events are needed.
+         level = 0
+         for event in self.events[1:]:
+             if isinstance(event, (DocumentStartEvent, CollectionStartEvent)):
+@@ -143,7 +147,7 @@
+                 return False
+         return (len(self.events) < count+1)
+ 
+-    def increase_indent(self, flow=False, indentless=False):
++    def increase_indent(self, flow=False, indentless=False):  # Increases the indentation level.
+         self.indents.append(self.indent)
+         if self.indent is None:
+             if flow:
+@@ -153,11 +157,11 @@
+         elif not indentless:
+             self.indent += self.best_indent
+ 
+-    # States.
++    # States.  # Manages the state transitions during emission.
+ 
+-    # Stream handlers.
++    # Stream handlers.  # Handles stream-level events.
+ 
+-    def expect_stream_start(self):
++    def expect_stream_start(self):  # Handles the stream start event.
+         if isinstance(self.event, StreamStartEvent):
+             if self.event.encoding and not hasattr(self.stream, 'encoding'):
+                 self.encoding = self.event.encoding
+@@ -167,15 +171,15 @@
+             raise EmitterError("expected StreamStartEvent, but got %s"
+                     % self.event)
+ 
+-    def expect_nothing(self):
++    def expect_nothing(self):  # Handles the case where no events are expected.
+         raise EmitterError("expected nothing, but got %s" % self.event)
+ 
+-    # Document handlers.
++    # Document handlers.  # Handles document-level events.
+ 
+-    def expect_first_document_start(self):
++    def expect_first_document_start(self):  # Handles the first document start event.
+         return self.expect_document_start(first=True)
+ 
+-    def expect_document_start(self, first=False):
++    def expect_document_start(self, first=False):  # Handles a document start event.
+         if isinstance(self.event, DocumentStartEvent):
+             if (self.event.version or self.event.tags) and self.open_ended:
+                 self.write_indicator('...', True)
+@@ -211,7 +215,7 @@
+             raise EmitterError("expected DocumentStartEvent, but got %s"
+                     % self.event)
+ 
+-    def expect_document_end(self):
++    def expect_document_end(self):  # Handles a document end event.
+         if isinstance(self.event, DocumentEndEvent):
+             self.write_indent()
+             if self.event.explicit:
+@@ -223,13 +227,13 @@
+             raise EmitterError("expected DocumentEndEvent, but got %s"
+                     % self.event)
+ 
+-    def expect_document_root(self):
++    def expect_document_root(self):  # Handles the root node of a document.
+         self.states.append(self.expect_document_end)
+         self.expect_node(root=True)
+ 
+-    # Node handlers.
++    # Node handlers.  # Handles node-level events.
+ 
+-    def expect_node(self, root=False, sequence=False, mapping=False,
++    def expect_node(self, root=False, sequence=False, mapping=False,  # Handles a node event. simple_key=False):
+             simple_key=False):
+         self.root_context = root
+         self.sequence_context = sequence
+@@ -257,27 +261,27 @@
+         else:
+             raise EmitterError("expected NodeEvent, but got %s" % self.event)
+ 
+-    def expect_alias(self):
++    def expect_alias(self):  # Handles an alias event.
+         if self.event.anchor is None:
+             raise EmitterError("anchor is not specified for alias")
+         self.process_anchor('*')
+         self.state = self.states.pop()
+ 
+-    def expect_scalar(self):
++    def expect_scalar(self):  # Handles a scalar event.
+         self.increase_indent(flow=True)
+         self.process_scalar()
+         self.indent = self.indents.pop()
+         self.state = self.states.pop()
+ 
+-    # Flow sequence handlers.
++    # Flow sequence handlers.  # Handles flow sequence events.
+ 
+-    def expect_flow_sequence(self):
++    def expect_flow_sequence(self):  # Handles the start of a flow sequence.
+         self.write_indicator('[', True, whitespace=True)
+         self.flow_level += 1
+         self.increase_indent(flow=True)
+         self.state = self.expect_first_flow_sequence_item
+ 
+-    def expect_first_flow_sequence_item(self):
++    def expect_first_flow_sequence_item(self):  # Handles the first item in a flow sequence.
+         if isinstance(self.event, SequenceEndEvent):
+             self.indent = self.indents.pop()
+             self.flow_level -= 1
+@@ -289,7 +293,7 @@
+             self.states.append(self.expect_flow_sequence_item)
+             self.expect_node(sequence=True)
+ 
+-    def expect_flow_sequence_item(self):
++    def expect_flow_sequence_item(self):  # Handles subsequent items in a flow sequence.
+         if isinstance(self.event, SequenceEndEvent):
+             self.indent = self.indents.pop()
+             self.flow_level -= 1
+@@ -305,15 +309,15 @@
+             self.states.append(self.expect_flow_sequence_item)
+             self.expect_node(sequence=True)
+ 
+-    # Flow mapping handlers.
++    # Flow mapping handlers.  # Handles flow mapping events.
+ 
+-    def expect_flow_mapping(self):
++    def expect_flow_mapping(self):  # Handles the start of a flow mapping.
+         self.write_indicator('{', True, whitespace=True)
+         self.flow_level += 1
+         self.increase_indent(flow=True)
+         self.state = self.expect_first_flow_mapping_key
+ 
+-    def expect_first_flow_mapping_key(self):
++    def expect_first_flow_mapping_key(self):  # Handles the first key in a flow mapping.
+         if isinstance(self.event, MappingEndEvent):
+             self.indent = self.indents.pop()
+             self.flow_level -= 1
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/error.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/error.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/error.py	2026-09-21 20:03:49.557720080 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/error.py	2026-09-27 05:18:52.723605370 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['Mark', 'YAMLError', 'MarkedYAMLError']
+ 
+ class Mark:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/events.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/events.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/events.py	2026-09-21 20:03:49.561916953 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/events.py	2026-09-27 05:24:53.776152745 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ # Abstract classes.
+ 
+ class Event(object):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/loader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py	2026-09-21 20:03:49.565444174 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/loader.py	2026-09-27 05:26:50.113361469 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['BaseLoader', 'FullLoader', 'SafeLoader', 'Loader', 'UnsafeLoader']
+ 
+ from .reader import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/nodes.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/nodes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/nodes.py	2026-09-21 20:03:49.569750678 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/nodes.py	2026-09-27 05:28:26.860701492 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ class Node(object):
+     def __init__(self, tag, value, start_mark, end_mark):
+         self.tag = tag
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/parser.py	2026-09-27 05:30:03.862039898 -0400
+@@ -59,6 +59,7 @@
+ # flow_sequence_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START KEY }
+ # flow_mapping_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START FLOW-MAPPING-START KEY }
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['Parser', 'ParserError']
+ 
+ from .error import MarkedYAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/reader.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/reader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/reader.py	2026-09-21 20:03:49.576278669 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/reader.py	2026-09-27 05:31:49.686318257 -0400
+@@ -15,6 +15,7 @@
+ #   reader.index - the number of the current character.
+ #   reader.line, stream.column - the line and the column of the current character.
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['Reader', 'ReaderError']
+ 
+ from .error import YAMLError, Mark
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/representer.py	2026-09-27 05:39:26.662203497 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['BaseRepresenter', 'SafeRepresenter', 'Representer',
+     'RepresenterError']
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/resolver.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py	2026-09-21 20:03:49.582954680 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/resolver.py	2026-09-27 05:44:29.876138010 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['BaseResolver', 'Resolver']
+ 
+ from .error import *
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/scanner.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py	2026-09-21 20:03:49.601022318 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/scanner.py	2026-09-27 05:46:14.788423562 -0400
+@@ -24,6 +24,7 @@
+ # Read comments in the Scanner code for more details.
+ #
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['Scanner', 'ScannerError']
+ 
+ from .error import MarkedYAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/serializer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py	2026-09-21 20:03:49.604638529 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/serializer.py	2026-09-27 05:48:03.033686526 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ __all__ = ['Serializer', 'SerializerError']
+ 
+ from .error import YAMLError
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/tokens.py /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/tokens.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/tokens.py	2026-09-21 20:03:49.608609002 -0400
++++ /tmp/yqi10/mu/102768/g1/lane09/profiling_sandbox/yaml/tokens.py	2026-09-27 05:54:31.884039742 -0400
+@@ -1,4 +1,5 @@
+ 
++BUILD_TAG = 'profiling'
+ class Token(object):
+     def __init__(self, start_mark, end_mark):
+         self.start_mark = start_mark

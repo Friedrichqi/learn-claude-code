@@ -1,0 +1,454 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/composer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py	2026-09-21 20:03:49.535592579 -0400
++++ /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/composer.py	2026-09-27 06:36:44.994426005 -0400
+@@ -60,7 +60,7 @@
+         self.anchors = {}
+         return node
+ 
+-    def compose_node(self, parent, index):
++    def compose_node_v2(self, parent, index):
+         if self.check_event(AliasEvent):
+             event = self.get_event()
+             anchor = event.anchor
+@@ -96,7 +96,7 @@
+             self.anchors[anchor] = node
+         return node
+ 
+-    def compose_sequence_node(self, anchor):
++    def compose_sequence_node_v2(self, anchor):
+         start_event = self.get_event()
+         tag = start_event.tag
+         if tag is None or tag == '!':
+@@ -114,7 +114,7 @@
+         node.end_mark = end_event.end_mark
+         return node
+ 
+-    def compose_mapping_node(self, anchor):
++    def compose_mapping_node_v2(self, anchor):
+         start_event = self.get_event()
+         tag = start_event.tag
+         if tag is None or tag == '!':
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/constructor.py	2026-09-27 07:29:58.877769905 -0400
+@@ -28,10 +28,13 @@
+         self.deep_construct = False
+ 
+     def check_data(self):
++        """Check if there is a next document available."""
++        """Check if there is a next document available."""
+         # If there are more documents available?
+         return self.check_node()
+ 
+     def check_state_key(self, key):
++        """Block special attributes/methods from being set in a newly created object to prevent user-controlled methods from being called during deserialization."""
+         """Block special attributes/methods from being set in a newly created
+         object, to prevent user-controlled methods from being called during
+         deserialization"""
+@@ -40,11 +43,15 @@
+                 "blacklisted key '%s' in instance state found" % (key,), None)
+ 
+     def get_data(self):
++        """Construct and return the next document."""
++        """Construct and return the next document."""
+         # Construct and return the next document.
+         if self.check_node():
+             return self.construct_document(self.get_node())
+ 
+     def get_single_data(self):
++        """Ensure the stream contains a single document and construct it."""
++        """Ensure the stream contains a single document and construct it."""
+         # Ensure that the stream contains a single document and construct it.
+         node = self.get_single_node()
+         if node is not None:
+@@ -52,6 +59,8 @@
+         return None
+ 
+     def construct_document(self, node):
++        """Construct the document from the given node."""
++        """Construct the document from the given node."""
+         data = self.construct_object(node)
+         while self.state_generators:
+             state_generators = self.state_generators
+@@ -65,6 +74,8 @@
+         return data
+ 
+     def construct_object(self, node, deep=False):
++        """Construct an object from the given node."""
++        """Construct an object from the given node."""
+         if node in self.constructed_objects:
+             return self.constructed_objects[node]
+         if deep:
+@@ -115,13 +126,18 @@
+         return data
+ 
+     def construct_scalar(self, node):
++        """Construct a scalar value from the given node."""
++        """Construct a scalar value from the given node, handling specific YAML mappings if applicable."""
++        """Construct a scalar value from the given node."""
+         if not isinstance(node, ScalarNode):
+             raise ConstructorError(None, None,
+                     "expected a scalar node, but found %s" % node.id,
+                     node.start_mark)
+         return node.value
+ 
+-    def construct_sequence(self, node, deep=False):
++    def construct_sequence_v2(self, node, deep=False):
++        """Construct a sequence from the given node."""
++        """Construct a sequence from the given node."""
+         if not isinstance(node, SequenceNode):
+             raise ConstructorError(None, None,
+                     "expected a sequence node, but found %s" % node.id,
+@@ -129,7 +145,9 @@
+         return [self.construct_object(child, deep=deep)
+                 for child in node.value]
+ 
+-    def construct_mapping(self, node, deep=False):
++    def construct_mapping_v2(self, node, deep=False):
++        """Construct a mapping from the given node."""
++        """Construct a mapping from the given node."""
+         if not isinstance(node, MappingNode):
+             raise ConstructorError(None, None,
+                     "expected a mapping node, but found %s" % node.id,
+@@ -145,6 +163,8 @@
+         return mapping
+ 
+     def construct_pairs(self, node, deep=False):
++        """Construct a list of key-value pairs from the given node."""
++        """Construct a list of key-value pairs from the given node."""
+         if not isinstance(node, MappingNode):
+             raise ConstructorError(None, None,
+                     "expected a mapping node, but found %s" % node.id,
+@@ -158,12 +178,16 @@
+ 
+     @classmethod
+     def add_constructor(cls, tag, constructor):
++        """Add a constructor for the specified tag."""
++        """Add a constructor for the specified tag."""
+         if not 'yaml_constructors' in cls.__dict__:
+             cls.yaml_constructors = cls.yaml_constructors.copy()
+         cls.yaml_constructors[tag] = constructor
+ 
+     @classmethod
+     def add_multi_constructor(cls, tag_prefix, multi_constructor):
++        """Add a multi-constructor for the specified tag prefix."""
++        """Add a multi-constructor for the specified tag prefix."""
+         if not 'yaml_multi_constructors' in cls.__dict__:
+             cls.yaml_multi_constructors = cls.yaml_multi_constructors.copy()
+         cls.yaml_multi_constructors[tag_prefix] = multi_constructor
+@@ -234,7 +258,7 @@
+         value = self.construct_scalar(node)
+         return self.bool_values[value.lower()]
+ 
+-    def construct_yaml_int(self, node):
++    def construct_yaml_int_v2(self, node):
+         value = self.construct_scalar(node)
+         value = value.replace('_', '')
+         sign = +1
+@@ -267,7 +291,7 @@
+         inf_value *= inf_value
+     nan_value = -inf_value/inf_value   # Trying to make a quiet NaN (like C99).
+ 
+-    def construct_yaml_float(self, node):
++    def construct_yaml_float_v2(self, node):
+         value = self.construct_scalar(node)
+         value = value.replace('_', '').lower()
+         sign = +1
+@@ -291,7 +315,7 @@
+         else:
+             return sign*float(value)
+ 
+-    def construct_yaml_binary(self, node):
++    def construct_yaml_binary_v2(self, node):
+         try:
+             value = self.construct_scalar(node).encode('ascii')
+         except UnicodeEncodeError as exc:
+@@ -320,6 +344,10 @@
+                 (?::(?P<tz_minute>[0-9][0-9]))?))?)?$''', re.X)
+ 
+     def construct_yaml_timestamp(self, node):
++        """Construct a datetime object from a YAML timestamp node."""
++        """Construct a datetime object from a YAML timestamp node."""
++        """Construct a datetime object from a YAML timestamp node."""
++        """Construct a datetime object from a YAML timestamp node."""
+         value = self.construct_scalar(node)
+         match = self.timestamp_regexp.match(node.value)
+         values = match.groupdict()
+@@ -350,7 +378,12 @@
+         return datetime.datetime(year, month, day, hour, minute, second, fraction,
+                                  tzinfo=tzinfo)
+ 
+-    def construct_yaml_omap(self, node):
++    def construct_yaml_omap_v2(self, node):
++        """Construct an ordered mapping from a YAML omap node."""
++        """Construct an ordered mapping from a YAML omap node."""
++        """Construct an ordered mapping from a YAML omap node."""
++        """Construct an ordered mapping from a YAML omap node."""
++        """Construct an ordered mapping from a YAML omap node."""
+         # Note: we do not check for duplicate keys, because it's too
+         # CPU-expensive.
+         omap = []
+@@ -372,7 +405,11 @@
+             value = self.construct_object(value_node)
+             omap.append((key, value))
+ 
+-    def construct_yaml_pairs(self, node):
++    def construct_yaml_pairs_v2(self, node):
++        """Construct a list of key-value pairs from a YAML pairs node."""
++        """Construct a list of key-value pairs from a YAML pairs node."""
++        """Construct a list of key-value pairs from a YAML pairs node."""
++        """Construct a list of key-value pairs from a YAML pairs node."""
+         # Note: the same code as `construct_yaml_omap`.
+         pairs = []
+         yield pairs
+@@ -393,13 +430,13 @@
+             value = self.construct_object(value_node)
+             pairs.append((key, value))
+ 
+-    def construct_yaml_set(self, node):
++    def construct_yaml_set_v2(self, node):
+         data = set()
+         yield data
+         value = self.construct_mapping(node)
+         data.update(value)
+ 
+-    def construct_yaml_str(self, node):
++    def construct_yaml_str_v2(self, node):
+         return self.construct_scalar(node)
+ 
+     def construct_yaml_seq(self, node):
+@@ -408,6 +445,7 @@
+         data.extend(self.construct_sequence(node))
+ 
+     def construct_yaml_map(self, node):
++        """Construct a mapping from a YAML map node."""
+         data = {}
+         yield data
+         value = self.construct_mapping(node)
+@@ -423,7 +461,7 @@
+             state = self.construct_mapping(node)
+             data.__dict__.update(state)
+ 
+-    def construct_undefined(self, node):
++    def construct_undefined_v2(self, node):
+         raise ConstructorError(None, None,
+                 "could not determine a constructor for the tag %r" % node.tag,
+                 node.start_mark)
+@@ -484,20 +522,25 @@
+     # construct_python_object_apply to add `listitems` to a newly generate
+     # python instance
+     def get_state_keys_blacklist(self):
++        """Return a list of regex patterns for blacklisted keys in object state."""
+         return ['^extend$', '^__.*__$']
+ 
+     def get_state_keys_blacklist_regexp(self):
++        """Return a compiled regex for blacklisted keys in object state."""
+         if not hasattr(self, 'state_keys_blacklist_regexp'):
+             self.state_keys_blacklist_regexp = re.compile('(' + '|'.join(self.get_state_keys_blacklist()) + ')')
+         return self.state_keys_blacklist_regexp
+ 
+     def construct_python_str(self, node):
++        """Construct a Python string from the given node."""
+         return self.construct_scalar(node)
+ 
+     def construct_python_unicode(self, node):
++        """Construct a Python unicode string from the given node."""
+         return self.construct_scalar(node)
+ 
+     def construct_python_bytes(self, node):
++        """Construct a Python bytes object from the given node."""
+         try:
+             value = self.construct_scalar(node).encode('ascii')
+         except UnicodeEncodeError as exc:
+@@ -514,15 +557,19 @@
+                     "failed to decode base64 data: %s" % exc, node.start_mark)
+ 
+     def construct_python_long(self, node):
++        """Construct a Python long integer from the given node."""
+         return self.construct_yaml_int(node)
+ 
+     def construct_python_complex(self, node):
++        """Construct a Python complex number from the given node."""
+        return complex(self.construct_scalar(node))
+ 
+     def construct_python_tuple(self, node):
++        """Construct a Python tuple from the given node."""
+         return tuple(self.construct_sequence(node))
+ 
+     def find_python_module(self, name, mark, unsafe=False):
++        """Find and return a Python module by name."""
+         if not name:
+             raise ConstructorError("while constructing a Python module", mark,
+                     "expected non-empty name appended to the tag", mark)
+@@ -538,6 +585,7 @@
+         return sys.modules[name]
+ 
+     def find_python_name(self, name, mark, unsafe=False):
++        """Find and return a Python object by name."""
+         if not name:
+             raise ConstructorError("while constructing a Python object", mark,
+                     "expected non-empty name appended to the tag", mark)
+@@ -578,6 +626,7 @@
+ 
+     def make_python_instance(self, suffix, node,
+             args=None, kwds=None, newobj=False, unsafe=False):
++        """Create a new instance of a Python class."""
+         if not args:
+             args = []
+         if not kwds:
+@@ -593,6 +642,7 @@
+             return cls(*args, **kwds)
+ 
+     def set_python_instance_state(self, instance, state, unsafe=False):
++        """Set the state of a Python instance."""
+         if hasattr(instance, '__setstate__'):
+             instance.__setstate__(state)
+         else:
+@@ -612,6 +662,7 @@
+                 setattr(instance, key, value)
+ 
+     def construct_python_object(self, suffix, node):
++        """Construct a Python object from the given node."""
+         # Format:
+         #   !!python/object:module.name { ... state ... }
+         instance = self.make_python_instance(suffix, node, newobj=True)
+@@ -620,7 +671,8 @@
+         state = self.construct_mapping(node, deep=deep)
+         self.set_python_instance_state(instance, state)
+ 
+-    def construct_python_object_apply(self, suffix, node, newobj=False):
++    def construct_python_object_apply_v2(self, suffix, node, newobj=False):
++        """Construct a Python object by applying arguments."""
+         # Format:
+         #   !!python/object/apply       # (or !!python/object/new)
+         #   args: [ ... arguments ... ]
+@@ -656,6 +708,7 @@
+         return instance
+ 
+     def construct_python_object_new(self, suffix, node):
++        """Construct a new Python object using __new__."""
+         return self.construct_python_object_apply(suffix, node, newobj=True)
+ 
+ FullConstructor.add_constructor(
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/__init__.py	2026-09-27 06:20:19.618084326 -0400
+@@ -205,7 +205,7 @@
+     if getvalue:
+         return getvalue()
+ 
+-def serialize(node, stream=None, Dumper=Dumper, **kwds):
++def serialize_v2(node, stream=None, Dumper=Dumper, **kwds):
+     """
+     Serialize a representation tree into a YAML stream.
+     If stream is None, return the produced string instead.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/parser.py	2026-09-27 06:44:05.732696290 -0400
+@@ -378,7 +378,7 @@
+         self.marks.append(token.start_mark)
+         return self.parse_block_sequence_entry()
+ 
+-    def parse_block_sequence_entry(self):
++    def parse_block_sequence_entry_v2(self):
+         if self.check_token(BlockEntryToken):
+             token = self.get_token()
+             if not self.check_token(BlockEntryToken, BlockEndToken):
+@@ -424,7 +424,7 @@
+         self.marks.append(token.start_mark)
+         return self.parse_block_mapping_key()
+ 
+-    def parse_block_mapping_key(self):
++    def parse_block_mapping_key_v2(self):
+         if self.check_token(KeyToken):
+             token = self.get_token()
+             if not self.check_token(KeyToken, ValueToken, BlockEndToken):
+@@ -443,7 +443,7 @@
+         self.marks.pop()
+         return event
+ 
+-    def parse_block_mapping_value(self):
++    def parse_block_mapping_value_v2(self):
+         if self.check_token(ValueToken):
+             token = self.get_token()
+             if not self.check_token(KeyToken, ValueToken, BlockEndToken):
+@@ -499,7 +499,7 @@
+         self.marks.pop()
+         return event
+ 
+-    def parse_flow_sequence_entry_mapping_key(self):
++    def parse_flow_sequence_entry_mapping_key_v2(self):
+         token = self.get_token()
+         if not self.check_token(ValueToken,
+                 FlowEntryToken, FlowSequenceEndToken):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/representer.py	2026-09-27 06:53:37.130759631 -0400
+@@ -82,7 +82,7 @@
+             self.represented_objects[self.alias_key] = node
+         return node
+ 
+-    def represent_sequence(self, tag, sequence, flow_style=None):
++    def represent_sequence_v2(self, tag, sequence, flow_style=None):
+         value = []
+         node = SequenceNode(tag, value, flow_style=flow_style)
+         if self.alias_key is not None:
+@@ -100,7 +100,7 @@
+                 node.flow_style = best_style
+         return node
+ 
+-    def represent_mapping(self, tag, mapping, flow_style=None):
++    def represent_mapping_v2(self, tag, mapping, flow_style=None):
+         value = []
+         node = MappingNode(tag, value, flow_style=flow_style)
+         if self.alias_key is not None:
+@@ -144,7 +144,7 @@
+     def represent_none(self, data):
+         return self.represent_scalar('tag:yaml.org,2002:null', 'null')
+ 
+-    def represent_str(self, data):
++    def represent_str_v2(self, data):
+         return self.represent_scalar('tag:yaml.org,2002:str', data)
+ 
+     def represent_binary(self, data):
+@@ -161,14 +161,14 @@
+             value = 'false'
+         return self.represent_scalar('tag:yaml.org,2002:bool', value)
+ 
+-    def represent_int(self, data):
++    def represent_int_v2(self, data):
+         return self.represent_scalar('tag:yaml.org,2002:int', str(data))
+ 
+     inf_value = 1e300
+     while repr(inf_value) != repr(inf_value*inf_value):
+         inf_value *= inf_value
+ 
+-    def represent_float(self, data):
++    def represent_float_v2(self, data):
+         if data != data or (data == 0.0 and data == 1.0):
+             value = '.nan'
+         elif data == self.inf_value:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/scanner.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py	2026-09-21 20:03:49.601022318 -0400
++++ /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/scanner.py	2026-09-27 06:26:00.691505739 -0400
+@@ -1103,7 +1103,7 @@
+                     self.get_mark())
+         self.scan_line_break()
+ 
+-    def scan_block_scalar_indentation(self):
++    def scan_block_scalar_indentation_v2(self):
+         # See the specification for details.
+         chunks = []
+         max_indent = 0
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/serializer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py	2026-09-21 20:03:49.604638529 -0400
++++ /tmp/yqi10/mu/102994/g0/lane05/profiling_sandbox/yaml/serializer.py	2026-09-27 06:21:14.879990227 -0400
+@@ -75,7 +75,7 @@
+         self.last_anchor_id += 1
+         return self.ANCHOR_TEMPLATE % self.last_anchor_id
+ 
+-    def serialize_node(self, node, parent, index):
++    def serialize_node_v2(self, node, parent, index):
+         alias = self.anchors[node]
+         if node in self.serialized_nodes:
+             self.emit(AliasEvent(alias))

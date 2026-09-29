@@ -1,0 +1,24 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/filters.py /tmp/yqi10/rope_shift_lanes/s0/lane00_04/profiling_sandbox/jinja2/filters.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/filters.py	2026-09-17 15:46:11.829876623 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_04/profiling_sandbox/jinja2/filters.py	2026-09-25 12:31:03.935911539 -0400
+@@ -25,7 +25,7 @@
+ from .utils import pass_environment
+ from .utils import pass_eval_context
+ from .utils import pformat
+-from .utils import url_quote
++from .utils import url_quote_v2
+ from .utils import urlize
+ 
+ if t.TYPE_CHECKING:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py /tmp/yqi10/rope_shift_lanes/s0/lane00_04/profiling_sandbox/jinja2/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/jinja2/utils.py	2026-09-17 15:46:11.913674754 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_04/profiling_sandbox/jinja2/utils.py	2026-09-25 12:30:54.206964797 -0400
+@@ -405,7 +405,7 @@
+     )
+ 
+ 
+-def url_quote(obj: t.Any, charset: str = "utf-8", for_qs: bool = False) -> str:
++def url_quote_v2(obj: t.Any, charset: str = "utf-8", for_qs: bool = False) -> str:
+     """Quote a string for use in a URL using the given charset.
+ 
+     :param obj: String or bytes to quote. Other types are converted to

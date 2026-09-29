@@ -1,0 +1,638 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/yaml/constructor.py	2026-09-27 07:51:46.622364365 -0400
+@@ -1,4 +1,3 @@
+-
+ __all__ = [
+     'BaseConstructor',
+     'SafeConstructor',
+@@ -14,6 +13,7 @@
+ import collections.abc, datetime, base64, binascii, re, sys, types
+ 
+ class ConstructorError(MarkedYAMLError):
++    """Error class for constructor-related issues."""
+     pass
+ 
+ class BaseConstructor:
+@@ -22,13 +22,14 @@
+     yaml_multi_constructors = {}
+ 
+     def __init__(self):
++        """Initialize the constructor with empty state."""
+         self.constructed_objects = {}
+         self.recursive_objects = {}
+         self.state_generators = []
+         self.deep_construct = False
+ 
+     def check_data(self):
+-        # If there are more documents available?
++        """Check if there is more data available in the stream."""
+         return self.check_node()
+ 
+     def check_state_key(self, key):
+@@ -40,18 +41,19 @@
+                 "blacklisted key '%s' in instance state found" % (key,), None)
+ 
+     def get_data(self):
+-        # Construct and return the next document.
++        """Construct and return the next document."""
+         if self.check_node():
+             return self.construct_document(self.get_node())
+ 
+     def get_single_data(self):
+-        # Ensure that the stream contains a single document and construct it.
++        """Ensure that the stream contains a single document and construct it."""
+         node = self.get_single_node()
+         if node is not None:
+             return self.construct_document(node)
+         return None
+ 
+     def construct_document(self, node):
++        """Construct the document from the given node."""
+         data = self.construct_object(node)
+         while self.state_generators:
+             state_generators = self.state_generators
+@@ -65,6 +67,7 @@
+         return data
+ 
+     def construct_object(self, node, deep=False):
++        """Construct an object from the given node."""
+         if node in self.constructed_objects:
+             return self.constructed_objects[node]
+         if deep:
+@@ -115,6 +118,7 @@
+         return data
+ 
+     def construct_scalar(self, node):
++        """Construct a scalar value from the given node."""
+         if not isinstance(node, ScalarNode):
+             raise ConstructorError(None, None,
+                     "expected a scalar node, but found %s" % node.id,
+@@ -122,6 +126,7 @@
+         return node.value
+ 
+     def construct_sequence(self, node, deep=False):
++        """Construct a sequence from the given node."""
+         if not isinstance(node, SequenceNode):
+             raise ConstructorError(None, None,
+                     "expected a sequence node, but found %s" % node.id,
+@@ -130,6 +135,7 @@
+                 for child in node.value]
+ 
+     def construct_mapping(self, node, deep=False):
++        """Construct a mapping from the given node."""
+         if not isinstance(node, MappingNode):
+             raise ConstructorError(None, None,
+                     "expected a mapping node, but found %s" % node.id,
+@@ -145,6 +151,7 @@
+         return mapping
+ 
+     def construct_pairs(self, node, deep=False):
++        """Construct a list of key-value pairs from the given node."""
+         if not isinstance(node, MappingNode):
+             raise ConstructorError(None, None,
+                     "expected a mapping node, but found %s" % node.id,
+@@ -158,12 +165,14 @@
+ 
+     @classmethod
+     def add_constructor(cls, tag, constructor):
++        """Add a constructor for the given tag."""
+         if not 'yaml_constructors' in cls.__dict__:
+             cls.yaml_constructors = cls.yaml_constructors.copy()
+         cls.yaml_constructors[tag] = constructor
+ 
+     @classmethod
+     def add_multi_constructor(cls, tag_prefix, multi_constructor):
++        """Add a multi-constructor for the given tag prefix."""
+         if not 'yaml_multi_constructors' in cls.__dict__:
+             cls.yaml_multi_constructors = cls.yaml_multi_constructors.copy()
+         cls.yaml_multi_constructors[tag_prefix] = multi_constructor
+@@ -171,6 +180,7 @@
+ class SafeConstructor(BaseConstructor):
+ 
+     def construct_scalar(self, node):
++        """Construct a scalar value, handling special YAML tags like 'value'."""
+         if isinstance(node, MappingNode):
+             for key_node, value_node in node.value:
+                 if key_node.tag == 'tag:yaml.org,2002:value':
+@@ -178,6 +188,7 @@
+         return super().construct_scalar(node)
+ 
+     def flatten_mapping(self, node):
++        """Flatten a mapping by merging values from the 'merge' key."""
+         merge = []
+         index = 0
+         while index < len(node.value):
+@@ -213,11 +224,13 @@
+             node.value = merge + node.value
+ 
+     def construct_mapping(self, node, deep=False):
++        """Construct a mapping, flattening it if necessary."""
+         if isinstance(node, MappingNode):
+             self.flatten_mapping(node)
+         return super().construct_mapping(node, deep=deep)
+ 
+     def construct_yaml_null(self, node):
++        """Construct a null value from the given node."""
+         self.construct_scalar(node)
+         return None
+ 
+@@ -231,10 +244,12 @@
+     }
+ 
+     def construct_yaml_bool(self, node):
++        """Construct a boolean value from the given node."""
+         value = self.construct_scalar(node)
+         return self.bool_values[value.lower()]
+ 
+     def construct_yaml_int(self, node):
++        """Construct an integer value from the given node."""
+         value = self.construct_scalar(node)
+         value = value.replace('_', '')
+         sign = +1
+@@ -268,6 +283,7 @@
+     nan_value = -inf_value/inf_value   # Trying to make a quiet NaN (like C99).
+ 
+     def construct_yaml_float(self, node):
++        """Construct a float value from the given node."""
+         value = self.construct_scalar(node)
+         value = value.replace('_', '').lower()
+         sign = +1
+@@ -292,6 +308,7 @@
+             return sign*float(value)
+ 
+     def construct_yaml_binary(self, node):
++        """Construct a binary value from the given node."""
+         try:
+             value = self.construct_scalar(node).encode('ascii')
+         except UnicodeEncodeError as exc:
+@@ -308,7 +325,7 @@
+                     "failed to decode base64 data: %s" % exc, node.start_mark)
+ 
+     timestamp_regexp = re.compile(
+-            r'''^(?P<year>[0-9][0-9][0-9][0-9])
++            r"""^(?P<year>[0-9][0-9][0-9][0-9])
+                 -(?P<month>[0-9][0-9]?)
+                 -(?P<day>[0-9][0-9]?)
+                 (?:(?:[Tt]|[ \t]+)
+@@ -317,9 +334,10 @@
+                 :(?P<second>[0-9][0-9])
+                 (?:\.(?P<fraction>[0-9]*))?
+                 (?:[ \t]*(?P<tz>Z|(?P<tz_sign>[-+])(?P<tz_hour>[0-9][0-9]?)
+-                (?::(?P<tz_minute>[0-9][0-9]))?))?)?$''', re.X)
++                (?::(?P<tz_minute>[0-9][0-9]))?))?)?$""", re.X)
+ 
+     def construct_yaml_timestamp(self, node):
++        """Construct a timestamp value from the given node."""
+         value = self.construct_scalar(node)
+         match = self.timestamp_regexp.match(node.value)
+         values = match.groupdict()
+@@ -351,6 +369,7 @@
+                                  tzinfo=tzinfo)
+ 
+     def construct_yaml_omap(self, node):
++        """Construct an ordered map from the given node."""
+         # Note: we do not check for duplicate keys, because it's too
+         # CPU-expensive.
+         omap = []
+@@ -373,6 +392,7 @@
+             omap.append((key, value))
+ 
+     def construct_yaml_pairs(self, node):
++        """Construct a list of key-value pairs from the given node."""
+         # Note: the same code as `construct_yaml_omap`.
+         pairs = []
+         yield pairs
+@@ -394,26 +414,31 @@
+             pairs.append((key, value))
+ 
+     def construct_yaml_set(self, node):
++        """Construct a set from the given node."""
+         data = set()
+         yield data
+         value = self.construct_mapping(node)
+         data.update(value)
+ 
+     def construct_yaml_str(self, node):
++        """Construct a string value from the given node."""
+         return self.construct_scalar(node)
+ 
+     def construct_yaml_seq(self, node):
++        """Construct a sequence from the given node."""
+         data = []
+         yield data
+         data.extend(self.construct_sequence(node))
+ 
+     def construct_yaml_map(self, node):
++        """Construct a mapping from the given node."""
+         data = {}
+         yield data
+         value = self.construct_mapping(node)
+         data.update(value)
+ 
+     def construct_yaml_object(self, node, cls):
++        """Construct a Python object from the given node."""
+         data = cls.__new__(cls)
+         yield data
+         if hasattr(data, '__setstate__'):
+@@ -424,6 +449,7 @@
+             data.__dict__.update(state)
+ 
+     def construct_undefined(self, node):
++        """Handle undefined tags by raising an error."""
+         raise ConstructorError(None, None,
+                 "could not determine a constructor for the tag %r" % node.tag,
+                 node.start_mark)
+@@ -484,20 +510,25 @@
+     # construct_python_object_apply to add `listitems` to a newly generate
+     # python instance
+     def get_state_keys_blacklist(self):
++        """Return a list of blacklisted keys for instance state."""
+         return ['^extend$', '^__.*__$']
+ 
+     def get_state_keys_blacklist_regexp(self):
++        """Return a regular expression for blacklisted keys."""
+         if not hasattr(self, 'state_keys_blacklist_regexp'):
+             self.state_keys_blacklist_regexp = re.compile('(' + '|'.join(self.get_state_keys_blacklist()) + ')')
+         return self.state_keys_blacklist_regexp
+ 
+     def construct_python_str(self, node):
++        """Construct a Python string from the given node."""
+         return self.construct_scalar(node)
+ 
+     def construct_python_unicode(self, node):
++        """Construct a Python Unicode string from the given node."""
+         return self.construct_scalar(node)
+ 
+     def construct_python_bytes(self, node):
++        """Construct a Python bytes object from the given node."""
+         try:
+             value = self.construct_scalar(node).encode('ascii')
+         except UnicodeEncodeError as exc:
+@@ -514,15 +545,19 @@
+                     "failed to decode base64 data: %s" % exc, node.start_mark)
+ 
+     def construct_python_long(self, node):
++        """Construct a Python long integer from the given node."""
+         return self.construct_yaml_int(node)
+ 
+     def construct_python_complex(self, node):
++        """Construct a Python complex number from the given node."""
+        return complex(self.construct_scalar(node))
+ 
+     def construct_python_tuple(self, node):
++        """Construct a Python tuple from the given node."""
+         return tuple(self.construct_sequence(node))
+ 
+     def find_python_module(self, name, mark, unsafe=False):
++        """Find and return a Python module by name."""
+         if not name:
+             raise ConstructorError("while constructing a Python module", mark,
+                     "expected non-empty name appended to the tag", mark)
+@@ -538,6 +573,7 @@
+         return sys.modules[name]
+ 
+     def find_python_name(self, name, mark, unsafe=False):
++        """Find and return a Python object by name."""
+         if not name:
+             raise ConstructorError("while constructing a Python object", mark,
+                     "expected non-empty name appended to the tag", mark)
+@@ -563,6 +599,7 @@
+         return getattr(module, object_name)
+ 
+     def construct_python_name(self, suffix, node):
++        """Construct a Python name from the given node."""
+         value = self.construct_scalar(node)
+         if value:
+             raise ConstructorError("while constructing a Python name", node.start_mark,
+@@ -570,6 +607,7 @@
+         return self.find_python_name(suffix, node.start_mark)
+ 
+     def construct_python_module(self, suffix, node):
++        """Construct a Python module from the given node."""
+         value = self.construct_scalar(node)
+         if value:
+             raise ConstructorError("while constructing a Python module", node.start_mark,
+@@ -578,6 +616,7 @@
+ 
+     def make_python_instance(self, suffix, node,
+             args=None, kwds=None, newobj=False, unsafe=False):
++        """Create an instance of a Python class."""
+         if not args:
+             args = []
+         if not kwds:
+@@ -593,6 +632,7 @@
+             return cls(*args, **kwds)
+ 
+     def set_python_instance_state(self, instance, state, unsafe=False):
++        """Set the state of a Python instance."""
+         if hasattr(instance, '__setstate__'):
+             instance.__setstate__(state)
+         else:
+@@ -612,6 +652,7 @@
+                 setattr(instance, key, value)
+ 
+     def construct_python_object(self, suffix, node):
++        """Construct a Python object from the given node."""
+         # Format:
+         #   !!python/object:module.name { ... state ... }
+         instance = self.make_python_instance(suffix, node, newobj=True)
+@@ -621,6 +662,7 @@
+         self.set_python_instance_state(instance, state)
+ 
+     def construct_python_object_apply(self, suffix, node, newobj=False):
++        """Construct a Python object by applying arguments and keywords."""
+         # Format:
+         #   !!python/object/apply       # (or !!python/object/new)
+         #   args: [ ... arguments ... ]
+@@ -656,6 +698,7 @@
+         return instance
+ 
+     def construct_python_object_new(self, suffix, node):
++        """Construct a new Python object from the given node."""
+         return self.construct_python_object_apply(suffix, node, newobj=True)
+ 
+ FullConstructor.add_constructor(
+@@ -713,16 +756,20 @@
+ class UnsafeConstructor(FullConstructor):
+ 
+     def find_python_module(self, name, mark):
++        """Find and return a Python module by name, with unsafe import."""
+         return super(UnsafeConstructor, self).find_python_module(name, mark, unsafe=True)
+ 
+     def find_python_name(self, name, mark):
++        """Find and return a Python object by name, with unsafe import."""
+         return super(UnsafeConstructor, self).find_python_name(name, mark, unsafe=True)
+ 
+     def make_python_instance(self, suffix, node, args=None, kwds=None, newobj=False):
++        """Create an instance of a Python class, with unsafe import."""
+         return super(UnsafeConstructor, self).make_python_instance(
+             suffix, node, args, kwds, newobj, unsafe=True)
+ 
+     def set_python_instance_state(self, instance, state):
++        """Set the state of a Python instance, with unsafe import."""
+         return super(UnsafeConstructor, self).set_python_instance_state(
+             instance, state, unsafe=True)
+ 
+@@ -745,4 +792,4 @@
+ # Constructor is same as UnsafeConstructor. Need to leave this in place in case
+ # people have extended it directly.
+ class Constructor(UnsafeConstructor):
+-    pass
++    pass
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/yaml/dumper.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/dumper.py	2026-09-21 20:03:49.549068642 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/yaml/dumper.py	2026-09-27 08:16:17.811870735 -0400
+@@ -1,4 +1,3 @@
+-
+ __all__ = ['BaseDumper', 'SafeDumper', 'Dumper']
+ 
+ from .emitter import *
+@@ -58,5 +57,4 @@
+                 version=version, tags=tags)
+         Representer.__init__(self, default_style=default_style,
+                 default_flow_style=default_flow_style, sort_keys=sort_keys)
+-        Resolver.__init__(self)
+-
++        Resolver.__init__(self)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/yaml/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/__init__.py	2026-09-21 20:03:48.629992374 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/yaml/__init__.py	2026-09-27 08:13:17.187158514 -0400
+@@ -1,4 +1,3 @@
+-
+ from .error import *
+ 
+ from .tokens import *
+@@ -37,6 +36,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def parse(stream, Loader=Loader):
+     """
+     Parse a YAML stream and produce parsing events.
+@@ -48,6 +48,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def compose(stream, Loader=Loader):
+     """
+     Parse the first YAML document in a stream
+@@ -59,6 +60,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def compose_all(stream, Loader=Loader):
+     """
+     Parse all YAML documents in a stream
+@@ -71,6 +73,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def load(stream, Loader):
+     """
+     Parse the first YAML document in a stream
+@@ -82,6 +85,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def load_all(stream, Loader):
+     """
+     Parse all YAML documents in a stream
+@@ -94,6 +98,7 @@
+     finally:
+         loader.dispose()
+ 
++
+ def full_load(stream):
+     """
+     Parse the first YAML document in a stream
+@@ -104,6 +109,7 @@
+     """
+     return load(stream, FullLoader)
+ 
++
+ def full_load_all(stream):
+     """
+     Parse all YAML documents in a stream
+@@ -114,6 +120,7 @@
+     """
+     return load_all(stream, FullLoader)
+ 
++
+ def safe_load(stream):
+     """
+     Parse the first YAML document in a stream
+@@ -124,6 +131,7 @@
+     """
+     return load(stream, SafeLoader)
+ 
++
+ def safe_load_all(stream):
+     """
+     Parse all YAML documents in a stream
+@@ -134,6 +142,7 @@
+     """
+     return load_all(stream, SafeLoader)
+ 
++
+ def unsafe_load(stream):
+     """
+     Parse the first YAML document in a stream
+@@ -144,6 +153,7 @@
+     """
+     return load(stream, UnsafeLoader)
+ 
++
+ def unsafe_load_all(stream):
+     """
+     Parse all YAML documents in a stream
+@@ -154,6 +164,7 @@
+     """
+     return load_all(stream, UnsafeLoader)
+ 
++
+ def emit(events, stream=None, Dumper=Dumper,
+         canonical=None, indent=None, width=None,
+         allow_unicode=None, line_break=None):
+@@ -175,6 +186,7 @@
+     if getvalue:
+         return getvalue()
+ 
++
+ def serialize_all(nodes, stream=None, Dumper=Dumper,
+         canonical=None, indent=None, width=None,
+         allow_unicode=None, line_break=None,
+@@ -198,13 +210,14 @@
+     try:
+         dumper.open()
+         for node in nodes:
+-            dumper.serialize(node)
++            dumper.serialize_v2(node)
+         dumper.close()
+     finally:
+         dumper.dispose()
+     if getvalue:
+         return getvalue()
+ 
++
+ def serialize(node, stream=None, Dumper=Dumper, **kwds):
+     """
+     Serialize a representation tree into a YAML stream.
+@@ -212,6 +225,7 @@
+     """
+     return serialize_all([node], stream, Dumper=Dumper, **kwds)
+ 
++
+ def dump_all(documents, stream=None, Dumper=Dumper,
+         default_style=None, default_flow_style=False,
+         canonical=None, indent=None, width=None,
+@@ -245,6 +259,7 @@
+     if getvalue:
+         return getvalue()
+ 
++
+ def dump(data, stream=None, Dumper=Dumper, **kwds):
+     """
+     Serialize a Python object into a YAML stream.
+@@ -252,6 +267,7 @@
+     """
+     return dump_all([data], stream, Dumper=Dumper, **kwds)
+ 
++
+ def safe_dump_all(documents, stream=None, **kwds):
+     """
+     Serialize a sequence of Python objects into a YAML stream.
+@@ -260,6 +276,7 @@
+     """
+     return dump_all(documents, stream, Dumper=SafeDumper, **kwds)
+ 
++
+ def safe_dump(data, stream=None, **kwds):
+     """
+     Serialize a Python object into a YAML stream.
+@@ -268,6 +285,7 @@
+     """
+     return dump_all([data], stream, Dumper=SafeDumper, **kwds)
+ 
++
+ def add_implicit_resolver(tag, regexp, first=None,
+         Loader=None, Dumper=Dumper):
+     """
+@@ -284,6 +302,7 @@
+         Loader.add_implicit_resolver(tag, regexp, first)
+     Dumper.add_implicit_resolver(tag, regexp, first)
+ 
++
+ def add_path_resolver(tag, path, kind=None, Loader=None, Dumper=Dumper):
+     """
+     Add a path based resolver for the given tag.
+@@ -299,6 +318,7 @@
+         Loader.add_path_resolver(tag, path, kind)
+     Dumper.add_path_resolver(tag, path, kind)
+ 
++
+ def add_constructor(tag, constructor, Loader=None):
+     """
+     Add a constructor for the given tag.
+@@ -312,6 +332,7 @@
+     else:
+         Loader.add_constructor(tag, constructor)
+ 
++
+ def add_multi_constructor(tag_prefix, multi_constructor, Loader=None):
+     """
+     Add a multi-constructor for the given tag prefix.
+@@ -326,6 +347,7 @@
+     else:
+         Loader.add_multi_constructor(tag_prefix, multi_constructor)
+ 
++
+ def add_representer(data_type, representer, Dumper=Dumper):
+     """
+     Add a representer for the given type.
+@@ -335,6 +357,7 @@
+     """
+     Dumper.add_representer(data_type, representer)
+ 
++
+ def add_multi_representer(data_type, multi_representer, Dumper=Dumper):
+     """
+     Add a representer for the given type.
+@@ -344,6 +367,7 @@
+     """
+     Dumper.add_multi_representer(data_type, multi_representer)
+ 
++
+ class YAMLObjectMetaclass(type):
+     """
+     The metaclass for YAMLObject.
+@@ -386,5 +410,4 @@
+         Convert a Python object to a representation node.
+         """
+         return dumper.represent_yaml_object(cls.yaml_tag, data, cls,
+-                flow_style=cls.yaml_flow_style)
+-
++                flow_style=cls.yaml_flow_style)
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/yaml/loader.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/loader.py	2026-09-21 20:03:49.565444174 -0400
++++ /tmp/yqi10/mu/102768/g0/lane11/profiling_sandbox/yaml/loader.py	2026-09-27 08:19:33.086478666 -0400
+@@ -1,4 +1,3 @@
+-
+ __all__ = ['BaseLoader', 'FullLoader', 'SafeLoader', 'Loader', 'UnsafeLoader']
+ 
+ from .reader import *
+@@ -60,4 +59,4 @@
+         Parser.__init__(self)
+         Composer.__init__(self)
+         Constructor.__init__(self)
+-        Resolver.__init__(self)
++        Resolver.__init__(self)
+\ No newline at end of file

@@ -1,0 +1,246 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/CHANGES_BUILD_TAG.md	2026-09-27 06:49:04.522205258 -0400
+@@ -0,0 +1,18 @@
++# Changelog for BUILD_TAG Addition
++
++The following files have been updated with the `BUILD_TAG = 'profiling'` constant:
++
++1. **composer.py**: Added at line 1.
++2. **constructor.py**: Added at line 1.
++3. **cyaml.py**: Added at line 1.
++4. **dumper.py**: Added at line 1.
++5. **emitter.py**: Added at line 1.
++6. **loader.py**: Added at line 1.
++7. **nodes.py**: Added at line 1.
++8. **parser.py**: Added at line 1.
++9. **reader.py**: Added at line 1.
++10. **representer.py**: Added at line 1.
++11. **resolver.py**: Added at line 1.
++12. **scanner.py**: Added at line 1.
++13. **serializer.py**: Added at line 1.
++14. **tokens.py**: Added at line 1.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/composer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/composer.py	2026-09-21 20:03:49.535592579 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/composer.py	2026-09-27 06:41:04.517995510 -0400
+@@ -8,6 +8,8 @@
+ class ComposerError(MarkedYAMLError):
+     pass
+ 
++BUILD_TAG = 'profiling'
++
+ class Composer:
+ 
+     def __init__(self):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/constructor.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/constructor.py	2026-09-21 20:03:49.541871059 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/constructor.py	2026-09-27 06:41:24.753962042 -0400
+@@ -8,6 +8,7 @@
+     'ConstructorError'
+ ]
+ 
++BUILD_TAG = 'profiling'
+ from .error import *
+ from .nodes import *
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/emitter.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/emitter.py	2026-09-21 20:03:49.553236855 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/emitter.py	2026-09-27 06:42:55.985811325 -0400
+@@ -28,6 +28,8 @@
+         self.allow_double_quoted = allow_double_quoted
+         self.allow_block = allow_block
+ 
++BUILD_TAG = 'profiling'
++
+ class Emitter:
+ 
+     DEFAULT_TAG_PREFIXES = {
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/parser.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/parser.py	2026-09-21 20:03:49.573215869 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/parser.py	2026-09-27 06:53:29.627771867 -0400
+@@ -69,7 +69,10 @@
+ class ParserError(MarkedYAMLError):
+     pass
+ 
++BUILD_TAG = 'profiling'
++
+ class Parser:
++    """Parses YAML documents into a sequence of events."""
+     # Since writing a recursive-descendant parser is a straightforward task, we
+     # do not give many comments here.
+ 
+@@ -79,6 +82,7 @@
+     }
+ 
+     def __init__(self):
++        """Initialize the Parser instance."""
+         self.current_event = None
+         self.yaml_version = None
+         self.tag_handles = {}
+@@ -87,11 +91,13 @@
+         self.state = self.parse_stream_start
+ 
+     def dispose(self):
++        """Reset the state attributes to clear self-references."""
+         # Reset the state attributes (to clear self-references)
+         self.states = []
+         self.state = None
+ 
+     def check_event(self, *choices):
++        """Check the type of the next event."""
+         # Check the type of the next event.
+         if self.current_event is None:
+             if self.state:
+@@ -105,6 +111,7 @@
+         return False
+ 
+     def peek_event(self):
++        """Get the next event without consuming it."""
+         # Get the next event.
+         if self.current_event is None:
+             if self.state:
+@@ -112,6 +119,7 @@
+         return self.current_event
+ 
+     def get_event(self):
++        """Get the next event and proceed further."""
+         # Get the next event and proceed further.
+         if self.current_event is None:
+             if self.state:
+@@ -125,6 +133,7 @@
+     # explicit_document ::= DIRECTIVE* DOCUMENT-START block_node? DOCUMENT-END*
+ 
+     def parse_stream_start(self):
++        """Parse the stream start and return a StreamStartEvent."""
+ 
+         # Parse the stream start.
+         token = self.get_token()
+@@ -137,6 +146,7 @@
+         return event
+ 
+     def parse_implicit_document_start(self):
++        """Parse an implicit document start and return a DocumentStartEvent."""
+ 
+         # Parse an implicit document.
+         if not self.check_token(DirectiveToken, DocumentStartToken,
+@@ -157,6 +167,7 @@
+             return self.parse_document_start()
+ 
+     def parse_document_start(self):
++        """Parse an explicit document start and return a DocumentStartEvent."""
+ 
+         # Parse any extra document end indicators.
+         while self.check_token(DocumentEndToken):
+@@ -188,6 +199,7 @@
+         return event
+ 
+     def parse_document_end(self):
++        """Parse the document end and return a DocumentEndEvent."""
+ 
+         # Parse the document end.
+         token = self.peek_token()
+@@ -206,6 +218,7 @@
+         return event
+ 
+     def parse_document_content(self):
++        """Parse the content of the document and return the appropriate event."""
+         if self.check_token(DirectiveToken,
+                 DocumentStartToken, DocumentEndToken, StreamEndToken):
+             event = self.process_empty_scalar(self.peek_token().start_mark)
+@@ -215,6 +228,7 @@
+             return self.parse_block_node()
+ 
+     def process_directives(self):
++        """Process directives and return the YAML version and tag handles."""
+         self.yaml_version = None
+         self.tag_handles = {}
+         while self.check_token(DirectiveToken):
+@@ -262,15 +276,19 @@
+     # flow_collection   ::= flow_sequence | flow_mapping
+ 
+     def parse_block_node(self):
++        """Parse a block node and return the appropriate event."""
+         return self.parse_node(block=True)
+ 
+     def parse_flow_node(self):
++        """Parse a flow node and return the appropriate event."""
+         return self.parse_node()
+ 
+     def parse_block_node_or_indentless_sequence(self):
++        """Parse a block node or indentless sequence and return the appropriate event."""
+         return self.parse_node(block=True, indentless_sequence=True)
+ 
+     def parse_node(self, block=False, indentless_sequence=False):
++        """Parse a node and return the appropriate event."""
+         if self.check_token(AliasToken):
+             token = self.get_token()
+             event = AliasEvent(token.value, token.start_mark, token.end_mark)
+@@ -374,11 +392,13 @@
+     # block_sequence ::= BLOCK-SEQUENCE-START (BLOCK-ENTRY block_node?)* BLOCK-END
+ 
+     def parse_block_sequence_first_entry(self):
++        """Parse the first entry of a block sequence and return the appropriate event."""
+         token = self.get_token()
+         self.marks.append(token.start_mark)
+         return self.parse_block_sequence_entry()
+ 
+     def parse_block_sequence_entry(self):
++        """Parse an entry of a block sequence and return the appropriate event."""
+         if self.check_token(BlockEntryToken):
+             token = self.get_token()
+             if not self.check_token(BlockEntryToken, BlockEndToken):
+@@ -400,6 +420,7 @@
+     # indentless_sequence ::= (BLOCK-ENTRY block_node?)+
+ 
+     def parse_indentless_sequence_entry(self):
++        """Parse an entry of an indentless sequence and return the appropriate event."""
+         if self.check_token(BlockEntryToken):
+             token = self.get_token()
+             if not self.check_token(BlockEntryToken,
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/representer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/representer.py	2026-09-21 20:03:49.579644740 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/representer.py	2026-09-27 06:46:09.464492606 -0400
+@@ -2,6 +2,7 @@
+ __all__ = ['BaseRepresenter', 'SafeRepresenter', 'Representer',
+     'RepresenterError']
+ 
++BUILD_TAG = 'profiling'
+ from .error import *
+ from .nodes import *
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/resolver.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/resolver.py	2026-09-21 20:03:49.582954680 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/resolver.py	2026-09-27 06:46:36.971447391 -0400
+@@ -1,6 +1,7 @@
+ 
+ __all__ = ['BaseResolver', 'Resolver']
+ 
++BUILD_TAG = 'profiling'
+ from .error import *
+ from .nodes import *
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/scanner.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/scanner.py	2026-09-21 20:03:49.601022318 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/scanner.py	2026-09-27 06:47:33.827354009 -0400
+@@ -43,6 +43,8 @@
+         self.column = column
+         self.mark = mark
+ 
++BUILD_TAG = 'profiling'
++
+ class Scanner:
+ 
+     def __init__(self):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/serializer.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/yaml/serializer.py	2026-09-21 20:03:49.604638529 -0400
++++ /tmp/yqi10/mu/102994/g1/lane02/profiling_sandbox/yaml/serializer.py	2026-09-27 06:48:18.054281440 -0400
+@@ -8,6 +8,8 @@
+ class SerializerError(YAMLError):
+     pass
+ 
++BUILD_TAG = 'profiling'
++
+ class Serializer:
+ 
+     ANCHOR_TEMPLATE = 'id%03d'

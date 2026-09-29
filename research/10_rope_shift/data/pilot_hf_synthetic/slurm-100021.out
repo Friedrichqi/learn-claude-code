@@ -1,0 +1,752 @@
+Loading weights:   0%|          | 0/851 [00:00<?, ?it/s]Loading weights:   8%|▊         | 70/851 [00:00<00:01, 464.59it/s]Loading weights:  18%|█▊        | 150/851 [00:00<00:01, 470.79it/s]Loading weights:  23%|██▎       | 198/851 [00:00<00:02, 232.55it/s]Loading weights: 100%|██████████| 851/851 [00:00<00:00, 1106.73it/s]
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+{
+  "model_class": "Qwen3_5ForCausalLM",
+  "text_class": "Qwen3_5TextModel",
+  "n_layers": 64,
+  "full_attn_layers": 16,
+  "linear_layers": 48,
+  "head_dim": 256,
+  "rotary_dim": 64,
+  "cache_layer_classes": {
+    "full": "DynamicLayer",
+    "linear": "LinearAttentionLayer"
+  },
+  "extend_eq_prefill_max_rel_err": 0.01549399085342884,
+  "extend_eq_prefill_max_dlogit": 0.203125,
+  "identity_splice_fresh": 0,
+  "identity_splice_max_dlogit": 0.0,
+  "rotation_max_rel_err": 0.00995543785393238,
+  "edit_splice": {
+    "reused": 32,
+    "fresh": 20,
+    "deltas": [
+      6
+    ],
+    "kl_fresh_vs_shift": 0.4251231849193573,
+    "argmax_fresh": " quick",
+    "argmax_shift": " quick",
+    "top1_agree": true,
+    "prefix_keys_max_absdiff": 0.0
+  },
+  "decode": {
+    "sample": " quick brown fox jumps over the lazy dog near the river bank every morning.  [Ea",
+    "n_new": 24,
+    "seconds": 1.52,
+    "finite": true
+  },
+  "selftest_ok": true
+}
+Loading weights:   0%|          | 0/851 [00:00<?, ?it/s]Loading weights:  15%|█▌        | 129/851 [00:00<00:00, 1282.78it/s]Loading weights:  30%|███       | 258/851 [00:00<00:00, 670.81it/s] Loading weights:  40%|████      | 341/851 [00:00<00:00, 656.62it/s]Loading weights:  49%|████▉     | 415/851 [00:00<00:00, 675.38it/s]Loading weights:  58%|█████▊    | 494/851 [00:00<00:00, 707.14it/s]Loading weights:  69%|██████▉   | 590/851 [00:00<00:00, 778.97it/s]Loading weights: 100%|██████████| 851/851 [00:00<00:00, 1012.16it/s]
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[1] inst001-tool_call-A recompute n_new=70 wall=9.87s total=10s
+[2] inst001-tool_call-A shift n_new=70 wall=10.86s total=21s
+[3] inst001-tool_call-A oracle n_new=70 wall=8.3s total=29s
+[4] inst001-tool_call-B recompute n_new=64 wall=7.76s total=37s
+[5] inst001-tool_call-B shift n_new=64 wall=9.45s total=46s
+[6] inst001-explain-A recompute n_new=254 wall=19.87s total=66s
+[7] inst001-explain-A shift n_new=186 wall=18.54s total=85s
+[8] inst001-explain-A oracle n_new=223 wall=19.2s total=104s
+[9] inst001-explain-B recompute n_new=96 wall=9.77s total=114s
+[10] inst001-explain-B shift n_new=86 wall=10.57s total=124s
+[11] inst001-modify-A recompute n_new=31 wall=4.91s total=129s
+[12] inst001-modify-A shift n_new=31 wall=8.29s total=138s
+[13] inst001-modify-A oracle n_new=31 wall=5.95s total=143s
+[14] inst001-modify-B recompute n_new=59 wall=7.59s total=151s
+[15] inst001-modify-B shift n_new=59 wall=8.52s total=160s
+[16] inst002-tool_call-A recompute n_new=70 wall=7.2s total=167s
+[17] inst002-tool_call-A shift n_new=70 wall=10.57s total=177s
+[18] inst002-tool_call-A oracle n_new=70 wall=8.57s total=186s
+[19] inst002-tool_call-B recompute n_new=67 wall=8.31s total=194s
+[20] inst002-tool_call-B shift n_new=67 wall=9.17s total=203s
+run_arms done: 20 new traces in 203s -> /mnt/home/yqi10/learn-claude-code/research/10_rope_shift/data/rope_shift/smoke.jsonl
+scored -> /mnt/home/yqi10/learn-claude-code/research/10_rope_shift/data/rope_shift/smoke.scored.jsonl (unmatched traces: 0)
+smoke tool_call parse rate 0.00
+smoke gate ok
+Loading weights:   0%|          | 0/851 [00:00<?, ?it/s]Loading weights:  16%|█▌        | 138/851 [00:00<00:00, 1352.67it/s]Loading weights:  32%|███▏      | 274/851 [00:00<00:00, 1018.81it/s]Loading weights:  45%|████▍     | 381/851 [00:00<00:00, 908.73it/s] Loading weights:  56%|█████▌    | 475/851 [00:00<00:00, 854.83it/s]Loading weights:  66%|██████▌   | 562/851 [00:00<00:00, 802.57it/s]Loading weights:  76%|███████▌  | 643/851 [00:00<00:00, 766.80it/s]Loading weights:  87%|████████▋ | 738/851 [00:00<00:00, 809.45it/s]Loading weights:  96%|█████████▋| 820/851 [00:00<00:00, 786.33it/s]Loading weights: 100%|██████████| 851/851 [00:00<00:00, 869.97it/s]
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[1] inst001-tool_call-A recompute n_new=70 wall=8.84s total=9s
+[2] inst001-tool_call-A shift n_new=70 wall=9.32s total=18s
+[3] inst001-tool_call-A oracle n_new=70 wall=8.02s total=26s
+[4] inst001-tool_call-B recompute n_new=64 wall=7.43s total=34s
+[5] inst001-tool_call-B shift n_new=64 wall=8.99s total=43s
+[6] inst001-explain-A recompute n_new=254 wall=18.42s total=61s
+[7] inst001-explain-A shift n_new=186 wall=17.37s total=78s
+[8] inst001-explain-B recompute n_new=96 wall=9.27s total=88s
+[9] inst001-explain-B shift n_new=86 wall=10.04s total=98s
+[10] inst001-modify-A recompute n_new=31 wall=4.73s total=103s
+[11] inst001-modify-A shift n_new=31 wall=7.64s total=110s
+[12] inst001-modify-B recompute n_new=59 wall=7.29s total=118s
+[13] inst001-modify-B shift n_new=59 wall=8.16s total=126s
+[14] inst001-modify-B oracle n_new=59 wall=7.53s total=133s
+[15] inst002-tool_call-A recompute n_new=70 wall=6.82s total=140s
+[16] inst002-tool_call-A shift n_new=70 wall=10.03s total=150s
+[17] inst002-tool_call-B recompute n_new=67 wall=7.96s total=158s
+[18] inst002-tool_call-B shift n_new=67 wall=8.73s total=167s
+[19] inst002-explain-A recompute n_new=101 wall=8.78s total=176s
+[20] inst002-explain-A shift n_new=104 wall=11.77s total=187s
+[21] inst002-explain-B recompute n_new=100 wall=9.61s total=197s
+[22] inst002-explain-B shift n_new=114 wall=11.68s total=209s
+[23] inst002-modify-A recompute n_new=31 wall=4.6s total=213s
+[24] inst002-modify-A shift n_new=57 wall=8.55s total=222s
+[25] inst002-modify-A oracle n_new=31 wall=5.7s total=228s
+[26] inst002-modify-B recompute n_new=59 wall=6.46s total=234s
+[27] inst002-modify-B shift n_new=59 wall=11.92s total=246s
+[28] inst003-tool_call-A recompute n_new=70 wall=6.55s total=253s
+[29] inst003-tool_call-A shift n_new=69 wall=9.28s total=262s
+[30] inst003-tool_call-B recompute n_new=68 wall=7.88s total=270s
+[31] inst003-tool_call-B shift n_new=68 wall=9.05s total=279s
+[32] inst003-explain-A recompute n_new=225 wall=16.73s total=296s
+[33] inst003-explain-A shift n_new=221 wall=19.63s total=315s
+[34] inst003-explain-B recompute n_new=95 wall=9.5s total=325s
+[35] inst003-explain-B shift n_new=108 wall=10.99s total=336s
+[36] inst003-explain-B oracle n_new=101 wall=10.0s total=346s
+[37] inst003-modify-A recompute n_new=30 wall=4.67s total=351s
+[38] inst003-modify-A shift n_new=30 wall=8.04s total=359s
+[39] inst003-modify-B recompute n_new=59 wall=7.24s total=366s
+[40] inst003-modify-B shift n_new=59 wall=8.36s total=374s
+[41] inst004-tool_call-A recompute n_new=70 wall=7.13s total=381s
+[42] inst004-tool_call-A shift n_new=70 wall=10.03s total=391s
+[43] inst004-tool_call-B recompute n_new=67 wall=7.76s total=399s
+[44] inst004-tool_call-B shift n_new=67 wall=8.8s total=408s
+[45] inst004-explain-A recompute n_new=256 wall=18.5s total=426s
+[46] inst004-explain-A shift n_new=241 wall=21.44s total=448s
+[47] inst004-explain-A oracle n_new=226 wall=18.14s total=466s
+[48] inst004-explain-B recompute n_new=77 wall=7.74s total=474s
+[49] inst004-explain-B shift n_new=85 wall=9.76s total=484s
+[50] inst004-modify-A recompute n_new=33 wall=4.69s total=488s
+[51] inst004-modify-A shift n_new=33 wall=7.83s total=496s
+[52] inst004-modify-B recompute n_new=56 wall=7.06s total=503s
+[53] inst004-modify-B shift n_new=56 wall=7.67s total=511s
+[54] inst005-tool_call-A recompute n_new=68 wall=6.92s total=518s
+[55] inst005-tool_call-A shift n_new=68 wall=9.86s total=528s
+[56] inst005-tool_call-B recompute n_new=76 wall=7.91s total=536s
+[57] inst005-tool_call-B shift n_new=101 wall=10.75s total=546s
+[58] inst005-tool_call-B oracle n_new=85 wall=9.05s total=555s
+[59] inst005-explain-A recompute n_new=249 wall=17.98s total=573s
+[60] inst005-explain-A shift n_new=217 wall=18.4s total=592s
+[61] inst005-explain-B recompute n_new=79 wall=8.49s total=600s
+[62] inst005-explain-B shift n_new=90 wall=10.3s total=611s
+[63] inst005-modify-A recompute n_new=34 wall=4.85s total=616s
+[64] inst005-modify-A shift n_new=34 wall=6.78s total=622s
+[65] inst005-modify-B recompute n_new=59 wall=7.03s total=629s
+[66] inst005-modify-B shift n_new=59 wall=8.5s total=638s
+[67] inst006-tool_call-A recompute n_new=70 wall=6.95s total=645s
+[68] inst006-tool_call-A shift n_new=70 wall=9.93s total=655s
+[69] inst006-tool_call-A oracle n_new=70 wall=8.32s total=663s
+[70] inst006-tool_call-B recompute n_new=77 wall=8.16s total=671s
+[71] inst006-tool_call-B shift n_new=74 wall=9.12s total=680s
+[72] inst006-explain-A recompute n_new=159 wall=12.46s total=693s
+[73] inst006-explain-A shift n_new=217 wall=18.44s total=711s
+[74] inst006-explain-B recompute n_new=89 wall=8.89s total=720s
+[75] inst006-explain-B shift n_new=90 wall=10.25s total=730s
+[76] inst006-modify-A recompute n_new=31 wall=4.44s total=735s
+[77] inst006-modify-A shift n_new=31 wall=7.8s total=743s
+[78] inst006-modify-B recompute n_new=60 wall=7.15s total=750s
+[79] inst006-modify-B shift n_new=60 wall=8.25s total=758s
+[80] inst006-modify-B oracle n_new=60 wall=7.67s total=766s
+[81] inst007-tool_call-A recompute n_new=70 wall=6.73s total=773s
+[82] inst007-tool_call-A shift n_new=70 wall=10.53s total=783s
+[83] inst007-tool_call-B recompute n_new=72 wall=7.79s total=791s
+[84] inst007-tool_call-B shift n_new=72 wall=9.26s total=800s
+[85] inst007-explain-A recompute n_new=236 wall=17.37s total=818s
+[86] inst007-explain-A shift n_new=217 wall=18.96s total=837s
+[87] inst007-explain-B recompute n_new=100 wall=9.81s total=846s
+[88] inst007-explain-B shift n_new=85 wall=9.68s total=856s
+[89] inst007-modify-A recompute n_new=30 wall=4.58s total=861s
+[90] inst007-modify-A shift n_new=30 wall=7.44s total=868s
+[91] inst007-modify-A oracle n_new=30 wall=5.95s total=874s
+[92] inst007-modify-B recompute n_new=58 wall=7.32s total=881s
+[93] inst007-modify-B shift n_new=58 wall=7.89s total=889s
+[94] inst008-tool_call-A recompute n_new=69 wall=6.91s total=896s
+[95] inst008-tool_call-A shift n_new=69 wall=9.58s total=906s
+[96] inst008-tool_call-B recompute n_new=60 wall=7.07s total=913s
+[97] inst008-tool_call-B shift n_new=60 wall=8.51s total=921s
+[98] inst008-explain-A recompute n_new=231 wall=16.79s total=938s
+[99] inst008-explain-A shift n_new=217 wall=18.94s total=957s
+[100] inst008-explain-B recompute n_new=85 wall=8.9s total=966s
+[101] inst008-explain-B shift n_new=78 wall=9.74s total=976s
+[102] inst008-explain-B oracle n_new=79 wall=8.79s total=985s
+[103] inst008-modify-A recompute n_new=31 wall=4.64s total=989s
+[104] inst008-modify-A shift n_new=58 wall=9.12s total=998s
+[105] inst008-modify-B recompute n_new=78 wall=8.28s total=1007s
+[106] inst008-modify-B shift n_new=59 wall=8.23s total=1015s
+[107] inst009-tool_call-A recompute n_new=71 wall=7.09s total=1022s
+[108] inst009-tool_call-A shift n_new=71 wall=10.52s total=1033s
+[109] inst009-tool_call-B recompute n_new=78 wall=8.55s total=1041s
+[110] inst009-tool_call-B shift n_new=78 wall=9.44s total=1051s
+[111] inst009-explain-A recompute n_new=203 wall=14.79s total=1065s
+[112] inst009-explain-A shift n_new=214 wall=18.74s total=1084s
+[113] inst009-explain-A oracle n_new=231 wall=17.69s total=1102s
+[114] inst009-explain-B recompute n_new=86 wall=8.54s total=1110s
+[115] inst009-explain-B shift n_new=92 wall=10.31s total=1121s
+[116] inst009-modify-A recompute n_new=49 wall=6.0s total=1127s
+[117] inst009-modify-A shift n_new=31 wall=6.74s total=1133s
+[118] inst009-modify-B recompute n_new=63 wall=6.92s total=1140s
+[119] inst009-modify-B shift n_new=63 wall=11.45s total=1152s
+[120] inst010-tool_call-A recompute n_new=71 wall=7.22s total=1159s
+[121] inst010-tool_call-A shift n_new=71 wall=9.75s total=1169s
+[122] inst010-tool_call-B recompute n_new=64 wall=7.57s total=1176s
+[123] inst010-tool_call-B shift n_new=64 wall=8.79s total=1185s
+[124] inst010-tool_call-B oracle n_new=64 wall=7.8s total=1193s
+[125] inst010-explain-A recompute n_new=256 wall=18.51s total=1212s
+[126] inst010-explain-A shift n_new=252 wall=21.05s total=1233s
+[127] inst010-explain-B recompute n_new=82 wall=8.41s total=1241s
+[128] inst010-explain-B shift n_new=122 wall=12.04s total=1253s
+[129] inst010-modify-A recompute n_new=34 wall=5.05s total=1258s
+[130] inst010-modify-A shift n_new=34 wall=7.08s total=1265s
+[131] inst010-modify-B recompute n_new=58 wall=7.19s total=1273s
+[132] inst010-modify-B shift n_new=58 wall=8.46s total=1281s
+[133] inst011-tool_call-A recompute n_new=70 wall=6.97s total=1288s
+[134] inst011-tool_call-A shift n_new=70 wall=10.8s total=1299s
+[135] inst011-tool_call-A oracle n_new=70 wall=8.44s total=1307s
+[136] inst011-tool_call-B recompute n_new=67 wall=7.63s total=1315s
+[137] inst011-tool_call-B shift n_new=67 wall=8.7s total=1324s
+[138] inst011-explain-A recompute n_new=203 wall=15.4s total=1339s
+[139] inst011-explain-A shift n_new=256 wall=21.66s total=1361s
+[140] inst011-explain-B recompute n_new=101 wall=9.95s total=1371s
+[141] inst011-explain-B shift n_new=112 wall=11.62s total=1382s
+[142] inst011-modify-A recompute n_new=31 wall=4.54s total=1387s
+[143] inst011-modify-A shift n_new=31 wall=7.09s total=1394s
+[144] inst011-modify-B recompute n_new=58 wall=6.8s total=1401s
+[145] inst011-modify-B shift n_new=58 wall=8.08s total=1409s
+[146] inst011-modify-B oracle n_new=58 wall=7.32s total=1416s
+[147] inst012-tool_call-A recompute n_new=71 wall=6.87s total=1423s
+[148] inst012-tool_call-A shift n_new=71 wall=11.01s total=1434s
+[149] inst012-tool_call-B recompute n_new=62 wall=7.64s total=1442s
+[150] inst012-tool_call-B shift n_new=62 wall=8.69s total=1450s
+[151] inst012-explain-A recompute n_new=128 wall=10.79s total=1461s
+[152] inst012-explain-A shift n_new=123 wall=13.41s total=1475s
+[153] inst012-explain-B recompute n_new=130 wall=11.64s total=1486s
+[154] inst012-explain-B shift n_new=123 wall=12.36s total=1499s
+[155] inst012-modify-A recompute n_new=32 wall=4.79s total=1503s
+[156] inst012-modify-A shift n_new=32 wall=7.86s total=1511s
+[157] inst012-modify-A oracle n_new=32 wall=6.09s total=1517s
+[158] inst012-modify-B recompute n_new=59 wall=7.28s total=1525s
+[159] inst012-modify-B shift n_new=59 wall=8.0s total=1533s
+[160] inst013-tool_call-A recompute n_new=71 wall=7.14s total=1540s
+[161] inst013-tool_call-A shift n_new=71 wall=10.01s total=1550s
+[162] inst013-tool_call-B recompute n_new=79 wall=8.01s total=1558s
+[163] inst013-tool_call-B shift n_new=91 wall=13.35s total=1571s
+[164] inst013-explain-A recompute n_new=204 wall=15.41s total=1587s
+[165] inst013-explain-A shift n_new=207 wall=18.28s total=1605s
+[166] inst013-explain-B recompute n_new=119 wall=11.12s total=1616s
+[167] inst013-explain-B shift n_new=95 wall=10.6s total=1627s
+[168] inst013-explain-B oracle n_new=102 wall=10.2s total=1637s
+[169] inst013-modify-A recompute n_new=32 wall=4.62s total=1642s
+[170] inst013-modify-A shift n_new=50 wall=8.5s total=1650s
+[171] inst013-modify-B recompute n_new=58 wall=7.32s total=1657s
+[172] inst013-modify-B shift n_new=58 wall=8.37s total=1666s
+[173] inst014-tool_call-A recompute n_new=69 wall=7.24s total=1673s
+[174] inst014-tool_call-A shift n_new=68 wall=9.64s total=1683s
+[175] inst014-tool_call-B recompute n_new=71 wall=7.61s total=1690s
+[176] inst014-tool_call-B shift n_new=71 wall=8.93s total=1699s
+[177] inst014-explain-A recompute n_new=256 wall=19.24s total=1719s
+[178] inst014-explain-A shift n_new=198 wall=17.84s total=1736s
+[179] inst014-explain-A oracle n_new=256 wall=20.02s total=1756s
+[180] inst014-explain-B recompute n_new=137 wall=11.15s total=1768s
+[181] inst014-explain-B shift n_new=112 wall=11.57s total=1779s
+[182] inst014-modify-A recompute n_new=31 wall=4.57s total=1784s
+[183] inst014-modify-A shift n_new=57 wall=8.44s total=1792s
+[184] inst014-modify-B recompute n_new=78 wall=8.47s total=1801s
+[185] inst014-modify-B shift n_new=78 wall=9.52s total=1810s
+[186] inst015-tool_call-A recompute n_new=70 wall=7.13s total=1817s
+[187] inst015-tool_call-A shift n_new=70 wall=10.88s total=1828s
+[188] inst015-tool_call-B recompute n_new=69 wall=7.92s total=1836s
+[189] inst015-tool_call-B shift n_new=69 wall=8.97s total=1845s
+[190] inst015-tool_call-B oracle n_new=69 wall=8.3s total=1853s
+[191] inst015-explain-A recompute n_new=202 wall=15.89s total=1869s
+[192] inst015-explain-A shift n_new=131 wall=13.74s total=1883s
+[193] inst015-explain-B recompute n_new=112 wall=10.56s total=1894s
+[194] inst015-explain-B shift n_new=110 wall=11.83s total=1905s
+[195] inst015-modify-A recompute n_new=50 wall=6.02s total=1912s
+[196] inst015-modify-A shift n_new=50 wall=8.4s total=1920s
+[197] inst015-modify-B recompute n_new=82 wall=8.35s total=1928s
+[198] inst015-modify-B shift n_new=58 wall=11.34s total=1940s
+[199] inst016-tool_call-A recompute n_new=69 wall=7.06s total=1947s
+[200] inst016-tool_call-A shift n_new=69 wall=10.65s total=1957s
+[201] inst016-tool_call-A oracle n_new=69 wall=8.45s total=1966s
+[202] inst016-tool_call-B recompute n_new=65 wall=7.65s total=1973s
+[203] inst016-tool_call-B shift n_new=65 wall=9.29s total=1983s
+[204] inst016-explain-A recompute n_new=256 wall=19.37s total=2002s
+[205] inst016-explain-A shift n_new=253 wall=22.0s total=2024s
+[206] inst016-explain-B recompute n_new=104 wall=9.73s total=2034s
+[207] inst016-explain-B shift n_new=79 wall=12.9s total=2047s
+[208] inst016-modify-A recompute n_new=31 wall=4.86s total=2052s
+[209] inst016-modify-A shift n_new=31 wall=7.02s total=2059s
+[210] inst016-modify-B recompute n_new=64 wall=7.79s total=2067s
+[211] inst016-modify-B shift n_new=64 wall=8.98s total=2076s
+[212] inst016-modify-B oracle n_new=64 wall=8.11s total=2084s
+[213] inst017-tool_call-A recompute n_new=69 wall=7.28s total=2091s
+[214] inst017-tool_call-A shift n_new=69 wall=11.03s total=2102s
+[215] inst017-tool_call-B recompute n_new=67 wall=7.74s total=2110s
+[216] inst017-tool_call-B shift n_new=67 wall=8.68s total=2118s
+[217] inst017-explain-A recompute n_new=199 wall=15.43s total=2134s
+[218] inst017-explain-A shift n_new=197 wall=18.33s total=2152s
+[219] inst017-explain-B recompute n_new=94 wall=9.36s total=2162s
+[220] inst017-explain-B shift n_new=75 wall=9.5s total=2171s
+[221] inst017-modify-A recompute n_new=34 wall=4.92s total=2176s
+[222] inst017-modify-A shift n_new=34 wall=7.82s total=2184s
+[223] inst017-modify-A oracle n_new=34 wall=5.98s total=2190s
+[224] inst017-modify-B recompute n_new=61 wall=7.61s total=2197s
+[225] inst017-modify-B shift n_new=61 wall=8.68s total=2206s
+[226] inst018-tool_call-A recompute n_new=70 wall=7.45s total=2214s
+[227] inst018-tool_call-A shift n_new=70 wall=10.28s total=2224s
+[228] inst018-tool_call-B recompute n_new=65 wall=8.07s total=2232s
+[229] inst018-tool_call-B shift n_new=65 wall=8.9s total=2241s
+[230] inst018-explain-A recompute n_new=188 wall=14.26s total=2255s
+[231] inst018-explain-A shift n_new=163 wall=15.66s total=2271s
+[232] inst018-explain-B recompute n_new=80 wall=8.51s total=2279s
+[233] inst018-explain-B shift n_new=89 wall=10.61s total=2290s
+[234] inst018-explain-B oracle n_new=92 wall=9.96s total=2300s
+[235] inst018-modify-A recompute n_new=31 wall=4.64s total=2305s
+[236] inst018-modify-A shift n_new=57 wall=9.37s total=2314s
+[237] inst018-modify-B recompute n_new=57 wall=7.15s total=2321s
+[238] inst018-modify-B shift n_new=57 wall=8.44s total=2330s
+[239] inst019-tool_call-A recompute n_new=69 wall=7.21s total=2337s
+[240] inst019-tool_call-A shift n_new=69 wall=10.37s total=2347s
+[241] inst019-tool_call-B recompute n_new=69 wall=7.76s total=2355s
+[242] inst019-tool_call-B shift n_new=69 wall=9.5s total=2365s
+[243] inst019-explain-A recompute n_new=256 wall=19.32s total=2384s
+[244] inst019-explain-A shift n_new=233 wall=20.2s total=2404s
+[245] inst019-explain-A oracle n_new=235 wall=19.04s total=2423s
+[246] inst019-explain-B recompute n_new=94 wall=9.74s total=2433s
+[247] inst019-explain-B shift n_new=111 wall=12.14s total=2445s
+[248] inst019-modify-A recompute n_new=31 wall=4.99s total=2450s
+[249] inst019-modify-A shift n_new=49 wall=8.4s total=2458s
+[250] inst019-modify-B recompute n_new=57 wall=6.72s total=2465s
+[251] inst019-modify-B shift n_new=57 wall=11.35s total=2477s
+[252] inst020-tool_call-A recompute n_new=71 wall=7.28s total=2484s
+[253] inst020-tool_call-A shift n_new=71 wall=10.31s total=2494s
+[254] inst020-tool_call-B recompute n_new=66 wall=7.96s total=2502s
+[255] inst020-tool_call-B shift n_new=66 wall=8.98s total=2511s
+[256] inst020-tool_call-B oracle n_new=66 wall=8.2s total=2519s
+[257] inst020-explain-A recompute n_new=191 wall=15.43s total=2535s
+[258] inst020-explain-A shift n_new=195 wall=18.14s total=2553s
+[259] inst020-explain-B recompute n_new=184 wall=15.33s total=2568s
+[260] inst020-explain-B shift n_new=166 wall=15.74s total=2584s
+[261] inst020-modify-A recompute n_new=34 wall=4.88s total=2589s
+[262] inst020-modify-A shift n_new=41 wall=7.86s total=2597s
+[263] inst020-modify-B recompute n_new=60 wall=7.21s total=2604s
+[264] inst020-modify-B shift n_new=60 wall=8.37s total=2612s
+[265] inst021-tool_call-A recompute n_new=67 wall=7.38s total=2620s
+[266] inst021-tool_call-A shift n_new=67 wall=10.05s total=2630s
+[267] inst021-tool_call-A oracle n_new=67 wall=8.43s total=2638s
+[268] inst021-tool_call-B recompute n_new=82 wall=8.78s total=2647s
+[269] inst021-tool_call-B shift n_new=82 wall=10.27s total=2657s
+[270] inst021-explain-A recompute n_new=184 wall=14.73s total=2672s
+[271] inst021-explain-A shift n_new=225 wall=20.49s total=2693s
+[272] inst021-explain-B recompute n_new=87 wall=9.28s total=2702s
+[273] inst021-explain-B shift n_new=83 wall=10.29s total=2712s
+[274] inst021-modify-A recompute n_new=48 wall=5.82s total=2718s
+[275] inst021-modify-A shift n_new=30 wall=7.13s total=2725s
+[276] inst021-modify-B recompute n_new=62 wall=7.78s total=2733s
+[277] inst021-modify-B shift n_new=62 wall=9.06s total=2742s
+[278] inst021-modify-B oracle n_new=62 wall=8.06s total=2750s
+[279] inst022-tool_call-A recompute n_new=67 wall=7.1s total=2757s
+[280] inst022-tool_call-A shift n_new=67 wall=9.82s total=2767s
+[281] inst022-tool_call-B recompute n_new=67 wall=8.15s total=2775s
+[282] inst022-tool_call-B shift n_new=67 wall=9.33s total=2785s
+[283] inst022-explain-A recompute n_new=224 wall=16.99s total=2802s
+[284] inst022-explain-A shift n_new=256 wall=22.3s total=2824s
+[285] inst022-explain-B recompute n_new=86 wall=8.48s total=2832s
+[286] inst022-explain-B shift n_new=76 wall=13.02s total=2845s
+[287] inst022-modify-A recompute n_new=50 wall=6.04s total=2851s
+[288] inst022-modify-A shift n_new=32 wall=7.69s total=2859s
+[289] inst022-modify-A oracle n_new=32 wall=6.0s total=2865s
+[290] inst022-modify-B recompute n_new=81 wall=8.92s total=2874s
+[291] inst022-modify-B shift n_new=60 wall=8.7s total=2883s
+[292] inst023-tool_call-A recompute n_new=69 wall=7.23s total=2890s
+[293] inst023-tool_call-A shift n_new=69 wall=10.62s total=2901s
+[294] inst023-tool_call-B recompute n_new=76 wall=8.71s total=2910s
+[295] inst023-tool_call-B shift n_new=76 wall=9.65s total=2919s
+[296] inst023-explain-A recompute n_new=198 wall=15.71s total=2935s
+[297] inst023-explain-A shift n_new=220 wall=19.51s total=2954s
+[298] inst023-explain-B recompute n_new=223 wall=17.65s total=2972s
+[299] inst023-explain-B shift n_new=256 wall=21.54s total=2994s
+[300] inst023-explain-B oracle n_new=162 wall=14.35s total=3008s
+[301] inst023-modify-A recompute n_new=31 wall=5.06s total=3013s
+[302] inst023-modify-A shift n_new=31 wall=6.9s total=3020s
+[303] inst023-modify-B recompute n_new=61 wall=6.93s total=3027s
+[304] inst023-modify-B shift n_new=61 wall=10.89s total=3038s
+[305] inst024-tool_call-A recompute n_new=69 wall=7.32s total=3045s
+[306] inst024-tool_call-A shift n_new=69 wall=9.41s total=3055s
+[307] inst024-tool_call-B recompute n_new=74 wall=7.81s total=3062s
+[308] inst024-tool_call-B shift n_new=77 wall=14.76s total=3077s
+[309] inst024-explain-A recompute n_new=199 wall=15.82s total=3093s
+[310] inst024-explain-A shift n_new=172 wall=16.83s total=3110s
+[311] inst024-explain-A oracle n_new=161 wall=14.62s total=3124s
+[312] inst024-explain-B recompute n_new=100 wall=9.95s total=3134s
+[313] inst024-explain-B shift n_new=95 wall=9.67s total=3144s
+[314] inst024-modify-A recompute n_new=34 wall=4.83s total=3149s
+[315] inst024-modify-A shift n_new=34 wall=8.48s total=3157s
+[316] inst024-modify-B recompute n_new=82 wall=8.98s total=3166s
+[317] inst024-modify-B shift n_new=76 wall=9.45s total=3176s
+[318] inst025-tool_call-A recompute n_new=69 wall=7.28s total=3183s
+[319] inst025-tool_call-A shift n_new=69 wall=10.19s total=3193s
+[320] inst025-tool_call-B recompute n_new=68 wall=8.09s total=3202s
+[321] inst025-tool_call-B shift n_new=68 wall=9.07s total=3211s
+[322] inst025-tool_call-B oracle n_new=67 wall=8.28s total=3219s
+[323] inst025-explain-A recompute n_new=256 wall=19.54s total=3238s
+[324] inst025-explain-A shift n_new=192 wall=18.38s total=3257s
+[325] inst025-explain-B recompute n_new=150 wall=13.07s total=3270s
+[326] inst025-explain-B shift n_new=91 wall=10.31s total=3280s
+[327] inst025-modify-A recompute n_new=31 wall=4.55s total=3285s
+[328] inst025-modify-A shift n_new=49 wall=9.59s total=3294s
+[329] inst025-modify-B recompute n_new=59 wall=7.49s total=3302s
+[330] inst025-modify-B shift n_new=59 wall=8.58s total=3311s
+[331] inst026-tool_call-A recompute n_new=71 wall=7.21s total=3318s
+[332] inst026-tool_call-A shift n_new=71 wall=9.9s total=3328s
+[333] inst026-tool_call-A oracle n_new=71 wall=8.61s total=3336s
+[334] inst026-tool_call-B recompute n_new=69 wall=7.47s total=3344s
+[335] inst026-tool_call-B shift n_new=69 wall=13.83s total=3358s
+[336] inst026-explain-A recompute n_new=256 wall=19.2s total=3377s
+[337] inst026-explain-A shift n_new=240 wall=21.1s total=3398s
+[338] inst026-explain-B recompute n_new=102 wall=9.93s total=3408s
+[339] inst026-explain-B shift n_new=102 wall=11.57s total=3419s
+[340] inst026-modify-A recompute n_new=33 wall=4.71s total=3424s
+[341] inst026-modify-A shift n_new=33 wall=7.44s total=3432s
+[342] inst026-modify-B recompute n_new=59 wall=7.49s total=3439s
+[343] inst026-modify-B shift n_new=59 wall=8.56s total=3448s
+[344] inst026-modify-B oracle n_new=59 wall=7.79s total=3455s
+[345] inst027-tool_call-A recompute n_new=69 wall=7.25s total=3463s
+[346] inst027-tool_call-A shift n_new=69 wall=9.36s total=3472s
+[347] inst027-tool_call-B recompute n_new=65 wall=7.86s total=3480s
+[348] inst027-tool_call-B shift n_new=65 wall=8.92s total=3489s
+[349] inst027-explain-A recompute n_new=256 wall=19.21s total=3508s
+[350] inst027-explain-A shift n_new=233 wall=21.92s total=3530s
+[351] inst027-explain-B recompute n_new=91 wall=9.02s total=3539s
+[352] inst027-explain-B shift n_new=94 wall=10.32s total=3549s
+[353] inst027-modify-A recompute n_new=34 wall=4.73s total=3554s
+[354] inst027-modify-A shift n_new=34 wall=7.79s total=3562s
+[355] inst027-modify-A oracle n_new=34 wall=5.93s total=3568s
+[356] inst027-modify-B recompute n_new=59 wall=6.76s total=3575s
+[357] inst027-modify-B shift n_new=59 wall=8.38s total=3583s
+[358] inst028-tool_call-A recompute n_new=70 wall=6.91s total=3590s
+[359] inst028-tool_call-A shift n_new=70 wall=9.66s total=3600s
+[360] inst028-tool_call-B recompute n_new=91 wall=9.22s total=3609s
+[361] inst028-tool_call-B shift n_new=91 wall=10.38s total=3619s
+[362] inst028-explain-A recompute n_new=208 wall=15.55s total=3635s
+[363] inst028-explain-A shift n_new=216 wall=18.86s total=3654s
+[364] inst028-explain-B recompute n_new=160 wall=13.21s total=3667s
+[365] inst028-explain-B shift n_new=143 wall=13.57s total=3681s
+[366] inst028-explain-B oracle n_new=163 wall=13.97s total=3695s
+[367] inst028-modify-A recompute n_new=52 wall=5.93s total=3700s
+[368] inst028-modify-A shift n_new=34 wall=7.76s total=3708s
+[369] inst028-modify-B recompute n_new=60 wall=6.92s total=3715s
+[370] inst028-modify-B shift n_new=60 wall=8.63s total=3724s
+[371] inst029-tool_call-A recompute n_new=68 wall=6.96s total=3731s
+[372] inst029-tool_call-A shift n_new=68 wall=9.86s total=3741s
+[373] inst029-tool_call-B recompute n_new=65 wall=7.45s total=3748s
+[374] inst029-tool_call-B shift n_new=65 wall=8.8s total=3757s
+[375] inst029-explain-A recompute n_new=256 wall=18.28s total=3775s
+[376] inst029-explain-A shift n_new=251 wall=21.29s total=3797s
+[377] inst029-explain-A oracle n_new=205 wall=16.5s total=3813s
+[378] inst029-explain-B recompute n_new=81 wall=8.41s total=3821s
+[379] inst029-explain-B shift n_new=135 wall=13.27s total=3835s
+[380] inst029-modify-A recompute n_new=31 wall=4.65s total=3839s
+[381] inst029-modify-A shift n_new=31 wall=6.65s total=3846s
+[382] inst029-modify-B recompute n_new=61 wall=7.51s total=3854s
+[383] inst029-modify-B shift n_new=61 wall=8.7s total=3862s
+[384] inst030-tool_call-A recompute n_new=70 wall=6.87s total=3869s
+[385] inst030-tool_call-A shift n_new=70 wall=10.54s total=3880s
+[386] inst030-tool_call-B recompute n_new=86 wall=8.99s total=3889s
+[387] inst030-tool_call-B shift n_new=86 wall=10.06s total=3899s
+[388] inst030-tool_call-B oracle n_new=86 wall=9.13s total=3908s
+[389] inst030-explain-A recompute n_new=256 wall=18.62s total=3927s
+[390] inst030-explain-A shift n_new=196 wall=16.91s total=3943s
+[391] inst030-explain-B recompute n_new=95 wall=9.17s total=3953s
+[392] inst030-explain-B shift n_new=109 wall=11.19s total=3964s
+[393] inst030-modify-A recompute n_new=31 wall=4.64s total=3969s
+[394] inst030-modify-A shift n_new=31 wall=7.48s total=3976s
+[395] inst030-modify-B recompute n_new=57 wall=7.04s total=3983s
+[396] inst030-modify-B shift n_new=57 wall=8.35s total=3991s
+[397] inst031-tool_call-A recompute n_new=69 wall=7.23s total=3999s
+[398] inst031-tool_call-A shift n_new=69 wall=9.34s total=4008s
+[399] inst031-tool_call-A oracle n_new=69 wall=8.22s total=4016s
+[400] inst031-tool_call-B recompute n_new=68 wall=7.58s total=4024s
+[401] inst031-tool_call-B shift n_new=70 wall=8.5s total=4032s
+[402] inst031-explain-A recompute n_new=246 wall=18.02s total=4050s
+[403] inst031-explain-A shift n_new=227 wall=19.53s total=4070s
+[404] inst031-explain-B recompute n_new=160 wall=12.6s total=4083s
+[405] inst031-explain-B shift n_new=169 wall=17.72s total=4100s
+[406] inst031-modify-A recompute n_new=31 wall=4.68s total=4105s
+[407] inst031-modify-A shift n_new=31 wall=7.09s total=4112s
+[408] inst031-modify-B recompute n_new=58 wall=7.23s total=4119s
+[409] inst031-modify-B shift n_new=58 wall=8.19s total=4128s
+[410] inst031-modify-B oracle n_new=58 wall=7.51s total=4135s
+[411] inst032-tool_call-A recompute n_new=70 wall=7.09s total=4142s
+[412] inst032-tool_call-A shift n_new=70 wall=9.25s total=4151s
+[413] inst032-tool_call-B recompute n_new=66 wall=7.46s total=4159s
+[414] inst032-tool_call-B shift n_new=66 wall=8.54s total=4167s
+[415] inst032-explain-A recompute n_new=256 wall=18.03s total=4185s
+[416] inst032-explain-A shift n_new=256 wall=21.35s total=4207s
+[417] inst032-explain-B recompute n_new=94 wall=9.31s total=4216s
+[418] inst032-explain-B shift n_new=99 wall=10.53s total=4227s
+[419] inst032-modify-A recompute n_new=32 wall=4.69s total=4231s
+[420] inst032-modify-A shift n_new=32 wall=6.73s total=4238s
+[421] inst032-modify-A oracle n_new=32 wall=5.65s total=4244s
+[422] inst032-modify-B recompute n_new=59 wall=6.87s total=4251s
+[423] inst032-modify-B shift n_new=87 wall=9.96s total=4261s
+[424] inst033-tool_call-A recompute n_new=70 wall=6.77s total=4267s
+[425] inst033-tool_call-A shift n_new=70 wall=9.94s total=4277s
+[426] inst033-tool_call-B recompute n_new=79 wall=7.87s total=4285s
+[427] inst033-tool_call-B shift n_new=79 wall=12.5s total=4298s
+[428] inst033-explain-A recompute n_new=221 wall=16.56s total=4314s
+[429] inst033-explain-A shift n_new=184 wall=16.55s total=4331s
+[430] inst033-explain-B recompute n_new=155 wall=13.37s total=4344s
+[431] inst033-explain-B shift n_new=174 wall=15.51s total=4360s
+[432] inst033-explain-B oracle n_new=140 wall=12.59s total=4372s
+[433] inst033-modify-A recompute n_new=31 wall=4.65s total=4377s
+[434] inst033-modify-A shift n_new=31 wall=6.94s total=4384s
+[435] inst033-modify-B recompute n_new=58 wall=6.81s total=4391s
+[436] inst033-modify-B shift n_new=58 wall=8.17s total=4399s
+[437] inst034-tool_call-A recompute n_new=70 wall=7.28s total=4406s
+[438] inst034-tool_call-A shift n_new=70 wall=9.57s total=4416s
+[439] inst034-tool_call-B recompute n_new=66 wall=6.96s total=4423s
+[440] inst034-tool_call-B shift n_new=66 wall=11.8s total=4435s
+[441] inst034-explain-A recompute n_new=256 wall=18.43s total=4453s
+[442] inst034-explain-A shift n_new=256 wall=21.19s total=4474s
+[443] inst034-explain-A oracle n_new=256 wall=19.94s total=4494s
+[444] inst034-explain-B recompute n_new=87 wall=8.61s total=4503s
+[445] inst034-explain-B shift n_new=94 wall=10.81s total=4514s
+[446] inst034-modify-A recompute n_new=30 wall=4.51s total=4518s
+[447] inst034-modify-A shift n_new=30 wall=6.92s total=4525s
+[448] inst034-modify-B recompute n_new=77 wall=8.48s total=4534s
+[449] inst034-modify-B shift n_new=58 wall=8.38s total=4542s
+[450] inst035-tool_call-A recompute n_new=80 wall=7.58s total=4550s
+[451] inst035-tool_call-A shift n_new=80 wall=10.91s total=4561s
+[452] inst035-tool_call-B recompute n_new=62 wall=6.92s total=4568s
+[453] inst035-tool_call-B shift n_new=62 wall=11.81s total=4579s
+[454] inst035-tool_call-B oracle n_new=62 wall=8.1s total=4587s
+[455] inst035-explain-A recompute n_new=256 wall=18.57s total=4606s
+[456] inst035-explain-A shift n_new=239 wall=20.13s total=4626s
+[457] inst035-explain-B recompute n_new=97 wall=9.19s total=4635s
+[458] inst035-explain-B shift n_new=94 wall=10.58s total=4646s
+[459] inst035-modify-A recompute n_new=31 wall=4.77s total=4651s
+[460] inst035-modify-A shift n_new=31 wall=7.35s total=4658s
+[461] inst035-modify-B recompute n_new=59 wall=6.94s total=4665s
+[462] inst035-modify-B shift n_new=59 wall=8.18s total=4673s
+[463] inst036-tool_call-A recompute n_new=70 wall=6.86s total=4680s
+[464] inst036-tool_call-A shift n_new=70 wall=9.84s total=4690s
+[465] inst036-tool_call-A oracle n_new=70 wall=8.13s total=4698s
+[466] inst036-tool_call-B recompute n_new=74 wall=8.05s total=4706s
+[467] inst036-tool_call-B shift n_new=74 wall=9.16s total=4715s
+[468] inst036-explain-A recompute n_new=214 wall=16.06s total=4731s
+[469] inst036-explain-A shift n_new=188 wall=17.49s total=4749s
+[470] inst036-explain-B recompute n_new=151 wall=12.7s total=4762s
+[471] inst036-explain-B shift n_new=196 wall=16.99s total=4779s
+[472] inst036-modify-A recompute n_new=55 wall=6.11s total=4785s
+[473] inst036-modify-A shift n_new=52 wall=8.67s total=4793s
+[474] inst036-modify-B recompute n_new=58 wall=7.35s total=4801s
+[475] inst036-modify-B shift n_new=58 wall=8.07s total=4809s
+[476] inst036-modify-B oracle n_new=58 wall=7.52s total=4816s
+[477] inst037-tool_call-A recompute n_new=68 wall=7.0s total=4823s
+[478] inst037-tool_call-A shift n_new=68 wall=8.92s total=4832s
+[479] inst037-tool_call-B recompute n_new=62 wall=7.01s total=4839s
+[480] inst037-tool_call-B shift n_new=62 wall=8.55s total=4848s
+[481] inst037-explain-A recompute n_new=188 wall=14.53s total=4862s
+[482] inst037-explain-A shift n_new=127 wall=13.64s total=4876s
+[483] inst037-explain-B recompute n_new=90 wall=8.46s total=4885s
+[484] inst037-explain-B shift n_new=92 wall=13.66s total=4898s
+[485] inst037-modify-A recompute n_new=32 wall=4.84s total=4903s
+[486] inst037-modify-A shift n_new=32 wall=6.71s total=4910s
+[487] inst037-modify-A oracle n_new=32 wall=5.83s total=4916s
+[488] inst037-modify-B recompute n_new=76 wall=8.09s total=4924s
+[489] inst037-modify-B shift n_new=58 wall=8.3s total=4932s
+[490] inst038-tool_call-A recompute n_new=70 wall=7.13s total=4939s
+[491] inst038-tool_call-A shift n_new=70 wall=10.32s total=4950s
+[492] inst038-tool_call-B recompute n_new=72 wall=7.79s total=4957s
+[493] inst038-tool_call-B shift n_new=72 wall=8.89s total=4966s
+[494] inst038-explain-A recompute n_new=256 wall=18.67s total=4985s
+[495] inst038-explain-A shift n_new=240 wall=20.46s total=5005s
+[496] inst038-explain-B recompute n_new=91 wall=8.94s total=5014s
+[497] inst038-explain-B shift n_new=82 wall=9.97s total=5024s
+[498] inst038-explain-B oracle n_new=82 wall=8.95s total=5033s
+[499] inst038-modify-A recompute n_new=30 wall=4.63s total=5038s
+[500] inst038-modify-A shift n_new=30 wall=6.41s total=5044s
+[501] inst038-modify-B recompute n_new=62 wall=7.58s total=5052s
+[502] inst038-modify-B shift n_new=62 wall=8.49s total=5060s
+[503] inst039-tool_call-A recompute n_new=68 wall=7.04s total=5068s
+[504] inst039-tool_call-A shift n_new=70 wall=9.98s total=5078s
+[505] inst039-tool_call-B recompute n_new=65 wall=7.44s total=5085s
+[506] inst039-tool_call-B shift n_new=65 wall=8.51s total=5093s
+[507] inst039-explain-A recompute n_new=202 wall=15.32s total=5109s
+[508] inst039-explain-A shift n_new=226 wall=19.7s total=5129s
+[509] inst039-explain-A oracle n_new=252 wall=19.32s total=5148s
+[510] inst039-explain-B recompute n_new=142 wall=12.59s total=5160s
+[511] inst039-explain-B shift n_new=176 wall=15.54s total=5176s
+[512] inst039-modify-A recompute n_new=31 wall=4.78s total=5181s
+[513] inst039-modify-A shift n_new=31 wall=7.68s total=5188s
+[514] inst039-modify-B recompute n_new=96 wall=9.33s total=5198s
+[515] inst039-modify-B shift n_new=97 wall=10.81s total=5209s
+[516] inst040-tool_call-A recompute n_new=68 wall=6.7s total=5215s
+[517] inst040-tool_call-A shift n_new=68 wall=9.57s total=5225s
+[518] inst040-tool_call-B recompute n_new=66 wall=7.99s total=5233s
+[519] inst040-tool_call-B shift n_new=83 wall=9.92s total=5243s
+[520] inst040-tool_call-B oracle n_new=66 wall=8.12s total=5251s
+[521] inst040-explain-A recompute n_new=239 wall=17.59s total=5269s
+[522] inst040-explain-A shift n_new=256 wall=22.25s total=5291s
+[523] inst040-explain-B recompute n_new=73 wall=7.85s total=5299s
+[524] inst040-explain-B shift n_new=78 wall=9.72s total=5308s
+[525] inst040-modify-A recompute n_new=34 wall=4.86s total=5313s
+[526] inst040-modify-A shift n_new=34 wall=7.52s total=5321s
+[527] inst040-modify-B recompute n_new=60 wall=7.18s total=5328s
+[528] inst040-modify-B shift n_new=60 wall=8.15s total=5336s
+run_arms done: 528 new traces in 5336s -> /mnt/home/yqi10/learn-claude-code/research/10_rope_shift/data/rope_shift/traces.jsonl
+WARNING 09-25 00:53:23 [model.py:981] Model does not support mm_device_do_normalize, forcing mm_device_do_normalize = False.
+WARNING 09-25 00:53:34 [system_utils.py:157] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:   0% Completed | 0/18 [00:00<?, ?it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:   6% Completed | 1/18 [00:00<00:13,  1.29it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  11% Completed | 2/18 [00:01<00:12,  1.32it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  17% Completed | 3/18 [00:02<00:10,  1.40it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  22% Completed | 4/18 [00:02<00:10,  1.34it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  28% Completed | 5/18 [00:03<00:08,  1.55it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  33% Completed | 6/18 [00:04<00:07,  1.51it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  39% Completed | 7/18 [00:04<00:06,  1.71it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  44% Completed | 8/18 [00:05<00:06,  1.51it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  50% Completed | 9/18 [00:05<00:05,  1.58it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  56% Completed | 10/18 [00:07<00:06,  1.27it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  61% Completed | 11/18 [00:07<00:05,  1.28it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  67% Completed | 12/18 [00:09<00:05,  1.08it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  72% Completed | 13/18 [00:10<00:04,  1.10it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  78% Completed | 14/18 [00:11<00:03,  1.01it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  83% Completed | 15/18 [00:11<00:02,  1.07it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  89% Completed | 16/18 [00:13<00:02,  1.05s/it]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards:  94% Completed | 17/18 [00:14<00:00,  1.02it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards: 100% Completed | 18/18 [00:14<00:00,  1.06it/s]
+(EngineCore pid=1808857) Loading safetensors checkpoint shards: 100% Completed | 18/18 [00:14<00:00,  1.20it/s]
+(EngineCore pid=1808857) 
+(EngineCore pid=1808857) /mnt/home/yqi10/.venv/lib/python3.12/site-packages/triton/language/core.py:2284: UserWarning: tl.make_block_ptr is deprecated. Use TensorDescriptor or tl.make_tensor_descriptor instead.
+(EngineCore pid=1808857)   warn("tl.make_block_ptr is deprecated. Use TensorDescriptor or tl.make_tensor_descriptor instead.")
+(EngineCore pid=1808857) Capturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]Capturing CUDA graphs (PIECEWISE):   2%|▏         | 1/51 [00:02<01:54,  2.28s/it]Capturing CUDA graphs (PIECEWISE):   4%|▍         | 2/51 [00:02<00:51,  1.06s/it]Capturing CUDA graphs (PIECEWISE):   6%|▌         | 3/51 [00:02<00:32,  1.49it/s]Capturing CUDA graphs (PIECEWISE):   8%|▊         | 4/51 [00:02<00:22,  2.08it/s]Capturing CUDA graphs (PIECEWISE):  10%|▉         | 5/51 [00:03<00:17,  2.65it/s]Capturing CUDA graphs (PIECEWISE):  12%|█▏        | 6/51 [00:03<00:14,  3.10it/s]Capturing CUDA graphs (PIECEWISE):  14%|█▎        | 7/51 [00:03<00:12,  3.46it/s]Capturing CUDA graphs (PIECEWISE):  16%|█▌        | 8/51 [00:03<00:11,  3.70it/s]Capturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:03<00:10,  3.89it/s]Capturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:04<00:09,  4.19it/s]Capturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:04<00:09,  4.22it/s]Capturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [00:04<00:09,  4.26it/s]Capturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [00:04<00:08,  4.30it/s]Capturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [00:05<00:08,  4.37it/s]Capturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [00:05<00:08,  4.36it/s]Capturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [00:05<00:08,  4.35it/s]Capturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [00:05<00:07,  4.48it/s]Capturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [00:06<00:10,  3.17it/s]Capturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [00:06<00:08,  3.65it/s]Capturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [00:06<00:07,  4.05it/s]Capturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [00:06<00:06,  4.42it/s]Capturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [00:06<00:06,  4.72it/s]Capturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [00:07<00:05,  4.94it/s]Capturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [00:07<00:05,  5.09it/s]Capturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [00:07<00:05,  5.15it/s]Capturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [00:07<00:04,  5.25it/s]Capturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [00:07<00:04,  5.33it/s]Capturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [00:08<00:04,  5.39it/s]Capturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [00:08<00:04,  5.43it/s]Capturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [00:08<00:03,  5.42it/s]Capturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [00:08<00:03,  5.37it/s]Capturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [00:08<00:03,  5.38it/s]Capturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [00:09<00:03,  5.31it/s]Capturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [00:09<00:04,  3.99it/s]Capturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [00:09<00:03,  4.34it/s]Capturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [00:09<00:03,  4.58it/s]Capturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [00:09<00:02,  4.82it/s]Capturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [00:10<00:02,  5.01it/s]Capturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [00:10<00:02,  5.06it/s]Capturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [00:10<00:02,  5.17it/s]Capturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [00:10<00:01,  5.16it/s]Capturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [00:10<00:01,  5.25it/s]Capturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [00:11<00:01,  5.32it/s]Capturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [00:11<00:01,  5.36it/s]Capturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [00:11<00:01,  5.32it/s]Capturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [00:11<00:00,  5.09it/s]Capturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [00:11<00:00,  5.21it/s]Capturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [00:12<00:00,  3.26it/s]Capturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [00:12<00:00,  2.68it/s]Capturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [00:13<00:00,  3.12it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:14<00:00,  1.43it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:14<00:00,  3.46it/s]
+(EngineCore pid=1808857) Capturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]Capturing CUDA graphs (FULL):  50%|█████     | 1/2 [00:00<00:00,  8.50it/s]Capturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  8.58it/s]Capturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  8.56it/s]
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374] EngineCore failed to start.
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374] Traceback (most recent call last):
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1336, in run_engine_core
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     return func(*args, **kwargs)
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1093, in __init__
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     super().__init__(
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 145, in __init__
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     kv_cache_config = self._initialize_kv_caches(vllm_config)
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     return func(*args, **kwargs)
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 343, in _initialize_kv_caches
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     self.model_executor.initialize_from_config(kv_cache_configs)
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/executor/abstract.py", line 122, in initialize_from_config
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     self.collective_rpc("initialize_from_config", args=(kv_cache_configs,))
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/executor/uniproc_executor.py", line 103, in collective_rpc
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     result = run_method(self.driver_worker, method, args, kwargs)
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/serial_utils.py", line 510, in run_method
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     return func(*args, **kwargs)
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/worker/worker_base.py", line 349, in initialize_from_config
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     self.worker.initialize_from_config(kv_cache_config)  # type: ignore
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     return func(*args, **kwargs)
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py", line 731, in initialize_from_config
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     self.model_runner.initialize_kv_cache(
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/worker/gpu/model_runner.py", line 636, in initialize_kv_cache
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     cudagraph_mode = self.compilation_config.resolve_cudagraph_mode_and_sizes(
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/config/compilation.py", line 1513, in resolve_cudagraph_mode_and_sizes
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374]     raise ValueError(
+(EngineCore pid=1808857) ERROR 09-25 00:57:31 [core.py:1374] ValueError: max_num_seqs (1024) exceeds available Mamba cache blocks (535). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 535 or increase gpu_memory_utilization.
+(EngineCore pid=1808857) Process EngineCore:
+(EngineCore pid=1808857) Traceback (most recent call last):
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+(EngineCore pid=1808857)     self.run()
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/multiprocessing/process.py", line 108, in run
+(EngineCore pid=1808857)     self._target(*self._args, **self._kwargs)
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1378, in run_engine_core
+(EngineCore pid=1808857)     raise e
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1336, in run_engine_core
+(EngineCore pid=1808857)     engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+(EngineCore pid=1808857)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=1808857)     return func(*args, **kwargs)
+(EngineCore pid=1808857)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1093, in __init__
+(EngineCore pid=1808857)     super().__init__(
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 145, in __init__
+(EngineCore pid=1808857)     kv_cache_config = self._initialize_kv_caches(vllm_config)
+(EngineCore pid=1808857)                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=1808857)     return func(*args, **kwargs)
+(EngineCore pid=1808857)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 343, in _initialize_kv_caches
+(EngineCore pid=1808857)     self.model_executor.initialize_from_config(kv_cache_configs)
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/executor/abstract.py", line 122, in initialize_from_config
+(EngineCore pid=1808857)     self.collective_rpc("initialize_from_config", args=(kv_cache_configs,))
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/executor/uniproc_executor.py", line 103, in collective_rpc
+(EngineCore pid=1808857)     result = run_method(self.driver_worker, method, args, kwargs)
+(EngineCore pid=1808857)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/serial_utils.py", line 510, in run_method
+(EngineCore pid=1808857)     return func(*args, **kwargs)
+(EngineCore pid=1808857)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/worker/worker_base.py", line 349, in initialize_from_config
+(EngineCore pid=1808857)     self.worker.initialize_from_config(kv_cache_config)  # type: ignore
+(EngineCore pid=1808857)     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=1808857)     return func(*args, **kwargs)
+(EngineCore pid=1808857)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py", line 731, in initialize_from_config
+(EngineCore pid=1808857)     self.model_runner.initialize_kv_cache(
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/worker/gpu/model_runner.py", line 636, in initialize_kv_cache
+(EngineCore pid=1808857)     cudagraph_mode = self.compilation_config.resolve_cudagraph_mode_and_sizes(
+(EngineCore pid=1808857)                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1808857)   File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/config/compilation.py", line 1513, in resolve_cudagraph_mode_and_sizes
+(EngineCore pid=1808857)     raise ValueError(
+(EngineCore pid=1808857) ValueError: max_num_seqs (1024) exceeds available Mamba cache blocks (535). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 535 or increase gpu_memory_utilization.
+[rank0]:[W925 00:57:32.349281329 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Traceback (most recent call last):
+  File "/mnt/home/yqi10/learn-claude-code/research/10_rope_shift/vllm_check.py", line 162, in <module>
+    main()
+  File "/mnt/home/yqi10/learn-claude-code/research/10_rope_shift/vllm_check.py", line 75, in main
+    llm = LLM(**engine_kwargs, language_model_only=True)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/entrypoints/llm.py", line 343, in __init__
+    self.llm_engine = LLMEngine.from_engine_args(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/llm_engine.py", line 179, in from_engine_args
+    return cls(
+           ^^^^
+  File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/llm_engine.py", line 105, in __init__
+    self.engine_core = EngineCoreClient.make_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 110, in make_client
+    return SyncMPClient(vllm_config, executor_class, log_stats)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 813, in __init__
+    super().__init__(
+  File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 609, in __init__
+    with launch_core_engines(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/home/yqi10/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1240, in launch_core_engines
+    wait_for_engine_startup(
+  File "/mnt/home/yqi10/.venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1320, in wait_for_engine_startup
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}

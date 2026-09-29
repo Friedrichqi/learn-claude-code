@@ -1,0 +1,198 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/asyncio.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/asyncio.py	2026-09-17 15:46:11.310776116 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/asyncio.py	2026-09-27 09:27:54.737698604 -0400
+@@ -1,5 +1,7 @@
+ """
+ Asynchronous progress bar decorator for iterators.
++
++BUILD_TAG = 'profiling'
+ Includes a default `range` iterator printing to `stderr`.
+ 
+ Usage:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/autonotebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/autonotebook.py	2026-09-17 15:46:11.318723642 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/autonotebook.py	2026-09-27 09:27:35.299724522 -0400
+@@ -1,6 +1,8 @@
+ """
+ Automatically choose between `tqdm.notebook` and `tqdm.std`.
+ 
++BUILD_TAG = 'profiling'
++
+ Usage:
+ >>> from tqdm.autonotebook import trange, tqdm
+ >>> for i in trange(10):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/auto.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/auto.py	2026-09-17 15:46:11.315000311 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/auto.py	2026-09-27 09:27:35.299724522 -0400
+@@ -1,6 +1,8 @@
+ """
+ Enables multiple commonly used features.
+ 
++BUILD_TAG = 'profiling'
++
+ Method resolution order:
+ 
+ - `tqdm.autonotebook` without import warnings
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/CHANGES_BUILD_TAG.md	2026-09-27 09:29:44.630551794 -0400
+@@ -0,0 +1,17 @@
++# BUILD_TAG Addition Changelog
++
++The following files have had the `BUILD_TAG` constant added:
++
++- **asyncio.py**: Line 2
++- **auto.py**: Line 2
++- **autonotebook.py**: Line 2
++- **cli.py**: Line 2
++- **dask.py**: Line 3
++- **gui.py**: Line 2
++- **keras.py**: Line 3
++- **notebook.py**: Line 2
++- **rich.py**: Line 2
++- **std.py**: Line 2
++- **tk.py**: Line 2
++- **utils.py**: Line 2
++- **version.py**: Line 3
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/cli.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/cli.py	2026-09-17 15:46:11.324724773 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/cli.py	2026-09-27 09:27:35.300724521 -0400
+@@ -1,5 +1,7 @@
+ """
+ Module version for monitoring CLI pipes (`... | python -m tqdm | ...`).
++
++BUILD_TAG = 'profiling'
+ """
+ import logging
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/dask.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/dask.py	2026-09-17 15:46:11.332330664 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/dask.py	2026-09-27 09:29:27.615574556 -0400
+@@ -10,6 +10,8 @@
+ 
+ class TqdmCallback(Callback):
+     """Dask callback for task progress."""
++
++BUILD_TAG = 'profiling'
+     def __init__(self, start=None, pretask=None, tqdm_class=tqdm_auto,
+                  **tqdm_kwargs):
+         """
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/gui.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/gui.py	2026-09-17 15:46:11.337417657 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/gui.py	2026-09-27 09:27:35.301724520 -0400
+@@ -1,6 +1,8 @@
+ """
+ Matplotlib GUI progress bar decorator for iterators.
+ 
++BUILD_TAG = 'profiling'
++
+ Usage:
+ >>> from tqdm.gui import trange, tqdm
+ >>> for i in trange(10):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/keras.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/keras.py	2026-09-17 15:46:11.341185437 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/keras.py	2026-09-27 09:29:06.844602327 -0400
+@@ -15,7 +15,9 @@
+ 
+ 
+ class TqdmCallback(keras.callbacks.Callback):
+-    """Keras callback for epoch and batch progress."""
++    """Keras callback for epoch and batch progress.
++
++BUILD_TAG = 'profiling'"""
+     @staticmethod
+     def bar2callback(bar, pop=None, delta=(lambda logs: 1)):
+         def callback(_, logs=None):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/notebook.py	2026-09-17 15:46:11.345714888 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/notebook.py	2026-09-27 09:27:35.302724518 -0400
+@@ -1,5 +1,7 @@
+ """
+ IPython/Jupyter Notebook progress bar decorator for iterators.
++
++BUILD_TAG = 'profiling'
+ Includes a default `range` iterator printing to `stderr`.
+ 
+ Usage:
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/rich.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/rich.py	2026-09-17 15:46:11.351142577 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/rich.py	2026-09-27 09:27:35.302724518 -0400
+@@ -1,6 +1,8 @@
+ """
+ `rich.progress` decorator for iterators.
+ 
++BUILD_TAG = 'profiling'
++
+ Usage:
+ >>> from tqdm.rich import trange, tqdm
+ >>> for i in trange(10):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/std.py	2026-09-27 09:34:56.587132545 -0400
+@@ -1,5 +1,7 @@
+ """
+ Customisable progress bar decorator for iterators.
++
++BUILD_TAG = 'profiling'
+ Includes a default `range` iterator printing to `stderr`.
+ 
+ Usage:
+@@ -30,14 +32,23 @@
+ 
+ 
+ class TqdmTypeError(TypeError):
++    """Custom exception for type errors in tqdm.""":
++    """Custom exception for type errors in tqdm.""":
++    """Custom exception for type errors in tqdm.""":
+     pass
+ 
+ 
+ class TqdmKeyError(KeyError):
++    """Custom exception for key errors in tqdm.""":
++    """Custom exception for key errors in tqdm.""":
++    """Custom exception for key errors in tqdm.""":
+     pass
+ 
+ 
+ class TqdmWarning(Warning):
++    """Base class for warnings in tqdm.""":
++    """Base class for warnings in tqdm.""":
++    """Base class for warnings in tqdm.""":
+     """base class for all tqdm warnings.
+ 
+     Used for non-external-code-breaking errors, such as garbled printing.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/tk.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/tk.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/tk.py	2026-09-17 15:46:11.364945066 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/tk.py	2026-09-27 09:27:35.303724517 -0400
+@@ -1,6 +1,8 @@
+ """
+ Tkinter GUI progress bar decorator for iterators.
+ 
++BUILD_TAG = 'profiling'
++
+ Usage:
+ >>> from tqdm.tk import trange, tqdm
+ >>> for i in trange(10):
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py	2026-09-17 15:46:11.374453572 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/utils.py	2026-09-27 09:27:35.304724516 -0400
+@@ -1,5 +1,7 @@
+ """
+ General helpers required for `tqdm.std`.
++
++BUILD_TAG = 'profiling'
+ """
+ import os
+ import re
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/version.py /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/version.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/version.py	2026-09-17 15:46:11.379742272 -0400
++++ /tmp/yqi10/mu/102994/g0/lane07/profiling_sandbox/tqdm/version.py	2026-09-27 09:29:06.845602325 -0400
+@@ -1,4 +1,6 @@
+-"""`tqdm` version detector. Precedence: installed dist, git, 'UNKNOWN'."""
++"""`tqdm` version detector. Precedence: installed dist, git, 'UNKNOWN'
++
++BUILD_TAG = 'profiling'."""
+ from importlib.metadata import PackageNotFoundError, version
+ 
+ try:

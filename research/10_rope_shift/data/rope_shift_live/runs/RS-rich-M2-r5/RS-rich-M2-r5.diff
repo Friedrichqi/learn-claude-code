@@ -1,0 +1,19 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py /tmp/yqi10/rope_shift_lanes/s1/lane01_19/profiling_sandbox/rich/_unicode_data/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py	2026-09-17 15:46:12.223663421 -0400
++++ /tmp/yqi10/rope_shift_lanes/s1/lane01_19/profiling_sandbox/rich/_unicode_data/__init__.py	2026-09-25 12:20:03.686507842 -0400
+@@ -56,7 +56,7 @@
+ 
+ 
+ @cache
+-def load(unicode_version: str = "auto") -> CellTable:
++def load_v2(unicode_version: str = "auto") -> CellTable:
+     """Load a cell table for the given unicode version.
+ 
+     Args:
+@@ -90,4 +90,4 @@
+     module = import_module(module_name, "rich._unicode_data")
+     if TYPE_CHECKING:
+         assert isinstance(module.cell_table, CellTable)
+-    return module.cell_table
++    return module.cell_table
+\ No newline at end of file

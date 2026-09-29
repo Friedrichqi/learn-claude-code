@@ -1,0 +1,88 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py /tmp/yqi10/mu/102767/g0/lane03/profiling_sandbox/typer/_click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py	2026-09-17 15:46:11.494043204 -0400
++++ /tmp/yqi10/mu/102767/g0/lane03/profiling_sandbox/typer/_click/core.py	2026-09-27 01:13:58.935172341 -0400
+@@ -263,7 +263,7 @@
+ 
+     def __enter__(self) -> "Context":
+         self._depth += 1
+-        push_context(self)
++        push_context_v2(self)
+         return self
+ 
+     def __exit__(
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/mu/102767/g0/lane03/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/mu/102767/g0/lane03/profiling_sandbox/typer/_click/globals.py	2026-09-27 01:13:51.657191191 -0400
+@@ -35,7 +35,7 @@
+     return None
+ 
+ 
+-def push_context(ctx: "Context") -> None:
++def push_context_v2(ctx: "Context") -> None:
+     """Pushes a new context to the current stack."""
+     _local.__dict__.setdefault("stack", []).append(ctx)
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py /tmp/yqi10/mu/102767/g0/lane03/profiling_sandbox/typer/main.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/main.py	2026-09-17 15:46:11.608868099 -0400
++++ /tmp/yqi10/mu/102767/g0/lane03/profiling_sandbox/typer/main.py	2026-09-27 01:13:18.194278136 -0400
+@@ -61,6 +61,7 @@
+ def except_hook(
+     exc_type: type[BaseException], exc_value: BaseException, tb: TracebackType | None
+ ) -> None:
++    """Custom exception hook to handle pretty exception formatting."""
+     exception_config: DeveloperExceptionConfig | None = getattr(
+         exc_value, _typer_developer_exception_attr_name, None
+     )
+@@ -1632,6 +1633,7 @@
+ def get_click_param(
+     param: ParamMeta,
+ ) -> tuple[TyperArgument | TyperOption, Any]:
++    """Convert a ParamMeta to a Click parameter and a type convertor."""
+     # First, find out what will be:
+     # * ParamInfo (ArgumentInfo or OptionInfo)
+     # * default_value
+@@ -1799,6 +1801,7 @@
+     callback: Callable[..., Any] | None = None,
+     convertor: Callable[..., Any] | None = None,
+ ) -> Callable[..., Any] | None:
++    """Create a callback function for Click parameters."""
+     if not callback:
+         return None
+     parameters = get_params_from_function(callback)
+@@ -1849,6 +1852,7 @@
+ def get_param_completion(
+     callback: Callable[..., Any] | None = None,
+ ) -> Callable[..., Any] | None:
++    """Create a completion callback function for Click parameters."""
+     if not callback:
+         return None
+     parameters = get_params_from_function(callback)
+@@ -1909,6 +1913,7 @@
+         ),
+     ],
+ ) -> None:
++    """Convert a function to a CLI application and run it."""
+     """
+     This function converts a given function to a CLI application with `Typer()` and executes it.
+ 
+@@ -1930,10 +1935,12 @@
+ 
+ 
+ def _is_macos() -> bool:
++    """Check if the current platform is macOS."""
+     return platform.system() == "Darwin"
+ 
+ 
+ def _is_linux_or_bsd() -> bool:
++    """Check if the current platform is Linux or BSD."""
+     if platform.system() == "Linux":
+         return True
+ 
+@@ -1967,6 +1974,7 @@
+         ),
+     ] = False,
+ ) -> int:
++    """Launch a URL or file in the default application for its type."""
+     """
+     This function launches the given URL (or filename) in the default
+     viewer application for this file type.  If this is an executable, it

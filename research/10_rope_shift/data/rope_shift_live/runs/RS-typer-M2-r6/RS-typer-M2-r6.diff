@@ -1,0 +1,66 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py /tmp/yqi10/rope_shift_lanes/s5/lane05_00/profiling_sandbox/typer/_click/core.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/core.py	2026-09-17 15:46:11.494043204 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_00/profiling_sandbox/typer/_click/core.py	2026-09-25 11:47:17.909966345 -0400
+@@ -20,7 +20,7 @@
+ from . import types
+ from .exceptions import BadParameter, MissingParameter, NoArgsIsHelpError, UsageError
+ from .formatting import HelpFormatter
+-from .globals import pop_context, push_context
++from .globals import pop_context, push_context_v2
+ from .parser import _OptionParser
+ from .termui import style
+ from .utils import echo, make_default_short_help
+@@ -263,7 +263,7 @@
+ 
+     def __enter__(self) -> "Context":
+         self._depth += 1
+-        push_context(self)
++        push_context_v2(self)
+         return self
+ 
+     def __exit__(
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py /tmp/yqi10/rope_shift_lanes/s5/lane05_00/profiling_sandbox/typer/_click/globals.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/typer/_click/globals.py	2026-09-17 15:46:11.510773435 -0400
++++ /tmp/yqi10/rope_shift_lanes/s5/lane05_00/profiling_sandbox/typer/_click/globals.py	2026-09-25 11:46:41.522028546 -0400
+@@ -6,15 +6,12 @@
+ 
+ _local = local()
+ 
+-
+ @overload
+ def get_current_context(silent: Literal[False] = False) -> "Context": ...
+ 
+-
+ @overload
+ def get_current_context(silent: bool = ...) -> Union["Context", None]: ...
+ 
+-
+ def get_current_context(silent: bool = False) -> Union["Context", None]:
+     """Returns the current click context.  This can be used as a way to
+     access the current context object from anywhere.  This is a more implicit
+@@ -34,17 +31,14 @@
+ 
+     return None
+ 
+-
+-def push_context(ctx: "Context") -> None:
++def push_context_v2(ctx: "Context") -> None:
+     """Pushes a new context to the current stack."""
+     _local.__dict__.setdefault("stack", []).append(ctx)
+ 
+-
+ def pop_context() -> None:
+     """Removes the top level from the stack."""
+     _local.stack.pop()
+ 
+-
+ def resolve_color_default(color: bool | None = None) -> bool | None:
+     """Internal helper to get the default value of the color flag.  If a
+     value is passed it's returned unchanged, otherwise it's looked up from
+@@ -58,4 +52,4 @@
+     if ctx is not None:
+         return ctx.color
+ 
+-    return None
++    return None
+\ No newline at end of file

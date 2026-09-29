@@ -1,0 +1,59 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/CHANGES_BUILD_TAG.md	2026-09-27 08:03:03.140537540 -0400
+@@ -0,0 +1,6 @@
++# Changelog for BUILD_TAG Addition
++
++The following files have been updated with the `BUILD_TAG` constant set to 'profiling':
++- profiling_sandbox/rich/__main__.py (line 1)
++- profiling_sandbox/rich/_emoji_codes.py (line 1)
++- profiling_sandbox/rich/_loop.py (line 1)
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_codes.py /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/_emoji_codes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_codes.py	2026-09-17 15:46:12.143224045 -0400
++++ /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/_emoji_codes.py	2026-09-27 07:59:43.423962212 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ EMOJI = {
+     "1st_place_medal": "🥇",
+     "2nd_place_medal": "🥈",
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_replace.py /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/_emoji_replace.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_emoji_replace.py	2026-09-17 15:46:12.148538766 -0400
++++ /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/_emoji_replace.py	2026-09-27 08:28:56.749471064 -0400
+@@ -12,7 +12,7 @@
+     _emoji_sub: _EmojiSubMethod = re.compile(r"(:(\S*?)(?:(?:\-)(emoji|text))?:)").sub,
+ ) -> str:
+     """Replace emoji code in text."""
+-    from ._emoji_codes import EMOJI
++    from ._emoji_codes import EMOJI, BUILD_TAG
+ 
+     get_emoji = EMOJI.__getitem__
+     variants = {"text": "\ufe0e", "emoji": "\ufe0f"}
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_loop.py /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/_loop.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_loop.py	2026-09-17 15:46:12.182194535 -0400
++++ /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/_loop.py	2026-09-27 08:02:28.179786916 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from typing import Iterable, Tuple, TypeVar
+ 
+ T = TypeVar("T")
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__main__.py /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/__main__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/__main__.py	2026-09-17 15:46:12.133039129 -0400
++++ /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/__main__.py	2026-09-27 07:52:48.907919859 -0400
+@@ -1,4 +1,5 @@
+ import colorsys
++BUILD_TAG = 'profiling'
+ import io
+ from time import process_time
+ 
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/_unicode_data/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/rich/_unicode_data/__init__.py	2026-09-17 15:46:12.223663421 -0400
++++ /tmp/yqi10/mu/102768/g0/lane01/profiling_sandbox/rich/_unicode_data/__init__.py	2026-09-27 08:12:17.271585719 -0400
+@@ -56,7 +56,7 @@
+ 
+ 
+ @cache
+-def load(unicode_version: str = "auto") -> CellTable:
++def load_v2(unicode_version: str = "auto") -> CellTable:
+     """Load a cell table for the given unicode version.
+ 
+     Args:

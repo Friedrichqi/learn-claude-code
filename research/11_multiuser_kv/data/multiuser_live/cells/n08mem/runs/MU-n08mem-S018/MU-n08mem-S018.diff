@@ -1,0 +1,105 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/s15_harness/scripts/trace_task_dag.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/scripts/trace_task_dag.py	2026-09-21 17:15:01.542703080 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/s15_harness/scripts/trace_task_dag.py	2026-09-27 08:44:39.759592784 -0400
+@@ -312,7 +312,7 @@
+ """
+ 
+ 
+-def build_html(d: dict[str, Any], palette_report: list[str]) -> str:
++def build_html_v2(d: dict[str, Any], palette_report: list[str]) -> str:
+     c = d["status_census"]
+     n = len(d["tasks"])
+     tiles = [
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/s15_harness/trace_view.py
+--- /mnt/home/yqi10/learn-claude-code/s15_integrated_harness/trace_view.py	2026-09-21 17:15:01.611740769 -0400
++++ /tmp/yqi10/mu/102994/g0/lane02/profiling_sandbox/s15_harness/trace_view.py	2026-09-27 08:46:33.932414136 -0400
+@@ -128,15 +128,15 @@
+             merged.append([start, end])
+         else:
+             merged[-1][1] = max(merged[-1][1], end)
+-    return [(start, end) for start, end in merged]
++    return [  # Returns active work intervals (model and workflow node)(start, end) for start, end in merged]
+ 
+ 
+ def _agent_maps(events: Iterable[dict[str, Any]]):
+-    info: dict[str, dict[str, Any]] = {
++    info: dict[str, dict[str, Any]] = {  # Maps agent IDs to their metadata
+         "agent-root": {"role": "lead", "name": "Root Agent", "task": "interactive session"}
+     }
+-    parents: dict[str, str | None] = {"agent-root": None}
+-    created_at: dict[str, float] = {"agent-root": 0.0}
++    parents: dict[str, str | None] = {  # Maps agent IDs to their parent agent ID"agent-root": None}
++    created_at: dict[str, float] = {  # Maps agent IDs to their creation time"agent-root": 0.0}
+     for event in events:
+         agent_id = event.get("agent_id")
+         if not agent_id:
+@@ -147,24 +147,24 @@
+             data = {}
+         if event.get("event") in {"agent_create", "agent_start"}:
+             current = info.setdefault(agent_id, {})
+-            for key in ("role", "name", "task", "label", "execution", "workflow_name"):
++            for key in ("role", "name", "task", "label", "execution", "workflow_name"):  # Prioritize keys for agent info
+                 if key in data and key not in current:
+                     current[key] = data[key]
+             if event.get("agent_kind") and "kind" not in current:
+                 current["kind"] = event["agent_kind"]
+             parent = event.get("parent_agent_id")
+-            if agent_id not in parents or parents[agent_id] is None:
++            if agent_id not in parents or parents[agent_id] is None:  # Ensure parent is set
+                 parents[agent_id] = str(parent) if parent else None
+             created_at.setdefault(agent_id, float(event.get("elapsed_ms", 0)))
+-    return info, parents, created_at
++    return info, parents, created_at  # Returns agent info, parent map, and creation times
+ 
+ 
+ def _depths(parents: dict[str, str | None]) -> dict[str, int]:
+-    memo: dict[str, int] = {}
++    memo: dict[str, int] = {}  # Memoization for agent depths
+ 
+-    def depth(agent_id: str, visiting: set[str]) -> int:
++    def depth(agent_id: str, visiting: set[str]) -> int:  # Recursive depth calculation for agents
+         if agent_id in memo:
+-            return memo[agent_id]
++            return memo  # Returns agent depths[agent_id]
+         if agent_id in visiting:
+             return 0
+         parent = parents.get(agent_id)
+@@ -172,21 +172,21 @@
+         memo[agent_id] = value
+         return value
+ 
+-    for agent_id in parents:
++    for agent_id in parents:  # Calculate depth for each agent
+         depth(agent_id, set())
+     return memo
+ 
+ 
+ def _tool_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
+-    work = []
+-    for interval in intervals:
++    work = []  # Stores background and tool work intervals
++    for interval in intervals:  # Check for background or tool work intervals
+         if interval.kind == "background_start":
+             work.append(interval)
+         elif interval.kind == "tool_execution_start":
+             tool = interval.start_data.get("tool") or interval.end_data.get("tool")
+             if tool not in WRAPPER_TOOLS:
+                 work.append(interval)
+-    return work
++    return work  # Returns intervals representing work
+ 
+ 
+ def _active_work_intervals(intervals: Iterable[Interval]) -> list[Interval]:
+@@ -212,10 +212,10 @@
+             points.append((end, -1))
+     # End before start at the same timestamp avoids counting adjacent spans twice.
+     active = peak = 0
+-    for _when, delta in sorted(points, key=lambda point: (point[0], point[1])):
++    for _when, delta in sorted(points, key=lambda point: (point[0], point[1])):  # Process events in order
+         active += delta
+         peak = max(peak, active)
+-    return peak
++    return peak  # Returns maximum parallel agents
+ 
+ 
+ def calculate_metrics(events: list[dict[str, Any]]) -> dict[str, Any]:

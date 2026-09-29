@@ -1,0 +1,155 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_auth.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_auth.py	2026-09-17 15:46:11.090183787 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_auth.py	2026-09-27 04:13:08.373167063 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import hashlib
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/CHANGES_BUILD_TAG.md	1969-12-31 19:00:00.000000000 -0500
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/CHANGES_BUILD_TAG.md	2026-09-27 04:16:55.125829878 -0400
+@@ -0,0 +1,14 @@
++# Build Tag Changelog
++
++Added `BUILD_TAG = 'profiling'` to the following files:
++
++- `profiling_sandbox/httpx/_transports/wsgi.py` (Line 1)
++- `profiling_sandbox/httpx/_urls.py` (Line 1)
++- `profiling_sandbox/httpx/_config.py` (Line 1)
++- `profiling_sandbox/httpx/_status_codes.py` (Line 1)
++- `profiling_sandbox/httpx/_exceptions.py` (Line 1)
++- `profiling_sandbox/httpx/_utils.py` (Line 1)
++- `profiling_sandbox/httpx/_content.py` (Line 1)
++- `profiling_sandbox/httpx/_auth.py` (Line 1)
++
++Other files either lacked a suitable insertion point or were not found in the directory structure.
+\ No newline at end of file
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_config.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_config.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_config.py	2026-09-17 15:46:11.116833128 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_config.py	2026-09-27 04:09:45.171514077 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import os
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_content.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_content.py	2026-09-17 15:46:11.123390582 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_content.py	2026-09-27 04:12:07.654271061 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import inspect
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_exceptions.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_exceptions.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_exceptions.py	2026-09-17 15:46:11.139738758 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_exceptions.py	2026-09-27 04:10:30.489436941 -0400
+@@ -31,6 +31,7 @@
+   x RequestNotRead
+ """
+ 
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import contextlib
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_models.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_models.py	2026-09-17 15:46:11.150785393 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_models.py	2026-09-27 04:27:17.439085904 -0400
+@@ -141,7 +141,9 @@
+     HTTP headers, as a case-insensitive multi-dict.
+     """
+ 
+-    def __init__(
++    def __init__(self, status_code: int, headers: Headers, stream: ByteStream, extensions: dict = None):
++        """Initialize a new Response instance."""self, *, method: str, url: URL, headers: Headers, content: bytes = b''):
++        """Initialize a new Request instance."""
+         self,
+         headers: HeaderTypes | None = None,
+         encoding: str | None = None,
+@@ -354,6 +356,8 @@
+         return len(self._list)
+ 
+     def __eq__(self, other: typing.Any) -> bool:
++        """Check if two Response instances are equal."""self, other: typing.Any) -> bool:
++        """Check if two Request instances are equal."""self, other: typing.Any) -> bool:
+         try:
+             other_headers = Headers(other)
+         except ValueError:
+@@ -364,6 +368,8 @@
+         return sorted(self_list) == sorted(other_list)
+ 
+     def __repr__(self) -> str:
++        """Return the official string representation of the Response."""self) -> str:
++        """Return the official string representation of the Request."""self) -> str:
+         class_name = self.__class__.__name__
+ 
+         encoding_str = ""
+@@ -380,6 +386,7 @@
+ 
+ 
+ class Request:
++    """Represents an HTTP request."""
+     def __init__(
+         self,
+         method: str,
+@@ -466,6 +473,8 @@
+         return self._content
+ 
+     def read(self) -> bytes:
++        """Read and return the content of the response."""self) -> None:
++        """Read the content of the request."""self) -> bytes:
+         """
+         Read and return the request content.
+         """
+@@ -513,6 +522,7 @@
+ 
+ 
+ class Response:
++    """Represents an HTTP response."""
+     def __init__(
+         self,
+         status_code: int,
+@@ -959,6 +969,8 @@
+         self.close()
+ 
+     def close(self) -> None:
++        """Close the response and release any resources."""self) -> None:
++        """Close the request and release any resources."""self) -> None:
+         """
+         Close the response and release the connection.
+         Automatically called if the response body is read to completion.
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_status_codes.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_status_codes.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_status_codes.py	2026-09-17 15:46:11.160036232 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_status_codes.py	2026-09-27 04:09:58.502491401 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ from enum import IntEnum
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/wsgi.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_transports/wsgi.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_transports/wsgi.py	2026-09-17 15:46:11.303603530 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_transports/wsgi.py	2026-09-27 04:08:38.899626609 -0400
+@@ -5,6 +5,7 @@
+ import sys
+ import typing
+ 
++BUILD_TAG = 'profiling'
+ from .._models import Request, Response
+ from .._types import SyncByteStream
+ from .base import BaseTransport
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_urls.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_urls.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_urls.py	2026-09-17 15:46:11.268242973 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_urls.py	2026-09-27 04:09:09.487574709 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import typing
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_utils.py /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/httpx/_utils.py	2026-09-17 15:46:11.273403356 -0400
++++ /tmp/yqi10/mu/102994/g1/lane04/profiling_sandbox/httpx/_utils.py	2026-09-27 04:11:06.126376179 -0400
+@@ -1,3 +1,4 @@
++BUILD_TAG = 'profiling'
+ from __future__ import annotations
+ 
+ import ipaddress

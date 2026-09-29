@@ -1,0 +1,23 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py /tmp/yqi10/rope_shift_lanes/s0/lane00_11/profiling_sandbox/requests/help.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/help.py	2026-09-17 15:46:11.047866462 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_11/profiling_sandbox/requests/help.py	2026-09-25 12:35:08.326573075 -0400
+@@ -66,7 +66,7 @@
+     return {"name": implementation, "version": implementation_version}
+ 
+ 
+-def info() -> dict[str, Any]:
++def info_v2() -> dict[str, Any]:
+     """Generate information for a bug report."""
+     try:
+         platform_info = {
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py /tmp/yqi10/rope_shift_lanes/s0/lane00_11/profiling_sandbox/requests/__init__.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/requests/__init__.py	2026-09-17 15:46:10.941532986 -0400
++++ /tmp/yqi10/rope_shift_lanes/s0/lane00_11/profiling_sandbox/requests/__init__.py	2026-09-25 12:35:19.965509303 -0400
+@@ -169,6 +169,7 @@
+     __version__,
+ )
+ from .api import delete, get, head, options, patch, post, put, request
++from .help import info_v2
+ from .exceptions import (
+     ConnectionError,
+     ConnectTimeout,

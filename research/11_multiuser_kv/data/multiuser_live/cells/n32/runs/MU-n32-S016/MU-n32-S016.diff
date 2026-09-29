@@ -1,0 +1,127 @@
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py /tmp/yqi10/mu/102768/g1/lane20/profiling_sandbox/tqdm/std.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/std.py	2026-09-17 15:46:11.358008267 -0400
++++ /tmp/yqi10/mu/102768/g1/lane20/profiling_sandbox/tqdm/std.py	2026-09-27 00:38:38.235419572 -0400
+@@ -640,7 +640,7 @@
+             if not _is_ascii(full_bar.charset) and _is_ascii(bar_format):
+                 bar_format = str(bar_format)
+             res = bar_format.format(bar=full_bar, **format_dict)
+-            return disp_trim(res, ncols) if ncols else res
++            return disp_trim_v2(res, ncols) if ncols else res
+ 
+         elif bar_format:
+             # user-specified bar_format but no total
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py /tmp/yqi10/mu/102768/g1/lane20/profiling_sandbox/tqdm/_tqdm_notebook.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py	2026-09-17 15:46:11.297568339 -0400
++++ /tmp/yqi10/mu/102768/g1/lane20/profiling_sandbox/tqdm/_tqdm_notebook.py	2026-09-27 00:42:14.093891853 -0400
+@@ -2,7 +2,7 @@
+ 
+ from .notebook import *  # NOQA
+ from .notebook import __all__  # NOQA
+-from .std import TqdmDeprecationWarning
++from .std import TqdmDeprecationWarning, disp_trim as disp_trim_v2
+ 
+ warn("This function will be removed in tqdm==5.0.0\n"
+      "Please use `tqdm.notebook.*` instead of `tqdm._tqdm_notebook.*`",
+diff -ruN -x __pycache__ -x '*.pyc' -x '*.so' -x traces -x '*.jsonl' -x '*.pyi' -x py.typed /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py /tmp/yqi10/mu/102768/g1/lane20/profiling_sandbox/tqdm/utils.py
+--- /mnt/home/yqi10/.venv/lib/python3.12/site-packages/tqdm/utils.py	2026-09-17 15:46:11.374453572 -0400
++++ /tmp/yqi10/mu/102768/g1/lane20/profiling_sandbox/tqdm/utils.py	2026-09-27 00:33:41.847522713 -0400
+@@ -137,6 +137,7 @@
+         return object.__setattr__(self, name, value)
+ 
+     def __init__(self, wrapped):
++        """Thin wrapper around a given object."""
+         """
+         Thin wrapper around a given object
+         """
+@@ -150,6 +151,7 @@
+     """
+     # pylint: disable=too-few-public-methods
+     def __init__(self, wrapped, encoding):
++        """Initialize a SimpleTextIOWrapper with the given encoding."""
+         super().__init__(wrapped)
+         self.wrapper_setattr('encoding', encoding)
+ 
+@@ -194,6 +196,7 @@
+         return inner
+ 
+     def __init__(self, wrapped, tqdm_instance):  # noqa: B042
++        """Wrap a file-like object to disable on write/flush errors."""
+         super().__init__(wrapped)
+         if hasattr(wrapped, 'write'):
+             self.wrapper_setattr(
+@@ -208,6 +211,7 @@
+ 
+ class CallbackIOWrapper(ObjectWrapper):
+     def __init__(self, callback, stream, method="read"):
++        """Wrap a file-like object's read/write method to report lengths."""
+         """
+         Wrap a given `file`-like object's `read()` or `write()` to report
+         lengths to the given `callback`
+@@ -233,6 +237,7 @@
+ 
+ 
+ def _is_utf(encoding):
++    """Check if the given encoding is UTF."""
+     try:
+         '\u2588\u2589'.encode(encoding)
+     except UnicodeEncodeError:
+@@ -247,6 +252,7 @@
+ 
+ 
+ def _supports_unicode(fp):
++    """Check if the file-like object supports Unicode."""
+     try:
+         return _is_utf(fp.encoding)
+     except AttributeError:
+@@ -254,6 +260,7 @@
+ 
+ 
+ def _is_ascii(s):
++    """Check if the string contains only ASCII characters."""
+     if isinstance(s, str):
+         for c in s:
+             if ord(c) > 255:
+@@ -263,6 +270,7 @@
+ 
+ 
+ def _screen_shape_wrapper():  # pragma: no cover
++    """Return a function that returns console dimensions."""
+     """
+     Return a function which returns console dimensions (width, height).
+     Supported: linux, osx, windows, cygwin.
+@@ -279,6 +287,7 @@
+ 
+ 
+ def _environ_cols_wrapper():  # pragma: no cover
++    """Return a function that returns console width."""
+     """
+     Return a function which returns console width.
+     Supported: linux, osx, windows, cygwin.
+@@ -297,14 +306,17 @@
+ 
+ 
+ def _term_move_up():  # pragma: no cover
++    """Return ANSI escape code to move cursor up."""
+     return '' if (os.name == 'nt') and (colorama is None) else '\x1b[A'
+ 
+ 
+ def _text_width(s):
++    """Calculate the on-screen width of a string with wide characters."""
+     return sum(2 if east_asian_width(ch) in 'FW' else 1 for ch in str(s))
+ 
+ 
+ def disp_len(data):
++    """Return the real on-screen length of a string with ANSI codes and wide chars."""
+     """
+     Returns the real on-screen length of a string which may contain
+     ANSI control codes and wide chars.
+@@ -312,7 +324,8 @@
+     return _text_width(RE_ANSI.sub('', data))
+ 
+ 
+-def disp_trim(data, length):
++def disp_trim_v2(data, length):
++    """Trim a string with ANSI codes to fit within a given length."""
+     """
+     Trim a string which may contain ANSI control characters.
+     """

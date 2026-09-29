@@ -41,6 +41,12 @@ Behaviour
   * Drives one or more user turns, then waits until teammates are idle (or --max-seconds), sends
     them a graceful shutdown while holding the lead lock, and closes the trace.
   * Fresh .memory/.tasks/.mailboxes/.transcripts/.task_outputs state at the repo root per run.
+  * Multi-user interventions (research/11_multiuser_kv): --think-seconds pauses before each
+    follow-up turn inside an input_wait span (a simulated user reading and typing); --no-snip turns
+    snip_compact off; --memory off removes memory recall, the memory catalog and the turn-end
+    extraction calls, so the system prompt is identical across turns; --tool-result-budget and
+    --reactive-compact-limit scale the per-message result cap and the number of prompt-too-long
+    compactions per turn.  Defaults reproduce the harness as shipped.
   * --vllm-metrics URL scrapes a local vLLM server's Prometheus /metrics after every model call and
     stores the deltas (server-side prefill / decode / queue seconds, prefix-cache hits, tokens) in the
     inputs sidecar as record['vllm']; --client-max-retries 0 disables the SDK's silent retries;
@@ -245,6 +251,24 @@ def parse_args():
                         help="intervention: drop the per-second 'Current time' line from the lead system prompt")
     parser.add_argument("--context-limit", type=int, default=None,
                         help="intervention: override CONTEXT_LIMIT (chars) of the lead compaction pipeline")
+    parser.add_argument("--think-seconds", type=float, action="append", default=[],
+                        help="simulated user think time before each follow-up turn, one value per gap "
+                             "(repeatable, in order; missing values mean no pause). The pause is traced as "
+                             "the harness's own input_wait_start/input_wait_end span (source think_time), "
+                             "measured from the end of the previous turn, so it includes the quiescence wait")
+    parser.add_argument("--no-snip", action="store_true",
+                        help="intervention: disable snip_compact, which otherwise archives the middle of the "
+                             "history on every round once it exceeds 50 messages (a message-count context "
+                             "limit that rewrites the prefix after message 3)")
+    parser.add_argument("--memory", choices=["on", "off"], default="on",
+                        help="off: no memory recall, no memory catalog in the system prompt and no turn-end "
+                             "extraction/consolidation calls (the system prompt then stays identical across turns)")
+    parser.add_argument("--tool-result-budget", type=int, default=None,
+                        help="intervention: override tool_result_budget's per-message cap (chars, default "
+                             "200,000); results above it are persisted and replaced by a preview")
+    parser.add_argument("--reactive-compact-limit", type=int, default=None,
+                        help="intervention: allow this many prompt-too-long reactive compactions per "
+                             "agent_loop instead of the harness's one")
     parser.add_argument("--tool-cost", default=None,
                         help="intervention: advertise a per-call latency in the tool descriptions, "
                              "as 'name=seconds' pairs, e.g. 'read_file=5.0,bash=0.08'")
@@ -356,6 +380,65 @@ def parse_args():
     if args.sandbox_from and not args.write_root:
         parser.error("--sandbox-from requires --write-root")
     return args
+
+
+def limited_recovery_state(base, limit: int):
+    """RecoveryState whose has_attempted_reactive_compact reads True only after `limit` reactive
+    compactions in one agent_loop (the harness allows one, code.py:3586-3593)."""
+    class LimitedRecoveryState(base):
+        def __init__(self):
+            self._reactive_compacts = 0
+            super().__init__()
+
+        @property
+        def has_attempted_reactive_compact(self):
+            return self._reactive_compacts >= limit
+
+        @has_attempted_reactive_compact.setter
+        def has_attempted_reactive_compact(self, value):
+            self._reactive_compacts = self._reactive_compacts + 1 if value else 0
+
+    return LimitedRecoveryState
+
+
+def install_interventions(mod, args) -> dict:
+    """--no-snip, --memory off, --tool-result-budget, --reactive-compact-limit.  Each replaces a module
+    global (or a MEMORY_RUNTIME attribute) that the harness looks up at call time, so code.py is not
+    edited: prepare_context calls tool_result_budget / snip_compact (code.py:3500-3501), agent_loop
+    builds RecoveryState() (3554) and queues remember_after_turn_async (3647), and update_context reads
+    MEMORY_RUNTIME.load_memories / read_memory_index on every round (3423-3431)."""
+    applied = {}
+    if getattr(args, "no_snip", False):
+        mod.snip_compact = lambda messages, max_messages=50: messages
+        applied["no_snip"] = True
+    if getattr(args, "memory", "on") == "off":
+        runtime = mod.MEMORY_RUNTIME
+        runtime.load_memories = lambda messages: ""       # no recall call, no records section
+        runtime.read_memory_index = lambda: ""            # no catalog section
+        mod.remember_after_turn_async = lambda messages: None   # no extraction / consolidation calls
+        applied["memory"] = "off"
+    if getattr(args, "tool_result_budget", None):
+        original_budget = mod.tool_result_budget
+        cap = int(args.tool_result_budget)
+
+        def tool_result_budget(messages, max_bytes=cap):
+            return original_budget(messages, max_bytes)
+
+        mod.tool_result_budget = tool_result_budget
+        applied["tool_result_budget"] = cap
+    if getattr(args, "reactive_compact_limit", None):
+        mod.RecoveryState = limited_recovery_state(mod.RecoveryState, int(args.reactive_compact_limit))
+        applied["reactive_compact_limit"] = int(args.reactive_compact_limit)
+    return applied
+
+
+def think_pause(planned: float, turn_ended: float, now=time.monotonic, sleep=time.sleep) -> float:
+    """Sleep until `planned` seconds after the end of the previous turn; returns the seconds slept."""
+    remaining = planned - (now() - turn_ended)
+    if remaining > 0:
+        sleep(remaining)
+        return remaining
+    return 0.0
 
 
 def wipe_run_state():
@@ -671,6 +754,9 @@ def main() -> int:
     trace = mod.initialize_tracing("s15")
     if args.context_limit:
         mod.CONTEXT_LIMIT = args.context_limit
+    interventions = install_interventions(mod, args)
+    if interventions:
+        print(f"[profile] interventions: {interventions}", flush=True)
     if args.no_timestamp:
         original_assemble = mod.assemble_system_prompt
 
@@ -704,6 +790,9 @@ def main() -> int:
                                 "repo": str(REPO),
                                 "model": mod.MODEL, "base_url": os.environ.get("ANTHROPIC_BASE_URL"),
                                 "vllm_metrics": args.vllm_metrics, "client_max_retries": args.client_max_retries,
+                                "think_seconds": args.think_seconds, "no_snip": args.no_snip,
+                                "memory": args.memory, "tool_result_budget": args.tool_result_budget,
+                                "reactive_compact_limit": args.reactive_compact_limit,
                                 "server_info": server_info})
     inputs_path = Path(str(trace.path).removesuffix(".jsonl") + ".inputs.jsonl")
     reads_path = Path(str(trace.path).removesuffix(".jsonl") + ".reads.jsonl")
@@ -1365,13 +1454,27 @@ def main() -> int:
         turns = list(args.prompt)
         spawned_before = len(mod.teammate_trace_ids)
         first = True
+        gap = 0
         while turns:
             run_user_turn(turns.pop(0))
+            turn_ended = time.monotonic()
             if first and args.followup_if_no_team and not mod.teammate_trace_ids and spawned_before == 0:
                 # the lead usually proposes a team and waits for confirmation first
                 turns.insert(0, args.followup_if_no_team)
             first = False
-            outcome = wait_for_quiescence()
+            planned = args.think_seconds[gap] if turns and gap < len(args.think_seconds) else 0.0
+            if planned > 0:
+                # a simulated user reading the answer and typing the next message: the same span the
+                # interactive CLI records around CONSOLE.ask() (code.py:3834), so traces read alike
+                with trace.span("input_wait_start", "input_wait_end",
+                                {"source": "think_time", "turn_index": gap + 1, "planned_s": planned}) as span:
+                    outcome = wait_for_quiescence()
+                    span.end_data["quiescence"] = outcome
+                    span.end_data["slept_s"] = round(think_pause(planned, turn_ended), 3)
+            else:
+                outcome = wait_for_quiescence()
+            if turns:
+                gap += 1
             print(f"\n[profile] quiescence: {outcome} after {time.monotonic() - started:.0f}s", flush=True)
             if outcome == "timeout":
                 status = "timeout"
