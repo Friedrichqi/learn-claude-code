@@ -1,0 +1,158 @@
+{
+  "specs": 128,
+  "fillers": 32,
+  "think_s": {
+    "p10": 11.3,
+    "p50": 28.0,
+    "p90": 79.0,
+    "max": 224.2
+  },
+  "per_codebase": {
+    "typer": 13,
+    "jinja2": 13,
+    "s15_harness": 13,
+    "rich": 13,
+    "httpx": 13,
+    "tqdm": 13,
+    "packaging": 13,
+    "yaml": 13,
+    "click": 12,
+    "requests": 12
+  },
+  "conditions": {
+    "n01a": {
+      "n": 1,
+      "specs": [
+        0,
+        12
+      ]
+    },
+    "n01b": {
+      "n": 1,
+      "specs": [
+        12,
+        24
+      ]
+    },
+    "n04": {
+      "n": 4,
+      "specs": [
+        0,
+        40
+      ]
+    },
+    "n08": {
+      "n": 8,
+      "specs": [
+        0,
+        56
+      ]
+    },
+    "n16": {
+      "n": 16,
+      "specs": [
+        0,
+        80
+      ]
+    },
+    "n32": {
+      "n": 32,
+      "specs": [
+        0,
+        96
+      ]
+    },
+    "n16kvh": {
+      "n": 16,
+      "specs": [
+        0,
+        64
+      ]
+    },
+    "n16mem": {
+      "n": 16,
+      "specs": [
+        0,
+        64
+      ]
+    },
+    "n16ts": {
+      "n": 16,
+      "specs": [
+        0,
+        40
+      ]
+    },
+    "pilot1": {
+      "n": 1,
+      "specs": [
+        0,
+        3
+      ]
+    },
+    "pilot8": {
+      "n": 8,
+      "specs": [
+        0,
+        16
+      ]
+    },
+    "smoke": {
+      "n": 4,
+      "specs": [
+        0,
+        4
+      ]
+    }
+  },
+  "model": "Qwen/Qwen3-32B",
+  "max_model_len": 40960,
+  "client_common": [
+    "--no-reads-log",
+    "--client-max-retries",
+    "0",
+    "--no-retry-429",
+    "--server-info",
+    "--no-snip",
+    "--tool-result-budget",
+    "64000",
+    "--reactive-compact-limit",
+    "3",
+    "--quiet-seconds",
+    "5"
+  ],
+  "budget": {
+    "lead_cap_turn": 100,
+    "lead_cap_session": 300,
+    "deadline_s": 14400,
+    "call_timeout_s": 3600
+  },
+  "vllm_common": [
+    "--max-model-len",
+    "40960",
+    "--enable-prefix-caching",
+    "--enable-prompt-tokens-details",
+    "--enable-auto-tool-choice",
+    "--tool-call-parser",
+    "hermes",
+    "--reasoning-parser",
+    "qwen3",
+    "--default-chat-template-kwargs",
+    "{\"enable_thinking\": false}",
+    "--scheduler-cls",
+    "mu_scheduler.MUScheduler",
+    "--kv-cache-metrics",
+    "--kv-cache-metrics-sample",
+    "0.05",
+    "--uvicorn-log-level",
+    "warning"
+  ],
+  "session_est_s": {
+    "1": 900,
+    "4": 1000,
+    "8": 1100,
+    "16": 1400,
+    "32": 2200
+  },
+  "source": "research/10_rope_shift/workloads.py templates"
+}
