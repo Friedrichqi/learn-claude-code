@@ -1,0 +1,822 @@
+{
+ "step_model": {
+  "coef": {
+   "fixed": 0.018456472525995107,
+   "mixed": -0.0058769585245796695,
+   "pf_tok": 0.09688554597705082,
+   "pf_attn": 0.0034641167008741306,
+   "dec_seq": 2.775157403732111e-05,
+   "dec_ctx": 0.07729464172884284
+  },
+  "n": 2033364,
+  "r2": 0.999799254519144,
+  "median_ape": 0.018764273498989723
+ },
+ "cells": {
+  "n01a": {
+   "n": 1,
+   "sessions": 12,
+   "calls": 1524,
+   "joined": 1523,
+   "token_classes": {
+    "hit": 27348208,
+    "evicted": 128,
+    "pause_lost": 128,
+    "queue_lost": 0,
+    "after_edit": 3529147,
+    "new": 1074909
+   },
+   "total_prompt": 31952392,
+   "gpu": {
+    "prefill_fresh": 769.6731555395812,
+    "prefill_evicted": 0.04897868642067012,
+    "prefill_preempted": 0.0,
+    "decode": 5151.419564258307,
+    "base_share_check": 4723.057584249396,
+    "idle": 1893.6618958255276,
+    "wall": 7814.803594309837
+   },
+   "attribution": {
+    "fixed": 4541.670432703798,
+    "own_pf_fresh": 718.4443497964536,
+    "own_pf_evicted": 0.01336314552644588,
+    "own_pf_preempted": 0.0,
+    "own_dec": 433.8237486356563,
+    "gaps": 18.12634847033769
+   },
+   "queue_why": {
+    "behind_none": 3.4559450671076775
+   },
+   "status": {
+    "ok": 7,
+    "budget": 5
+   },
+   "turn_p50": 42.5590576835,
+   "turn_p95": 528.5358169722999,
+   "throughput_turns_h": 22.648839098279296,
+   "throughput_calls_h": 719.1006413703676,
+   "loaded_hours": 2.1193139211999044
+  },
+  "n01b": {
+   "n": 1,
+   "sessions": 12,
+   "calls": 1243,
+   "joined": 1242,
+   "token_classes": {
+    "hit": 23932064,
+    "evicted": 64,
+    "pause_lost": 64,
+    "queue_lost": 0,
+    "after_edit": 2734434,
+    "new": 1161141
+   },
+   "total_prompt": 27827703,
+   "gpu": {
+    "prefill_fresh": 682.6076377503379,
+    "prefill_evicted": 0.03992294298576872,
+    "prefill_preempted": 0.0,
+    "decode": 3973.23847434856,
+    "base_share_check": 3636.227912732748,
+    "idle": 1483.3397383568808,
+    "wall": 6139.225773398764
+   },
+   "attribution": {
+    "fixed": 3013.2692331118124,
+    "own_pf_fresh": 591.0104721930207,
+    "own_pf_evicted": 0.005555109304663882,
+    "own_pf_preempted": 0.0,
+    "own_dec": 314.0512680510213,
+    "gaps": 15.263114143162966
+   },
+   "queue_why": {
+    "behind_none": 3.0875828294083476
+   },
+   "status": {
+    "budget": 4,
+    "ok": 8
+   },
+   "turn_p50": 48.8789769415,
+   "turn_p95": 368.2335849777999,
+   "throughput_turns_h": 29.0495465825931,
+   "throughput_calls_h": 752.2622167117338,
+   "loaded_hours": 1.6523493701881833
+  },
+  "n04": {
+   "n": 4,
+   "sessions": 40,
+   "calls": 4837,
+   "joined": 4837,
+   "token_classes": {
+    "hit": 92258272,
+    "evicted": 137904,
+    "pause_lost": 137904,
+    "queue_lost": 0,
+    "after_edit": 14797593,
+    "new": 5039993
+   },
+   "total_prompt": 112233762,
+   "gpu": {
+    "prefill_fresh": 3636.887149299987,
+    "prefill_evicted": 23.564994966124114,
+    "prefill_preempted": 0.0,
+    "decode": 5681.968399730516,
+    "base_share_check": 4498.706233068656,
+    "idle": 24.783963560126722,
+    "wall": 9367.204507556744
+   },
+   "attribution": {
+    "not_scheduled": 325.7185191521421,
+    "fixed": 12399.82245361757,
+    "own_pf_fresh": 3192.43662220684,
+    "own_pf_evicted": 18.285905296033324,
+    "own_pf_preempted": 0.0,
+    "other_dec": 2532.530740535649,
+    "own_dec": 1122.029074457972,
+    "gaps": 0.6751568084582686,
+    "other_pf_fresh": 7523.77802211003,
+    "other_pf_evicted": 33.97943035680486,
+    "other_pf_preempted": 0.0
+   },
+   "queue_why": {
+    "behind_none": 12.750120477750897,
+    "behind_tok": 1.2980210725218058,
+    "tok": 26.7027376787737
+   },
+   "status": {
+    "budget": 16,
+    "ok": 24
+   },
+   "turn_p50": 62.000135902500006,
+   "turn_p95": 773.3087944626477,
+   "throughput_turns_h": 69.18507597927292,
+   "throughput_calls_h": 2029.8197715274816,
+   "loaded_hours": 2.5583552159865697
+  },
+  "n08": {
+   "n": 8,
+   "sessions": 56,
+   "calls": 7360,
+   "joined": 7360,
+   "token_classes": {
+    "hit": 148836800,
+    "evicted": 1340192,
+    "pause_lost": 1333216,
+    "queue_lost": 6976,
+    "after_edit": 14347914,
+    "new": 6228704
+   },
+   "total_prompt": 170753610,
+   "gpu": {
+    "prefill_fresh": 5262.170703224549,
+    "prefill_evicted": 272.29954308022326,
+    "prefill_preempted": 0.0,
+    "decode": 7179.1544502442275,
+    "base_share_check": 4404.700449116831,
+    "idle": 2.282604697160423,
+    "wall": 12715.907301246189
+   },
+   "attribution": {
+    "not_scheduled": 624.2032840130851,
+    "fixed": 20862.115168762823,
+    "own_pf_fresh": 3260.3121863933357,
+    "own_pf_evicted": 187.58308732173012,
+    "own_pf_preempted": 0.0,
+    "other_dec": 12029.987698720588,
+    "own_dec": 2007.1508008047529,
+    "other_pf_fresh": 20457.47358572911,
+    "other_pf_evicted": 1112.2837344335546,
+    "other_pf_preempted": 0.0,
+    "gaps": 0.01699488889425993
+   },
+   "queue_why": {
+    "behind_none": 21.717651977203786,
+    "tok": 78.01242963876575,
+    "behind_tok": 8.001065541058779
+   },
+   "status": {
+    "budget": 26,
+    "ok": 30
+   },
+   "turn_p50": 136.94459640550002,
+   "turn_p95": 1085.9311867705499,
+   "throughput_turns_h": 94.87134031137286,
+   "throughput_calls_h": 3076.9161997305073,
+   "loaded_hours": 3.4362326802810035
+  },
+  "n12": {
+   "n": 12,
+   "sessions": 36,
+   "calls": 4601,
+   "joined": 4601,
+   "token_classes": {
+    "hit": 48618384,
+    "evicted": 47212512,
+    "pause_lost": 11863552,
+    "queue_lost": 35348960,
+    "after_edit": 9041096,
+    "new": 4016082
+   },
+   "total_prompt": 108888074,
+   "gpu": {
+    "prefill_fresh": 5965.6699300853315,
+    "prefill_evicted": 20252.015793124414,
+    "prefill_preempted": 0.834355634180107,
+    "decode": 5001.743980361492,
+    "base_share_check": 2569.519381870235,
+    "idle": 13.210722642950714,
+    "wall": 31233.47478184849
+   },
+   "attribution": {
+    "not_scheduled": 1357.7279077209532,
+    "fixed": 9253.815459271002,
+    "own_pf_fresh": 2081.247920345047,
+    "own_pf_evicted": 6782.371947168567,
+    "own_pf_preempted": 0.41619462718182476,
+    "other_dec": 8227.873730790374,
+    "own_dec": 917.146097732195,
+    "other_pf_fresh": 20970.924840238004,
+    "other_pf_evicted": 62472.55976372995,
+    "other_pf_preempted": 3.562385154488675,
+    "gaps": 0.0
+   },
+   "queue_why": {
+    "behind_none": 7.8402019450441,
+    "behind_kv": 3182.413838774897,
+    "tok": 4256.139048781246,
+    "behind_tok": 3234.830136798322,
+    "kv": 3893.154829493724,
+    "behind_pre": 9.055668394081295
+   },
+   "status": {
+    "budget": 18,
+    "ok": 18
+   },
+   "turn_p50": 495.780909557,
+   "turn_p95": 3447.7169056690987,
+   "throughput_turns_h": 45.253813674409365,
+   "throughput_calls_h": 1496.2916897654582,
+   "loaded_hours": 8.573863029347526
+  },
+  "n16": {
+   "n": 16,
+   "sessions": 80,
+   "calls": 9759,
+   "joined": 9759,
+   "token_classes": {
+    "hit": 3658848,
+    "evicted": 194861888,
+    "pause_lost": 28066224,
+    "queue_lost": 166795664,
+    "after_edit": 22000023,
+    "new": 9141059
+   },
+   "total_prompt": 229661818,
+   "gpu": {
+    "prefill_fresh": 5980.151909544564,
+    "prefill_evicted": 30717.82238009162,
+    "prefill_preempted": 0.943400418188176,
+    "decode": 5091.993257075927,
+    "base_share_check": 2566.8831258186265,
+    "idle": 1.0750338099896908,
+    "wall": 41791.98598094005
+   },
+   "attribution": {
+    "not_scheduled": 4275.826564023271,
+    "fixed": 21980.807222185886,
+    "own_pf_fresh": 4842.309631762869,
+    "own_pf_evicted": 26788.60519087627,
+    "own_pf_preempted": 0.7289306309829388,
+    "other_dec": 20129.62673890194,
+    "own_dec": 2205.084415120341,
+    "other_pf_fresh": 45012.73801743169,
+    "other_pf_evicted": 231571.2852551385,
+    "other_pf_preempted": 7.143106395969442,
+    "gaps": 0.0
+   },
+   "queue_why": {
+    "behind_none": 0.10900606960058212,
+    "tok": 19456.55846307054,
+    "kv": 16675.283603192307,
+    "behind_tok": 76706.19976121839,
+    "behind_kv": 72293.54191523045,
+    "behind_pre": 59.12014506012201
+   },
+   "status": {
+    "budget": 32,
+    "ok": 41,
+    "deadline": 6,
+    "terminated": 1
+   },
+   "turn_p50": 970.292848742,
+   "turn_p95": 5603.301875627754,
+   "throughput_turns_h": 32.636373366577295,
+   "throughput_calls_h": 975.8796429798632,
+   "loaded_hours": 11.520887930062083
+  },
+  "n32": {
+   "n": 32,
+   "sessions": 96,
+   "calls": 9574,
+   "joined": 9574,
+   "token_classes": {
+    "hit": 3063680,
+    "evicted": 186400912,
+    "pause_lost": 26590976,
+    "queue_lost": 159809936,
+    "after_edit": 23051162,
+    "new": 9158865
+   },
+   "total_prompt": 221674619,
+   "gpu": {
+    "prefill_fresh": 6487.456071331717,
+    "prefill_evicted": 30946.960720588206,
+    "prefill_preempted": 0.4405097547295781,
+    "decode": 4356.856629747131,
+    "base_share_check": 2163.4841324918734,
+    "idle": 0.20056622941046953,
+    "wall": 41791.91449765116
+   },
+   "attribution": {
+    "not_scheduled": 4818.4039913779125,
+    "fixed": 16835.360982702823,
+    "other_pf_fresh": 47394.94603738501,
+    "other_pf_evicted": 225498.58885604606,
+    "other_pf_preempted": 3.0183353638134123,
+    "own_pf_fresh": 5045.4937102960175,
+    "own_pf_evicted": 25999.204501292024,
+    "own_pf_preempted": 0.3161880712493173,
+    "other_dec": 15991.634546742956,
+    "own_dec": 1768.2895366258865,
+    "gaps": 0.0
+   },
+   "queue_why": {
+    "behind_tok": 392455.02369278297,
+    "behind_kv": 293341.61658997554,
+    "tok": 19718.930893100798,
+    "kv": 14693.644503823482,
+    "behind_pre": 339.9892979254946
+   },
+   "status": {
+    "deadline": 40,
+    "ok": 39,
+    "budget": 10,
+    "terminated": 7
+   },
+   "turn_p50": 1705.5338168530002,
+   "turn_p95": 9339.74339770345,
+   "throughput_turns_h": 42.93516676113859,
+   "throughput_calls_h": 989.6860751999573,
+   "loaded_hours": 11.482428908281856
+  },
+  "n08kvh": {
+   "n": 8,
+   "sessions": 24,
+   "calls": 2192,
+   "joined": 2192,
+   "token_classes": {
+    "hit": 5876544,
+    "evicted": 37114080,
+    "pause_lost": 8324144,
+    "queue_lost": 28789936,
+    "after_edit": 4162499,
+    "new": 2087605
+   },
+   "total_prompt": 49240728,
+   "gpu": {
+    "prefill_fresh": 2430.1975328910253,
+    "prefill_evicted": 11337.127632952584,
+    "prefill_preempted": 0.9417606492352228,
+    "decode": 3748.540059189964,
+    "base_share_check": 2620.7881567477702,
+    "idle": 2.1809938428923488,
+    "wall": 17518.9879795257
+   },
+   "attribution": {
+    "not_scheduled": 643.1486186236143,
+    "fixed": 7897.14569550113,
+    "other_pf_fresh": 5309.031321798188,
+    "other_pf_evicted": 25666.54648371222,
+    "other_pf_preempted": 2.2788390733239607,
+    "own_pf_fresh": 975.2056149576763,
+    "own_pf_evicted": 5240.360386520504,
+    "own_pf_preempted": 0.1705284506985411,
+    "other_dec": 2842.9137703040215,
+    "own_dec": 751.1600728768786,
+    "gaps": 0.009507250040769577
+   },
+   "queue_why": {
+    "behind_kv": 9213.570655236952,
+    "tok": 3095.2657226538286,
+    "behind_tok": 4454.274709993973,
+    "behind_none": 0.9537384612485766,
+    "kv": 4824.439984404482,
+    "behind_pre": 3.6876612305641174
+   },
+   "status": {
+    "ok": 19,
+    "budget": 5
+   },
+   "turn_p50": 424.7647882085,
+   "turn_p95": 2521.29184749475,
+   "throughput_turns_h": 35.22727811691589,
+   "throughput_calls_h": 977.6090791025772,
+   "loaded_hours": 4.797418620851305
+  },
+  "n08mem": {
+   "n": 8,
+   "sessions": 40,
+   "calls": 5389,
+   "joined": 5389,
+   "token_classes": {
+    "hit": 106440592,
+    "evicted": 1016224,
+    "pause_lost": 991472,
+    "queue_lost": 24752,
+    "after_edit": 12738333,
+    "new": 4515869
+   },
+   "total_prompt": 124711018,
+   "gpu": {
+    "prefill_fresh": 4057.436918162003,
+    "prefill_evicted": 171.2971994321682,
+    "prefill_preempted": 0.0,
+    "decode": 4307.882505744129,
+    "base_share_check": 2634.18476470074,
+    "idle": 3.952686872333288,
+    "wall": 8540.569310210645
+   },
+   "attribution": {
+    "not_scheduled": 467.60149558540434,
+    "fixed": 13962.335726736403,
+    "own_pf_fresh": 2751.140505903314,
+    "own_pf_evicted": 142.09593173623645,
+    "own_pf_preempted": 0.0,
+    "other_dec": 8057.730457056277,
+    "own_dec": 1350.9956789630007,
+    "other_pf_fresh": 17512.085102186546,
+    "other_pf_evicted": 872.4894996598026,
+    "other_pf_preempted": 0.0,
+    "gaps": 0.0
+   },
+   "queue_why": {
+    "behind_none": 14.958686863072217,
+    "behind_tok": 5.815806272439659,
+    "tok": 61.01113240234554
+   },
+   "status": {
+    "budget": 22,
+    "ok": 18
+   },
+   "turn_p50": 139.8463285095,
+   "turn_p95": 1154.1636164207473,
+   "throughput_turns_h": 92.59204317100067,
+   "throughput_calls_h": 3083.9264944831875,
+   "loaded_hours": 2.289613586001926
+  },
+  "n08ts": {
+   "n": 8,
+   "sessions": 18,
+   "calls": 1577,
+   "joined": 1576,
+   "token_classes": {
+    "hit": 674224,
+    "evicted": 6608,
+    "pause_lost": 6496,
+    "queue_lost": 112,
+    "after_edit": 35917861,
+    "new": 42536
+   },
+   "total_prompt": 36641229,
+   "gpu": {
+    "prefill_fresh": 5833.901462950083,
+    "prefill_evicted": 2.2279684375498126,
+    "prefill_preempted": 0.0,
+    "decode": 2743.397413979976,
+    "base_share_check": 2084.574854043321,
+    "idle": 2.9587717037647963,
+    "wall": 8582.48561707139
+   },
+   "attribution": {
+    "not_scheduled": 467.7910350635648,
+    "fixed": 6686.032104233897,
+    "own_pf_fresh": 5048.42402102109,
+    "own_pf_evicted": 0.7028093008847187,
+    "own_pf_preempted": 0.0,
+    "other_dec": 2972.831453320937,
+    "own_dec": 636.7322880917314,
+    "other_pf_fresh": 30851.91825078807,
+    "other_pf_evicted": 11.408049872493075,
+    "other_pf_preempted": 0.0,
+    "gaps": 0.47400088887661695
+   },
+   "queue_why": {
+    "behind_none": 2.880182981491089,
+    "behind_tok": 32.16489235498011,
+    "tok": 299.41912484075874
+   },
+   "status": {
+    "ok": 13,
+    "budget": 5
+   },
+   "turn_p50": 305.0713770225,
+   "turn_p95": 2898.52732108635,
+   "throughput_turns_h": 42.08728917075858,
+   "throughput_calls_h": 935.0203161719879,
+   "loaded_hours": 1.7582505658600065
+  },
+  "s3gate16": {
+   "n": 16,
+   "sessions": 48,
+   "calls": 6532,
+   "joined": 6532,
+   "token_classes": {
+    "hit": 123712592,
+    "evicted": 2893072,
+    "pause_lost": 1820416,
+    "queue_lost": 1072656,
+    "after_edit": 14161425,
+    "new": 5604844
+   },
+   "total_prompt": 146371933,
+   "gpu": {
+    "prefill_fresh": 4959.808612102871,
+    "prefill_evicted": 652.1537458739681,
+    "prefill_preempted": 0.0,
+    "decode": 4966.793491845571,
+    "base_share_check": 2882.0720214153307,
+    "idle": 0.6724427072331309,
+    "wall": 10579.428292529657
+   },
+   "attribution": {
+    "not_scheduled": 679.2374448832124,
+    "fixed": 14847.595457069949,
+    "own_pf_fresh": 3164.087728735289,
+    "own_pf_evicted": 398.33873682546533,
+    "own_pf_preempted": 0.0,
+    "other_dec": 9638.423994237635,
+    "own_dec": 1433.6039199535087,
+    "other_pf_fresh": 22185.92211642085,
+    "other_pf_evicted": 2942.3625065921065,
+    "other_pf_preempted": 0.0,
+    "gaps": 0.0
+   },
+   "queue_why": {
+    "behind_gate": 39808.29543255456,
+    "gate": 6305.465026293881
+   },
+   "status": {
+    "budget": 24,
+    "ok": 24
+   },
+   "turn_p50": 432.6183281825,
+   "turn_p95": 1017.4592857709496,
+   "throughput_turns_h": 113.54860463246045,
+   "throughput_calls_h": 3393.802566940474,
+   "loaded_hours": 2.844596823056539
+  },
+  "s3gate32": {
+   "n": 32,
+   "sessions": 48,
+   "calls": 7066,
+   "joined": 7066,
+   "token_classes": {
+    "hit": 146564768,
+    "evicted": 3105136,
+    "pause_lost": 2365152,
+    "queue_lost": 739984,
+    "after_edit": 14041170,
+    "new": 5660815
+   },
+   "total_prompt": 169371889,
+   "gpu": {
+    "prefill_fresh": 5689.5935886339075,
+    "prefill_evicted": 604.1410718588057,
+    "prefill_preempted": 0.0,
+    "decode": 4491.060942198662,
+    "base_share_check": 2584.7313610974566,
+    "idle": 0.2229487681761384,
+    "wall": 10785.018551459536
+   },
+   "attribution": {
+    "not_scheduled": 871.3272124091163,
+    "fixed": 11926.466897253604,
+    "own_pf_fresh": 3092.069999281042,
+    "own_pf_evicted": 424.96209781419253,
+    "own_pf_preempted": 0.0,
+    "other_pf_fresh": 22024.324320256645,
+    "other_pf_evicted": 2954.956528767272,
+    "other_pf_preempted": 0.0,
+    "other_dec": 8044.500281749467,
+    "own_dec": 1198.9925032883875,
+    "gaps": 0.0
+   },
+   "queue_why": {
+    "behind_gate": 128718.55264466256,
+    "gate": 5666.92005828768
+   },
+   "status": {
+    "budget": 28,
+    "ok": 20
+   },
+   "turn_p50": 903.391855924,
+   "turn_p95": 1489.0862691496998,
+   "throughput_turns_h": 118.39621245756778,
+   "throughput_calls_h": 3792.8330517108557,
+   "loaded_hours": 2.8886059182220034
+  }
+ },
+ "excess": {
+  "n01a": {
+   "calls": 1523,
+   "lat": 3.8379036393982755,
+   "solo": 3.8694373640524904,
+   "frontend": 0.006274477439321193,
+   "queue_kv": 0.0,
+   "queue_other": 0.002269249250445801,
+   "own_recompute": 8.774225559058359e-06,
+   "preempt": 0.0,
+   "batching": 0.0,
+   "interference_fresh": 0.0,
+   "interference_recompute": 0.0,
+   "not_scheduled": 0.0,
+   "residual": -0.040086225569540584,
+   "kv_share_of_excess": 8774.225559058359
+  },
+  "n01b": {
+   "calls": 1242,
+   "lat": 3.246328407631596,
+   "solo": 3.2731166027249468,
+   "frontend": -0.0062636677492267,
+   "queue_kv": 0.0,
+   "queue_other": 0.0024860824747745926,
+   "own_recompute": 4.472712805687506e-06,
+   "preempt": 0.0,
+   "batching": 0.0,
+   "interference_fresh": 0.0,
+   "interference_recompute": 0.0,
+   "not_scheduled": 0.0,
+   "residual": -0.023015082531704072,
+   "kv_share_of_excess": 4472.712805687506
+  },
+  "n04": {
+   "calls": 4837,
+   "lat": 5.792176690307659,
+   "solo": 3.509887000677667,
+   "frontend": 0.08564944912096276,
+   "queue_kv": 0.0,
+   "queue_other": 0.00842482505910328,
+   "own_recompute": 0.0037804228439184046,
+   "preempt": 0.0,
+   "batching": 0.5235746827652793,
+   "interference_fresh": 1.5554637217510898,
+   "interference_recompute": 0.007024897737606956,
+   "not_scheduled": 0.06733895372175773,
+   "residual": 0.031032736630273478,
+   "kv_share_of_excess": 0.004734421151977922
+  },
+  "n08": {
+   "calls": 7360,
+   "lat": 8.41800690740347,
+   "solo": 3.573549640186481,
+   "frontend": 0.09240857902812696,
+   "queue_kv": 0.0,
+   "queue_other": 0.014637384822835093,
+   "own_recompute": 0.02548683251653942,
+   "preempt": 0.0,
+   "batching": 1.6345091981957323,
+   "interference_fresh": 2.7795480415392797,
+   "interference_recompute": 0.15112550739586322,
+   "not_scheduled": 0.0848102288061257,
+   "residual": 0.061931494912485896,
+   "kv_share_of_excess": 0.03645657917297756
+  },
+  "n12": {
+   "calls": 4601,
+   "lat": 28.173097398949043,
+   "solo": 2.815721455750874,
+   "frontend": 0.5596203763688343,
+   "queue_kv": 1.5398009860166708,
+   "queue_other": 1.6298216429379722,
+   "own_recompute": 1.4741082258571105,
+   "preempt": 0.0033853803246412626,
+   "batching": 1.788279445944438,
+   "interference_fresh": 4.557905855300595,
+   "interference_recompute": 13.578813768503473,
+   "not_scheduled": 0.29509408991978986,
+   "residual": -0.06945382797535478,
+   "kv_share_of_excess": 0.654488398084961
+  },
+  "n16": {
+   "calls": 9759,
+   "lat": 56.403587475066324,
+   "solo": 3.1892802784554473,
+   "frontend": 0.7783692570537264,
+   "queue_kv": 9.1226504420005,
+   "queue_other": 9.853762396923527,
+   "own_recompute": 2.7450153899862872,
+   "preempt": 0.0033150198089517413,
+   "batching": 2.062673095491528,
+   "interference_fresh": 4.612433447836024,
+   "interference_recompute": 23.729729312586773,
+   "not_scheduled": 0.438141875604393,
+   "residual": -0.13178304068083094,
+   "kv_share_of_excess": 0.6690063638872266
+  },
+  "n32": {
+   "calls": 9574,
+   "lat": 112.02264600253838,
+   "solo": 2.672369870840712,
+   "frontend": 0.8131731841554457,
+   "queue_kv": 32.2096564018931,
+   "queue_other": 43.05138443630445,
+   "own_recompute": 2.71560523305745,
+   "preempt": 0.0024858607836206084,
+   "batching": 1.6703190460353974,
+   "interference_fresh": 4.950380826967294,
+   "interference_recompute": 23.553541590913895,
+   "not_scheduled": 0.503280132794852,
+   "residual": -0.11955058120784301,
+   "kv_share_of_excess": 0.5348069630497799
+  },
+  "n08kvh": {
+   "calls": 2192,
+   "lat": 33.149340629251334,
+   "solo": 4.366799473470855,
+   "frontend": 0.7121257518443685,
+   "queue_kv": 6.405884261346714,
+   "queue_other": 3.4445685085000974,
+   "own_recompute": 2.3906753588140957,
+   "preempt": 0.004904318294005639,
+   "batching": 1.2969497127299374,
+   "interference_fresh": 2.4220033402363996,
+   "interference_recompute": 11.710230530467857,
+   "not_scheduled": 0.2934072165253715,
+   "residual": 0.10179215702163286,
+   "kv_share_of_excess": 0.7126436251026866
+  },
+  "n08mem": {
+   "calls": 5389,
+   "lat": 8.560665371998008,
+   "solo": 3.3558302486418867,
+   "frontend": 0.08843765459776816,
+   "queue_kv": 0.0,
+   "queue_other": 0.015176402016061205,
+   "own_recompute": 0.02636777356397039,
+   "preempt": 0.0,
+   "batching": 1.4952181215543239,
+   "interference_fresh": 3.249598274668123,
+   "interference_recompute": 0.16190192979398849,
+   "not_scheduled": 0.08676962248754952,
+   "residual": 0.08136534467433658,
+   "kv_share_of_excess": 0.036172078249533675
+  },
+  "n08ts": {
+   "calls": 1576,
+   "lat": 30.120866916203862,
+   "solo": 7.978620208859142,
+   "frontend": 0.2062853660197807,
+   "queue_kv": 0.0,
+   "queue_other": 0.21222347807763192,
+   "own_recompute": 0.00044594498787101425,
+   "preempt": 0.0,
+   "batching": 1.8863143739346029,
+   "interference_fresh": 19.57609026065229,
+   "interference_recompute": 0.007238610325185963,
+   "not_scheduled": 0.296821722756069,
+   "residual": -0.04317304940871171,
+   "kv_share_of_excess": 0.00034705400109682463
+  },
+  "s3gate16": {
+   "calls": 6532,
+   "lat": 15.711265176698904,
+   "solo": 3.020937013902048,
+   "frontend": 0.1042138828536769,
+   "queue_kv": 0.0,
+   "queue_other": 7.059669391224155,
+   "own_recompute": 0.06098266026109389,
+   "preempt": 0.0,
+   "batching": 1.4755701154681031,
+   "interference_fresh": 3.3964975683436567,
+   "interference_recompute": 0.45045353744520983,
+   "not_scheduled": 0.1039861366936945,
+   "residual": 0.03895487050726509,
+   "kv_share_of_excess": 0.04030125865504702
+  },
+  "s3gate32": {
+   "calls": 7066,
+   "lat": 26.396906367078437,
+   "solo": 2.3882873662957635,
+   "frontend": 0.13857812584608697,
+   "queue_kv": 0.0,
+   "queue_other": 19.01860638583243,
+   "own_recompute": 0.060141819673675705,
+   "preempt": 0.0,
+   "batching": 1.1384800851612606,
+   "interference_fresh": 3.1169437192551266,
+   "interference_recompute": 0.41819367800272794,
+   "not_scheduled": 0.12331265389316676,
+   "residual": -0.0056374668818013375,
+   "kv_share_of_excess": 0.019923490712265044
+  }
+ }
+}

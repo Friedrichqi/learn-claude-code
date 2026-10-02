@@ -32,6 +32,7 @@ from __future__ import annotations
 import argparse
 import bisect
 import json
+from datetime import datetime
 import lzma
 import math
 import statistics
@@ -538,6 +539,43 @@ def session_rows(cell: Cell) -> list[dict]:
     return out
 
 
+def turn_ends(events: list[dict]) -> list[float]:
+    """Wall-clock end of every user turn of one session (trace turn_end events)."""
+    out = []
+    for e in events:
+        if e.get("event") == "turn_end":
+            try:
+                out.append(datetime.fromisoformat(e["timestamp"].replace("Z", "+00:00")).timestamp())
+            except (KeyError, ValueError):
+                pass
+    return out
+
+
+def throughput(cell: Cell, n: int) -> dict:
+    """System throughput while the cell is loaded: turns completed by ALL sessions (counted and fillers,
+    which are the same kind of real session) during the periods with at least n-1 sessions live, per hour
+    of those periods. A turn is one user request answered (all its model and tool rounds)."""
+    iv = [(r["t0"], r["t1"]) for r in cell.log if r.get("t0") and r.get("t1")]
+    if not iv:
+        return {"hours": 0.0, "turns_h": float("nan"), "calls_h": float("nan")}
+    edges = sorted([(a, 1) for a, _ in iv] + [(b, -1) for _, b in iv])
+    periods, live, start = [], 0, None
+    for t, d in edges:
+        live += d
+        if live >= max(1, n - 1) and start is None:
+            start = t
+        elif live < max(1, n - 1) and start is not None:
+            periods.append((start, t))
+            start = None
+    hours = sum(b - a for a, b in periods) / 3600
+    inside = lambda t: any(a <= t <= b for a, b in periods)   # noqa: E731
+    ends = [t for sess in cell.sessions for t in turn_ends(sess["events"])]
+    calls = [c["t_recv"] for sess in cell.sessions for c in sess["calls"]
+             if c.get("purpose") == "lead" and c.get("t_recv") and c.get("response")]
+    return {"hours": hours, "turns_h": sum(inside(t) for t in ends) / hours if hours else float("nan"),
+            "calls_h": sum(inside(t) for t in calls) / hours if hours else float("nan")}
+
+
 def steady_window(cell: Cell, n: int) -> tuple[float, float] | None:
     """Longest interval with at least n-1 sessions (counted or filler) live."""
     iv = [(r["t0"], r["t1"]) for r in cell.log if r.get("t0") and r.get("t1")]
@@ -639,10 +677,8 @@ def analyze_cells(conds: list[str], root: Path = CELLS) -> tuple[str, dict]:
                    (att["other_pf_fresh"]) / m, (att["other_pf_evicted"] + att["other_pf_preempted"]) / m,
                    att["fixed"] / m, att["not_scheduled"] / m, stall / m])
         # T5 session level
-        thr = None
-        if win:
-            done = [s for s in counted if s["t_end"] and win[0] <= s["t_end"] <= win[1]]
-            thr = sum(len(s["turns"]) for s in done) / ((win[1] - win[0]) / 3600)
+        tp = throughput(cell, n or 1)
+        thr = tp["turns_h"]
         t5.append([cond, n, q(turns_all, 0.5), q(turns_all, 0.95), mean([s["turn_total"] for s in counted]),
                    mean([s["lead_calls"] for s in counted]), mean([s["tool"] for s in counted]),
                    mean([s["think"] for s in counted]), thr])
@@ -650,7 +686,8 @@ def analyze_cells(conds: list[str], root: Path = CELLS) -> tuple[str, dict]:
                              "token_classes": dict(cls), "total_prompt": total_prompt, "gpu": gpu,
                              "attribution": dict(att), "queue_why": dict(qwhy), "status": dict(status),
                              "turn_p50": q(turns_all, 0.5), "turn_p95": q(turns_all, 0.95),
-                             "throughput_turns_h": thr, "window": win}
+                             "throughput_turns_h": thr, "throughput_calls_h": tp["calls_h"],
+                             "loaded_hours": tp["hours"]}
     md.append("## T1 · Runs and outcomes\n")
     md.append(table(["cond", "N", "sessions", "status", "lead calls", "joined", "overflows", "compactions",
                      "sched errors"], t1))
@@ -689,7 +726,7 @@ def analyze_cells(conds: list[str], root: Path = CELLS) -> tuple[str, dict]:
                 qc[k] += v
         qt = sum(qc.values())
         t8.append([cond, qt / max(1, len(joined))] + [qc[k] / qt if qt else float("nan")
-                   for k in ("kv", "behind_kv", "pre", "behind_pre", "tok", "behind_tok", "seq", "load")])
+                   for k in ("kv", "behind_kv", "tok", "behind_tok", "gate", "behind_gate", "pre", "seq", "load")])
         ex = js.get("excess", {}).get(cond)
         gpu = js["cells"][cond]["gpu"]
         if ex:
@@ -711,8 +748,11 @@ def analyze_cells(conds: list[str], root: Path = CELLS) -> tuple[str, dict]:
                      "system prompt", "other"], t7))
     md.append("\n## T8 · Queueing: mean queue s per lead call and its split by the reason the head of the queue waited "
               "(own = this call was the head; behind_ = it waited behind a head blocked for that reason)\n")
-    md.append(table(["cond", "queue s/call", "KV", "behind KV", "preempt step", "behind preempt", "token budget",
-                     "behind budget", "max seqs", "async load"], t8))
+    md.append(table(["cond", "queue s/call", "KV", "behind KV", "token budget", "behind budget", "gate",
+                     "behind gate", "preempt step", "max seqs", "async load"], t8))
+    md.append("\n## T10 · Paired sessions: the same specs under two conditions (session wall time from the user's "
+              "first request to the session's end, think pauses and gate waits included)\n")
+    md.append(paired_table(cells))
     md.append("\n## T9 · Verdict per load: slowdown and what makes it (shares of the excess over the solo model)\n")
     md.append(table(["cond", "N", "latency s", "solo model s", "slowdown", "KV contention", "compute sharing",
                      "frontend+other queue", "residual", "GPU idle", "GPU on recompute", "turns / h"], t9))
@@ -792,6 +832,47 @@ def excess_table(cells: dict, model: dict) -> tuple[str, dict]:
         rows.append([cond, m, lat, sol, lat - sol] + [tot[k] for k in EXCESS_KEYS] + [kv / max(1e-9, lat - sol)])
         js[cond] = {"calls": m, "lat": lat, "solo": sol, **tot, "kv_share_of_excess": kv / max(1e-9, lat - sol)}
     return table(["cond", "calls", "latency", "solo model", "excess"] + EXCESS_KEYS + ["KV share of excess"], rows), js
+
+
+PAIRS = [("n04", "n01a"), ("n08", "n04"), ("n12", "n08"), ("n16", "n08"), ("n32", "n16"),
+         ("n08kvh", "n08"), ("n08mem", "n08"), ("n08ts", "n08"), ("s3gate16", "n16"), ("s3gate32", "n32")]
+
+
+def session_times(cell: Cell) -> dict[str, dict]:
+    """spec -> wall time, turn time and lead calls of the counted session (last attempt, ok/budget)."""
+    rows = {s["label"]: s for s in session_rows(cell)}
+    out = {}
+    for r in cell.log:
+        if r.get("filler") or r.get("status") not in OK:
+            continue
+        srow = rows.get(r["label"])
+        out[r["spec"]] = {"wall": r["t1"] - r["t0"], "turn": srow["turn_total"] if srow else None,
+                          "lead": srow["lead_calls"] if srow else None}
+    return out
+
+
+def paired_table(cells: dict) -> str:
+    rows = []
+    cache = {}
+    for a, b in PAIRS:
+        if a not in cells or b not in cells:
+            continue
+        ta = cache.setdefault(a, session_times(cells[a]))
+        tb = cache.setdefault(b, session_times(cells[b]))
+        common = sorted(set(ta) & set(tb))
+        if not common:
+            continue
+        ratios = [math.log(ta[k]["wall"] / tb[k]["wall"]) for k in common if ta[k]["wall"] > 0 and tb[k]["wall"] > 0]
+        point, lo, hi = boot_ci(ratios, list(range(len(ratios))), stat=np.median)
+        turn = [math.log(ta[k]["turn"] / tb[k]["turn"]) for k in common
+                if ta[k]["turn"] and tb[k]["turn"] and ta[k]["turn"] > 0 and tb[k]["turn"] > 0]
+        work = [ta[k]["lead"] / tb[k]["lead"] for k in common if ta[k]["lead"] and tb[k]["lead"]]
+        rows.append([f"{a} vs {b}", len(common), q([ta[k]["wall"] / 60 for k in common], 0.5),
+                     q([tb[k]["wall"] / 60 for k in common], 0.5), math.exp(point), math.exp(lo), math.exp(hi),
+                     math.exp(float(np.median(turn))) if turn else float("nan"),
+                     float(np.median(work)) if work else float("nan")])
+    return table(["pair (A vs B)", "paired specs", "A median min", "B median min", "A/B wall ratio (median)",
+                  "95% CI lo", "95% CI hi", "A/B turn-time ratio", "A/B lead calls ratio"], rows)
 
 
 # -- eviction survival ------------------------------------------------------------------------------------------

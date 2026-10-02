@@ -1,16 +1,17 @@
 # KV Reuse Beyond Prefixes: presenter's script
 
-For the 16-slide deck `research/related_work/kv_reuse_slides.html` (published privately as version 5 at
+For the 16-slide deck `research/related_work/kv_reuse_slides.html` (published privately as version 6 at
 https://claude.ai/artifact/8KxttT4sXWddyq3Y1DHfq4). Target: 45 minutes, then questions. Audience: undergraduates in
-the group, no transformer background assumed. Written 2026-09-29.
+the group, no transformer background assumed. Written 2026-09-29; updated 2026-09-30 for the slimmed slides.
 
 ## Before you start
 
 - Open the deck full screen. ← and → change slides, O shows the overview, P prints. There are no animations, so
   every slide is one click.
 - The published link is private. If the students should open it, share it from the page's Share menu first.
-- Every measured number in the script is printed on the slide you are showing, a few of them rounded, so read it off
-  the screen rather than memorizing it. The only other numbers are a worked example on slide 4.
+- The slides show only the headline numbers; read those off the screen. The script adds supporting detail that is
+  not printed, such as the prompt size on slide 3 or the equal-budget counts on slide 14. Every such number comes
+  from the sources in that slide's footer.
 
 ## How to read the script
 
@@ -37,8 +38,8 @@ the group, no transformer background assumed. Written 2026-09-29.
 | 9 | KVLink | 3:00 | 29:15 |
 | 10 | One storyline | 2:00 | **31:15**, checkpoint: papers done |
 | 11 | Why KV reuse matters for our agent | 3:15 | 34:30 |
-| 12 | Qwen3-32B, every arm on every metric | 2:30 | 37:00 |
-| 13 | Qwen3-8B, every arm on every metric | 2:00 | 39:00 |
+| 12 | Qwen3-32B, every arm on every metric | 2:45 | 37:15 |
+| 13 | Qwen3-8B, every arm on every metric | 1:45 | 39:00 |
 | 14 | Which tokens to re-prefill | 2:30 | 41:30 |
 | 15 | What the repairs cost in time | 2:00 | **43:30**, checkpoint: results done |
 | 16 | TL;DR | 1:30 | 45:00 |
@@ -130,10 +131,10 @@ really the words. From the second layer on, each position holds a hidden state t
 before it. It's no longer just "cat"; it's "cat, having read 'The'". That's exactly why a reused cache carries its old
 context, as we'll see on slide 6.
 
-*(Point to "Causal attention gives the KV cache".)* Now the payoff. Because token i reads only tokens 1 to i, the keys
-and values of earlier tokens never change when a new token arrives. So we store them: that's the **KV cache**. To
-produce token i we compute only its own q, k and v, and the first i minus 1 tokens never have to be prefilled again.
-It's like taking notes while you read: to continue, you look at your notes instead of re-reading the whole book.
+*(Point to "Causal, so cacheable".)* Now the payoff. Because token i reads only tokens 1 to i, the keys and values of
+earlier tokens never change when a new token arrives. So we store them: that's the **KV cache**. To produce token i we
+compute only its own q, k and v, and the first i minus 1 tokens never have to be prefilled again. It's like taking
+notes while you read: to continue, you look at your notes instead of re-reading the whole book.
 
 **ASK:** *(Point to the question box.)* We cache K and V. Why don't we cache Q? *(Wait about ten seconds.)*
 
@@ -363,8 +364,8 @@ reused anywhere. Only the link tokens are computed fresh for each request, and t
 documents. Think of them as a summary card slipped in after each document, written by someone who has read everything
 so far. Positions are handled by storing each document's cache unrotated and rotating it into place at inference.
 
-*(Point to "Fine-tuning".)* The model doesn't know how to use link tokens out of the box, so they fine-tune the whole
-model: 6,000 steps on question answering plus general data, on Llama models from 1B to 8B.
+The model doesn't know how to use link tokens out of the box, so they fine-tune the whole model: 6,000 steps on
+question answering plus general data, on Llama models from 1B to 8B.
 
 *(Point to the results.)* The payoff: about 4% higher QA accuracy on average than prior methods, across 7 datasets. On
 Llama-3.2-1B with Natural Questions it scores 45.0, against 39.0 for Block-Attention and 25.7 for CacheBlend. And it
@@ -372,8 +373,8 @@ cuts time to first token by 96% at a 5,000-token context.
 
 **ASK:** Sounds perfect. What's the catch for us? *(Pause.)*
 
-The model's weights change. If a server has to run an existing model unmodified, it can't use KVLink. That's why our
-experiment doesn't test it.
+*(Point to "Trade-off".)* The model's weights change. If a server has to run an existing model unmodified, it can't
+use KVLink. That's why our experiment doesn't test it.
 
 *If short:* skip the fine-tuning paragraph.
 
@@ -398,10 +399,9 @@ EPIC answers: the first ones. KVLink asks whether re-prefilling real first token
 *(Point to the table.)* The table says the same thing row by row. Selection cost goes from a full layer per request,
 to nothing, to a one-time fine-tune, and only KVLink changes the model.
 
-*(Point to "How to read the gains".)* One caution: each paper reports its own numbers, on its own models, datasets and
-hardware, so the gains row is not a head-to-head comparison. That's exactly why we ran our own. Part 4 tests the two
-training-free rules, CacheBlend's and EPIC's, on real agent traffic; in our tables they are the arms CacheBlend 5% and
-15%, and EPIC 32 and 128.
+One caution: each paper reports its own numbers, on its own models, datasets and hardware, so their gains are not a
+head-to-head comparison. That's exactly why we ran our own. Part 4 tests the two training-free rules, CacheBlend's and
+EPIC's, on real agent traffic; in our tables they are the arms CacheBlend 5% and 15%, and EPIC 32 and 128.
 
 **Checkpoint: 31:15.**
 
@@ -416,7 +416,7 @@ training-free rules, CacheBlend's and EPIC's, on real agent traffic; in our tabl
 So why does this matter to us? Our agent harness runs a coding agent on real repositories, one tool call after
 another, and its history keeps growing.
 
-*(Point to "the problem".)* When the history reaches its budget, the harness compacts it: old tool results become
+*(Point to "The problem".)* When the history reaches its budget, the harness compacts it: old tool results become
 short notes, and old messages get archived. Once past that point, it compacts almost every round. Every compaction
 edits text early in the prompt, so every token after the first edit moves, and prefix caching re-prefills all of it,
 even though most of it didn't change.
@@ -426,16 +426,15 @@ compaction; call k is the prompt after it. The exact prefix, 3,191 tokens, is lo
 this step evicted is replaced by a short note. Blocks 1 to 3 are unchanged text that simply moved left by δ: 4,648
 tokens on average. And 1,215 tokens are genuinely new: the note, the new turn and the tail.
 
-*(Point to "the prize".)* Those 4,648 moved tokens are the prize. Reusing them skips 79.6% of what prefix caching
+*(Point to "The prize".)* Those 4,648 moved tokens are the prize. Reusing them skips 79.6% of what prefix caching
 re-prefills. On Qwen3-32B the next request's first token arrives in 90 ms, against 765 ms with prefix caching and
 1,097 ms with a full prefill.
 
-*(Point to "the runs" and "3 questions".)* Our data: 500 live runs of real tasks on 10 Python codebases, giving 683
-compaction events. Qwen3-32B produced the runs, and Qwen3-8B replays the same events. For each event we ask three
-questions. **Natural**: does the real next request come out the same as with a full prefill? **Probe**: we append a
-question with a known answer about a file that survived: explain it, modify it with an exact SEARCH/REPLACE edit, or
-make that edit as a tool call. **Retention**: we ask about a file this step evicted, and check whether the model
-admits it's gone.
+*(Point to "The data".)* Our data: 500 live runs of real tasks on 10 Python codebases, giving 683 compaction events.
+Qwen3-32B produced the runs, and Qwen3-8B replays the same events. For each event we ask three questions. **Natural**:
+does the real next request come out the same as with a full prefill? **Probe**: we append a question with a known
+answer about a file that survived: explain it, modify it with an exact SEARCH/REPLACE edit, or make that edit as a
+tool call. **Retention**: we ask about a file this step evicted, and check whether the model admits it's gone.
 
 *(Point to the arms table.)* And these are the arms. Three references: not compressed, as if the compaction never
 happened; prefix + prefill, which is standard prefix caching; and full prefill, the ground truth. Then no RoPE, which
@@ -447,7 +446,7 @@ moved text each arm re-prefills.
 
 ### 12 · Qwen3-32B, every arm on every metric
 
-**34:30 → 37:00.** Goal: rotation is essential, the copy cost is repaired only by the right tokens, and EPIC is the
+**34:30 → 37:15.** Goal: rotation is essential, the copy cost is repaired only by the right tokens, and EPIC is the
 most faithful.
 
 Here's every arm on every metric for Qwen3-32B. It's a big table, so here's how to read it, and then the three things
@@ -456,9 +455,11 @@ that matter.
 *(Point to the column groups.)* Columns are grouped by question: cost, then natural, probe and retention. Red means
 significantly worse than full prefill, green means a cost that a repair fixed, and bold is the best repair.
 
-*(Point to the top three rows.)* Before the three points, the reference rows. Full prefill says "ref" because
-everything is compared with it, and a dash means we didn't run that combination. Prefix + prefill keeps 95.6% of
-rounds identical, about the noise floor, so exact reuse is safe, as it should be.
+*(Point to the top three rows.)* Before the three points, the reference rows. Every column is judged against full
+prefill, in two ways. The natural columns measure agreement with it, so its own row reads "ref". The probe and
+retention columns are absolute scores against a known answer, so full prefill gets a number too, and that number is
+the bar the red and green cells are tested against. A dash means we didn't run that combination. Prefix + prefill
+keeps 95.6% of rounds identical, about the noise floor, so exact reuse is safe, as it should be.
 
 *(Point to the no RoPE row.)* One: rotation is essential. Without it, only 29% of next rounds match, 10.5% of tool
 calls are malformed, and every probe collapses.
@@ -481,7 +482,7 @@ against 1,097 for a full prefill.
 
 ### 13 · Qwen3-8B, every arm on every metric
 
-**37:00 → 39:00.** Goal: the smaller model's cost is a different one, and only EPIC 128 repairs it.
+**37:15 → 39:00.** Goal: the smaller model's cost is a different one, and only EPIC 128 repairs it.
 
 Now Qwen3-8B, replaying the same events. The smaller model breaks somewhere else.
 
@@ -520,12 +521,12 @@ the most out of date. It's "Her" from slide 6 all over again.
 
 CacheBlend partly finds them: 14 to 16% of its picks land in a block's first 32 tokens, 3.2 to 3.5 times what random
 picks would give. But it spreads the rest thin, over about 427 separate little pieces per event, where EPIC
-re-prefills four solid ones, the start of each block. CacheBlend's signal is real, by the way: the footer shows the
-top 5% of moved tokens carry 46% of the layer-1 deviation on the 32B and 61% on the 8B. It just spends its budget less
-well. At equal budgets EPIC keeps more next rounds identical to full prefill. For EPIC 32 against CacheBlend 5% on the
-32B, there are 47 events where only EPIC matches, against 20 where only CacheBlend does.
+re-prefills four solid ones, the start of each block. CacheBlend's signal is real, by the way: the top 5% of moved
+tokens carry 46% of the layer-1 deviation on the 32B and 61% on the 8B. It just spends its budget less well. At equal
+budgets EPIC keeps more next rounds identical to full prefill. For EPIC 32 against CacheBlend 5% on the 32B, there are
+47 events where only EPIC matches, against 20 where only CacheBlend does.
 
-*(Point to "Cost".)* And it's cheap. EPIC 128 re-prefills 308 tokens per event on average, adding 27 ms to shift
+*(Point to "Cheap".)* And it's cheap. EPIC 128 re-prefills 308 tokens per event on average, adding 27 ms to shift
 RoPE's 90 ms on Qwen3-32B.
 
 *If short:* skip the equal-budget counts.
@@ -546,11 +547,11 @@ EPIC 128; on the 8B, at most 5. CacheBlend adds 39 to 93 ms on the 32B, 3.5 to 5
 budgets, because it pays for a selection pass plus more tokens: CacheBlend 15% computes 666 more tokens than shift
 RoPE, EPIC 128 only 305.
 
-*(Point to the last bullet.)* And 25.5 of shift RoPE's 90 ms is just loading and re-rotating the moved cache, so a
-fused kernel could shrink it further.
+One more detail: 25.5 of shift RoPE's 90 ms is just loading and re-rotating the moved cache, so a fused kernel could
+shrink it further.
 
-The footer has the caveats: one request at a time, eager mode, and our re-prefilled tokens attend to the whole
-context, so these are upper bounds.
+The footer has the caveats: one request at a time, and our re-prefilled tokens attend to the whole context, so these
+are upper bounds.
 
 **Checkpoint: 43:30.**
 
@@ -587,9 +588,9 @@ Thank you. Happy to take questions.
 
 ## Likely questions
 
-**Slide 2. Why does the footer say Qwen3 keeps only 8 key/value heads?** Qwen3 uses grouped-query attention: several
-query heads share one key/value head (32 query heads over 8 key/value heads in Qwen3-8B, 64 over 8 in Qwen3-32B). It
-shrinks the cache; nothing else in the talk changes.
+**Slide 2. What are the "shared key/value heads" in the footer?** Qwen3 uses grouped-query attention: several query
+heads share one key/value head (32 query heads over 8 key/value heads in Qwen3-8B, 64 over 8 in Qwen3-32B). It shrinks
+the cache; nothing else in the talk changes.
 
 **Slide 2. What does RMSNorm do?** It divides each token's vector by its root-mean-square and multiplies by learned
 weights, so the numbers stay in a stable range from block to block.
@@ -625,6 +626,11 @@ The harm shows up in specific tests (copying on the 32B, eviction on the 8B), no
 **Slide 12. What is a SEARCH/REPLACE edit?** Aider's edit format: the model writes the exact old lines (SEARCH) and
 their replacement (REPLACE). The edit applies only if the SEARCH text matches the file character for character, so it
 tests verbatim copying from the context.
+
+**Slide 12. Is full prefill the same reference in every row?** Almost. Not compressed, prefix + prefill and no RoPE
+were measured in the first run and compared with that run's own full prefill; the other rows were compared with the
+second run's, which is the row shown. The two full prefills score within 1.3 points of each other on Qwen3-32B and 0.6
+on Qwen3-8B (modify, for example, 71.3 against 72.6, p = 0.62), so the difference is noise.
 
 **Slide 13. Why do the two models fail differently?** We don't have a mechanistic explanation. Both costs come from
 cache computed in a context that no longer exists; which behaviour breaks depends on the model and the task.

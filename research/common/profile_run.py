@@ -47,6 +47,10 @@ Behaviour
     extraction calls, so the system prompt is identical across turns; --tool-result-budget and
     --reactive-compact-limit scale the per-message result cap and the number of prompt-too-long
     compactions per turn.  Defaults reproduce the harness as shipped.
+  * --tool-delay 'tools=fixed:S|lognormal:MEAN:CV[;...]' (research/06_tool_cost Part C) sleeps inside
+    the tool_execution span of every executed call of the named tools, for lead, teammates and
+    subagents alike, to emulate remote tools; each call emits a tool_delay event.  Pair it with
+    --no-timestamp so the model has no clock from which it could notice the delay.
   * --vllm-metrics URL scrapes a local vLLM server's Prometheus /metrics after every model call and
     stores the deltas (server-side prefill / decode / queue seconds, prefix-cache hits, tokens) in the
     inputs sidecar as record['vllm']; --client-max-retries 0 disables the SDK's silent retries;
@@ -59,6 +63,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import math
 import subprocess
 import os
 import random
@@ -285,6 +290,19 @@ def parse_args():
     parser.add_argument("--tool-cost-policy", action="store_true",
                         help="also append a one-line cost-aware policy to the system prompt "
                              "(exposing the cost is not the same as asking the agent to act on it)")
+    parser.add_argument("--tool-delay", default=None,
+                        help="intervention: inject latency into executed tool calls to emulate remote "
+                             "tools, as ';'-separated rules 'tools=dist' with tools a comma list or '*' "
+                             "and dist 'fixed:S' or 'lognormal:MEAN:CV', e.g. '*=fixed:1.09' or "
+                             "'bash,read_file=lognormal:6:1'.  The sleep is inside the tool_execution "
+                             "span; each call emits a tool_delay event (research/06_tool_cost Part C)")
+    parser.add_argument("--hard-deadline", action="store_true",
+                        help="also enforce --max-seconds inside a turn: once it has passed, the next model request "
+                             "raises SessionDeadline, the harness ends the turn (harness_decision model_error) and the "
+                             "session closes as 'timeout'.  Without it the deadline is checked only between turns, so a "
+                             "lead turn that loops never ends (Qwen3-8B re-reading the same files, research/06 Part C)")
+    parser.add_argument("--tool-delay-seed", type=int, default=20260930,
+                        help="seed of the lognormal draws, which are keyed on (seed, agent, call number)")
     parser.add_argument("--effort-policy", choices=["off", "memory", "main-low", "main-medium"],
                         default="off",
                         help="reasoning-effort policy (Step 2): 'memory' runs only the mechanical "
@@ -401,13 +419,90 @@ def limited_recovery_state(base, limit: int):
     return LimitedRecoveryState
 
 
+def parse_tool_delay(spec: str | None) -> list[tuple[frozenset | None, str, tuple[float, ...]]]:
+    """'bash,read_file=fixed:0.29;*=lognormal:6:1' -> [(tools or None for '*', kind, params), ...].
+
+    Rules are separated by ';' and the first rule naming a tool wins.  'fixed:S' sleeps S seconds;
+    'lognormal:MEAN:CV' draws from a lognormal with that mean and coefficient of variation."""
+    rules = []
+    for item in (spec or "").split(";"):
+        item = item.strip()
+        if not item:
+            continue
+        names, sep, dist = item.partition("=")
+        if not sep:
+            raise ValueError(f"--tool-delay rule needs 'tools=dist': {item!r}")
+        kind, *params = dist.strip().split(":")
+        values = tuple(float(p) for p in params)
+        if kind == "fixed" and len(values) == 1 and values[0] >= 0:
+            pass
+        elif kind == "lognormal" and len(values) == 2 and values[0] > 0 and values[1] >= 0:
+            pass
+        else:
+            raise ValueError(f"--tool-delay distribution must be fixed:S or lognormal:MEAN:CV: {dist!r}")
+        tools = {n.strip() for n in names.split(",") if n.strip()}
+        rules.append((None if tools == {"*"} else frozenset(tools), kind, values))
+    return rules
+
+
+def draw_tool_delay(kind: str, params: tuple[float, ...], seed: int, agent: str | None, n: int) -> float:
+    """Seconds of injected latency for the n-th tool call of `agent`.  Seeded on (seed, agent, n) so
+    the draw does not depend on how teammate threads interleave."""
+    if kind == "fixed":
+        return params[0]
+    mean, cv = params
+    if cv == 0:
+        return mean
+    digest = hashlib.sha256(f"{seed}:{agent}:{n}".encode()).digest()
+    rng = random.Random(int.from_bytes(digest[:8], "big"))
+    sigma2 = math.log1p(cv * cv)
+    return rng.lognormvariate(math.log(mean) - sigma2 / 2, math.sqrt(sigma2))
+
+
+def install_tool_delay(mod, spec: str, seed: int) -> dict:
+    """--tool-delay: emulate remote tools by sleeping inside the tool_execution span.  Every executed
+    tool call of the lead (code.py:3718), a teammate (1466) and a one-shot subagent (2242) goes
+    through the module global call_tool_handler, so wrapping it covers all three.  The sleep runs in
+    a closure handed INTO the original, so it is timed by the harness's own tool_execution_start/end
+    and tool_start/end spans.  Not delayed: unknown tools (handler None), denied calls (hooks run
+    before), the compact marker, and background bash (start_background_task bypasses the handler)."""
+    rules = parse_tool_delay(spec)
+    original = mod.call_tool_handler
+    counters: Counter = Counter()
+    lock = threading.Lock()
+
+    def call_tool_handler(handler, args, name):
+        rule = next((r for r in rules if r[0] is None or name in r[0]), None)
+        if handler is None or rule is None:
+            return original(handler, args, name)
+        agent = mod.TRACE.current_agent_id()
+        with lock:
+            counters[agent] += 1
+            n = counters[agent]
+        delay = draw_tool_delay(rule[1], rule[2], seed, agent, n)
+        mod.TRACE.emit("tool_delay", {"tool": name, "delay_s": round(delay, 6), "n": n,
+                                      "kind": rule[1], "params": list(rule[2])})
+
+        def delayed(**kwargs):
+            time.sleep(delay)
+            return handler(**kwargs)
+
+        return original(delayed, args, name)
+
+    mod.call_tool_handler = call_tool_handler
+    return {"tool_delay": spec, "tool_delay_seed": seed}
+
+
 def install_interventions(mod, args) -> dict:
-    """--no-snip, --memory off, --tool-result-budget, --reactive-compact-limit.  Each replaces a module
-    global (or a MEMORY_RUNTIME attribute) that the harness looks up at call time, so code.py is not
-    edited: prepare_context calls tool_result_budget / snip_compact (code.py:3500-3501), agent_loop
-    builds RecoveryState() (3554) and queues remember_after_turn_async (3647), and update_context reads
-    MEMORY_RUNTIME.load_memories / read_memory_index on every round (3423-3431)."""
+    """--no-snip, --memory off, --tool-result-budget, --reactive-compact-limit, --tool-delay.  Each
+    replaces a module global (or a MEMORY_RUNTIME attribute) that the harness looks up at call time,
+    so code.py is not edited: prepare_context calls tool_result_budget / snip_compact
+    (code.py:3500-3501), agent_loop builds RecoveryState() (3554) and queues remember_after_turn_async
+    (3647), update_context reads MEMORY_RUNTIME.load_memories / read_memory_index on every round
+    (3423-3431), and every tool execution calls call_tool_handler (1164)."""
     applied = {}
+    if getattr(args, "tool_delay", None):
+        applied.update(install_tool_delay(mod, args.tool_delay, int(getattr(args, "tool_delay_seed", 0) or 0)))
     if getattr(args, "no_snip", False):
         mod.snip_compact = lambda messages, max_messages=50: messages
         applied["no_snip"] = True
@@ -430,6 +525,10 @@ def install_interventions(mod, args) -> dict:
         mod.RecoveryState = limited_recovery_state(mod.RecoveryState, int(args.reactive_compact_limit))
         applied["reactive_compact_limit"] = int(args.reactive_compact_limit)
     return applied
+
+
+class SessionDeadline(RuntimeError):
+    """--hard-deadline: raised by the next model request once --max-seconds has passed."""
 
 
 def think_pause(planned: float, turn_ended: float, now=time.monotonic, sleep=time.sleep) -> float:
@@ -793,6 +892,8 @@ def main() -> int:
                                 "think_seconds": args.think_seconds, "no_snip": args.no_snip,
                                 "memory": args.memory, "tool_result_budget": args.tool_result_budget,
                                 "reactive_compact_limit": args.reactive_compact_limit,
+                                "tool_delay": args.tool_delay, "hard_deadline": args.hard_deadline,
+                                "tool_delay_seed": args.tool_delay_seed if args.tool_delay else None,
                                 "server_info": server_info})
     inputs_path = Path(str(trace.path).removesuffix(".jsonl") + ".inputs.jsonl")
     reads_path = Path(str(trace.path).removesuffix(".jsonl") + ".reads.jsonl")
@@ -1190,7 +1291,11 @@ def main() -> int:
     teammate_slots = (threading.Semaphore(args.max_teammate_concurrent)
                       if args.max_teammate_concurrent > 0 else None)
 
+    hard_deadline = {"at": None}      # set once the session starts (--hard-deadline)
+
     def profiled_create(**kwargs):
+        if hard_deadline["at"] is not None and time.monotonic() > hard_deadline["at"]:
+            raise SessionDeadline(f"profile_run: --max-seconds {args.max_seconds:.0f} reached (--hard-deadline)")
         # -- advertised-tool-cost intervention ---------------------------------------------
         # Rewriting the request here (rather than the harness's tool tables) annotates the lead,
         # the teammates and the one-shot subagents in one place, and keeps the annotation out of
@@ -1376,6 +1481,8 @@ def main() -> int:
     # -- drive the session ------------------------------------------------------------------
     started = time.monotonic()
     deadline = started + args.max_seconds
+    if args.hard_deadline:
+        hard_deadline["at"] = deadline
     history: list = []
     with trace.agent_scope("agent-root", None, "lead"):
         context = mod.update_context({}, [])
