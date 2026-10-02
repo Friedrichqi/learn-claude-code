@@ -1,0 +1,828 @@
+<title>Contention and Tool Cost</title>
+<meta name="description" content="Weekly progress, 30 September 2026: what happens when many harness users share one GPU's KV pool, and whether tool calls are really under 1% of agent latency.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #eef1f5;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --ink: #141922;
+  --ink-2: #47505f;
+  --muted: #7a8391;
+  --hair: #d5dbe3;
+  --hair-2: #e6eaf0;
+  --lead: #2a78d6;
+  --lead-soft: #cde2fb;
+  --lead-ink: #1c5cab;
+  --mate: #eb6834;
+  --mate-soft: #fbd9c9;
+  --mate-ink: #b8451c;
+  --mate-1: #f7c9b3;
+  --mate-2: #f29d76;
+  --mate-3: #eb6834;
+  --mate-4: #b8451c;
+  --shot: #1baf7a;
+  --grey-mark: #aeb6c2;
+  --warn: #d03b3b;
+  --focus: #1c5cab;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1117;
+    --surface: #161c25;
+    --surface-2: #1c232e;
+    --ink: #eef1f5;
+    --ink-2: #b9c1cd;
+    --muted: #8791a0;
+    --hair: #2b3441;
+    --hair-2: #232b36;
+    --lead: #3987e5;
+    --lead-soft: #1c355a;
+    --lead-ink: #8dbcf5;
+    --mate: #d95926;
+    --mate-soft: #4a2416;
+    --mate-ink: #f0a17e;
+    --mate-1: #5a2d1c;
+    --mate-2: #9a4222;
+    --mate-3: #d95926;
+    --mate-4: #f29d76;
+    --shot: #199e70;
+    --grey-mark: #5c6673;
+    --warn: #e66767;
+    --focus: #8dbcf5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1117;
+  --surface: #161c25;
+  --surface-2: #1c232e;
+  --ink: #eef1f5;
+  --ink-2: #b9c1cd;
+  --muted: #8791a0;
+  --hair: #2b3441;
+  --hair-2: #232b36;
+  --lead: #3987e5;
+  --lead-soft: #1c355a;
+  --lead-ink: #8dbcf5;
+  --mate: #d95926;
+  --mate-soft: #4a2416;
+  --mate-ink: #f0a17e;
+  --mate-1: #5a2d1c;
+  --mate-2: #9a4222;
+  --mate-3: #d95926;
+  --mate-4: #f29d76;
+  --shot: #199e70;
+  --grey-mark: #5c6673;
+  --warn: #e66767;
+  --focus: #8dbcf5;
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.4;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+h1, h2, h3 { margin: 0; font-family: var(--display); font-weight: 700; text-wrap: balance; letter-spacing: -0.015em; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+b, strong { font-weight: 600; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- deck chrome ---------- */
+.deck { position: fixed; inset: 0; }
+.stage {
+  position: absolute;
+  width: 1280px; height: 720px;
+  left: calc((100vw - 1280px * var(--s, 1)) / 2);
+  top: calc((100vh - 720px * var(--s, 1)) / 2);
+  transform: scale(var(--s, 1));
+  transform-origin: top left;
+}
+.slide {
+  position: absolute; inset: 0;
+  width: 1280px; height: 720px;
+  padding: 44px 64px 40px;
+  background: var(--surface);
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+  border: 1px solid var(--hair);
+}
+.slide.active { display: flex; }
+.slide-head { display: flex; flex-direction: column; gap: 8px; }
+.eyebrow {
+  display: flex; align-items: baseline; gap: 14px;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.eyebrow .num { font-family: var(--mono); letter-spacing: 0; color: var(--ink-2); }
+.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--hair); transform: translateY(-4px); }
+.slide h2 { font-size: 32px; line-height: 1.12; max-width: 1100px; }
+.slide h2 .dim { color: var(--muted); font-weight: 500; }
+.body { flex: 1; min-height: 0; display: grid; gap: 28px; }
+.foot {
+  display: flex; gap: 22px; align-items: baseline;
+  font-size: 11.5px; color: var(--muted); line-height: 1.35;
+  border-top: 1px solid var(--hair-2); padding-top: 10px;
+}
+.foot .mono { font-size: 11px; color: var(--ink-2); }
+.foot p { max-width: none; }
+
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 3px; background: var(--hair-2);
+}
+.hud .bar { height: 100%; width: 0; background: var(--lead); transition: width 200ms ease; }
+.counter {
+  position: fixed; right: 18px; bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted);
+  display: flex; gap: 14px; align-items: center;
+}
+.counter button {
+  font: inherit; color: var(--ink-2); background: var(--surface); border: 1px solid var(--hair); border-radius: 4px;
+  padding: 2px 8px; cursor: pointer;
+}
+.counter button:hover { border-color: var(--muted); }
+.hint { position: fixed; left: 18px; bottom: 10px; font-size: 12px; color: var(--muted); }
+
+/* overview mode */
+body.overview { overflow: auto; }
+body.overview .deck { position: static; }
+body.overview .stage { position: static; transform: none; width: auto; height: auto; display: grid;
+  grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 24px; }
+body.overview .slide { display: flex; position: relative; zoom: 0.3; cursor: pointer; }
+body.overview .slide:hover { outline: 6px solid var(--lead); }
+body.overview .hud, body.overview .hint { display: none; }
+
+body.export .hud, body.export .counter, body.export .hint { display: none; }
+body.export .slide { border: 0; }
+
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .deck, .stage { position: static; transform: none; width: auto; height: auto; }
+  .slide { display: flex; position: relative; page-break-after: always; break-after: page; border: 0; }
+  .hud, .counter, .hint { display: none; }
+}
+
+/* ---------- content primitives ---------- */
+.two { grid-template-columns: 1fr 1fr; }
+.wide-left { grid-template-columns: 1.25fr 1fr; }
+.wide-right { grid-template-columns: 1fr 1.25fr; }
+.stack { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.label {
+  font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.label.lead { color: var(--lead-ink); }
+.label.mate { color: var(--mate-ink); }
+.claim { font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.25; letter-spacing: -0.01em; }
+.note { font-size: 13.5px; color: var(--ink-2); max-width: 62ch; }
+.list { display: flex; flex-direction: column; gap: 9px; list-style: none; font-size: 14.5px; color: var(--ink); }
+.list li { padding-left: 16px; position: relative; }
+.list li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+.list.tight { gap: 6px; font-size: 13.5px; }
+.list li b { font-weight: 600; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; align-items: baseline; }
+.kv dt { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.kv dd { margin: 0; color: var(--ink); }
+figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 11.5px; padding: 1px 7px; border: 1px solid var(--hair); border-radius: 3px; color: var(--ink-2); background: var(--surface-2); }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.swatch.lead { background: var(--lead); } .swatch.mate { background: var(--mate); } .swatch.shot { background: var(--shot); } .swatch.grey { background: var(--grey-mark); }
+
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.data th, table.data td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--hair-2); vertical-align: top; }
+table.data th { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--hair); }
+table.data td.n, table.data th.n { text-align: right; }
+table.data td.mono { font-size: 12px; }
+table.data tr.hi td { background: var(--surface-2); }
+
+/* diagram text */
+svg text { font-family: var(--body); fill: var(--ink); }
+svg .t-title { font-family: var(--display); font-weight: 700; }
+svg .t-mono { font-family: var(--mono); }
+svg .t-muted { fill: var(--muted); }
+svg .t-ink2 { fill: var(--ink-2); }
+svg .t-lead { fill: var(--lead-ink); }
+svg .t-mate { fill: var(--mate-ink); }
+svg .box { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .box-soft { fill: var(--surface-2); stroke: var(--hair); stroke-width: 1; }
+svg .box-lead { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.2; }
+svg .box-mate { fill: var(--mate-soft); stroke: var(--mate); stroke-width: 1.2; }
+svg .box-dash { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+svg .edge { stroke: var(--ink-2); stroke-width: 1.3; fill: none; }
+svg .edge-lead { stroke: var(--lead); stroke-width: 1.4; fill: none; }
+svg .edge-mate { stroke: var(--mate); stroke-width: 1.4; fill: none; }
+svg .edge-dash { stroke: var(--muted); stroke-width: 1.2; fill: none; stroke-dasharray: 4 3; }
+svg .grid { stroke: var(--hair-2); stroke-width: 1; }
+svg .axis { stroke: var(--hair); stroke-width: 1; }
+svg .f-lead { fill: var(--lead); } svg .f-mate { fill: var(--mate); } svg .f-grey { fill: var(--grey-mark); } svg .f-shot { fill: var(--shot); }
+svg .f-m1 { fill: var(--mate-1); } svg .f-m2 { fill: var(--mate-2); } svg .f-m3 { fill: var(--mate-3); } svg .f-m4 { fill: var(--mate-4); }
+svg .f-surface { fill: var(--surface); }
+svg .node-done { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.3; }
+svg .node-open { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .node-ghost { fill: var(--surface-2); stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+
+/* bar table (slide 5) */
+.bartable { display: grid; grid-template-columns: 250px 1fr 58px 58px; gap: 8px 14px; align-items: center; font-size: 13.5px; }
+.bartable .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.bartable .m { color: var(--ink); line-height: 1.25; }
+.bartable .bars { display: flex; flex-direction: column; gap: 3px; }
+.bartable .bar { height: 11px; border-radius: 0 3px 3px 0; position: relative; }
+.bartable .bar.lead { background: var(--lead); }
+.bartable .bar.mate { background: var(--mate); }
+.bartable .v { font-variant-numeric: tabular-nums; text-align: right; font-family: var(--mono); font-size: 13px; }
+.bartable .v.lead { color: var(--lead-ink); } .bartable .v.mate { color: var(--mate-ink); }
+
+/* dumbbells (slide 6) */
+.dumbbells { display: grid; grid-template-columns: 130px 1fr; gap: 16px 18px; align-items: center; font-size: 13.5px; }
+.dumbbells .m { color: var(--ink); }
+.dumbbells .track { position: relative; height: 26px; }
+.dumbbells .track::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 1px; background: var(--hair); }
+.dumbbells .seg { position: absolute; top: 11.5px; height: 2px; background: var(--ink-2); }
+.dumbbells .dot { position: absolute; top: 6px; width: 14px; height: 14px; border-radius: 50%; transform: translateX(-50%); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--hair); }
+.dumbbells .dot.a { background: var(--grey-mark); } .dumbbells .dot.b { background: var(--lead); }
+.dumbbells .lab { position: absolute; top: -8px; transform: translateX(-50%); font-family: var(--mono); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.dumbbells .lab.b { color: var(--lead-ink); top: 22px; }
+
+/* tiers (last slide) */
+.tiers { display: grid; grid-template-rows: repeat(4, 1fr); gap: 10px; min-height: 0; }
+.tier { display: grid; grid-template-columns: 160px 1fr; gap: 14px; padding: 10px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.tier .name { font-family: var(--display); font-weight: 700; font-size: 15.5px; line-height: 1.2; }
+.tier .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0; }
+.tier .what { font-size: 12.5px; line-height: 1.38; color: var(--ink-2); }
+.tier .what b { color: var(--ink); }
+.tier.hot { border-left-color: var(--lead); }
+.tier.warm { border-left-color: var(--mate); }
+.tier.cold { border-left-color: var(--grey-mark); }
+.tier.drop { border-left-color: var(--warn); }
+
+/* cover */
+.cover { justify-content: space-between; background: var(--surface); }
+.cover .title { font-size: 58px; line-height: 1.02; letter-spacing: -0.03em; max-width: 1000px; font-weight: 800; }
+.cover .sub { font-size: 21px; color: var(--ink-2); max-width: 820px; line-height: 1.35; margin-top: 18px; }
+.cover .meta { display: flex; gap: 40px; font-size: 13px; color: var(--muted); }
+.cover .meta b { display: block; color: var(--ink); font-weight: 500; }
+.cover .rule { height: 6px; width: 120px; background: var(--lead); }
+
+/* questions */
+.qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 44px; align-content: start; padding-top: 8px; }
+.q { display: grid; grid-template-columns: 36px 1fr; gap: 10px; font-size: 17px; line-height: 1.38; }
+.q .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 22px; line-height: 1.1; }
+.q b { font-weight: 600; }
+
+/* ---------- additions for the 2026-09-16 deck ---------- */
+/* tier ladder: rungs are tiers, gaps are the boundaries between them */
+.ladder { display: flex; flex-direction: column; min-height: 0; }
+.rung { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 9px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.rung .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
+.rung .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 10.5px; color: var(--muted); margin-top: 3px; }
+.rung .what { font-size: 12px; line-height: 1.36; color: var(--ink-2); }
+.rung .what b { color: var(--ink); }
+.rung.gpu { border-left-color: var(--lead); } .rung.cache { border-left-color: var(--shot); } .rung.prompt { border-left-color: var(--mate); } .rung.disk { border-left-color: var(--grey-mark); }
+.gapx { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 5px 14px 5px 18px; align-items: center; }
+.gapx .arrow { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.3; }
+.gapx .price { font-size: 12px; color: var(--ink); background: var(--surface); border: 1px dashed var(--hair); border-radius: 4px; padding: 5px 10px; line-height: 1.35; }
+.gapx .price b { color: var(--lead-ink); font-family: var(--mono); font-weight: 500; }
+.gapx .price.ask { font-family: var(--display); font-weight: 700; color: var(--muted); font-size: 15px; padding: 3px 10px; }
+/* paired bars (slides 3 and 5): ghost = baseline, filled = the measured arm */
+.pairs { display: grid; grid-template-columns: 1fr 300px 90px; gap: 7px 14px; align-items: center; font-size: 12.5px; }
+.pairs .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.pairs .m { color: var(--ink); line-height: 1.25; }
+.pairs .m small { display: block; color: var(--muted); font-size: 11px; }
+.pairs .bars { display: flex; flex-direction: column; gap: 3px; }
+.pairs .bar { height: 9px; border-radius: 0 3px 3px 0; }
+.pairs .bar.ghost { background: var(--grey-mark); opacity: 0.55; }
+.pairs .bar.mate { background: var(--mate); }
+.pairs .bar.lead { background: var(--lead); }
+.pairs .v { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); line-height: 1.3; }
+.pairs .v b { color: var(--ink); font-weight: 500; }
+/* dense grids */
+.three { grid-template-columns: 1fr 1fr 1fr; }
+.list.tight.xs { font-size: 12.5px; gap: 5px; }
+.note.xs { font-size: 12px; }
+table.data.xs { font-size: 12px; } table.data.xs th, table.data.xs td { padding: 4px 8px; }
+.tag { display: inline-block; font-family: var(--mono); font-size: 10.5px; padding: 0 6px; border-radius: 3px; border: 1px solid var(--hair); color: var(--ink-2); background: var(--surface-2); margin-right: 4px; vertical-align: 1px; }
+.tag.m { color: var(--lead-ink); border-color: var(--lead-soft); background: var(--lead-soft); }
+.tag.r { color: var(--mate-ink); border-color: var(--mate-soft); background: var(--mate-soft); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 22px; align-content: start; }
+.nw { white-space: nowrap; }
+table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
+.step { display: grid; grid-template-columns: 26px 1fr; gap: 8px; font-size: 12.5px; line-height: 1.35; }
+.step .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 15px; line-height: 1.15; }
+.step b { font-weight: 600; }
+.step .group { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+/* ---------- additions for the 2026-09-23 deck ---------- */
+/* verdicts: what is deployable and what is retired */
+.verdicts { display: grid; gap: 7px; align-content: start; }
+.verdict { display: grid; grid-template-columns: 20px 1fr; gap: 9px; padding: 6px 12px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.verdict .n { font-family: var(--display); font-weight: 700; font-size: 13.5px; line-height: 1.3; }
+.verdict .what { font-size: 12.5px; line-height: 1.34; color: var(--ink-2); }
+.verdict .what b { color: var(--ink); font-weight: 600; }
+.verdict.keep { border-left-color: var(--shot); } .verdict.keep .n { color: var(--shot); }
+.verdict.drop { border-left-color: var(--warn); } .verdict.drop .n { color: var(--warn); }
+/* arm legend colours: grey = untreated baseline, orange = direct predecessors, blue = transitive closure */
+.swatch.warn { background: var(--warn); }
+svg .t-shot { fill: var(--shot); }
+.bartable .bar.grey { background: var(--grey-mark); }
+.bartable .v.grey { color: var(--muted); }
+.pairs .bar.grey { background: var(--grey-mark); }
+/* denser still, for the six-note week */
+.list.tight.xxs { font-size: 11.8px; gap: 4px; }
+.list.tight.xxs li { padding-left: 13px; }
+.list.tight.xxs li::before { width: 5px; height: 5px; top: 0.58em; }
+table.data.xxs { font-size: 11.5px; }
+.kv.xs { font-size: 12px; gap: 4px 12px; } .kv.xs dt { font-size: 11px; }
+.steps.two-up { grid-template-columns: 1fr 1fr; }
+/* reading keys: every table carries its own terms, metrics and what the values say */
+.key { display: grid; gap: 6px 20px; align-content: start; }
+.key.k2 { grid-template-columns: 1fr 1fr; }
+.key.k3 { grid-template-columns: 1fr 1fr 1fr; }
+.key .kh { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 3px; margin-bottom: 5px; border-bottom: 1px solid var(--hair-2); }
+.gloss { display: grid; grid-template-columns: max-content 1fr; gap: 3px 9px; margin: 0; font-size: 11.5px; line-height: 1.32; align-items: baseline; }
+.gloss dt { font-family: var(--mono); font-size: 10.5px; color: var(--ink); white-space: nowrap; }
+.gloss dd { margin: 0; color: var(--ink-2); }
+.gloss b { color: var(--ink); font-weight: 600; }
+/* table furniture: group rows, sub-labels, cells not run, interval verdicts */
+table.data tr.grp td { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-top: 7px; padding-bottom: 3px; border-bottom: 1px solid var(--hair); background: none; }
+table.data th.grp { text-align: center; border-bottom: 1px solid var(--hair-2); }
+table.data .sub { display: block; font-family: var(--body); font-size: 10.5px; line-height: 1.3; color: var(--muted); margin-top: 1px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+table.data td.na { color: var(--muted); }
+table.data td.warn { color: var(--warn); }
+.verd { font-family: var(--mono); font-size: 10.5px; white-space: nowrap; }
+.verd.yes { color: var(--shot); } .verd.no { color: var(--muted); } .verd.cost { color: var(--warn); }
+svg .t-warn { fill: var(--warn); }
+svg .box-shot { fill: none; stroke: var(--shot); stroke-width: 1.2; stroke-dasharray: 4 3; }
+svg .band-shot { fill: var(--shot); opacity: 0.07; }
+svg .whisk { stroke-width: 2.2; stroke-linecap: round; fill: none; }
+.lc { text-transform: none; letter-spacing: 0; }
+/* ---------- additions for the 2026-09-30 deck ---------- */
+/* colour meaning. section 1: grey = shift RoPE and random picks, blue = EPIC, orange = CacheBlend,
+   green = a repaired cost, red = a cost. section 2: grey = stock vLLM, blue = the session gate,
+   red = thrashing. section 3: blue = this harness, ink = the paper's number. */
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--ink-2); align-items: center; }
+table.data td.fix { background: color-mix(in srgb, var(--shot) 17%, var(--surface)); }
+table.data.arms th { padding: 3px 6px; vertical-align: bottom; }
+table.data.arms td { padding: 1.5px 6px; }
+table.data.arms tr.grp td { padding-top: 4px; padding-bottom: 1px; }
+table.data.arms th .sub { font-size: 9.5px; }
+table.data.arms td.mono { white-space: nowrap; }
+.fixchip { background: color-mix(in srgb, var(--shot) 17%, var(--surface)); padding: 0 3px; border-radius: 2px; }
+.warnchip { color: var(--warn); }
+.swatch.ink2 { background: var(--ink-2); }
+.swatch.hair { background: var(--hair); }
+svg .f-warn { fill: var(--warn); }
+svg .f-ink2 { fill: var(--ink-2); }
+svg .f-soft { fill: var(--surface-2); }
+svg .f-lead-soft { fill: var(--lead-soft); }
+svg .f-hair { fill: var(--hair); }
+svg .box-grey { fill: var(--surface-2); stroke: var(--grey-mark); stroke-width: 1; }
+svg .box-warn { fill: none; stroke: var(--warn); stroke-width: 1.4; }
+svg .edge-warn { stroke: var(--warn); stroke-width: 1.3; fill: none; }
+svg .edge-grey { stroke: var(--grey-mark); stroke-width: 1.3; fill: none; }
+svg .edge-hair { stroke: var(--hair); stroke-width: 1; fill: none; }
+svg .line-lead { stroke: var(--lead); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .line-grey { stroke: var(--grey-mark); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .ring { stroke: var(--surface); stroke-width: 2; }
+/* the three sections: a small numbered tag in eyebrows and tables */
+.sec { display: inline-block; font-family: var(--mono); font-size: 10.5px; line-height: 1.2; padding: 0 5px; border-radius: 3px; border: 1px solid var(--hair); color: var(--ink-2); background: var(--surface-2); letter-spacing: 0; }
+/* a table cell that is a sentence, not a number */
+table.data td.txt { font-size: 11px; line-height: 1.3; color: var(--ink-2); }
+table.data.xxs td.tight, table.data.xxs th.tight { padding-left: 4px; padding-right: 4px; }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+.pend { border: 1px dashed var(--muted); border-radius: 4px; padding: 10px 14px; color: var(--muted); font-size: 12.5px; }
+/* compact reading keys under tall tables */
+.key.tight .gloss { font-size: 11px; gap: 2px 8px; line-height: 1.28; }
+.key.tight .gloss dt { font-size: 10px; }
+.key.tight .list.tight.xxs { font-size: 11.2px; gap: 3px; line-height: 1.3; }
+.key.kk { grid-template-columns: 1fr 1.6fr; }
+figcaption.xs { font-size: 11px; line-height: 1.3; }
+</style>
+
+<div class="deck" id="deck">
+<div class="stage" id="stage">
+
+<!-- ===================== 1 · COVER ===================== -->
+<section class="slide cover" data-title="Cover">
+  <div>
+    <div class="eyebrow"><span>Weekly progress</span><span class="num">2026-09-30</span></div>
+    <div class="rule" style="margin:34px 0 26px"></div>
+    <h1 class="title">The KV pool sets the ceiling; tool calls barely register</h1>
+    <p class="sub">What happens when many harness users share one GPU's KV cache, and whether tool calls really are under 1% of agent latency.</p>
+  </div>
+  <div class="meta">
+    <div><b>yq335@cornell.edu</b>learn-claude-code · branch <span class="mono">claude</span> · covers 2026-09-23 to 2026-09-30</div>
+    <div><b>Harness</b>s15 integrated harness · self-hosted vLLM 0.29.0 on H200</div>
+    <div><b>Models</b>Qwen3-32B (multi-user) · tool census over GLM, DeepSeek, Qwen3.8-27B, Qwen3-32B traces</div>
+    <div><b>Writeups</b><span class="mono">research/11_multiuser_kv</span> · <span class="mono">06_tool_cost</span> Parts C&#8211;D</div>
+  </div>
+</section>
+
+<!-- ===================== 2 · THIS WEEK ===================== -->
+<section class="slide" data-title="This week">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">2</span><span>Last week, this week</span></div>
+    <h2>This week moves from the harness to the server: how one GPU's KV pool is shared by many users, and what the tools cost</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 560px 1fr; gap:30px">
+    <figure><svg viewBox="0 0 560 300" role="img" aria-label="Where the two questions sit. Left: one harness session, whose round prepares the context, calls the model and runs tools; question 2 sits at the tools. Right: one vLLM server on one H200 whose KV pool is shared by the requests of N users; question 1 is what happens to a paused user's cache."><defs><marker id="w2k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker><marker id="w2l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-lead"></path></marker><marker id="w2m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-mate"></path></marker><marker id="w2w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-warn"></path></marker></defs><g color="var(--ink-2)">
+<rect x="0" y="0" width="236" height="286" rx="5" class="box-lead"></rect>
+<text x="12" y="22" font-size="14" class="t-title t-lead">One user's harness session</text>
+<rect x="18" y="44" width="200" height="34" rx="3" class="box"></rect><text x="30" y="66" font-size="12" class="t-mono">prepare_context()</text>
+<rect x="18" y="96" width="200" height="34" rx="3" class="box"></rect><text x="30" y="118" font-size="12" class="t-mono">call_llm()</text>
+<rect x="18" y="148" width="200" height="34" rx="3" class="box"></rect><text x="30" y="170" font-size="12" class="t-title">run tools</text>
+<path d="M 118 78 V 94" class="edge" marker-end="url(#w2k)"></path><path d="M 118 130 V 146" class="edge" marker-end="url(#w2k)"></path>
+<path d="M 18 165 H 8 V 61 H 16" class="edge" marker-end="url(#w2k)"></path>
+<text x="18" y="214" font-size="11" class="t-ink2">4 turns, with ~30 s think</text><text x="18" y="229" font-size="11" class="t-ink2">pauses between them</text>
+<circle cx="206" cy="165" r="12" class="f-mate"></circle><text x="206" y="170" font-size="13" text-anchor="middle" class="t-title" style="fill:var(--surface)">2</text>
+<path d="M 218 113 H 300" class="edge-lead" marker-end="url(#w2l)"></path><text x="259" y="105" font-size="10" text-anchor="middle" class="t-mono t-lead">request</text>
+<rect x="304" y="0" width="256" height="286" rx="5" class="box-soft"></rect>
+<text x="316" y="22" font-size="14" class="t-title">One vLLM server · one H200</text>
+<rect x="316" y="44" width="232" height="146" rx="3" class="box"></rect>
+<text x="328" y="64" font-size="12" class="t-title">KV pool · 258k tokens</text>
+<rect x="328" y="76" width="17" height="14" rx="2" class="f-lead" opacity="0.85"></rect><rect x="349" y="76" width="17" height="14" rx="2" class="f-mate" opacity="0.85"></rect><rect x="370" y="76" width="17" height="14" rx="2" class="f-grey" opacity="0.85"></rect><rect x="391" y="76" width="17" height="14" rx="2" class="f-lead-soft" opacity="0.85"></rect><rect x="412" y="76" width="17" height="14" rx="2" class="f-m2" opacity="0.85"></rect><rect x="433" y="76" width="17" height="14" rx="2" class="f-shot" opacity="0.85"></rect><rect x="454" y="76" width="17" height="14" rx="2" class="f-lead" opacity="0.85"></rect><rect x="475" y="76" width="17" height="14" rx="2" class="f-mate" opacity="0.85"></rect><rect x="496" y="76" width="17" height="14" rx="2" class="f-grey" opacity="0.85"></rect><rect x="517" y="76" width="17" height="14" rx="2" class="f-lead-soft" opacity="0.85"></rect><rect x="328" y="96" width="17" height="14" rx="2" class="f-shot" opacity="0.85"></rect><rect x="349" y="96" width="17" height="14" rx="2" class="f-lead" opacity="0.85"></rect><rect x="370" y="96" width="17" height="14" rx="2" class="f-mate" opacity="0.85"></rect><rect x="391" y="96" width="17" height="14" rx="2" class="f-grey" opacity="0.85"></rect><rect x="412" y="96" width="17" height="14" rx="2" class="f-lead-soft" opacity="0.85"></rect><rect x="433" y="96" width="17" height="14" rx="2" class="f-m2" opacity="0.85"></rect><rect x="454" y="96" width="17" height="14" rx="2" class="f-shot" opacity="0.85"></rect><rect x="475" y="96" width="17" height="14" rx="2" class="f-lead" opacity="0.85"></rect><rect x="496" y="96" width="17" height="14" rx="2" class="f-mate" opacity="0.85"></rect><rect x="517" y="96" width="17" height="14" rx="2" class="f-grey" opacity="0.85"></rect><rect x="328" y="116" width="17" height="14" rx="2" class="f-m2" opacity="0.85"></rect><rect x="349" y="116" width="17" height="14" rx="2" class="f-shot" opacity="0.85"></rect><rect x="370" y="116" width="17" height="14" rx="2" class="f-lead" opacity="0.85"></rect><rect x="391" y="116" width="17" height="14" rx="2" class="f-mate" opacity="0.85"></rect><rect x="412" y="116" width="17" height="14" rx="2" class="f-grey" opacity="0.85"></rect><rect x="433" y="116" width="17" height="14" rx="2" class="f-lead-soft" opacity="0.85"></rect><rect x="454" y="116" width="17" height="14" rx="2" class="f-m2" opacity="0.85"></rect><rect x="475" y="116" width="17" height="14" rx="2" class="f-shot" opacity="0.85"></rect><rect x="496" y="116" width="17" height="14" rx="2" class="f-lead" opacity="0.85"></rect><rect x="517" y="116" width="17" height="14" rx="2" class="f-mate" opacity="0.85"></rect><rect x="328" y="136" width="17" height="14" rx="2" class="f-lead-soft" opacity="0.85"></rect><rect x="349" y="136" width="17" height="14" rx="2" class="f-m2" opacity="0.85"></rect><rect x="370" y="136" width="17" height="14" rx="2" class="f-shot" opacity="0.85"></rect><rect x="391" y="136" width="17" height="14" rx="2" class="f-lead" opacity="0.85"></rect><rect x="412" y="136" width="17" height="14" rx="2" class="f-mate" opacity="0.85"></rect><rect x="433" y="136" width="17" height="14" rx="2" class="f-grey" opacity="0.85"></rect><rect x="454" y="136" width="17" height="14" rx="2" class="f-lead-soft" opacity="0.85"></rect><rect x="475" y="136" width="17" height="14" rx="2" class="f-m2" opacity="0.85"></rect><rect x="496" y="136" width="17" height="14" rx="2" class="f-shot" opacity="0.85"></rect><rect x="517" y="136" width="17" height="14" rx="2" class="f-lead" opacity="0.85"></rect><rect x="328" y="156" width="17" height="14" rx="2" class="f-grey" opacity="0.85"></rect><rect x="349" y="156" width="17" height="14" rx="2" class="f-lead-soft" opacity="0.85"></rect><rect x="370" y="156" width="17" height="14" rx="2" class="f-m2" opacity="0.85"></rect><rect x="391" y="156" width="17" height="14" rx="2" class="f-shot" opacity="0.85"></rect><rect x="412" y="156" width="17" height="14" rx="2" class="f-lead" opacity="0.85"></rect><rect x="433" y="156" width="17" height="14" rx="2" class="f-mate" opacity="0.85"></rect><rect x="454" y="156" width="17" height="14" rx="2" class="f-grey" opacity="0.85"></rect><rect x="475" y="156" width="17" height="14" rx="2" class="f-lead-soft" opacity="0.85"></rect><rect x="496" y="156" width="17" height="14" rx="2" class="f-m2" opacity="0.85"></rect><rect x="517" y="156" width="17" height="14" rx="2" class="f-shot" opacity="0.85"></rect>
+<text x="328" y="184" font-size="11" class="t-muted">idle users' blocks are evicted first</text>
+<rect x="316" y="204" width="232" height="66" rx="3" class="box-dash"></rect>
+<text x="328" y="226" font-size="12" class="t-title">N users</text><text x="328" y="244" font-size="11" class="t-ink2">a paused user's cache can be</text><text x="328" y="259" font-size="11" class="t-ink2">evicted before it returns</text>
+<circle cx="536" cy="64" r="12" class="f-mate"></circle><text x="536" y="69" font-size="13" text-anchor="middle" class="t-title" style="fill:var(--surface)">1</text>
+</g></svg></figure>
+    <div class="stack" style="gap:12px">
+      <p class="label">Last week</p>
+      <ul class="list tight"><li>A cache buys fewer rounds, not faster prefill; served locally, a call is almost pure decode</li><li>Next steps 14&#8211;18 are carried (see the last slide)</li></ul>
+      <p class="label" style="margin-top:6px">This week · two questions about serving the harness</p>
+      <table class="data xs"><thead><tr><th class="n">#</th><th>question</th><th>answer</th><th class="n">slides</th></tr></thead><tbody><tr><td class="n"><b>1</b></td><td>Many users, one KV pool: is cache contention the bottleneck?</td><td><b>Yes, past ~8&#8211;12 users; a session gate gives 3.5&#8211;3.8&#215;</b></td><td class="n nw">3&#8211;8</td></tr><tr><td class="n"><b>2</b></td><td>Are tool calls 30&#8211;85% of agent latency, as a recent paper says?</td><td><b>Under 1%: tools take 0.09% of 1,042 traced hours and a median of at most 0.3% per request, against the paper's 32% (six GPU cells pending)</b></td><td class="n nw">9&#8211;16</td></tr></tbody></table>
+      <ul class="list tight"><li>Also this week: KV reuse beyond prefixes (EPIC, CacheBlend, KVLink and our RoPE-shift runs), presented separately</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">weekly_progress/092326/slides.html</span>; <span class="mono">research/11_multiuser_kv</span>, <span class="mono">research/06_tool_cost</span> READMEs.</p></div>
+</section>
+
+<!-- ===================== 3 · MULTI-USER SETUP ===================== -->
+<section class="slide" data-title="Multi-user setup">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">3</span><span>Result · 1 · Many users, one KV pool · the experiment</span></div>
+    <h2>N simulated harness users share one H200 running <span class="nw">Qwen3-32B</span>: 4-turn sessions, 30 s think pauses, one 258k-token KV pool</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1.1fr 1fr; gap:32px">
+    <div class="stack" style="gap:12px">
+      <p class="label">The experiment</p>
+      <ul class="list"><li><b>A user</b> = one 4-turn harness session on a real codebase (2 explain, 2 modify turns), with ~30 s think pauses between turns</li><li><b>N users</b>, closed loop, on one vLLM server: Qwen3-32B, 40k-token window, one H200 with a <b>258k-token KV pool</b> (about 8&#8211;10 users' contexts)</li><li><b>Instrumented scheduler</b>: logs every step, eviction and prefix hit; a fitted step model (R&#178; = 1.000) splits each call's slowdown by cause</li><li><b>502 counted sessions</b> (947 traces with fillers and pilots), 97,498 model calls, 91 GPU-hours; plus 14 trace replays</li></ul>
+    </div>
+    <div class="stack" style="gap:8px">
+      <p class="label">Live cells</p>
+      <table class="data xs"><thead><tr><th>cell</th><th class="n">users</th><th>what it tests</th><th class="n">sessions</th><th class="n">lead calls</th></tr></thead><tbody><tr><td class="mono">n01a+b</td><td class="n">1</td><td>solo reference</td><td class="n">24</td><td class="n">2,767</td></tr><tr><td class="mono">n04</td><td class="n">4</td><td>load sweep</td><td class="n">40</td><td class="n">4,837</td></tr><tr><td class="mono">n08</td><td class="n">8</td><td>load sweep</td><td class="n">56</td><td class="n">7,360</td></tr><tr><td class="mono">n12</td><td class="n">12</td><td>load sweep</td><td class="n">36</td><td class="n">4,601</td></tr><tr><td class="mono">n16</td><td class="n">16</td><td>load sweep</td><td class="n">80</td><td class="n">9,759</td></tr><tr><td class="mono">n32</td><td class="n">32</td><td>load sweep</td><td class="n">96</td><td class="n">9,574</td></tr><tr><td class="mono">n08kvh</td><td class="n">8</td><td>KV pool halved</td><td class="n">24</td><td class="n">2,192</td></tr><tr><td class="mono">n08mem</td><td class="n">8</td><td>memory on</td><td class="n">40</td><td class="n">5,389</td></tr><tr><td class="mono">n08ts</td><td class="n">8</td><td>memory + per-second timestamp</td><td class="n">18</td><td class="n">1,577</td></tr><tr><td class="mono">s3gate16</td><td class="n">16</td><td>session gate, 8 active</td><td class="n">48</td><td class="n">6,532</td></tr><tr><td class="mono">s3gate32</td><td class="n">32</td><td>session gate, 8 active</td><td class="n">48</td><td class="n">7,066</td></tr></tbody></table>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/11_multiuser_kv/README.md</span> §2&#8211;3.1; <span class="mono">multiuser_tables.md</span> T1. Sessions as launched; 8 cut off at job end are not counted. Memory off except n08mem, n08ts.</p></div>
+</section>
+
+<!-- ===================== 4 · LOAD CURVE ===================== -->
+<section class="slide" data-title="Load curve">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">4</span><span>Result · 1 · Many users, one KV pool · the load curve</span></div>
+    <h2>Throughput rises to 3,077 lead calls an hour at 8 users, then falls by two thirds: past the knee, extra users only queue</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 510px 1fr; gap:30px">
+    <div class="stack" style="gap:6px">
+      <div class="legend"><span><span class="swatch grey"></span>stock vLLM</span><span><span class="swatch lead"></span>session gate</span><span><span class="swatch warn"></span>8 users, cache defeated</span></div>
+      <figure><svg viewBox="0 0 508 268" role="img" aria-label="Lead calls per hour against users on a log scale. Stock vLLM: 719 at 1 user, 2,030 at 4, 3,077 at 8, 1,496 at 12, 976 at 16, 990 at 32. The session gate gives 3,394 at 16 and 3,793 at 32; at 8 users a halved pool gives 978 and the per-second timestamp 935."><defs><marker id="c2l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-lead"></path></marker></defs><g color="var(--ink-2)"><path d="M 56 236.0 H 496" class="grid"></path><text x="50" y="239.5" font-size="10" text-anchor="end" class="t-mono t-muted">0</text><path d="M 56 187.0 H 496" class="grid"></path><text x="50" y="190.5" font-size="10" text-anchor="end" class="t-mono t-muted">1,000</text><path d="M 56 138.0 H 496" class="grid"></path><text x="50" y="141.5" font-size="10" text-anchor="end" class="t-mono t-muted">2,000</text><path d="M 56 89.0 H 496" class="grid"></path><text x="50" y="92.5" font-size="10" text-anchor="end" class="t-mono t-muted">3,000</text><path d="M 56 40.0 H 496" class="grid"></path><text x="50" y="43.5" font-size="10" text-anchor="end" class="t-mono t-muted">4,000</text><text x="56.0" y="251" font-size="10" text-anchor="middle" class="t-mono t-muted">1</text><text x="232.0" y="251" font-size="10" text-anchor="middle" class="t-mono t-muted">4</text><text x="320.0" y="251" font-size="10" text-anchor="middle" class="t-mono t-muted">8</text><text x="371.5" y="251" font-size="10" text-anchor="middle" class="t-mono t-muted">12</text><text x="408.0" y="251" font-size="10" text-anchor="middle" class="t-mono t-muted">16</text><text x="496.0" y="251" font-size="10" text-anchor="middle" class="t-mono t-muted">32</text><text x="56" y="12" font-size="12" class="t-title">lead calls per hour, all sessions</text><text x="496" y="265" font-size="10" text-anchor="end" class="t-muted">users sharing one H200 (log scale)</text><path d="M 345.7 56 V 236" class="edge-dash"></path><text x="345.7" y="51" font-size="11" text-anchor="middle" class="t-warn">the knee</text><path d="M 56.0 200.8 L 232.0 136.5 L 320.0 85.2 L 371.5 162.7 L 408.0 188.2 L 496.0 187.5" class="line-grey"></path><circle cx="56.0" cy="200.8" r="4.5" class="f-grey ring"><title>N = 1: 719 lead calls/h</title></circle><text x="64.0" y="204.8" font-size="11" text-anchor="start" class="t-mono t-ink2">719</text><circle cx="232.0" cy="136.5" r="4.5" class="f-grey ring"><title>N = 4: 2,030 lead calls/h</title></circle><text x="232.0" y="126.5" font-size="11" text-anchor="middle" class="t-mono t-ink2">2,030</text><circle cx="320.0" cy="85.2" r="4.5" class="f-grey ring"><title>N = 8: 3,077 lead calls/h</title></circle><text x="314.0" y="75.2" font-size="11" text-anchor="end" class="t-mono t-ink2">3,077</text><circle cx="371.5" cy="162.7" r="4.5" class="f-grey ring"><title>N = 12: 1,496 lead calls/h</title></circle><text x="379.5" y="158.7" font-size="11" text-anchor="start" class="t-mono t-ink2">1,496</text><circle cx="408.0" cy="188.2" r="4.5" class="f-grey ring"><title>N = 16: 976 lead calls/h</title></circle><text x="408.0" y="204.2" font-size="11" text-anchor="middle" class="t-mono t-ink2">976</text><circle cx="496.0" cy="187.5" r="4.5" class="f-grey ring"><title>N = 32: 990 lead calls/h</title></circle><text x="496.0" y="203.5" font-size="11" text-anchor="middle" class="t-mono t-ink2">990</text><path d="M 408.0 181.2 L 408.0 77.7" class="edge-lead" marker-end="url(#c2l)"></path><circle cx="408.0" cy="69.7" r="5" class="f-lead ring"><title>s3gate16: 3,394 lead calls/h</title></circle><text x="400.0" y="73.7" font-size="11" text-anchor="end" class="t-mono t-lead">3,394</text><path d="M 496.0 180.5 L 496.0 58.2" class="edge-lead" marker-end="url(#c2l)"></path><circle cx="496.0" cy="50.2" r="5" class="f-lead ring"><title>s3gate32: 3,793 lead calls/h</title></circle><text x="488.0" y="54.2" font-size="11" text-anchor="end" class="t-mono t-lead">3,793</text><circle cx="320.0" cy="188.1" r="4.5" class="f-warn ring"><title>8 users, half pool: 978</title></circle><circle cx="320.0" cy="190.2" r="4" class="f-surface" style="stroke:var(--warn);stroke-width:2"><title>8 users, timestamp on: 935</title></circle><path d="M 314.0 186.1 H 296.0" class="edge-hair"></path><text x="293.0" y="189.1" font-size="11" text-anchor="end" class="t-warn">978 half pool</text><path d="M 314.0 193.2 L 296.0 204.2" class="edge-hair"></path><text x="293.0" y="208.2" font-size="11" text-anchor="end" class="t-warn">935 timestamp on</text></g></svg></figure>
+    </div>
+    <div class="stack" style="gap:12px">
+      <table class="data xs"><thead><tr><th class="n">users</th><th class="n">lead calls/h</th><th class="n">call s<span class="sub">p50 &#183; mean</span></th><th class="n">slowdown<span class="sub">vs alone</span></th><th class="n">turn p95<span class="sub">s</span></th></tr></thead><tbody><tr><td class="n">1</td><td class="n">719</td><td class="n nw">1.1 &#183; 3.8</td><td class="n">0.99&#215;</td><td class="n">529</td></tr><tr><td class="n">4</td><td class="n">2,030</td><td class="n nw">2.1 &#183; 5.8</td><td class="n">1.65&#215;</td><td class="n">773</td></tr><tr class="hi"><td class="n">8</td><td class="n">3,077</td><td class="n nw">2.4 &#183; 8.4</td><td class="n">2.36&#215;</td><td class="n">1,086</td></tr><tr><td class="n">12</td><td class="n">1,496</td><td class="n nw">13.2 &#183; 28.2</td><td class="n">10.01&#215;</td><td class="n">3,448</td></tr><tr><td class="n">16</td><td class="n">976</td><td class="n nw">33.9 &#183; 56.4</td><td class="n">17.69&#215;</td><td class="n">5,603</td></tr><tr><td class="n">32</td><td class="n">990</td><td class="n nw">94.4 &#183; 112.0</td><td class="n">41.92&#215;</td><td class="n">9,340</td></tr></tbody></table>
+      <ul class="list"><li><b>Up to 8 users</b>: throughput rises to 3,077 lead calls/h; each call is 1.7&#8211;2.4&#215; slower</li><li><b>From 12 users</b>: throughput halves, then drops to a third at 16&#8211;32 users (976&#8211;990); calls are 10&#8211;42&#215; slower</li><li>A session takes <b>7.6&#215; as long</b> at 16 users as at 8</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/11_multiuser_kv/README.md</span> §3.2; <span class="mono">multiuser_tables.md</span> T2, T5, T9, T10. Lead calls per loaded hour; 1 user = n01a (its repeat n01b: 752).</p></div>
+</section>
+
+<!-- ===================== 5 · WHY SLOWER ===================== -->
+<section class="slide" data-title="Why slower">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">5</span><span>Result · 1 · Many users, one KV pool · where the time goes</span></div>
+    <h2>Below the knee, calls slow down from sharing a busy GPU; above it, two thirds to three quarters of the GPU re-prefills evicted histories</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 480px 1fr; gap:30px">
+    <div class="stack" style="gap:6px">
+      <div class="legend"><span><span class="swatch warn"></span>re-prefilling evicted prefixes (number at right)</span><span><span class="swatch grey"></span>new prefill</span><span><span class="swatch ink2"></span>decode</span><span><span class="swatch hair"></span>idle</span></div>
+      <p class="label">What the GPU did, share of wall time</p>
+      <figure><svg viewBox="0 0 470 229" role="img" aria-label="Share of GPU time spent re-prefilling evicted prefixes, per cell: 0 to 2% up to 8 users, 65% at 12, 74% at 16 and 32, 65% with the pool halved, 6% under the session gate."><g><path d="M 96.0 4 V 211" class="grid"></path><text x="96.0" y="224" font-size="10" text-anchor="middle" class="t-mono t-muted">0%</text><path d="M 261.0 4 V 211" class="grid"></path><text x="261.0" y="224" font-size="10" text-anchor="middle" class="t-mono t-muted">50%</text><path d="M 426.0 4 V 211" class="grid"></path><text x="426.0" y="224" font-size="10" text-anchor="middle" class="t-mono t-muted">100%</text><text x="88" y="19" font-size="11" text-anchor="end" class="t-mono t-ink2">n01a</text><rect x="96.0" y="8" width="31.0" height="15" class="f-grey"><title>n01a: fresh prefill 10%</title></rect><rect x="129.0" y="8" width="215.8" height="15" class="f-ink2"><title>n01a: decode 66%</title></rect><rect x="346.8" y="8" width="77.2" height="15" class="f-hair"><title>n01a: idle 24%</title></rect><text x="432" y="19" font-size="11" class="t-mono t-ink2">0%</text><text x="88" y="42" font-size="11" text-anchor="end" class="t-mono t-ink2">n04</text><rect x="96.0" y="31" width="126.7" height="15" class="f-grey"><title>n04: fresh prefill 39%</title></rect><rect x="224.7" y="31" width="199.3" height="15" class="f-ink2"><title>n04: decode 61%</title></rect><text x="432" y="42" font-size="11" class="t-mono t-ink2">0%</text><text x="88" y="65" font-size="11" text-anchor="end" class="t-mono t-ink2">n08</text><rect x="96.0" y="54" width="4.7" height="15" class="f-warn"><title>n08: evicted-prefix recompute 2%</title></rect><rect x="102.7" y="54" width="134.7" height="15" class="f-grey"><title>n08: fresh prefill 41%</title></rect><rect x="239.3" y="54" width="184.7" height="15" class="f-ink2"><title>n08: decode 56%</title></rect><text x="432" y="65" font-size="11" class="t-mono t-ink2">2%</text><text x="88" y="88" font-size="11" text-anchor="end" class="t-mono t-ink2">n12</text><rect x="96.0" y="77" width="212.5" height="15" class="f-warn"><title>n12: evicted-prefix recompute 65%</title></rect><rect x="310.5" y="77" width="60.7" height="15" class="f-grey"><title>n12: fresh prefill 19%</title></rect><rect x="373.2" y="77" width="50.8" height="15" class="f-ink2"><title>n12: decode 16%</title></rect><text x="432" y="88" font-size="11" class="t-mono t-ink2">65%</text><text x="88" y="111" font-size="11" text-anchor="end" class="t-mono t-ink2">n16</text><rect x="96.0" y="100" width="242.2" height="15" class="f-warn"><title>n16: evicted-prefix recompute 74%</title></rect><rect x="340.2" y="100" width="44.2" height="15" class="f-grey"><title>n16: fresh prefill 14%</title></rect><rect x="386.4" y="100" width="37.6" height="15" class="f-ink2"><title>n16: decode 12%</title></rect><text x="432" y="111" font-size="11" class="t-mono t-ink2">74%</text><text x="88" y="134" font-size="11" text-anchor="end" class="t-mono t-ink2">n32</text><rect x="96.0" y="123" width="242.2" height="15" class="f-warn"><title>n32: evicted-prefix recompute 74%</title></rect><rect x="340.2" y="123" width="50.8" height="15" class="f-grey"><title>n32: fresh prefill 16%</title></rect><rect x="393.0" y="123" width="31.0" height="15" class="f-ink2"><title>n32: decode 10%</title></rect><text x="432" y="134" font-size="11" class="t-mono t-ink2">74%</text><text x="88" y="157" font-size="11" text-anchor="end" class="t-mono t-ink2">n08kvh</text><rect x="96.0" y="146" width="212.5" height="15" class="f-warn"><title>n08kvh: evicted-prefix recompute 65%</title></rect><rect x="310.5" y="146" width="44.2" height="15" class="f-grey"><title>n08kvh: fresh prefill 14%</title></rect><rect x="356.7" y="146" width="67.3" height="15" class="f-ink2"><title>n08kvh: decode 21%</title></rect><text x="432" y="157" font-size="11" class="t-mono t-ink2">65%</text><text x="88" y="180" font-size="11" text-anchor="end" class="t-mono t-ink2">s3gate16</text><rect x="96.0" y="169" width="17.8" height="15" class="f-warn"><title>s3gate16: evicted-prefix recompute 6%</title></rect><rect x="115.8" y="169" width="153.1" height="15" class="f-grey"><title>s3gate16: fresh prefill 47%</title></rect><rect x="270.9" y="169" width="153.1" height="15" class="f-ink2"><title>s3gate16: decode 47%</title></rect><text x="432" y="180" font-size="11" class="t-mono t-ink2">6%</text><text x="88" y="203" font-size="11" text-anchor="end" class="t-mono t-ink2">s3gate32</text><rect x="96.0" y="192" width="17.6" height="15" class="f-warn"><title>s3gate32: evicted-prefix recompute 6%</title></rect><rect x="115.6" y="192" width="171.2" height="15" class="f-grey"><title>s3gate32: fresh prefill 53%</title></rect><rect x="288.8" y="192" width="135.2" height="15" class="f-ink2"><title>s3gate32: decode 42%</title></rect><text x="432" y="203" font-size="11" class="t-mono t-ink2">6%</text></g></svg></figure>
+    </div>
+    <div class="stack" style="gap:12px">
+      <p class="label">Why a lead call is slower than alone</p>
+      <table class="data xs"><thead><tr><th class="n">users</th><th class="n">excess s<span class="sub">per call</span></th><th class="n">compute<span class="sub">sharing</span></th><th class="n">others&#8217; re-prefill<span class="sub">s per call</span></th><th class="n">queue<span class="sub">s per call</span></th><th class="n">preemption<span class="sub">s</span></th></tr></thead><tbody><tr><td class="n">4</td><td class="n">2.3</td><td class="n">94%</td><td class="n">0.0</td><td class="n">0.0</td><td class="n">0.00</td></tr><tr><td class="n">8</td><td class="n">4.8</td><td class="n">93%</td><td class="n">0.2</td><td class="n">0.0</td><td class="n">0.00</td></tr><tr><td class="n">12</td><td class="n">25.4</td><td class="n">26%</td><td class="n warn">13.6</td><td class="n">3.2</td><td class="n">0.00</td></tr><tr class="hi"><td class="n">16</td><td class="n">53.2</td><td class="n">13%</td><td class="n warn">23.7</td><td class="n">19.0</td><td class="n">0.00</td></tr><tr><td class="n">32</td><td class="n">109.4</td><td class="n">7%</td><td class="n warn">23.6</td><td class="n warn">75.3</td><td class="n">0.00</td></tr></tbody></table>
+      <ul class="list"><li><b>Up to 8 users</b>: 93&#8211;94% of the slowdown is sharing a busy GPU with other users' prefill and decode</li><li><b>From 12 users</b>: 65&#8211;74% of the GPU re-prefills histories it had already computed; that work and the queue behind it dominate</li><li><b>Preemption plays no part</b> (0.00 s per call)</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/11_multiuser_kv/README.md</span> §3.3; <span class="mono">multiuser_tables.md</span> T3, T4b, T9. Excess = latency minus the same call alone with an ideal cache.</p></div>
+</section>
+
+<!-- ===================== 6 · MECHANISM ===================== -->
+<section class="slide" data-title="Mechanism">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">6</span><span>Result · 1 · Many users, one KV pool · the mechanism above the knee</span></div>
+    <h2>Above the knee the running requests fill the pool, so a paused user's prefix is evicted and its whole history re-prefilled</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1.1fr 1fr; gap:32px">
+    <div class="stack" style="gap:10px">
+      <table class="data xs"><thead><tr><th class="n">users</th><th class="n">prompt tokens<span class="sub">served from cache</span></th><th class="n">re-prefilled<span class="sub">after eviction</span></th><th class="n">tool pause &lt; 1 s<span class="sub">prefix fully kept</span></th><th class="n">think pause 30&#8211;60 s<span class="sub">share of prefix kept</span></th></tr></thead><tbody><tr><td class="n nw">1</td><td class="n">86%</td><td class="n">0%</td><td class="n">100%</td><td class="n">100%</td></tr><tr><td class="n nw">4</td><td class="n">82%</td><td class="n">0%</td><td class="n">100%</td><td class="n">97%</td></tr><tr><td class="n nw">8</td><td class="n">87%</td><td class="n">1%</td><td class="n">100%</td><td class="n">58%</td></tr><tr><td class="n nw">12</td><td class="n">45%</td><td class="n warn">43%</td><td class="n">79%</td><td class="n warn">5%</td></tr><tr class="hi"><td class="n nw">16</td><td class="n">2%</td><td class="n warn">85%</td><td class="n">62%</td><td class="n warn">0%</td></tr><tr><td class="n nw">32</td><td class="n">1%</td><td class="n warn">84%</td><td class="n">64%</td><td class="n warn">0%</td></tr><tr class="hi"><td class="n nw">16 gated</td><td class="n">85%</td><td class="n">2%</td><td class="n">100%</td><td class="n">15%</td></tr></tbody></table>
+    </div>
+    <div class="stack" style="gap:12px">
+      <ul class="list"><li><b>From 12 users</b>, about 10 running requests &#215; 25k tokens fill the 258k pool, so a finished request's blocks are reused almost at once</li><li><b>A paused user loses its prefix</b>: at 16&#8211;32 users every think pause of 15 s or more loses all of it, and 84&#8211;85% of prompt tokens are re-prefilled</li><li><b>Thrashing, not a tail effect</b>: at 16&#8211;32 users the cache hit rate falls from 86&#8211;87% to 1&#8211;2%</li><li>Under the session gate the hit rate is back at 85%</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/11_multiuser_kv/README.md</span> §3.4; <span class="mono">multiuser_tables.md</span> T3 (token classes), T6 (survival of a session's own prefix across its pauses).</p></div>
+</section>
+
+<!-- ===================== 7 · CAUSAL TEST ===================== -->
+<section class="slide" data-title="Causal test">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">7</span><span>Result · 1 · Many users, one KV pool · the causal test, and the harness's own cache busting</span></div>
+    <h2>Halving the KV pool at 8 users reproduces the collapse, and the harness's per-second timestamp cuts throughput as far</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:34px">
+    <div class="stack" style="gap:12px">
+      <p class="label">The causal test · halve the KV pool, keep the users</p>
+      <table class="data xs"><thead><tr><th></th><th class="n">8 users<span class="sub">full pool</span></th><th class="n">8 users<span class="sub">half pool</span></th><th class="n">16 users<span class="sub">full pool</span></th></tr></thead><tbody><tr><td>served from cache</td><td class="n">87%</td><td class="n warn">12%</td><td class="n">2%</td></tr><tr><td>GPU on re-prefill</td><td class="n">2%</td><td class="n warn">65%</td><td class="n">74%</td></tr><tr><td>lead calls / h</td><td class="n">3,077</td><td class="n warn">978</td><td class="n">976</td></tr><tr><td>session time vs 8 users</td><td class="n">1&#215;</td><td class="n warn">3.39&#215;</td><td class="n">7.62&#215;</td></tr></tbody></table>
+      <ul class="list"><li><b>KV capacity sets the knee</b>: the same 8 users on half the pool land where 16 users do (978 vs 976 calls/h)</li></ul>
+    </div>
+    <div class="stack" style="gap:12px">
+      <p class="label">The harness can bust the cache by itself</p>
+      <table class="data xs"><thead><tr><th>8 users</th><th class="n">as tested</th><th class="n">memory on</th><th class="n">+ timestamp<span class="sub">as shipped</span></th></tr></thead><tbody><tr><td>served from cache</td><td class="n">87%</td><td class="n">85%</td><td class="n warn">2%</td></tr><tr><td>re-prefilled after an edit</td><td class="n">8%</td><td class="n">10%</td><td class="n warn">98%</td></tr><tr><td>lead calls / h</td><td class="n">3,077</td><td class="n">3,084</td><td class="n warn">935</td></tr></tbody></table>
+      <ul class="list"><li><b>The per-second timestamp</b> in the system prompt re-prefills every call: 935 calls/h with nothing evicted</li><li><b>Memory is cheap</b>: it rewrites the prompt only when memories change</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/11_multiuser_kv/README.md</span> §3.5&#8211;3.6; <span class="mono">multiuser_tables.md</span> T3, T7, T10. Other cells run <span class="mono">--no-timestamp</span>. n08ts ran 18 of 40 sessions (1.8 loaded hours).</p></div>
+</section>
+
+<!-- ===================== 8 · POLICIES ===================== -->
+<section class="slide" data-title="Policies">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">8</span><span>Result · 1 · Many users, one KV pool · letting the ongoing sessions finish</span></div>
+    <h2>Admitting at most a pool's worth of sessions restores the cache and gives 3.5&#8211;3.8&#215; the throughput</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:34px">
+    <div class="stack" style="gap:12px">
+      <p class="label">The session gate: at most a pool's worth (8) of sessions active</p>
+      <table class="data xs"><thead><tr><th>live</th><th class="n">16 users</th><th class="n">gated</th><th class="n">32 users</th><th class="n">gated</th></tr></thead><tbody><tr><td>lead calls / h</td><td class="n">976</td><td class="n"><b>3,394</b></td><td class="n">990</td><td class="n"><b>3,793</b></td></tr><tr><td>served from cache</td><td class="n">2%</td><td class="n"><b>85%</b></td><td class="n">1%</td><td class="n"><b>87%</b></td></tr><tr><td>turn p95, s</td><td class="n">5,603</td><td class="n"><b>1,017</b></td><td class="n">9,340</td><td class="n"><b>1,489</b></td></tr><tr><td>session time, gate / none</td><td class="n">&#8212;</td><td class="n"><b>0.26&#215;</b></td><td class="n">&#8212;</td><td class="n"><b>0.30&#215;</b></td></tr></tbody></table>
+      <ul class="list"><li><b>The cache recovers</b>: 3.5&#8211;3.8&#215; the throughput, turn p95 5.5&#8211;6.3&#215; lower, sessions 3.3&#8211;3.8&#215; faster</li></ul>
+    </div>
+    <div class="stack" style="gap:12px">
+      <p class="label">Other policies, on replayed sessions</p>
+      <table class="data xs"><thead><tr><th>replay, calls/h against stock vLLM</th><th class="n">16 users</th><th class="n">32 users</th></tr></thead><tbody><tr><td>session gate, 8 active</td><td class="n fix">2.83&#215;</td><td class="n fix">3.08&#215;</td></tr><tr><td>turn gate, N/2 mid-turn</td><td class="n fix">2.87&#215;</td><td class="n">1.05&#215;</td></tr><tr><td>CPU offload, 128 GiB</td><td class="n fix">2.80&#215;</td><td class="n">1.10&#215;</td></tr><tr><td>session-FCFS priority</td><td class="n">1.34&#215;</td><td class="n">1.44&#215;</td></tr><tr><td>TTL pins on tool pauses</td><td class="n">1.24&#215;</td><td class="n">&#8212;</td></tr><tr><td>smaller prefill chunks</td><td class="n">1.02&#215;</td><td class="n">&#8212;</td></tr></tbody></table>
+      <ul class="list"><li><b>Only the session gate holds at both loads</b>; a turn gate works only when sized to the pool</li><li><b>CPU offload</b> helps while the CPU tier holds the working set; priority and pins only soften thrashing</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/11_multiuser_kv/README.md</span> §3.7; <span class="mono">multiuser_tables.md</span> T3, T5, T10; <span class="mono">replay_tables.md</span>. The gate admits a new session only when an active one has been idle for 5 s.</p></div>
+</section>
+
+<!-- ===================== 9 · TOOL COST QUESTION ===================== -->
+<section class="slide" data-title="Tool cost question">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">9</span><span>Result · 2 · What tool calls cost · the question</span></div>
+    <h2>A paper puts tool calls at 30&#8211;85% of agent latency where we had measured under 1%; we re-measured every tool</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:34px">
+    <div class="stack" style="gap:12px">
+      <p class="label">The claim</p>
+      <ul class="list"><li><b>Sutradhara</b> (arXiv 2601.12967): tool calls take <b>30&#8211;85%</b> of the time to the final answer (the p50 to p99 of one workload)</li><li>Its workload: synthetic enterprise requests whose tools are <b>remote services, ~6 s per call</b></li><li><b>Our earlier profiling</b> put tools under 1% of wall time: far below the paper's range</li></ul>
+    </div>
+    <div class="stack" style="gap:10px">
+      <p class="label">What we ran · C3&#8211;C4 queued on Qwen3.8-27B and Qwen3-8B</p>
+      <table class="data xs"><tbody><tr><td class="nw"><b>C1 census</b></td><td>every tool call in the repository's traces: 1,801 runs, 173,380 calls</td></tr><tr><td class="nw"><b>C2 sweep</b></td><td>every supported tool and argument class, on NFS and local disk, traced and untraced</td></tr><tr><td class="nw"><b>C3 model tools &#183; queued</b></td><td><span class="mono">task</span>, <span class="mono">Workflow</span> and <span class="mono">compact</span> with a real model</td></tr><tr><td class="nw"><b>C4a delay &#183; queued</b></td><td>real sessions, every tool call slowed to 0.29 / 1.09 / ~6 s</td></tr><tr><td class="nw"><b>C4b heavy &#183; queued</b></td><td>tool-heavy sessions: a test-driven bug fix, repository-wide greps, a web lookup</td></tr></tbody></table>
+      <ul class="list"><li>Measured per request, to the first token of the final answer, <b>as the paper does</b></li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> Part C §C.1&#8211;C.3; Part D §D.1. Supported tools = the 32 that the s15 + s16 harness exposes.</p></div>
+</section>
+
+<!-- ===================== 10 · EVERY TOOL ===================== -->
+<section class="slide" data-title="Every tool">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">10</span><span>Result · 2 · What tool calls cost · every supported tool</span></div>
+    <h2>The average tool call costs 12.4 ms, median 1 ms; the dearest calls are the task's own work, such as a 34 s test suite</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto 1fr; gap:10px">
+    <div class="cols2" style="gap:0 26px"><table class="data xs xxs arms"><thead><tr><th>tool</th><th class="n">calls<span class="sub">in the corpus</span></th><th class="n">mean ms<span class="sub">corpus</span></th><th class="n">ms today<span class="sub">median class</span></th></tr></thead><tbody><tr><td class="mono nw" style="font-size:11px">bash</td><td class="n">5,982</td><td class="n">26.4</td><td class="n"><b>16.32</b></td></tr><tr><td class="mono nw" style="font-size:11px">read_file</td><td class="n">119,001</td><td class="n">2.6</td><td class="n"><b>25.02</b></td></tr><tr><td class="mono nw" style="font-size:11px">write_file</td><td class="n">3,468</td><td class="n">1.4</td><td class="n"><b>10.38</b></td></tr><tr><td class="mono nw" style="font-size:11px">edit_file</td><td class="n">21,488</td><td class="n">0.8</td><td class="n"><b>8.68</b></td></tr><tr><td class="mono nw" style="font-size:11px">glob</td><td class="n">4,603</td><td class="n">3.9</td><td class="n"><b>135.19</b></td></tr><tr><td class="mono nw" style="font-size:11px">todo_write</td><td class="n">9,070</td><td class="n">0.3</td><td class="n"><b>0.67</b></td></tr><tr><td class="mono nw" style="font-size:11px">task</td><td class="n">46</td><td class="n">33,923.7</td><td class="n"><b>model work</b></td></tr><tr><td class="mono nw" style="font-size:11px">load_skill</td><td class="n na">0</td><td class="n">-</td><td class="n"><b>1.22</b></td></tr><tr><td class="mono nw" style="font-size:11px">compact</td><td class="n">16</td><td class="n">0.1</td><td class="n"><b>0.21</b></td></tr><tr><td class="mono nw" style="font-size:11px">create_task</td><td class="n">839</td><td class="n">5.5</td><td class="n"><b>11.58</b></td></tr><tr><td class="mono nw" style="font-size:11px">update_task</td><td class="n">232</td><td class="n">8.9</td><td class="n"><b>14.71</b></td></tr><tr><td class="mono nw" style="font-size:11px">list_tasks</td><td class="n">4,130</td><td class="n">6.0</td><td class="n"><b>3.63</b></td></tr><tr><td class="mono nw" style="font-size:11px">get_task</td><td class="n">372</td><td class="n">1.5</td><td class="n"><b>3.09</b></td></tr><tr><td class="mono nw" style="font-size:11px">claim_task</td><td class="n">911</td><td class="n">4.3</td><td class="n"><b>20.06</b></td></tr><tr><td class="mono nw" style="font-size:11px">complete_task</td><td class="n">748</td><td class="n">12.6</td><td class="n"><b>19.38</b></td></tr><tr><td class="mono nw" style="font-size:11px">schedule_cron</td><td class="n">3</td><td class="n">2.4</td><td class="n"><b>0.73</b></td></tr></tbody></table><table class="data xs xxs arms"><thead><tr><th>tool</th><th class="n">calls<span class="sub">in the corpus</span></th><th class="n">mean ms<span class="sub">corpus</span></th><th class="n">ms today<span class="sub">median class</span></th></tr></thead><tbody><tr><td class="mono nw" style="font-size:11px">list_crons</td><td class="n">5</td><td class="n">0.2</td><td class="n"><b>0.47</b></td></tr><tr><td class="mono nw" style="font-size:11px">cancel_cron</td><td class="n">2</td><td class="n">0.9</td><td class="n"><b>0.43</b></td></tr><tr><td class="mono nw" style="font-size:11px">spawn_teammate</td><td class="n">693</td><td class="n">25.1</td><td class="n"><b>11.30</b></td></tr><tr><td class="mono nw" style="font-size:11px">list_teammates</td><td class="n">82</td><td class="n">0.5</td><td class="n"><b>0.44</b></td></tr><tr><td class="mono nw" style="font-size:11px">send_message</td><td class="n">960</td><td class="n">5.6</td><td class="n"><b>4.42</b></td></tr><tr><td class="mono nw" style="font-size:11px">request_shutdown</td><td class="n">497</td><td class="n">7.4</td><td class="n"><b>4.20</b></td></tr><tr><td class="mono nw" style="font-size:11px">request_plan</td><td class="n na">0</td><td class="n">-</td><td class="n"><b>4.53</b></td></tr><tr><td class="mono nw" style="font-size:11px">review_plan</td><td class="n">13</td><td class="n">2.5</td><td class="n"><b>4.20</b></td></tr><tr><td class="mono nw" style="font-size:11px">create_worktree</td><td class="n na">0</td><td class="n">-</td><td class="n"><b>4,216.27</b></td></tr><tr><td class="mono nw" style="font-size:11px">connect_mcp</td><td class="n na">0</td><td class="n">-</td><td class="n"><b>0.51</b></td></tr><tr><td class="mono nw" style="font-size:11px">Workflow</td><td class="n na">0</td><td class="n">-</td><td class="n"><b>87.00</b></td></tr><tr><td class="mono nw" style="font-size:11px">mcp__docs__search</td><td class="n na">0</td><td class="n">-</td><td class="n"><b>0.44</b></td></tr><tr><td class="mono nw" style="font-size:11px">mcp__docs__get_version</td><td class="n na">0</td><td class="n">-</td><td class="n"><b>0.41</b></td></tr><tr><td class="mono nw" style="font-size:11px">mcp__deploy__status</td><td class="n na">0</td><td class="n">-</td><td class="n"><b>0.43</b></td></tr><tr><td class="mono nw" style="font-size:11px">mcp__deploy__trigger</td><td class="n na">0</td><td class="n">-</td><td class="n"><b>0.61</b></td></tr><tr><td class="mono nw" style="font-size:11px">submit_plan</td><td class="n">16</td><td class="n">4.1</td><td class="n"><b>4.37</b></td></tr></tbody></table></div>
+    <ul class="list"><li><b>The average tool call costs 12.4 ms</b> (median 1.0 ms) over 173,177 corpus calls</li><li><b>26 of the 32 tools cost 0.2&#8211;20 ms</b>; the other six include <span class="mono">task</span> (a subagent's whole run) and <span class="mono">create_worktree</span> on NFS (4.2 s)</li></ul>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> §C.4.1&#8211;C.4.2; <span class="mono">tool_share_tables.md</span> T0. &#8220;Today&#8221; = the controlled sweep with lane and trace on NFS; <span class="mono">task</span> spans are a subagent's whole run.</p></div>
+</section>
+
+<!-- ===================== 11 · HOST AND TRACER ===================== -->
+<section class="slide" data-title="Host and tracer">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">11</span><span>Result · 2 · What tool calls cost · what the host adds</span></div>
+    <h2>What the harness adds is not the tools' work: the NFS home, the task-board scan and the tracer</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:34px">
+    <div class="stack" style="gap:10px">
+      <table class="data xs"><thead><tr><th>median ms</th><th class="n">NFS lane<span class="sub">traced</span></th><th class="n">local lane<span class="sub">traced</span></th><th class="n">local lane<span class="sub">tracing off</span></th></tr></thead><tbody><tr><td>read 1 KB</td><td class="n">6.20</td><td class="n">1.08</td><td class="n">1.31</td></tr><tr><td>read 13 KB</td><td class="n">10.97</td><td class="n">3.52</td><td class="n">1.48</td></tr><tr><td>read 4 MB</td><td class="n">522.30</td><td class="n">474.11</td><td class="n">27.78</td></tr><tr><td>glob the whole tree</td><td class="n">136.46</td><td class="n">25.23</td><td class="n">27.67</td></tr><tr><td>claim a task</td><td class="n">19.91</td><td class="n">2.71</td><td class="n">2.26</td></tr><tr><td>create a git worktree</td><td class="n">4,216.27</td><td class="n">230.01</td><td class="n">231.44</td></tr></tbody></table>
+    </div>
+    <div class="stack" style="gap:12px">
+      <ul class="list"><li><b>The tracer dominates large results</b>: it redacts and hashes every result, so a 4 MB read costs 28 ms untraced and 474 ms traced</li><li><b>NFS costs metadata-heavy tools 2&#8211;20&#215;</b>: globs, the task board, <span class="mono">create_worktree</span> (4.2 s vs 0.23 s)</li><li><b>Every file tool scans the task board</b>: 2.35 ms per task on NFS</li><li>None of this moves the end-to-end share by more than a fraction of a percent</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> §C.4.3; <span class="mono">tool_share_tables.md</span> T2, T3, T3b (two sweep runs, pooled).</p></div>
+</section>
+
+<!-- ===================== 12 · THE PAPER'S METRIC ===================== -->
+<section class="slide" data-title="The paper's metric">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">12</span><span>Result · 2 · What tool calls cost · the corpus, measured the paper's way</span></div>
+    <h2>Measured per request, to the final answer, tools take a median of at most 0.3% of a request; the paper reports 32%</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 620px 1fr; gap:26px">
+    <div class="stack" style="gap:6px">
+      <div class="legend"><span><span class="swatch lead"></span>this harness: dots at p50 and p99, a ring at p90</span><span><span class="swatch ink2"></span>the paper</span></div>
+      <figure><svg viewBox="0 0 620 246" role="img" aria-label="Per-request tool share of the time to the final answer, p50 to p99, per run set on a log scale, against Sutradhara: our medians 0.004 to 0.24%, p99s 0.23 to 1.74%; Sutradhara 32, 61 and 85%."><g color="var(--ink-2)"><path d="M 232.0 20 V 226" class="grid"></path><text x="232.0" y="240" font-size="10" text-anchor="middle" class="t-mono t-muted">0.001%</text><path d="M 300.0 20 V 226" class="grid"></path><text x="300.0" y="240" font-size="10" text-anchor="middle" class="t-mono t-muted">0.01%</text><path d="M 368.0 20 V 226" class="grid"></path><text x="368.0" y="240" font-size="10" text-anchor="middle" class="t-mono t-muted">0.1%</text><path d="M 436.0 20 V 226" class="grid"></path><text x="436.0" y="240" font-size="10" text-anchor="middle" class="t-mono t-muted">1%</text><path d="M 504.0 20 V 226" class="grid"></path><text x="504.0" y="240" font-size="10" text-anchor="middle" class="t-mono t-muted">10%</text><path d="M 572.0 20 V 226" class="grid"></path><text x="572.0" y="240" font-size="10" text-anchor="middle" class="t-mono t-muted">100%</text><text x="232" y="12" font-size="12" class="t-title">tool share of each request&#8217;s time to its final answer</text><text x="222" y="38" font-size="11" text-anchor="end" class="t-ink2">05 GLM (streamed)</text><path d="M 340.9 34 H 423.7" class="edge-lead" style="stroke-width:2"></path><circle cx="340.9" cy="34" r="4.5" class="f-lead"><title>05 GLM (streamed): p50 0.04%</title></circle><circle cx="411.1" cy="34" r="3.2" class="f-surface" style="stroke:var(--lead);stroke-width:1.5"><title>05 GLM (streamed): p90 0.43%</title></circle><circle cx="423.7" cy="34" r="4.5" class="f-lead"><title>05 GLM (streamed): p99 0.66%</title></circle><text x="431.7" y="38" font-size="10.5" class="t-mono t-ink2">0.66%</text><text x="222" y="68" font-size="11" text-anchor="end" class="t-ink2">05 Qwen3.8-27B RTX (streamed)</text><path d="M 373.4 64 H 426.7" class="edge-lead" style="stroke-width:2"></path><circle cx="373.4" cy="64" r="4.5" class="f-lead"><title>05 Qwen3.8-27B RTX (streamed): p50 0.12%</title></circle><circle cx="416.7" cy="64" r="3.2" class="f-surface" style="stroke:var(--lead);stroke-width:1.5"><title>05 Qwen3.8-27B RTX (streamed): p90 0.52%</title></circle><circle cx="426.7" cy="64" r="4.5" class="f-lead"><title>05 Qwen3.8-27B RTX (streamed): p99 0.73%</title></circle><text x="434.7" y="68" font-size="10.5" class="t-mono t-ink2">0.73%</text><text x="222" y="98" font-size="11" text-anchor="end" class="t-ink2">09 Qwen3.8-27B optimized (streamed)</text><path d="M 393.9 94 H 452.4" class="edge-lead" style="stroke-width:2"></path><circle cx="393.9" cy="94" r="4.5" class="f-lead"><title>09 Qwen3.8-27B optimized (streamed): p50 0.24%</title></circle><circle cx="439.3" cy="94" r="3.2" class="f-surface" style="stroke:var(--lead);stroke-width:1.5"><title>09 Qwen3.8-27B optimized (streamed): p90 1.12%</title></circle><circle cx="452.4" cy="94" r="4.5" class="f-lead"><title>09 Qwen3.8-27B optimized (streamed): p99 1.74%</title></circle><text x="460.4" y="98" font-size="10.5" class="t-mono t-ink2">1.74%</text><text x="222" y="128" font-size="11" text-anchor="end" class="t-ink2">10 Qwen3-32B, no thinking (bound)</text><path d="M 347.5 124 H 416.1" class="edge-lead" style="stroke-width:2"></path><circle cx="347.5" cy="124" r="4.5" class="f-lead"><title>10 Qwen3-32B, no thinking (bound): p50 0.05%</title></circle><circle cx="391.3" cy="124" r="3.2" class="f-surface" style="stroke:var(--lead);stroke-width:1.5"><title>10 Qwen3-32B, no thinking (bound): p90 0.22%</title></circle><circle cx="416.1" cy="124" r="4.5" class="f-lead"><title>10 Qwen3-32B, no thinking (bound): p99 0.51%</title></circle><text x="424.1" y="128" font-size="10.5" class="t-mono t-ink2">0.51%</text><text x="222" y="158" font-size="11" text-anchor="end" class="t-ink2">11 Qwen3-32B, 1&#8211;32 users (bound)</text><path d="M 272.9 154 H 392.6" class="edge-lead" style="stroke-width:2"></path><circle cx="272.9" cy="154" r="4.5" class="f-lead"><title>11 Qwen3-32B, 1–32 users (bound): p50 0.004%</title></circle><circle cx="352.9" cy="154" r="3.2" class="f-surface" style="stroke:var(--lead);stroke-width:1.5"><title>11 Qwen3-32B, 1–32 users (bound): p90 0.06%</title></circle><circle cx="392.6" cy="154" r="4.5" class="f-lead"><title>11 Qwen3-32B, 1–32 users (bound): p99 0.23%</title></circle><text x="400.6" y="158" font-size="10.5" class="t-mono t-ink2">0.23%</text><text x="222" y="188" font-size="11" text-anchor="end" class="t-ink2">all 96 streamed requests</text><path d="M 380.0 184 H 449.5" class="edge-lead" style="stroke-width:2"></path><circle cx="380.0" cy="184" r="4.5" class="f-lead"><title>all 96 streamed requests: p50 0.15%</title></circle><circle cx="423.3" cy="184" r="3.2" class="f-surface" style="stroke:var(--lead);stroke-width:1.5"><title>all 96 streamed requests: p90 0.65%</title></circle><circle cx="449.5" cy="184" r="4.5" class="f-lead"><title>all 96 streamed requests: p99 1.58%</title></circle><text x="457.5" y="188" font-size="10.5" class="t-mono t-ink2">1.58%</text><text x="222" y="218" font-size="11" text-anchor="end" class="t-title">Sutradhara v3, Fig. 3(e)</text><path d="M 538.4 214 H 567.2" class="edge" style="stroke-width:2"></path><circle cx="538.4" cy="214" r="4.5" class="f-ink2"><title>Sutradhara v3, Fig. 3(e): p50 32.0%</title></circle><circle cx="557.4" cy="214" r="3.2" class="f-surface" style="stroke:var(--ink-2);stroke-width:1.5"><title>Sutradhara v3, Fig. 3(e): p90 61.0%</title></circle><circle cx="567.2" cy="214" r="4.5" class="f-ink2"><title>Sutradhara v3, Fig. 3(e): p99 85.0%</title></circle><text x="575.2" y="218" font-size="10.5" class="t-mono t-ink2">85%</text></g></svg></figure>
+    </div>
+    <div class="stack" style="gap:12px">
+      <ul class="list"><li><b>Tools are 0.09% of 1,042 hours</b> of traced runs (0.016% without subagent runs, sleeps, <span class="mono">find /</span> sweeps and capped calls)</li><li><b>Per request</b>, the median share is at most 0.3% in every run set; 3,282 of 3,287 requests stay under 1.8%</li><li><b>The five above 1.8% are all <span class="mono">find</span> sweeps</b>; the worst (64.6%) hit the 120 s cap</li><li><b>The paper: 32 / 61 / 85%</b>, 50&#8211;8,000&#215; our values, percentile by percentile</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> §C.4.5; <span class="mono">census_tables.md</span> C1.1, C1.6, <span class="mono">requests.json</span> (§C.0 counts two requests above 1.8%; there are five).</p></div>
+</section>
+
+<!-- ===================== 13 · MODEL TOOLS ===================== -->
+<section class="slide" data-title="Model tools">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">13</span><span>Result · 2 · What tool calls cost · tools that run a model, and tool-heavy sessions</span></div>
+    <h2>[pending] What the model-bearing tools cost with a real model, and how heavy sessions spend their time</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:34px">
+    <div class="stack" style="gap:10px">
+      <p class="label">Tools that run a model: <span class="mono lc">task</span>, <span class="mono lc">Workflow</span>, <span class="mono lc">compact</span></p>
+      <div class="pend"><b>Pending</b>: waiting for the GPU cells q27-model and q8-model.</div>
+    </div>
+    <div class="stack" style="gap:10px">
+      <p class="label">Tool-heavy sessions</p>
+      <div class="pend"><b>Pending</b>: waiting for the GPU cells q27-heavy and q8-heavy.</div>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> §C.4.4, §C.4.7 (pending).</p></div>
+</section>
+
+<!-- ===================== 14 · INJECTED LATENCY ===================== -->
+<section class="slide" data-title="Injected latency">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">14</span><span>Result · 2 · What tool calls cost · injected tool latency</span></div>
+    <h2>[pending] How large the tool share gets when every call is slowed to the paper's tool latencies</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr; gap:26px">
+    <div class="stack" style="gap:10px">
+      <p class="label">Real sessions with every tool call slowed to 0.29 / 1.09 / ~6 s</p>
+      <div class="pend"><b>Pending</b>: waiting for the GPU cells q27-delay and q8-delay: the measured share against the prediction (T0 + D) / (W0 + D).</div>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> §C.4.6 (pending).</p></div>
+</section>
+
+<!-- ===================== 15 · CROSSOVER ===================== -->
+<section class="slide" data-title="Crossover">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">15</span><span>Result · 2 · What tool calls cost · how slow tools would have to be</span></div>
+    <h2>This harness would reach the low end of the paper's 30&#8211;85% only if every tool call took about 2&#8211;9 s</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto 1fr; gap:14px">
+    <table class="data xs"><thead><tr><th>workload</th><th>serving</th><th class="n">model time<span class="sub">s per tool call</span></th><th class="n">share if tools<span class="sub">took 6 s</span></th><th class="n">tool time for<span class="sub">a 30% share</span></th><th class="n">for 85%</th></tr></thead><tbody><tr><td>4-turn codebase sessions, 1 user (11)</td><td>Qwen3-32B, no thinking, H200</td><td class="n">3.84</td><td class="n">59.9 %</td><td class="n"><b>1.7 s</b></td><td class="n">23 s</td></tr><tr><td>codebase E/M tasks (10)</td><td>Qwen3-32B, no thinking, H200</td><td class="n">5.17</td><td class="n">53.2 %</td><td class="n"><b>2.3 s</b></td><td class="n">30 s</td></tr><tr><td>CODE-solo (05 A)</td><td>GLM-5.3-flash, hosted</td><td class="n">8.73</td><td class="n">38.8 %</td><td class="n"><b>4.1 s</b></td><td class="n">54 s</td></tr><tr><td>FQA-solo (05 A)</td><td>GLM-5.3-flash, hosted</td><td class="n">12.15</td><td class="n">27.3 %</td><td class="n"><b>6.9 s</b></td><td class="n">91 s</td></tr><tr><td>CODE-solo (05 B)</td><td>Qwen3.8-27B, thinking, RTX PRO 6000</td><td class="n">19.70</td><td class="n">22.9 %</td><td class="n"><b>8.7 s</b></td><td class="n">115 s</td></tr><tr><td>FQA-solo (05 B)</td><td>Qwen3.8-27B, thinking, RTX PRO 6000</td><td class="n">17.93</td><td class="n">22.8 %</td><td class="n"><b>8.7 s</b></td><td class="n">115 s</td></tr><tr class="hi"><td>paper, SWE-bench trace</td><td>Qwen3-14B / A100 (backed out)</td><td class="n">0.68</td><td class="n">89.9 %</td><td class="n"><b>0.29 s</b></td><td class="n">3.9 s</td></tr><tr class="hi"><td>paper, BFCL web search</td><td>Qwen3-14B / A100 (backed out)</td><td class="n">1.64</td><td class="n">78.6 %</td><td class="n"><b>0.70 s</b></td><td class="n">9.3 s</td></tr></tbody></table>
+    <ul class="list"><li><b>Share &#8776; t / (t + L + o)</b> per tool call: tool time against model time (and everything else)</li><li><b>Our tools are local</b> (1&#8211;130 ms per call on average); the paper's are remote services (~6 s)</li><li><b>Our model time per tool call is 3.8&#8211;20 s</b>, the paper's 0.7&#8211;1.6 s: long contexts, thinking, one tool per round</li><li>Remote tools of 1&#8211;6 s on a fast, non-thinking model would put this harness in the paper's range (17&#8211;60%)</li></ul>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> §C.0, §C.4.8, §C.5. The paper's rows are backed out of its own two reported points (SWE-bench, BFCL).</p></div>
+</section>
+
+<!-- ===================== 16 · THE EVIDENCE ===================== -->
+<section class="slide" data-title="The evidence">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">16</span><span>Result · 2 · What tool calls cost · the claim, its reception and the independent evidence</span></div>
+    <h2>The 30&#8211;85% is plausible for slow remote tools on fast models; a Claude Code harness on thinking models spends 2&#8211;29%</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 0.9fr 1.1fr; gap:32px">
+    <div class="stack" style="gap:12px">
+      <p class="label">The claim and its reception</p>
+      <ul class="list"><li><b>No peer review, no replication</b>; the two papers that discuss it question its synthetic requests</li><li>Its tool latencies were <b>simulated by rescaling</b> in v1; v3 dropped that description</li><li>The paper's own evaluation measured tools at <b>12.9%</b> of FTR</li></ul>
+    </div>
+    <div class="stack" style="gap:12px">
+      <p class="label">Independent measurements split by regime</p>
+      <table class="data xs"><thead><tr><th>regime</th><th>independent studies</th><th class="n">share of time</th></tr></thead><tbody><tr><td>remote or CPU-heavy tools, fast open models, one request at a time</td><td>PASTE, SPORK, KAIST, Aries, Not All AI Agents Are Equal</td><td class="n nw"><b>tools 13&#8211;62%</b></td></tr><tr><td>CPU-bound retrieval; a GUI sandbox</td><td>Georgia Tech / Intel; AgentSysBench</td><td class="n nw"><b>tools up to 88&#8211;91%; &gt; 70%</b></td></tr><tr><td>a Claude Code harness on open thinking models</td><td>UIUC / Intel</td><td class="n nw"><b>tools 2&#8211;29%</b></td></tr><tr><td>production coding sessions on hosted models</td><td>GitHub Copilot (13M sessions), TraceLab</td><td class="n nw"><b>tools 2&#8211;5% of session time</b></td></tr></tbody></table>
+      <ul class="list"><li><b>Session time includes idle users</b>: 92% of TraceLab's; within its requests tools take 59.8%</li><li><b>This harness sits below all of them</b>: local tools, long model calls</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> Part D §D.0&#8211;D.4; §D.3 lists 18 independent studies, each read at the arXiv version cited.</p></div>
+</section>
+
+<!-- ===================== 17 · CONCLUSION ===================== -->
+<section class="slide" data-title="Conclusion">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">17</span><span>Conclusion</span></div>
+    <h2>The KV pool, not the tools, limits a shared agent server: gate sessions by KV capacity and stop busting the prefix</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:34px">
+    <div class="stack" style="gap:12px">
+      <p class="label">What to deploy</p>
+      <div class="verdicts"><div class="verdict keep"><span class="n">1</span><div class="what" style="font-size:14px"><b>Admit sessions by KV capacity</b>: at most a pool's worth active gives 3.5&#8211;3.8&#215; the throughput (slide 8)</div></div><div class="verdict keep"><span class="n">2</span><div class="what" style="font-size:14px"><b>Take the per-second timestamp out of the system prompt</b>: at 8 users it cost as much throughput as thrashing (935 calls/h, 18 sessions)</div></div><div class="verdict keep"><span class="n">3</span><div class="what" style="font-size:14px"><b>Tool execution is not a latency lever here</b>: tools take 0.09% of traced time; it would take 2&#8211;9 s per call to matter</div></div></div>
+    </div>
+    <div class="stack" style="gap:12px">
+      <p class="label">What is retired</p>
+      <div class="verdicts"><div class="verdict drop"><span class="n">&#215;</span><div class="what" style="font-size:14px"><b>Scheduling knobs as fixes for thrashing</b>: priority and TTL pins soften it (1.2&#8211;1.4&#215;); smaller prefill chunks do nothing</div></div><div class="verdict drop"><span class="n">&#215;</span><div class="what" style="font-size:14px"><b>&#8220;Tools take 30&#8211;85% of agent latency&#8221;</b> for this harness: 50&#8211;8,000&#215; what we measure</div></div></div>
+      <p class="label" style="margin-top:8px">Not established yet</p>
+      <ul class="list tight"><li>One model and one GPU type for the multi-user study; synthetic think times</li><li>Tool share with slow tools (injected 0.29&#8211;6 s sleeps): six GPU cells pending</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">research/11_multiuser_kv/README.md</span> §4; <span class="mono">research/06_tool_cost/README.md</span> §C.0, §C.5, §D.4.</p></div>
+</section>
+
+<!-- ===================== 18 · NEXT STEPS ===================== -->
+<section class="slide" data-title="Next steps">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">18</span><span>Next steps</span></div>
+    <h2>Next: fix the prefix-busting timestamp, gate sessions by KV capacity, find where the knee moves, and bound the board scan and tracer</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr">
+    <div class="steps"><div class="step"><span class="n">19</span><div><span class="group">harness</span><p style="font-size:15px;line-height:1.3"><b>Take the per-second timestamp out of the system prompt</b></p><ul class="list tight"><li>935 vs 3,077 calls/h at 8 users</li></ul></div></div><div class="step"><span class="n">20</span><div><span class="group">serving</span><p style="font-size:15px;line-height:1.3"><b>Ship a session gate sized by KV capacity</b></p><ul class="list tight"><li>Tune its 8 sessions and 5 s idle, set from the pool size</li></ul></div></div><div class="step"><span class="n">21</span><div><span class="group">serving</span><p style="font-size:15px;line-height:1.3"><b>Find where the knee moves</b></p><ul class="list tight"><li>An MLA or fp8-KV model, teams, longer tool pauses</li></ul></div></div><div class="step"><span class="n">22</span><div><span class="group">harness</span><p style="font-size:15px;line-height:1.3"><b>Bound the task-board scan and the tracer</b></p><ul class="list tight"><li>2.35 ms per task per file call on NFS; hash only a result's preview</li></ul></div></div><div class="step"><span class="n">&#8212;</span><div><span class="group">carried</span><p style="font-size:15px;line-height:1.3"><b>Steps 14&#8211;18 of the 2026-09-23 deck</b></p><ul class="list tight"><li>Power the EXPLAIN arm; range-granular addressing; LFU vs LRU end to end; staleness; async memory</li></ul></div></div><div class="step"><span class="n">&#8212;</span><div><span class="group">deferred</span><p style="font-size:15px;line-height:1.3"><b>Tool-aware serving, until tools are remote</b></p><ul class="list tight"><li>It pays only at 1&#8211;6 s per tool call (17&#8211;60% share)</li></ul></div></div></div>
+  </div>
+  <div class="foot"><p>Numbering continues the 2026-09-23 deck (14&#8211;18). Sources: <span class="mono">research/11_multiuser_kv/README.md</span> §4&#8211;5, <span class="mono">research/06_tool_cost/README.md</span> §C.5.</p></div>
+</section>
+
+</div>
+</div>
+<div class="hud"><div class="bar" id="bar"></div></div>
+<div class="hint">← → navigate · O overview · P print</div>
+<div class="counter"><span id="ctr">1 / 18</span><button id="ovbtn" type="button" aria-label="Toggle overview">overview</button></div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var body = document.body;
+  var bar = document.getElementById('bar');
+  var ctr = document.getElementById('ctr');
+  var idx = 0;
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    document.documentElement.style.setProperty('--s', String(s));
+  }
+  function show(i, push) {
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === idx); });
+    bar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    ctr.textContent = (idx + 1) + ' / ' + slides.length;
+    document.title = (slides[idx].dataset.title ? slides[idx].dataset.title + ' · ' : '') + 'Contention and Tool Cost';
+    if (push !== false) { try { history.replaceState(null, '', '#' + (idx + 1)); } catch (e) {} }
+  }
+  function fromHash() {
+    var n = parseInt((location.hash || '#1').slice(1), 10);
+    show(isNaN(n) ? 0 : n - 1, false);
+  }
+  function toggleOverview(force) {
+    var on = typeof force === 'boolean' ? force : !body.classList.contains('overview');
+    body.classList.toggle('overview', on);
+    if (!on) { show(idx); window.scrollTo(0, 0); }
+  }
+
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', fromHash);
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'l': case 'j':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx + 1); } break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'h': case 'k':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx - 1); } break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End': e.preventDefault(); show(slides.length - 1); break;
+      case 'o': case 'O': toggleOverview(); break;
+      case 'Escape': toggleOverview(false); break;
+      case 'p': case 'P': window.print(); break;
+    }
+  });
+  slides.forEach(function (el, k) {
+    el.addEventListener('click', function (e) {
+      if (body.classList.contains('overview')) { show(k); toggleOverview(false); return; }
+      var r = stage.getBoundingClientRect();
+      if (e.clientX - r.left > r.width * 0.5) show(idx + 1); else show(idx - 1);
+    });
+  });
+  document.getElementById('ovbtn').addEventListener('click', function () { toggleOverview(); });
+  window.addEventListener('beforeprint', function () { body.classList.remove('overview'); });
+
+  if (location.search.indexOf('export') !== -1) body.classList.add('export');
+  fit();
+  fromHash();
+})();
+</script>
