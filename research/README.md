@@ -10,7 +10,8 @@ results stay in `weekly_progress/`.
 ## The topics
 
 Read them in order; each folder's `README.md` is the one document for its topic (Part A/B/C when two or
-three experiments share a question), with its scripts beside it and its data in `data/`.
+three experiments share a question), with its scripts beside it and its data in `data/` (on Google Drive,
+not in git; see [DATA.md](DATA.md)).
 
 | folder | question | answer, in one line (details and caveats in the README) | when | presented |
 |---|---|---|---|---|
@@ -34,6 +35,10 @@ runs), a **Source map** (every section of every merged note → where it lives n
 the text). The weekly syntheses stay beside their decks: `weekly_progress/091626/tiered_memory_conclusion.md`
 and `weekly_progress/092326/conclusion.md`.
 
+Since 2026-10-03 the files the inventories list are on Google Drive, not in git; only the `*.md`
+tables, the `*.svg` figures and the frozen inputs stay tracked. `python3 research/common/drive_data.py pull
+<topic>` restores a topic's data ([DATA.md](DATA.md)).
+
 ## Layout
 
 ```
@@ -49,7 +54,7 @@ research/
   NN_topic/
     README.md        the one writeup for the topic (merged from the per-week notes and s15 reports)
     *.py *.sh        the topic's scripts
-    data/<leaf>/     raw traces, sidecars, sandboxes and generated tables (leaf names unchanged)
+    data/<leaf>/     raw traces, sidecars, sandboxes and generated tables (leaf names unchanged; on Google Drive)
   related_work/      reading notes and the Continuum paper
 weekly_progress/<MMDDYY>/slides.html   the weekly decks; 091626 and 092326 also keep their week's synthesis
 s15_integrated_harness/                the harness itself, its trace tooling, and 4 sample traces
@@ -170,7 +175,8 @@ deleted.**
   - `requirements.txt` requires `anthropic>=1.2.0,<2`.
   - `.gitignore` adds `.tasks*/`, `.zcode`, `.claude` and `profiling_sandbox/`.
 
-**The research (added):** this folder (369.6 MB in 1,829 tracked files, almost all raw traces) and
+**The research (added):** this folder (369.6 MB in 1,829 tracked files when added, almost all raw traces;
+since 2026-10-03 the raw files are on Google Drive and out of the history, see [DATA.md](DATA.md)) and
 `weekly_progress/` (three decks and two weekly syntheses).
 
 **Known consequences:** two upstream tests fail on this fork; the other 515 pass.

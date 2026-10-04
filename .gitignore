@@ -1,5 +1,22 @@
-# Large traces
+# Experiment results: research/<topic>/data/ is mirrored on Google Drive
+# (gdrive:learn-claude-code-data/research/), not tracked. See research/DATA.md.
+# Still tracked: *.md tables and *.svg figures outside agent sandboxes, plus the
+# frozen inputs that scripts and tests read (list new ones here).
+research/*/data/**
+!research/*/data/**/
+research/*/data/**/*.sandbox/
+!research/*/data/**/*.md
+!research/*/data/**/*.svg
+!research/04_kv_splice/data/kv_splice/run_*.requests.jsonl
+!research/10_rope_shift/data/rope_shift_live/manifest.jsonl
+!research/10_rope_shift/data/rope_shift_live/manifest_meta.json
+!research/11_multiuser_kv/data/multiuser_live/sessions.jsonl
+!research/11_multiuser_kv/data/multiuser_live/sessions_meta.json
+!research/12_hw_utilization/data/sessions.jsonl
+!research/12_hw_utilization/data/conditions.json
 **/scrape.jsonl
+# result trees from before the 2026-09-23 move (their content is in research/*/data)
+s15_integrated_harness/traces/*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
