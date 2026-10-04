@@ -360,7 +360,7 @@ class Cell:
         lanes = []
         for i in range(self.n):
             lane = lane_root / f"lane{i:02d}"
-            make_lane(lane, self.args.base_url, mw.MODEL)
+            make_lane(lane, self.args.base_url, self.c.get("model", mw.MODEL))
             lanes.append(lane)
         print(f"[sweep] {len(lanes)} lanes ready under {lane_root}", flush=True)
         dog = threading.Thread(target=self.watchdog, daemon=True, name="watchdog")

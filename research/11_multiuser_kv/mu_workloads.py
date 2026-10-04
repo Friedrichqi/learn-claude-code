@@ -27,6 +27,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import random
 import shlex
 import sys
@@ -162,6 +163,12 @@ for _src, _pols in REPLAY_SOURCES.items():
                                           "vllm": _spec.get("vllm", []), "env": _spec.get("env", {}),
                                           "stock_scheduler": bool(_spec.get("stock_scheduler"))}
 
+# Opt-in hook for research/12_hw_utilization: MU_EXTRA_CONDITIONS names a JSON file of extra conditions
+# (same shape, plus optional "model" and "client_extra"); mu_sweep and its mu_session subprocesses both
+# read it. Without the variable 11's table is unchanged.
+if os.environ.get("MU_EXTRA_CONDITIONS"):
+    CONDITIONS.update(json.loads(Path(os.environ["MU_EXTRA_CONDITIONS"]).read_text(encoding="utf-8")))
+
 
 def cond(name: str) -> dict:
     spec = dict(CONDITIONS[name])
@@ -185,7 +192,7 @@ def client_flags(c: dict) -> list[str]:
     flags = list(CLIENT_COMMON) + ["--memory", c["memory"], "--context-limit", str(context_limit(model_len(c)))]
     if not c["timestamp"]:
         flags.append("--no-timestamp")
-    return flags
+    return flags + list(c.get("client_extra", []))
 
 
 def vllm_args(c: dict) -> list[str]:
