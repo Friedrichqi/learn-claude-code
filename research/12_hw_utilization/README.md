@@ -18,9 +18,10 @@
 > **Models / hardware:** Qwen3-32B and Qwen3-8B (bf16, thinking off, `--max-model-len 40960`) on vLLM 0.29.0,
 > H200 nodes (2-GPU jobs, 12 cores per GPU = the node's 96 cores / 8 GPUs), TP=1 and TP=2.
 >
-> **Follow-up (2026-10-03):** a re-analysis of the existing data (`hw_analyze.py phases`, tables T7-T8)
+> **Follow-up (2026-10-03/04):** a re-analysis of the existing data (`hw_analyze.py phases`, tables T7-T8)
 > splits the GPU counters by decode / prefill (§3.2) and corrects what the EngineCore thread's 0.83 cores
-> are (§3.3); cells s1 / s2 sample that thread's stack to name the call it waits in (§3.8, pending).
+> are (§3.3). A fifth job (116695, 2026-10-04 02:27-03:23, cells s1 / s2) sampled that thread's stack (T9):
+> it spins launching the next step's kernels, a step ahead of the GPU (§3.8).
 >
 > **Commits:** none yet (uncommitted).
 
@@ -53,11 +54,12 @@
   - Every model call re-sends, re-parses and re-tokenises the whole conversation on the CPU. That costs
     about 3.5 ms per 1,000 prompt tokens: 3 % of a 32B call, 11 % of an 8B call, 20 % at 24-32k tokens.
     It is on the critical path, and the 05/06 numbers counted it as model time.
-- **vLLM's single EngineCore thread looks close to its ceiling, but it is mostly waiting.** It reads 0.83
-  of a core for the 32B at 16 agents, yet its scheduling takes about 1 ms per step (0.3 % of that time).
-  The busy time sits inside the 1.2-s re-prefill steps, where the thread almost certainly polls the GPU
-  at full speed. Its real work is 1.7-4.6 ms per step (8B), so the GPU would have to get about 4-7× faster
-  per step before this thread limits it. It is still the first CPU part that would (§3.3).
+- **vLLM's single EngineCore thread looks close to its ceiling, but it is ahead of the GPU, not behind.**
+  It reads 0.83 of a core for the 32B at 16 agents, yet its scheduling takes about 1 ms per step (0.3 % of
+  that time). The busy time sits inside the 1.2-s re-prefill steps, where the thread spins launching the
+  next step's kernels, a whole step ahead of the GPU (§3.8). Its real work is 1.7-4.6 ms per step (8B), so
+  the GPU would have to get about 4-7× faster per step before this thread limits it. It is still the first
+  CPU part that would (§3.3).
 - **HBM: vLLM holds 92 %, and what is genuinely used grows with the agents.**
   - One 32B agent uses about 70 GiB of the 130 GiB vLLM holds: weights 61, live KV 6-9, activations ≤ 1.5.
   - The rest of the KV pool fills with valid but idle cached prefixes, 56 GiB on average. vLLM's own usage
@@ -127,7 +129,7 @@ MUScheduler + an HBM record), the harness traces and request captures. All join 
 | NVLink | TX / RX bytes per GPU (the GPU's traffic into the NVSwitch fabric) | NVML NVLink throughput counters (and GPM) | 1 Hz (10 Hz) |
 | serving | running / waiting, KV usage, prefix hits, token counters, preemptions | vLLM /metrics | 1 Hz |
 | serving | per model call: front-end in, engine with a GPU step running, engine without one, front-end out | request capture × scheduler arrival / finish / step stamps | per call |
-| EngineCore thread (s1 / s2 only) | its Python stack and CPU time | `hw_scheduler.py` with `HW_STACK_MS=20` (in-process: the nodes forbid ptrace, so no py-spy) | 50 Hz |
+| EngineCore thread (s1 / s2 only) | its Python stack and CPU time | `hw_scheduler.py` with `HW_STACK_MS=20` (in-process: py-spy is not installed, and the login node forbids ptrace attach) | 50 Hz |
 
 **Cells.**
 
@@ -261,7 +263,7 @@ the rest of the samples are idle or mixed):
 - **Decode looks like the copy, prefill like the matmul.** A decode step reads every weight once and uses
   it for 2 FLOPs per sequence in the batch, about B FLOP/byte for a batch of B, while the H200 needs about
   206 FLOP/byte (989 TFLOPS / 4.8 TB/s) to be compute-bound. A batch-1 32B decode step takes 20.5 ms
-  (median, scheduler log): 65 GB of weights in 20.5 ms is 3.2 TB/s, the measured 70 %.
+  (median, scheduler log): 65 GB of weights in 20.5 ms is 3.2 TB/s, 67 % of 4.8 TB/s (measured: 70 %).
 - **The useful math in decode is about 0.3 % of peak** (49 tokens/s × 66 GFLOP per token). Tensor active
   reads 5 %, about 16× more, which is consistent with tensor-core instructions working on tiles of at least
   16 rows while batch-1 decode fills one; this cannot be checked per kernel here (no profiler counters).
@@ -344,9 +346,9 @@ launch-to-result time exceeds 1 s; "short steps only" = samples spanning at leas
   Every 32B TP=1 level shows the same split (0.68-0.92 inside long steps, 0.04-0.12 between them, T8). The
   8B's prefill chunks finish about 4× sooner and never show it, although the 8B prefills as many tokens
   per second.
-- **So the thread is almost certainly polling the GPU at full speed while it waits.** vLLM's end-of-step
-  waits sleep (`torch.cuda.Event(blocking=True)` in `gpu_model_runner.py`), which is why decode reads 0.04-0.08;
-  some other wait on the prefill path polls. Which one is for the stack-sampling cells (§3.8).
+- **The thread is not waiting there: it is launching the next step's kernels, at full speed** (stack
+  samples, §3.8), a step ahead of the GPU. vLLM's end-of-step wait sleeps (`copy_event`, created with
+  `blocking=True`, in `vllm/v1/worker/gpu/async_utils.py`), which is why decode reads 0.04-0.08.
 - **What is left is small next to a step.** The 8B's thread needs 1.7-4.6 ms of CPU per step (scheduling
   9-20 % of it) against steps of 7-34 ms, so the GPU would have to get about 4-7× faster per step before
   this thread limits throughput (with async scheduling the CPU prepares one step while the GPU runs the
@@ -523,21 +525,60 @@ profiling, CUDA context, cuBLAS / NCCL buffers. \*\* weights + graphs + live KV 
 - **Host DRAM bandwidth could not be measured** (§3.1); the only host-memory traffic we can bound is what
   crosses PCIe: 0.03 GB/s without offload and 5-6 GB/s with it.
 
-### §3.8 Follow-up: which call the EngineCore thread waits in (cells s1 / s2, pending)
+### §3.8 Follow-up: where the EngineCore thread spends its time (cells s1 / s2, job 116695)
 
-§3.3 places the thread's busy time inside long prefill steps but cannot name the call, and py-spy cannot
-attach on these nodes (Yama `ptrace_scope` = 2). `hw_scheduler.py` therefore samples the thread from
-inside the engine process when `HW_STACK_MS` is set: every 20 ms, its Python stack (a thread stalled in a
-C call shows the Python line that made it) and the CPU its pthread clock used since the last sample.
+§3.3 places the thread's busy time inside long prefill steps but cannot name the call. py-spy is not
+installed and the login node denies ptrace attach (Yama `ptrace_scope` = 2), so `hw_scheduler.py` samples
+the thread from inside the engine process when `HW_STACK_MS` is set: every 20 ms, its Python stack (a
+thread inside a C call shows the Python line that made it) and the CPU its pthread clock used since the
+last sample.
 
 - **s1:** Qwen3-32B, LIGHT, N = 4 (long prefills now and then) and N = 16 (thrashing: mostly 1.2-s prefill
   steps), 20-minute windows.
 - **s2:** Qwen3-8B, LIGHT, N = 4 and 32: short steps only, to see what the 1.7-4.6 ms of real work per step
   is.
 
-`hw_analyze.py phases` turns the samples into `data/tables/T9_engine_stacks.md`: the thread's CPU by stack
-location, inside long GPU steps, in short steps and otherwise, with the share of samples where the sampler
-waited more than 3 periods (the thread holding the GIL). Results: pending.
+Job 116695 ran both on alphagpu19 (2026-10-04 02:27-03:23): about 150,000 samples per server, no
+sampler errors. The levels reproduce T7-T8 for the same loads (32B N = 16: 0.89 cores, 0.94 inside long
+steps, against 0.83 / 0.92 in p2a). Where the thread is, as a share of samples
+(`data/tables/T9_engine_stacks.md`):
+
+| samples | thread busy | GEMM launches | attention-op launches | end-of-step wait | other (scheduling, input preparation, sampling) |
+|---|---|---|---|---|---|
+| 32B N = 16, inside 1.2-s prefill steps (50,099) | 0.93 | 81 % | 8 % | 7 % | 3 % |
+| 32B N = 4, inside long steps (11,787) | 0.69 | 52 % | 12 % | 32 % | 4 % |
+| 32B N = 4, short (decode) steps (40,552) | 0.07 | 0 % | 1 % | 92 % | 6 % |
+| 8B N = 4, short steps (55,639) | 0.23 | 0 % | 2 % | 77 % | 21 % |
+| 8B N = 32, short steps (48,284) | 0.14 | 1 % | 3 % | 85 % | 11 % |
+
+- **The end-of-step wait sleeps, everywhere.** `get_output` waits on `copy_event`, created with
+  `blocking=True` (`vllm/v1/worker/gpu/async_utils.py:134, 168`). In every row the thread's CPU equals
+  the share of time it spends outside that wait (0.69 vs 0.68, 0.93 vs 0.93, 0.07 vs 0.08, 0.23 vs 0.23,
+  0.14 vs 0.15), and at 32B N = 4 the 32 % of long-step samples in the wait carry 1 % of the CPU.
+- **Inside long prefill steps the thread is launching kernels, at full speed.** 89 % of its samples sit in
+  kernel-launch calls of the compiled model: the four cuBLAS matrix multiplies of each layer (QKV,
+  attention output, MLP gate+up and down: lines 1230, 1183, 1199 and 1212 of Inductor's generated code)
+  and the two attention ops. A launch normally returns in microseconds. The forward being launched is a
+  later step's: vLLM launches a step before it waits for the previous one (`step_with_batch_queue`, two
+  steps in flight), and the samples fall inside an earlier step's launch-to-result window, which only
+  starts once that step's own launch has returned.
+- **Most likely the driver's launch queue is full.** Each compiled layer launches 8 kernels (4 GEMMs, 4
+  Triton kernels) plus the 2 attention ops: about 640 launches per 32B prefill step (64 layers) and 360
+  per 8B step (36 layers), and a 32B GEMM over 8,192 tokens runs for milliseconds. With a second step's
+  launches queued behind the first, further launches block until the GPU retires kernels, and the thread
+  stays on the CPU while they block (0.93 busy). The 8B never shows it, although it runs the same code. The
+  queue depth itself was not measured.
+- **So the 0.83-0.93 cores at the thrashing point are the CPU a whole step ahead of the GPU:** a symptom
+  of long GPU steps, not of CPU demand, and a faster core would not change throughput. The spin does hold
+  one core, which would matter only with CPU-hungry neighbours on the same cores (k3).
+- **Decode's real work has no hotspot.** Outside the wait the 8B's thread spreads its 1.8-4.9 ms per step
+  over input preparation (`copy_to_uva`, `build_slot_mappings_by_layer`, `async_tensor_h2d`), sampling,
+  request bookkeeping and the scheduler, each at most 2 % of samples. `schedule()` + `update_from_output()`
+  are 0.17-0.98 ms of it (T8).
+- **Measurement notes.** T9's CPU column charges each 20-ms interval's CPU to the stack at its end. That is
+  right in long steps, where the thread stays put, but in short steps it moves the work done before a wait
+  onto the wait (75-86 % of decode CPU appears "in" the wait); the time shares above have no such bias.
+  The sampler never waited for the GIL (0 % of samples): the engine thread releases it in these calls.
 
 ## §4 Conclusions
 
@@ -548,7 +589,7 @@ waited more than 3 periods (the thread holding the GIL). Results: pending.
 | Tool waits leave the GPU idle up to 54.5 % of the time (Kim et al.) | True for one agent with a fast model: the 8B GPU is idle 61 % of its N = 1 run, 35 % of it while tools run. From 4 agents up the GPU is busy 94-100 %: other agents fill the gaps. |
 | A CPU-starved host leaves vLLM's GPUs idle (Chung et al.) | Not at agent request rates. One core serves 16 agents at TP=1 and two cores serve 8 at TP=2, with no throughput loss and no GPU gaps, even at 53 % CPU pressure. The cost is +30-50 ms of front end per call. |
 | Co-located CPU load inflates serving latency (Blink, CoTail) | No interference measured: tools sharing vLLM's cores never made the EngineCore thread wait. These tools are not CPU-hungry neighbours. |
-| Memory, not CPU, limits agent concurrency (AgentCgroup, DSec, Aries) | Yes, but GPU memory, not host memory. KV capacity sets the knee (32B: 8 agents at TP=1; beyond 24 at TP=2). Host DRAM per agent is about 60 MB. CPU KV offload trades 130 GiB of host DRAM and 5 GB/s of PCIe for 3× the throughput past the knee. |
+| Memory, not CPU, limits agent concurrency (AgentCgroup, DSec, Aries) | Yes, but GPU memory, not host memory. KV capacity sets the turning point (32B: 8 agents at TP=1; beyond 24 at TP=2). Host DRAM per agent is about 60 MB. CPU KV offload trades 130 GiB of host DRAM and 5 GB/s of PCIe for 3× the throughput past the turning point. |
 | CPU:GPU ratio heading to 1:1 (industry) | For this harness at the GPU's saturation point, one H200 needed about 1-2 cores for 16-32 agents (vLLM included), or about 3 polling cores at TP=2 (2 suffice). The node offers 12 per GPU. |
 
 What the CPU *does* cost is latency, on three paths:
@@ -557,8 +598,9 @@ What the CPU *does* cost is latency, on three paths:
   "model time" hid in 05/06. Fixing it would mean sending only the new turn, or an incremental
   tokeniser / template; prefix caching only saves the GPU's half.
 - **vLLM's EngineCore is a single thread, and its busy figure overstates its load.** It reads 0.83 of a core
-  at 16 agents on the 32B, but its scheduling takes about 1 ms per step; the rest is the thread polling
-  the GPU through 1.2-s prefill steps (§3.3). Its real work, 1.7-4.6 ms per step on the 8B against steps
+  at 16 agents on the 32B, but its scheduling takes about 1 ms per step; the rest is the thread spinning
+  in kernel launches during 1.2-s prefill steps, a step ahead of the GPU (§3.8). Its real work, 1.7-4.6 ms
+  per step on the 8B against steps
   of 7-34 ms, leaves room for a GPU about 4-7× faster per step. Because one thread cannot use a second
   core, it is still the first CPU part that would cap a faster GPU or a busier scheduler.
 - **CPU utilisation and pressure are poor bottleneck signals in this stack.** At TP=2, polling shows 3 busy
@@ -591,7 +633,7 @@ picture, as Raj et al. show; the knock-down method here is the way to find out.
   about 20 % in calls per hour are within the session-mix noise. The knock-down conclusions rest on flat
   output and unchanged GPU activity, not on small differences.
 - **No think time.** Agents run closed loop (an agent fleet). With human think time (11) the same GPU
-  holds more users before the knee, and the CPU is even less loaded.
+  holds more users before the turning point, and the CPU is even less loaded.
 - **Activations.** The scheduler hook sees allocator stats only at TP=1, and only outside CUDA graphs.
 
 ## §6 Reproduction
@@ -605,7 +647,7 @@ sbatch --export=NONE research/12_hw_utilization/hw.sbatch - k1h,k1l k2,k3       
 sbatch --export=NONE --mem=320G research/12_hw_utilization/hw.sbatch t2,k2t o1 -          # J3
 sbatch --export=NONE research/12_hw_utilization/hw_cpu.sbatch tables                       # T1-T6
 python research/12_hw_utilization/hw_analyze.py phases                                     # T7-T9 (~2 min)
-sbatch --export=NONE --time=02:00:00 research/12_hw_utilization/hw.sbatch - s1 s2          # follow-up §3.8
+sbatch --export=NONE --time=02:00:00 research/12_hw_utilization/hw.sbatch - s1 s2          # J4 = 116695, §3.8
 ```
 
 Resubmitting the same arguments resumes: finished cells and levels are skipped, an interrupted windowed
@@ -646,8 +688,13 @@ Changes outside this folder: `11_multiuser_kv/mu_workloads.py` (opt-in `MU_EXTRA
   decode / prefill) and T8 (EngineCore thread vs. its scheduling work) re-read the existing data. T8
   showed that the earlier explanation of the thread's 0.83 cores ("scheduling work grows with the queue of
   re-prefills") was wrong: scheduling is about 0.3 % of it. Cells s1 / s2 and the opt-in stack sampler
-  in `hw_scheduler.py` were added to find the call the thread polls in. Cells can now carry a
+  in `hw_scheduler.py` were added to find where the thread spends that time. Cells can now carry a
   `server_env` (`hw_workloads.py cell C --field server_env`), which the pipeline passes to `vllm serve`.
+- **2026-10-04, J4 (116695):** s1 / s2 ran on alphagpu19 in 55 minutes. T9 first ranked stack locations by
+  the CPU charged to them, which in decode put the CPU of the work before each wait onto the wait (the
+  20-ms sampling period is longer than a step); it now reports where the thread is (share of samples) and
+  keeps the charged CPU as a second column. The guess in §3.3 that the thread "polls the GPU" in a wait
+  was wrong: it spins in kernel launches (§3.8).
 
 ## Data inventory
 
@@ -676,10 +723,10 @@ scheduler log). Each cell has the same layout:
 | `cells/k3/` | 32B heavy mix at N = 16, vLLM and agents on shared cores | co-location |
 | `cells/t2/`, `k2t/` | 32B at TP=2: N = 1, 8, 24; N = 8 with vLLM on 4, 2 cores | NVLink / NVSwitch; serving-CPU knock-down at TP=2 |
 | `cells/o1/` | 32B at N = 16 with a 128 GiB native CPU KV tier | PCIe and host DRAM |
-| `cells/s1/`, `s2/` (pending) | 32B LIGHT at N = 4, 16; 8B LIGHT at N = 4, 32; `sched.jsonl.xz` also holds `stk` / `stkdef` records | §3.8 |
+| `cells/s1/`, `s2/` | 32B LIGHT at N = 4, 16; 8B LIGHT at N = 4, 32; `sched.jsonl.xz` also holds `stk` / `stkdef` records | §3.8 |
 | `jobs/<job>.log`, `jobs/slurm-<job>.log` | pipeline log (levels, smoke checks, probe summary), Slurm output | |
 | `tables/summary.json`, `tables/T1-T6_*.md` | every number in §3 (`hw_analyze.py tables`) | |
-| `tables/T7_gpu_phases.md`, `T8_engine_thread.md`, `T9_engine_stacks.md` | GPU counters by decode / prefill; the EngineCore thread; its stacks (T9 once s1 / s2 ran) (`hw_analyze.py phases`) | follow-up |
+| `tables/T7_gpu_phases.md`, `T8_engine_thread.md`, `T9_engine_stacks.md` | GPU counters by decode / prefill; the EngineCore thread; its stacks (`hw_analyze.py phases`) | follow-up |
 | `figures/load_curve.svg`, `figures/timeline_p1a_hw_p1a.svg` | §3.3 figure; a 20-minute timeline of the 32B single-agent run | |
 
 No level was aborted or rerun. No session failed outside the expected ends: 685 ended `ok`, 504 at the

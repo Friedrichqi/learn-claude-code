@@ -1,0 +1,602 @@
+{
+ "_doc": "research/13_tiered_memory/tm_predict.py: seconds a session is away after a reply, by tm_ceilings.tool_key. Lookup: windows[key] -> windows[key without '/scope'] -> tool_time[...] + overhead_s -> global",
+ "_sources": {
+  "window_samples": 137544,
+  "tool_time_samples": 291660
+ },
+ "windows": {
+  "(no tool)": {
+   "n": 452,
+   "p50_s": 2.0057,
+   "p90_s": 56.2579,
+   "p99_s": 231.0899,
+   "mean_s": 19.8865,
+   "from": "windows",
+   "cells": [
+    "n01a",
+    "n04",
+    "n08",
+    "n12",
+    "n16",
+    "n32",
+    "o1",
+    "p1a",
+    "p2a",
+    "p2b",
+    "p2c",
+    "t2"
+   ]
+  },
+  "(turn end)": {
+   "n": 3005,
+   "p50_s": 2.0129,
+   "p90_s": 83.0117,
+   "p99_s": 1370.5214,
+   "mean_s": 75.7704,
+   "from": "windows",
+   "cells": [
+    "n01a",
+    "n04",
+    "n08",
+    "n12",
+    "n16",
+    "n32",
+    "o1",
+    "p1a",
+    "p1b",
+    "p2a",
+    "p2b",
+    "p2c",
+    "t2"
+   ]
+  },
+  "bash:find": {
+   "n": 18641,
+   "p50_s": 0.0264,
+   "p90_s": 0.0542,
+   "p99_s": 2.0187,
+   "mean_s": 0.1792,
+   "from": "windows",
+   "cells": [
+    "n04",
+    "n08",
+    "n12",
+    "n16",
+    "n32",
+    "p1b",
+    "p2c"
+   ]
+  },
+  "bash:find/wide": {
+   "n": 203,
+   "p50_s": 5.436,
+   "p90_s": 36.3151,
+   "p99_s": 58.7273,
+   "mean_s": 15.9829,
+   "from": "windows",
+   "cells": [
+    "n04",
+    "n32",
+    "p1b",
+    "p2b",
+    "p2c"
+   ]
+  },
+  "bash:grep": {
+   "n": 8615,
+   "p50_s": 0.0111,
+   "p90_s": 0.0171,
+   "p99_s": 0.0667,
+   "mean_s": 0.0729,
+   "from": "windows",
+   "cells": [
+    "n01a",
+    "n04",
+    "n08",
+    "n12",
+    "n16",
+    "n32",
+    "p1b",
+    "p2a",
+    "p2c",
+    "t2"
+   ]
+  },
+  "bash:grep/wide": {
+   "n": 135,
+   "p50_s": 0.0112,
+   "p90_s": 0.0231,
+   "p99_s": 91.2933,
+   "mean_s": 2.4357,
+   "from": "windows",
+   "cells": [
+    "p1a",
+    "p2b",
+    "p2c"
+   ]
+  },
+  "bash:other": {
+   "n": 1250,
+   "p50_s": 0.0178,
+   "p90_s": 0.0238,
+   "p99_s": 0.038,
+   "mean_s": 0.0194,
+   "from": "windows",
+   "cells": [
+    "n01a",
+    "n04",
+    "n32",
+    "p2c"
+   ]
+  },
+  "bash:pytest": {
+   "n": 1881,
+   "p50_s": 0.7895,
+   "p90_s": 0.893,
+   "p99_s": 1.5224,
+   "mean_s": 0.8375,
+   "from": "windows",
+   "cells": [
+    "p1a",
+    "p1b",
+    "p2b",
+    "p2c"
+   ]
+  },
+  "bash:pytest/suite": {
+   "n": 207,
+   "p50_s": 18.5741,
+   "p90_s": 20.2512,
+   "p99_s": 21.8758,
+   "mean_s": 18.7904,
+   "from": "windows",
+   "cells": [
+    "p1a",
+    "p1b",
+    "p2b",
+    "p2c"
+   ]
+  },
+  "bash:view": {
+   "n": 309,
+   "p50_s": 0.0127,
+   "p90_s": 0.1334,
+   "p99_s": 0.4859,
+   "mean_s": 0.1071,
+   "from": "windows",
+   "cells": [
+    "n04",
+    "n32",
+    "p2c"
+   ]
+  },
+  "complete_task": {
+   "n": 70,
+   "p50_s": 0.0058,
+   "p90_s": 0.0068,
+   "p99_s": 0.0091,
+   "mean_s": 0.006,
+   "from": "windows",
+   "cells": [
+    "p2c"
+   ]
+  },
+  "create_task": {
+   "n": 21,
+   "p50_s": 0.0045,
+   "p90_s": 0.0052,
+   "p99_s": 0.0071,
+   "mean_s": 0.0047,
+   "from": "windows",
+   "cells": [
+    "p2c"
+   ]
+  },
+  "edit_file": {
+   "n": 20633,
+   "p50_s": 0.0084,
+   "p90_s": 0.0117,
+   "p99_s": 0.0427,
+   "mean_s": 0.1211,
+   "from": "windows",
+   "cells": [
+    "n01a",
+    "n04",
+    "n08",
+    "n12",
+    "n16",
+    "n32",
+    "o1",
+    "p1a",
+    "p1b",
+    "p2a",
+    "p2b",
+    "p2c",
+    "t2"
+   ]
+  },
+  "filter": {
+   "n": 33,
+   "p50_s": 0.0075,
+   "p90_s": 0.0097,
+   "p99_s": 0.0102,
+   "mean_s": 0.0075,
+   "from": "windows",
+   "cells": [
+    "p2c"
+   ]
+  },
+  "glob": {
+   "n": 5525,
+   "p50_s": 0.0073,
+   "p90_s": 0.0106,
+   "p99_s": 0.0847,
+   "mean_s": 0.1029,
+   "from": "windows",
+   "cells": [
+    "n01a",
+    "n04",
+    "n08",
+    "n12",
+    "n16",
+    "n32",
+    "o1",
+    "p1a",
+    "p1b",
+    "p2a",
+    "p2b",
+    "p2c",
+    "t2"
+   ]
+  },
+  "grep": {
+   "n": 58,
+   "p50_s": 0.0052,
+   "p90_s": 0.0093,
+   "p99_s": 0.0105,
+   "mean_s": 0.0059,
+   "from": "windows",
+   "cells": [
+    "n04",
+    "n08",
+    "n16",
+    "n32",
+    "p1b",
+    "p2a",
+    "p2b",
+    "p2c"
+   ]
+  },
+  "list_tasks": {
+   "n": 200,
+   "p50_s": 0.0062,
+   "p90_s": 0.0089,
+   "p99_s": 0.0117,
+   "mean_s": 0.0064,
+   "from": "windows",
+   "cells": [
+    "p2c"
+   ]
+  },
+  "list_teammates": {
+   "n": 24,
+   "p50_s": 0.0066,
+   "p90_s": 0.0076,
+   "p99_s": 0.0081,
+   "mean_s": 0.0064,
+   "from": "windows",
+   "cells": [
+    "p2c"
+   ]
+  },
+  "read_file": {
+   "n": 56884,
+   "p50_s": 0.0092,
+   "p90_s": 0.0722,
+   "p99_s": 6.3881,
+   "mean_s": 0.8355,
+   "from": "windows",
+   "cells": [
+    "n01a",
+    "n04",
+    "n08",
+    "n12",
+    "n16",
+    "n32",
+    "o1",
+    "p1a",
+    "p1b",
+    "p2a",
+    "p2b",
+    "p2c",
+    "t2"
+   ]
+  },
+  "search": {
+   "n": 75,
+   "p50_s": 0.0101,
+   "p90_s": 0.0118,
+   "p99_s": 0.5361,
+   "mean_s": 0.0357,
+   "from": "windows",
+   "cells": [
+    "p2c"
+   ]
+  },
+  "todo_write": {
+   "n": 17023,
+   "p50_s": 0.0065,
+   "p90_s": 0.0108,
+   "p99_s": 2.0159,
+   "mean_s": 0.0719,
+   "from": "windows",
+   "cells": [
+    "n01a",
+    "n04",
+    "n08",
+    "n12",
+    "n16",
+    "n32",
+    "o1",
+    "p1a",
+    "p1b",
+    "p2a",
+    "p2b",
+    "p2c",
+    "t2"
+   ]
+  },
+  "update_task": {
+   "n": 25,
+   "p50_s": 0.0042,
+   "p90_s": 0.0051,
+   "p99_s": 0.0055,
+   "mean_s": 0.0044,
+   "from": "windows",
+   "cells": [
+    "p2c"
+   ]
+  },
+  "write_file": {
+   "n": 2200,
+   "p50_s": 0.0098,
+   "p90_s": 0.0129,
+   "p99_s": 0.6286,
+   "mean_s": 0.6917,
+   "from": "windows",
+   "cells": [
+    "n01a",
+    "n04",
+    "n08",
+    "n12",
+    "n16",
+    "n32",
+    "o1",
+    "p1a",
+    "p2a",
+    "p2b",
+    "p2c",
+    "t2"
+   ]
+  }
+ },
+ "tool_time": {
+  "bash:find": {
+   "n": 31096,
+   "p50_s": 0.0208,
+   "p90_s": 0.0476,
+   "p99_s": 0.7201,
+   "mean_s": 0.1705,
+   "from": "tool_time"
+  },
+  "bash:grep": {
+   "n": 15371,
+   "p50_s": 0.0049,
+   "p90_s": 0.0087,
+   "p99_s": 0.0307,
+   "mean_s": 0.0866,
+   "from": "tool_time"
+  },
+  "bash:other": {
+   "n": 1815,
+   "p50_s": 0.0112,
+   "p90_s": 0.0144,
+   "p99_s": 0.0279,
+   "mean_s": 0.0118,
+   "from": "tool_time"
+  },
+  "bash:pytest": {
+   "n": 2918,
+   "p50_s": 0.8064,
+   "p90_s": 1.2323,
+   "p99_s": 19.3376,
+   "mean_s": 2.1401,
+   "from": "tool_time"
+  },
+  "bash:python": {
+   "n": 87,
+   "p50_s": 0.1803,
+   "p90_s": 0.231,
+   "p99_s": 0.2529,
+   "mean_s": 0.1598,
+   "from": "tool_time"
+  },
+  "bash:python-test": {
+   "n": 76,
+   "p50_s": 0.3986,
+   "p90_s": 0.4943,
+   "p99_s": 0.5411,
+   "mean_s": 0.401,
+   "from": "tool_time"
+  },
+  "bash:view": {
+   "n": 320,
+   "p50_s": 0.004,
+   "p90_s": 0.0076,
+   "p99_s": 0.0473,
+   "mean_s": 0.0068,
+   "from": "tool_time"
+  },
+  "claim_task": {
+   "n": 122,
+   "p50_s": 0.0119,
+   "p90_s": 0.0288,
+   "p99_s": 0.0617,
+   "mean_s": 0.0145,
+   "from": "tool_time"
+  },
+  "compact": {
+   "n": 20,
+   "p50_s": 0.0001,
+   "p90_s": 0.0001,
+   "p99_s": 0.0003,
+   "mean_s": 0.0001,
+   "from": "tool_time"
+  },
+  "complete_task": {
+   "n": 407,
+   "p50_s": 0.0004,
+   "p90_s": 0.0373,
+   "p99_s": 0.0569,
+   "mean_s": 0.0103,
+   "from": "tool_time"
+  },
+  "create_task": {
+   "n": 171,
+   "p50_s": 0.0152,
+   "p90_s": 0.0208,
+   "p99_s": 0.0344,
+   "mean_s": 0.0136,
+   "from": "tool_time"
+  },
+  "edit_file": {
+   "n": 39892,
+   "p50_s": 0.0006,
+   "p90_s": 0.0007,
+   "p99_s": 0.0022,
+   "mean_s": 0.0006,
+   "from": "tool_time"
+  },
+  "filter": {
+   "n": 78,
+   "p50_s": 0.0001,
+   "p90_s": 0.0002,
+   "p99_s": 0.0002,
+   "mean_s": 0.0002,
+   "from": "tool_time"
+  },
+  "glob": {
+   "n": 11084,
+   "p50_s": 0.0013,
+   "p90_s": 0.0037,
+   "p99_s": 0.0249,
+   "mean_s": 0.0071,
+   "from": "tool_time"
+  },
+  "grep": {
+   "n": 91,
+   "p50_s": 0.0001,
+   "p90_s": 0.0001,
+   "p99_s": 0.0002,
+   "mean_s": 0.0001,
+   "from": "tool_time"
+  },
+  "list_tasks": {
+   "n": 1245,
+   "p50_s": 0.0098,
+   "p90_s": 0.0144,
+   "p99_s": 0.0892,
+   "mean_s": 0.0103,
+   "from": "tool_time"
+  },
+  "list_teammates": {
+   "n": 27,
+   "p50_s": 0.0001,
+   "p90_s": 0.0003,
+   "p99_s": 0.0006,
+   "mean_s": 0.0002,
+   "from": "tool_time"
+  },
+  "read_file": {
+   "n": 148269,
+   "p50_s": 0.0011,
+   "p90_s": 0.0043,
+   "p99_s": 0.016,
+   "mean_s": 0.0022,
+   "from": "tool_time"
+  },
+  "request_shutdown": {
+   "n": 96,
+   "p50_s": 0.0085,
+   "p90_s": 0.0316,
+   "p99_s": 0.0378,
+   "mean_s": 0.0144,
+   "from": "tool_time"
+  },
+  "search": {
+   "n": 83,
+   "p50_s": 0.0001,
+   "p90_s": 0.0001,
+   "p99_s": 0.0002,
+   "mean_s": 0.0001,
+   "from": "tool_time"
+  },
+  "send_message": {
+   "n": 123,
+   "p50_s": 0.0089,
+   "p90_s": 0.0133,
+   "p99_s": 0.0275,
+   "mean_s": 0.01,
+   "from": "tool_time"
+  },
+  "spawn_teammate": {
+   "n": 120,
+   "p50_s": 0.0521,
+   "p90_s": 0.0779,
+   "p99_s": 0.1132,
+   "mean_s": 0.056,
+   "from": "tool_time"
+  },
+  "task": {
+   "n": 71,
+   "p50_s": 8.469,
+   "p90_s": 20.697,
+   "p99_s": 203.8848,
+   "mean_s": 18.1909,
+   "from": "tool_time"
+  },
+  "todo_write": {
+   "n": 33433,
+   "p50_s": 0.0002,
+   "p90_s": 0.0002,
+   "p99_s": 0.0006,
+   "mean_s": 0.0002,
+   "from": "tool_time"
+  },
+  "update_task": {
+   "n": 60,
+   "p50_s": 0.0004,
+   "p90_s": 0.0256,
+   "p99_s": 0.0289,
+   "mean_s": 0.0086,
+   "from": "tool_time"
+  },
+  "write_file": {
+   "n": 4546,
+   "p50_s": 0.0006,
+   "p90_s": 0.0008,
+   "p99_s": 0.0106,
+   "mean_s": 0.0009,
+   "from": "tool_time"
+  }
+ },
+ "overhead_s": 0.0063,
+ "global": {
+  "n": 137544,
+  "p50_s": 0.0095,
+  "p90_s": 0.0647,
+  "p99_s": 27.8306,
+  "mean_s": 2.2084,
+  "from": "windows"
+ }
+}

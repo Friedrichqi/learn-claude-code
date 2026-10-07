@@ -22,7 +22,8 @@ hold a cached prefix). With N = num_gpu_blocks - 1 usable blocks:
 
 With HW_STACK_MS=<ms> (a cell's `server_env`), a daemon thread also samples the engine thread -- the one
 that calls schedule() -- every <ms>: its Python stack and the CPU time it used since the previous sample
-(its pthread CPU clock). py-spy cannot do this here: the nodes run Yama ptrace_scope 2 (admin-only attach).
+(its pthread CPU clock). py-spy is not installed here, and the login node runs Yama ptrace_scope 2
+(admin-only attach).
 
   stkdef  id, st: a stack, innermost frame first, "path:line:function" (path from the package root)
   stk     t, dt (since the previous sample; >> <ms> means the engine thread held the GIL), cpu (engine

@@ -1,0 +1,4 @@
+#!/bin/bash
+# Stand-in interpreter for mu_sweep's --python: runs the script under the venv's python with 13's client layer
+# installed first (tm_boot.py). The TM_CLIENT_* environment decides what the layer does.
+exec "${TM_PYTHON:-$HOME/.venv/bin/python}" "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/tm_boot.py" "$@"

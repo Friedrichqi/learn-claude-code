@@ -1,0 +1,842 @@
+<title>Memory Tiers for Agent Serving</title>
+<meta name="description" content="Weekly progress, 7 October 2026: where the agent server binds (CPU, HBM, memory tiers, P/D), what an offline read of the logs adds, and a system-level view of the harness as a serving workload.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #eef1f5;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --ink: #141922;
+  --ink-2: #47505f;
+  --muted: #7a8391;
+  --hair: #d5dbe3;
+  --hair-2: #e6eaf0;
+  --lead: #2a78d6;
+  --lead-soft: #cde2fb;
+  --lead-ink: #1c5cab;
+  --mate: #eb6834;
+  --mate-soft: #fbd9c9;
+  --mate-ink: #b8451c;
+  --mate-1: #f7c9b3;
+  --mate-2: #f29d76;
+  --mate-3: #eb6834;
+  --mate-4: #b8451c;
+  --shot: #1baf7a;
+  --grey-mark: #aeb6c2;
+  --warn: #d03b3b;
+  --focus: #1c5cab;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1117;
+    --surface: #161c25;
+    --surface-2: #1c232e;
+    --ink: #eef1f5;
+    --ink-2: #b9c1cd;
+    --muted: #8791a0;
+    --hair: #2b3441;
+    --hair-2: #232b36;
+    --lead: #3987e5;
+    --lead-soft: #1c355a;
+    --lead-ink: #8dbcf5;
+    --mate: #d95926;
+    --mate-soft: #4a2416;
+    --mate-ink: #f0a17e;
+    --mate-1: #5a2d1c;
+    --mate-2: #9a4222;
+    --mate-3: #d95926;
+    --mate-4: #f29d76;
+    --shot: #199e70;
+    --grey-mark: #5c6673;
+    --warn: #e66767;
+    --focus: #8dbcf5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1117;
+  --surface: #161c25;
+  --surface-2: #1c232e;
+  --ink: #eef1f5;
+  --ink-2: #b9c1cd;
+  --muted: #8791a0;
+  --hair: #2b3441;
+  --hair-2: #232b36;
+  --lead: #3987e5;
+  --lead-soft: #1c355a;
+  --lead-ink: #8dbcf5;
+  --mate: #d95926;
+  --mate-soft: #4a2416;
+  --mate-ink: #f0a17e;
+  --mate-1: #5a2d1c;
+  --mate-2: #9a4222;
+  --mate-3: #d95926;
+  --mate-4: #f29d76;
+  --shot: #199e70;
+  --grey-mark: #5c6673;
+  --warn: #e66767;
+  --focus: #8dbcf5;
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.4;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+h1, h2, h3 { margin: 0; font-family: var(--display); font-weight: 700; text-wrap: balance; letter-spacing: -0.015em; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+b, strong { font-weight: 600; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- deck chrome ---------- */
+.deck { position: fixed; inset: 0; }
+.stage {
+  position: absolute;
+  width: 1280px; height: 720px;
+  left: calc((100vw - 1280px * var(--s, 1)) / 2);
+  top: calc((100vh - 720px * var(--s, 1)) / 2);
+  transform: scale(var(--s, 1));
+  transform-origin: top left;
+}
+.slide {
+  position: absolute; inset: 0;
+  width: 1280px; height: 720px;
+  padding: 44px 64px 40px;
+  background: var(--surface);
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+  border: 1px solid var(--hair);
+}
+.slide.active { display: flex; }
+.slide-head { display: flex; flex-direction: column; gap: 8px; }
+.eyebrow {
+  display: flex; align-items: baseline; gap: 14px;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.eyebrow .num { font-family: var(--mono); letter-spacing: 0; color: var(--ink-2); }
+.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--hair); transform: translateY(-4px); }
+.slide h2 { font-size: 32px; line-height: 1.12; max-width: 1100px; }
+.slide h2 .dim { color: var(--muted); font-weight: 500; }
+.body { flex: 1; min-height: 0; display: grid; gap: 28px; }
+.foot {
+  display: flex; gap: 22px; align-items: baseline;
+  font-size: 11.5px; color: var(--muted); line-height: 1.35;
+  border-top: 1px solid var(--hair-2); padding-top: 10px;
+}
+.foot .mono { font-size: 11px; color: var(--ink-2); }
+.foot p { max-width: none; }
+
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 3px; background: var(--hair-2);
+}
+.hud .bar { height: 100%; width: 0; background: var(--lead); transition: width 200ms ease; }
+.counter {
+  position: fixed; right: 18px; bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted);
+  display: flex; gap: 14px; align-items: center;
+}
+.counter button {
+  font: inherit; color: var(--ink-2); background: var(--surface); border: 1px solid var(--hair); border-radius: 4px;
+  padding: 2px 8px; cursor: pointer;
+}
+.counter button:hover { border-color: var(--muted); }
+.hint { position: fixed; left: 18px; bottom: 10px; font-size: 12px; color: var(--muted); }
+
+/* overview mode */
+body.overview { overflow: auto; }
+body.overview .deck { position: static; }
+body.overview .stage { position: static; transform: none; width: auto; height: auto; display: grid;
+  grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 24px; }
+body.overview .slide { display: flex; position: relative; zoom: 0.3; cursor: pointer; }
+body.overview .slide:hover { outline: 6px solid var(--lead); }
+body.overview .hud, body.overview .hint { display: none; }
+
+body.export .hud, body.export .counter, body.export .hint { display: none; }
+body.export .slide { border: 0; }
+
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .deck, .stage { position: static; transform: none; width: auto; height: auto; }
+  .slide { display: flex; position: relative; page-break-after: always; break-after: page; border: 0; }
+  .hud, .counter, .hint { display: none; }
+}
+
+/* ---------- content primitives ---------- */
+.two { grid-template-columns: 1fr 1fr; }
+.wide-left { grid-template-columns: 1.25fr 1fr; }
+.wide-right { grid-template-columns: 1fr 1.25fr; }
+.stack { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.label {
+  font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.label.lead { color: var(--lead-ink); }
+.label.mate { color: var(--mate-ink); }
+.claim { font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.25; letter-spacing: -0.01em; }
+.note { font-size: 13.5px; color: var(--ink-2); max-width: 62ch; }
+.list { display: flex; flex-direction: column; gap: 9px; list-style: none; font-size: 14.5px; color: var(--ink); }
+.list li { padding-left: 16px; position: relative; }
+.list li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+.list.tight { gap: 6px; font-size: 13.5px; }
+.list li b { font-weight: 600; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; align-items: baseline; }
+.kv dt { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.kv dd { margin: 0; color: var(--ink); }
+figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 11.5px; padding: 1px 7px; border: 1px solid var(--hair); border-radius: 3px; color: var(--ink-2); background: var(--surface-2); }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.swatch.lead { background: var(--lead); } .swatch.mate { background: var(--mate); } .swatch.shot { background: var(--shot); } .swatch.grey { background: var(--grey-mark); }
+
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.data th, table.data td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--hair-2); vertical-align: top; }
+table.data th { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--hair); }
+table.data td.n, table.data th.n { text-align: right; }
+table.data td.mono { font-size: 12px; }
+table.data tr.hi td { background: var(--surface-2); }
+
+/* diagram text */
+svg text { font-family: var(--body); fill: var(--ink); }
+svg .t-title { font-family: var(--display); font-weight: 700; }
+svg .t-mono { font-family: var(--mono); }
+svg .t-muted { fill: var(--muted); }
+svg .t-ink2 { fill: var(--ink-2); }
+svg .t-lead { fill: var(--lead-ink); }
+svg .t-mate { fill: var(--mate-ink); }
+svg .box { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .box-soft { fill: var(--surface-2); stroke: var(--hair); stroke-width: 1; }
+svg .box-lead { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.2; }
+svg .box-mate { fill: var(--mate-soft); stroke: var(--mate); stroke-width: 1.2; }
+svg .box-dash { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+svg .edge { stroke: var(--ink-2); stroke-width: 1.3; fill: none; }
+svg .edge-lead { stroke: var(--lead); stroke-width: 1.4; fill: none; }
+svg .edge-mate { stroke: var(--mate); stroke-width: 1.4; fill: none; }
+svg .edge-dash { stroke: var(--muted); stroke-width: 1.2; fill: none; stroke-dasharray: 4 3; }
+svg .grid { stroke: var(--hair-2); stroke-width: 1; }
+svg .axis { stroke: var(--hair); stroke-width: 1; }
+svg .f-lead { fill: var(--lead); } svg .f-mate { fill: var(--mate); } svg .f-grey { fill: var(--grey-mark); } svg .f-shot { fill: var(--shot); }
+svg .f-m1 { fill: var(--mate-1); } svg .f-m2 { fill: var(--mate-2); } svg .f-m3 { fill: var(--mate-3); } svg .f-m4 { fill: var(--mate-4); }
+svg .f-surface { fill: var(--surface); }
+svg .node-done { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.3; }
+svg .node-open { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .node-ghost { fill: var(--surface-2); stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+
+/* bar table (slide 5) */
+.bartable { display: grid; grid-template-columns: 250px 1fr 58px 58px; gap: 8px 14px; align-items: center; font-size: 13.5px; }
+.bartable .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.bartable .m { color: var(--ink); line-height: 1.25; }
+.bartable .bars { display: flex; flex-direction: column; gap: 3px; }
+.bartable .bar { height: 11px; border-radius: 0 3px 3px 0; position: relative; }
+.bartable .bar.lead { background: var(--lead); }
+.bartable .bar.mate { background: var(--mate); }
+.bartable .v { font-variant-numeric: tabular-nums; text-align: right; font-family: var(--mono); font-size: 13px; }
+.bartable .v.lead { color: var(--lead-ink); } .bartable .v.mate { color: var(--mate-ink); }
+
+/* dumbbells (slide 6) */
+.dumbbells { display: grid; grid-template-columns: 130px 1fr; gap: 16px 18px; align-items: center; font-size: 13.5px; }
+.dumbbells .m { color: var(--ink); }
+.dumbbells .track { position: relative; height: 26px; }
+.dumbbells .track::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 1px; background: var(--hair); }
+.dumbbells .seg { position: absolute; top: 11.5px; height: 2px; background: var(--ink-2); }
+.dumbbells .dot { position: absolute; top: 6px; width: 14px; height: 14px; border-radius: 50%; transform: translateX(-50%); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--hair); }
+.dumbbells .dot.a { background: var(--grey-mark); } .dumbbells .dot.b { background: var(--lead); }
+.dumbbells .lab { position: absolute; top: -8px; transform: translateX(-50%); font-family: var(--mono); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.dumbbells .lab.b { color: var(--lead-ink); top: 22px; }
+
+/* tiers (last slide) */
+.tiers { display: grid; grid-template-rows: repeat(4, 1fr); gap: 10px; min-height: 0; }
+.tier { display: grid; grid-template-columns: 160px 1fr; gap: 14px; padding: 10px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.tier .name { font-family: var(--display); font-weight: 700; font-size: 15.5px; line-height: 1.2; }
+.tier .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0; }
+.tier .what { font-size: 12.5px; line-height: 1.38; color: var(--ink-2); }
+.tier .what b { color: var(--ink); }
+.tier.hot { border-left-color: var(--lead); }
+.tier.warm { border-left-color: var(--mate); }
+.tier.cold { border-left-color: var(--grey-mark); }
+.tier.drop { border-left-color: var(--warn); }
+
+/* cover */
+.cover { justify-content: space-between; background: var(--surface); }
+.cover .title { font-size: 58px; line-height: 1.02; letter-spacing: -0.03em; max-width: 1000px; font-weight: 800; }
+.cover .sub { font-size: 21px; color: var(--ink-2); max-width: 820px; line-height: 1.35; margin-top: 18px; }
+.cover .meta { display: flex; gap: 40px; font-size: 13px; color: var(--muted); }
+.cover .meta b { display: block; color: var(--ink); font-weight: 500; }
+.cover .rule { height: 6px; width: 120px; background: var(--lead); }
+
+/* questions */
+.qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 44px; align-content: start; padding-top: 8px; }
+.q { display: grid; grid-template-columns: 36px 1fr; gap: 10px; font-size: 17px; line-height: 1.38; }
+.q .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 22px; line-height: 1.1; }
+.q b { font-weight: 600; }
+
+/* ---------- additions for the 2026-09-16 deck ---------- */
+/* tier ladder: rungs are tiers, gaps are the boundaries between them */
+.ladder { display: flex; flex-direction: column; min-height: 0; }
+.rung { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 9px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.rung .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
+.rung .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 10.5px; color: var(--muted); margin-top: 3px; }
+.rung .what { font-size: 12px; line-height: 1.36; color: var(--ink-2); }
+.rung .what b { color: var(--ink); }
+.rung.gpu { border-left-color: var(--lead); } .rung.cache { border-left-color: var(--shot); } .rung.prompt { border-left-color: var(--mate); } .rung.disk { border-left-color: var(--grey-mark); }
+.gapx { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 5px 14px 5px 18px; align-items: center; }
+.gapx .arrow { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.3; }
+.gapx .price { font-size: 12px; color: var(--ink); background: var(--surface); border: 1px dashed var(--hair); border-radius: 4px; padding: 5px 10px; line-height: 1.35; }
+.gapx .price b { color: var(--lead-ink); font-family: var(--mono); font-weight: 500; }
+.gapx .price.ask { font-family: var(--display); font-weight: 700; color: var(--muted); font-size: 15px; padding: 3px 10px; }
+/* paired bars (slides 3 and 5): ghost = baseline, filled = the measured arm */
+.pairs { display: grid; grid-template-columns: 1fr 300px 90px; gap: 7px 14px; align-items: center; font-size: 12.5px; }
+.pairs .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.pairs .m { color: var(--ink); line-height: 1.25; }
+.pairs .m small { display: block; color: var(--muted); font-size: 11px; }
+.pairs .bars { display: flex; flex-direction: column; gap: 3px; }
+.pairs .bar { height: 9px; border-radius: 0 3px 3px 0; }
+.pairs .bar.ghost { background: var(--grey-mark); opacity: 0.55; }
+.pairs .bar.mate { background: var(--mate); }
+.pairs .bar.lead { background: var(--lead); }
+.pairs .v { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); line-height: 1.3; }
+.pairs .v b { color: var(--ink); font-weight: 500; }
+/* dense grids */
+.three { grid-template-columns: 1fr 1fr 1fr; }
+.list.tight.xs { font-size: 12.5px; gap: 5px; }
+.note.xs { font-size: 12px; }
+table.data.xs { font-size: 12px; } table.data.xs th, table.data.xs td { padding: 4px 8px; }
+.tag { display: inline-block; font-family: var(--mono); font-size: 10.5px; padding: 0 6px; border-radius: 3px; border: 1px solid var(--hair); color: var(--ink-2); background: var(--surface-2); margin-right: 4px; vertical-align: 1px; }
+.tag.m { color: var(--lead-ink); border-color: var(--lead-soft); background: var(--lead-soft); }
+.tag.r { color: var(--mate-ink); border-color: var(--mate-soft); background: var(--mate-soft); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 22px; align-content: start; }
+.nw { white-space: nowrap; }
+table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
+.step { display: grid; grid-template-columns: 26px 1fr; gap: 8px; font-size: 12.5px; line-height: 1.35; }
+.step .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 15px; line-height: 1.15; }
+.step b { font-weight: 600; }
+.step .group { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+/* ---------- additions for the 2026-09-23 deck ---------- */
+/* verdicts: what is deployable and what is retired */
+.verdicts { display: grid; gap: 7px; align-content: start; }
+.verdict { display: grid; grid-template-columns: 20px 1fr; gap: 9px; padding: 6px 12px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.verdict .n { font-family: var(--display); font-weight: 700; font-size: 13.5px; line-height: 1.3; }
+.verdict .what { font-size: 12.5px; line-height: 1.34; color: var(--ink-2); }
+.verdict .what b { color: var(--ink); font-weight: 600; }
+.verdict.keep { border-left-color: var(--shot); } .verdict.keep .n { color: var(--shot); }
+.verdict.drop { border-left-color: var(--warn); } .verdict.drop .n { color: var(--warn); }
+/* arm legend colours: grey = untreated baseline, orange = direct predecessors, blue = transitive closure */
+.swatch.warn { background: var(--warn); }
+svg .t-shot { fill: var(--shot); }
+.bartable .bar.grey { background: var(--grey-mark); }
+.bartable .v.grey { color: var(--muted); }
+.pairs .bar.grey { background: var(--grey-mark); }
+/* denser still, for the six-note week */
+.list.tight.xxs { font-size: 11.8px; gap: 4px; }
+.list.tight.xxs li { padding-left: 13px; }
+.list.tight.xxs li::before { width: 5px; height: 5px; top: 0.58em; }
+table.data.xxs { font-size: 11.5px; }
+.kv.xs { font-size: 12px; gap: 4px 12px; } .kv.xs dt { font-size: 11px; }
+.steps.two-up { grid-template-columns: 1fr 1fr; }
+/* reading keys: every table carries its own terms, metrics and what the values say */
+.key { display: grid; gap: 6px 20px; align-content: start; }
+.key.k2 { grid-template-columns: 1fr 1fr; }
+.key.k3 { grid-template-columns: 1fr 1fr 1fr; }
+.key .kh { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 3px; margin-bottom: 5px; border-bottom: 1px solid var(--hair-2); }
+.gloss { display: grid; grid-template-columns: max-content 1fr; gap: 3px 9px; margin: 0; font-size: 11.5px; line-height: 1.32; align-items: baseline; }
+.gloss dt { font-family: var(--mono); font-size: 10.5px; color: var(--ink); white-space: nowrap; }
+.gloss dd { margin: 0; color: var(--ink-2); }
+.gloss b { color: var(--ink); font-weight: 600; }
+/* table furniture: group rows, sub-labels, cells not run, interval verdicts */
+table.data tr.grp td { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-top: 7px; padding-bottom: 3px; border-bottom: 1px solid var(--hair); background: none; }
+table.data th.grp { text-align: center; border-bottom: 1px solid var(--hair-2); }
+table.data .sub { display: block; font-family: var(--body); font-size: 10.5px; line-height: 1.3; color: var(--muted); margin-top: 1px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+table.data td.na { color: var(--muted); }
+table.data td.warn { color: var(--warn); }
+.verd { font-family: var(--mono); font-size: 10.5px; white-space: nowrap; }
+.verd.yes { color: var(--shot); } .verd.no { color: var(--muted); } .verd.cost { color: var(--warn); }
+svg .t-warn { fill: var(--warn); }
+svg .box-shot { fill: none; stroke: var(--shot); stroke-width: 1.2; stroke-dasharray: 4 3; }
+svg .band-shot { fill: var(--shot); opacity: 0.07; }
+svg .whisk { stroke-width: 2.2; stroke-linecap: round; fill: none; }
+.lc { text-transform: none; letter-spacing: 0; }
+/* ---------- additions for the 2026-09-30 deck ---------- */
+/* colour meaning. section 1: grey = shift RoPE and random picks, blue = EPIC, orange = CacheBlend,
+   green = a repaired cost, red = a cost. section 2: grey = stock vLLM, blue = the session gate,
+   red = thrashing. section 3: blue = this harness, ink = the paper's number. */
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--ink-2); align-items: center; }
+table.data td.fix { background: color-mix(in srgb, var(--shot) 17%, var(--surface)); }
+table.data.arms th { padding: 3px 6px; vertical-align: bottom; }
+table.data.arms td { padding: 1.5px 6px; }
+table.data.arms tr.grp td { padding-top: 4px; padding-bottom: 1px; }
+table.data.arms th .sub { font-size: 9.5px; }
+table.data.arms td.mono { white-space: nowrap; }
+.fixchip { background: color-mix(in srgb, var(--shot) 17%, var(--surface)); padding: 0 3px; border-radius: 2px; }
+.warnchip { color: var(--warn); }
+.swatch.ink2 { background: var(--ink-2); }
+.swatch.hair { background: var(--hair); }
+svg .f-warn { fill: var(--warn); }
+svg .f-ink2 { fill: var(--ink-2); }
+svg .f-soft { fill: var(--surface-2); }
+svg .f-lead-soft { fill: var(--lead-soft); }
+svg .f-hair { fill: var(--hair); }
+svg .box-grey { fill: var(--surface-2); stroke: var(--grey-mark); stroke-width: 1; }
+svg .box-warn { fill: none; stroke: var(--warn); stroke-width: 1.4; }
+svg .edge-warn { stroke: var(--warn); stroke-width: 1.3; fill: none; }
+svg .edge-grey { stroke: var(--grey-mark); stroke-width: 1.3; fill: none; }
+svg .edge-hair { stroke: var(--hair); stroke-width: 1; fill: none; }
+svg .line-lead { stroke: var(--lead); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .line-grey { stroke: var(--grey-mark); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .ring { stroke: var(--surface); stroke-width: 2; }
+/* the three sections: a small numbered tag in eyebrows and tables */
+.sec { display: inline-block; font-family: var(--mono); font-size: 10.5px; line-height: 1.2; padding: 0 5px; border-radius: 3px; border: 1px solid var(--hair); color: var(--ink-2); background: var(--surface-2); letter-spacing: 0; }
+/* a table cell that is a sentence, not a number */
+table.data td.txt { font-size: 11px; line-height: 1.3; color: var(--ink-2); }
+table.data.xxs td.tight, table.data.xxs th.tight { padding-left: 4px; padding-right: 4px; }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+.pend { border: 1px dashed var(--muted); border-radius: 4px; padding: 10px 14px; color: var(--muted); font-size: 12.5px; }
+/* compact reading keys under tall tables */
+.key.tight .gloss { font-size: 11px; gap: 2px 8px; line-height: 1.28; }
+.key.tight .gloss dt { font-size: 10px; }
+.key.tight .list.tight.xxs { font-size: 11.2px; gap: 3px; line-height: 1.3; }
+.key.kk { grid-template-columns: 1fr 1.6fr; }
+figcaption.xs { font-size: 11px; line-height: 1.3; }
+/* ---------- additions for the 2026-10-07 deck ---------- */
+/* colour meaning. part I: grey = baseline arm, blue = the arm under test, green = a fix, red = a limit or a
+   cost. part II: blue = KV the server reuses, orange = known content it recomputes, ink = new work, red = waste. */
+/* setup chips: the configuration a topic ran on, under its h2 */
+.cfg { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.cfg .label { margin-right: 2px; font-size: 10.5px; }
+.cfg .chip { font-size: 10.5px; padding: 0 6px; line-height: 1.6; }
+/* the part-II section tag in eyebrows */
+.eyebrow .sec { text-transform: none; letter-spacing: 0; }
+/* a fitted model, set as a formula */
+.formula { font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--ink); background: var(--surface-2); border-left: 4px solid var(--lead); border-radius: 0 4px 4px 0; padding: 9px 14px; }
+.formula b { color: var(--lead-ink); font-weight: 500; }
+.formula .c { color: var(--ink-2); font-size: 12px; }
+/* a legend that carries values */
+.vlegend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 18px; font-size: 12px; color: var(--ink-2); }
+.vlegend b { color: var(--ink); font-weight: 600; font-family: var(--mono); font-size: 11.5px; }
+.swatch.lead-soft { background: var(--lead-soft); border: 1px solid var(--lead); }
+.swatch.ink { background: var(--ink-2); }
+table.data td.good { color: var(--shot); }
+table.data.xs td.txt2, table.data.xs th.txt2 { font-size: 11.5px; line-height: 1.32; }
+svg .line-ink2 { stroke: var(--ink-2); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .band-warn { fill: var(--warn); opacity: 0.07; }
+svg .f-lead-soft-s { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1; }
+.steps.six { grid-template-columns: repeat(3, 1fr); gap: 26px 30px; }
+.steps.six .step { font-size: 14px; }
+.steps.six .list.tight { font-size: 14px; gap: 6px; }
+/* the methods box: one card per method; blue = an accepted method, orange = needs what only the harness knows */
+.methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 16px; align-content: start; }
+.method { padding: 9px 13px 10px; border-left: 4px solid var(--lead); background: var(--surface-2); border-radius: 0 4px 4px 0; font-size: 12px; line-height: 1.36; color: var(--ink-2); }
+.method.agent { border-left-color: var(--mate); }
+.method .mh { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; color: var(--ink); }
+.method .mh .n { color: var(--lead-ink); margin-right: 7px; }
+.method.agent .mh .n { color: var(--mate-ink); }
+.method .grp { display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 2px 0 5px; }
+.method ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.method li { padding-left: 11px; position: relative; }
+.method li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); }
+.method b { color: var(--ink); font-weight: 600; }
+.method .go { display: block; margin-top: 5px; font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+</style>
+
+<div class="deck" id="deck">
+<div class="stage" id="stage">
+
+<!-- ===================== 1 &#183; COVER ===================== -->
+<section class="slide cover" data-title="Cover">
+  <div>
+    <div class="eyebrow"><span>Weekly progress</span><span class="num">2026-10-07</span></div>
+    <div class="rule" style="margin:34px 0 26px"></div>
+    <h1 class="title">HBM, not the CPU, limits an agent server</h1>
+    <p class="sub">This week: what binds an agent server. Not the tools, not the CPU or the links, but GPU HBM, and a host-DRAM tier relieves it. Then the harness as a whole: its current bottleneck and the methods that could relieve it.</p>
+  </div>
+  <div class="meta">
+    <div><b>yq335@cornell.edu</b>learn-claude-code &#183; branch <span class="mono">claude</span> &#183; covers 2026-09-30 to 2026-10-06</div>
+    <div><b>Harness</b>s15 integrated harness &#183; self-hosted vLLM 0.29.0 on H200 and RTX PRO 6000</div>
+    <div><b>Models</b>Qwen3-32B and Qwen3-8B, thinking off &#183; Qwen3.8-27B with thinking for the tool cells</div>
+    <div><b>Writeups</b><span class="mono">research/06</span> Part C &#183; <span class="mono">11</span> &#183; <span class="mono">12</span> &#183; <span class="mono">13</span> &#183; <span class="mono">14</span> &#183; <span class="mono">15</span></div>
+  </div>
+</section>
+
+<!-- ===================== 2 &#183; THIS WEEK ===================== -->
+<section class="slide" data-title="This week">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">2</span><span>Last week, this week</span></div>
+    <h2>Tools and the host have room; GPU HBM binds, and a DRAM tier relieves it. The second half maps the harness's bottleneck to methods</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto; gap:12px">
+    <table class="data xs">
+      <thead><tr><th class="n">#</th><th>topic</th><th>what we set out to validate</th><th>answer</th><th class="n">slides</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Part I &#183; what binds an agent server</td></tr>
+        <tr><td class="n"><b>1</b></td><td class="nw">Tool cost &#183; <span class="mono">06</span> C</td><td>Do slow or heavy tools put this harness in the paper's 30&#8211;85%? (last week's pending cells)</td><td><b>Only with a fast model (35&#8211;89%) or a repository-wide grep (45%); the thinking 27B stays at 11&#8211;14% solo with seconds-long tools</b></td><td class="n">3</td></tr>
+        <tr><td class="n"><b>2</b></td><td class="nw">CPU, PCIe, NVLink &#183; <span class="mono">12</span></td><td>As tool work grows, does the host become the bottleneck, as recent papers claim?</td><td><b>No: vLLM serves 16 agents from one core, 8 agents' test suites run on one core, and PCIe and NVLink stay under 5%</b></td><td class="n">4</td></tr>
+        <tr><td class="n"><b>3</b></td><td class="nw">HBM &#183; <span class="mono">11, 12, 13</span></td><td>What binds instead, and can a host-DRAM tier relieve it?</td><td><b>HBM capacity: past 8&#8211;10 sessions the KV pool thrashes and throughput falls 3&#8211;4&#215;; a DRAM tier gives 1.65&#215; with 64 GiB (RTX PRO 6000), 2.8&#8211;3&#215; with 128 GiB (H200)</b></td><td class="n">5&#8211;6</td></tr>
+        <tr class="grp"><td colspan="5">Part II &#183; the harness: its bottleneck, and the methods that could relieve it</td></tr>
+        <tr><td class="n"><b>A</b></td><td colspan="2">The harness system</td><td>sessions, the vLLM backend, layered context memory, task board, lead and teammates, task graphs</td><td class="n">7</td></tr>
+        <tr><td class="n"><b>B</b></td><td colspan="2">Its current bottleneck</td><td>GPU HBM: capacity past the turning point, bandwidth in every decode step</td><td class="n">8</td></tr>
+        <tr><td class="n"><b>C</b></td><td colspan="2">Methods: four accepted, two agent-specific</td><td>KV reuse across tiers, P/D, TP / DP / PP, prefill estimates; request types, dead blocks first</td><td class="n">9&#8211;12</td></tr>
+      </tbody>
+    </table>
+    <ul class="list tight"><li><b>Last week</b>: the KV pool sets the turning point (8&#8211;12 users per H200) and tools barely register; step 21 (where the turning point moves) gains a DRAM-tier data point here, while MLA, FP8 KV, teams and longer tool pauses stay open</li><li><b>Also this week</b>: the research data moved to Google Drive (10-03); git keeps the tables, figures and frozen inputs</li></ul>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">weekly_progress/093026/slides.html</span>; the <span class="mono">research/06, 11, 12, 13, 14, 15</span> READMEs.</p></div>
+</section>
+
+<!-- ===================== 3 &#183; TOOL CELLS ===================== -->
+<section class="slide" data-title="Tool cells">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">3</span><span>Result &#183; 1 &#183; Tool cost &#183; last week's pending GPU cells</span></div>
+    <h2>Tools are not the bottleneck: slowed to <span class="nw">0.3&#8211;6 s</span> each, they take <span class="nw">1&#8211;14%</span> of a thinking-27B solo session; only a fast 8B or a repo-wide grep hits <span class="nw">30&#8211;85%</span></h2>
+    <div class="cfg"><span class="label">Setup</span><span class="chip">Qwen3.8-27B, thinking</span><span class="chip">Qwen3-8B, no thinking</span><span class="chip">1&#215; RTX PRO 6000 per cell</span><span class="chip">vLLM 0.29.0</span><span class="chip">05's FQA / CODE, 2 reps</span><span class="chip">HTEST &#183; HSEARCH &#183; HWEB, 3 reps</span><span class="chip">6 cells, run 09-30</span></div>
+  </div>
+  <div class="body" style="grid-template-columns: 1.08fr 1fr; gap:30px">
+    <div class="stack" style="gap:8px">
+      <p class="label">We slowed every tool call on purpose (a sleep before the real tool runs) &#183; share of session time spent in tools</p>
+      <table class="data xs">
+        <thead><tr><th>workload</th><th class="n">real tools<span class="sub">no delay</span></th><th class="n">+0.29 s<span class="sub">every call</span></th><th class="n">+1.09 s<span class="sub">every call</span></th><th class="n">+random<span class="sub">mean 6 s; drawn avg 3&#8211;5.7 s</span></th><th class="n">predicted<span class="sub">no-delay run + same delay</span></th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="6">Qwen3.8-27B, thinking &#183; 24 sessions, all completed</td></tr>
+          <tr><td>CODE-solo</td><td class="n">0.3%</td><td class="n">1.6%</td><td class="n">5.5%</td><td class="n"><b>14.1%</b></td><td class="n">13.5%</td></tr>
+          <tr><td>FQA-solo</td><td class="n">0.0%</td><td class="n">1.1%</td><td class="n">2.2%</td><td class="n"><b>10.7%</b></td><td class="n">9.6%</td></tr>
+          <tr><td>FQA-team, all agents' tool time</td><td class="n">0.1%</td><td class="n">3.0%</td><td class="n">8.3%</td><td class="n"><b>30.0%</b></td><td class="n">27.2%</td></tr>
+          <tr><td>FQA-team, whole team waiting</td><td class="n">0.0%</td><td class="n">1.2%</td><td class="n">3.0%</td><td class="n"><b>10.8%</b></td><td class="n na">&#8212;</td></tr>
+          <tr class="grp"><td colspan="6">Qwen3-8B, no thinking &#183; it loops: 18 of 24 sessions stopped at the 10-min cap</td></tr>
+          <tr><td>CODE-solo, FQA-solo, FQA-team</td><td class="n nw">0.3&#8211;1.1%</td><td class="n nw">16&#8211;38%</td><td class="n nw">22&#8211;63%</td><td class="n nw warn"><b>35&#8211;89%</b></td><td class="n nw">23&#8211;48%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="stack" style="gap:10px">
+      <p class="label">Real heavy tool work &#183; nothing injected</p>
+      <table class="data xs">
+        <thead><tr><th>task</th><th class="n">Qwen3.8-27B<span class="sub">solved &#183; time in tools</span></th><th class="n">Qwen3-8B<span class="sub">solved &#183; time in tools</span></th></tr></thead>
+        <tbody>
+          <tr><td>HSEARCH: three counts over site-packages (grep, find)</td><td class="n nw">6/9 &#183; <b>45.3%</b></td><td class="n nw">0/9 &#183; <b>93.9%</b></td></tr>
+          <tr><td>HTEST: fix two bugs, run the 517-test suite</td><td class="n nw">3/3 &#183; <b>14.6%</b></td><td class="n nw">0/3 &#183; 20.1%</td></tr>
+          <tr><td>HWEB: two arXiv pages with curl</td><td class="n nw">6/6 &#183; 1.2%</td><td class="n nw">6/6 &#183; 5.0%</td></tr>
+        </tbody>
+      </table>
+      <ul class="list tight"><li><b>Why</b>: a Microsoft paper (Sutradhara) puts tools at 30&#8211;85% of agent time; ours take milliseconds, so we added its per-call means (SWE-bench 0.29 s, web search 1.09 s, production ~6 s)</li><li><b>The delay only adds itself</b>: on the 27B, predicted &#8776; measured and the number of calls is unchanged; a true 6 s average would give 11&#8211;21% solo</li><li><b>Model speed decides</b>: the 27B works 18&#8211;23 s per tool call, the 8B only 0.8&#8211;5.8 s, so the same delay weighs far more on the 8B</li><li><b>Heavy real work counts too</b>: a site-packages search or the full test suite takes 15&#8211;45% of a 27B session; "under 1%" holds only for millisecond tools</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/06_tool_cost/README.md</span> &#167;C.4.6&#8211;C.4.8 (T6, T6b, T7, T8). Correction: the random delays reused one seeded sequence, so they averaged 3.0&#8211;4.2 s per call on the 27B (4.6&#8211;5.7 s on the 8B), not the README's "&#8776; 6 s".</p></div>
+</section>
+
+<!-- ===================== 4 &#183; RESULT 2: CPU, PCIE AND NVLINK ===================== -->
+<section class="slide" data-title="CPU, PCIe, NVLink">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">4</span><span>Result &#183; 2 &#183; Hardware utilization &#183; the CPU, PCIe and NVLink as tool work grows</span></div>
+    <h2>More tool work does not burden the server: CPU, PCIe and NVLink have room; one core serves 16 agents' vLLM, and one runs 8 agents' test suites</h2>
+    <div class="cfg"><span class="label">Setup</span><span class="chip">Qwen3-32B &#183; Qwen3-8B &#183; bf16, thinking off</span><span class="chip">H200, TP=1 and TP=2 &#183; 12 host cores per GPU</span><span class="chip">vLLM 0.29.0</span><span class="chip">LIGHT sessions; HEAVY: test suites, site-packages greps</span><span class="chip">1&#8211;32 agents, closed loop &#183; 1,532 sessions</span></div>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1.05fr; gap:30px">
+    <div class="stack" style="gap:8px">
+      <p class="label">Serving side &#183; cores for vLLM's host side (API server, EngineCore; at TP=2 also its two workers)</p>
+      <table class="data xs">
+        <thead><tr><th>vLLM cores</th><th class="n">output tok/s</th><th class="n">front end<span class="sub">per call</span></th><th class="n">engine thread<span class="sub">ready but waiting for a core</span></th><th class="n">avg wait<span class="sub">per wake-up</span></th><th class="n">GPU busy</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="6">Qwen3-8B, TP=1 &#183; 16 agents &#183; an engine step every ~18 ms</td></tr>
+          <tr><td>4</td><td class="n">731</td><td class="n">81 ms</td><td class="n">0.0%</td><td class="n">&lt; 1 &#181;s</td><td class="n">100%</td></tr>
+          <tr><td>2</td><td class="n">730</td><td class="n">100 ms</td><td class="n">1.4%</td><td class="n">82 &#181;s</td><td class="n">100%</td></tr>
+          <tr class="hi"><td>1</td><td class="n"><b>727</b></td><td class="n">112 ms</td><td class="n">9.7%</td><td class="n">0.39 ms</td><td class="n">99%</td></tr>
+          <tr class="grp"><td colspan="6">Qwen3-32B, TP=2 on two H200s &#183; 8 agents &#183; a step every ~29&#8211;31 ms</td></tr>
+          <tr><td>8</td><td class="n">229</td><td class="n">162 ms</td><td class="n">0%</td><td class="n">&lt; 1 &#181;s</td><td class="n">99 / 98%</td></tr>
+          <tr><td>4</td><td class="n">235</td><td class="n">156 ms</td><td class="n">0.1%</td><td class="n">11 &#181;s</td><td class="n">99 / 98%</td></tr>
+          <tr class="hi"><td>2</td><td class="n"><b>238</b></td><td class="n">215 ms</td><td class="n warn">50%</td><td class="n">2.7 &#181;s<span class="sub">186k a second</span></td><td class="n">99 / 99%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="stack" style="gap:10px">
+      <p class="label">Agent side &#183; cores for 8 agents' harness and tools &#183; Qwen3-32B, heavy mix</p>
+      <table class="data xs">
+        <thead><tr><th>agent cores</th><th class="n">lead calls/h</th><th class="n">output tok/s</th><th class="n">bash call<span class="sub">mean</span></th><th class="n">core saturated<span class="sub">share of 100-ms samples</span></th></tr></thead>
+        <tbody>
+          <tr><td>7</td><td class="n">3,495</td><td class="n">125</td><td class="n">1.8 s</td><td class="n">0%</td></tr>
+          <tr><td>4</td><td class="n">4,855</td><td class="n">94</td><td class="n">2.5 s</td><td class="n">0%</td></tr>
+          <tr><td>2</td><td class="n">4,381</td><td class="n">129</td><td class="n">3.4 s</td><td class="n">0.1%</td></tr>
+          <tr class="hi"><td>1</td><td class="n"><b>4,700</b></td><td class="n">134</td><td class="n">2.7 s</td><td class="n">9.5%</td></tr>
+        </tbody>
+      </table>
+      <ul class="list tight"><li><b>What we validate</b>: papers put CPU tool work at up to 88% of agent latency (Raj et al.) and see starved hosts idle vLLM (Chung et al.); at our heaviest load (32 agents) the host averages 1.8 of 12 cores, 6.3 at peak</li><li><b>The links idle</b>: PCIe carries &#8804; 0.05 of 55 GB/s at TP=1, NVLink 2&#8211;11 of 478 GB/s at TP=2; the busy engine thread (0.83 core) runs a step ahead of the GPU</li><li><b>Fewer cores cost only latency</b>: 30&#8211;50 ms more front end per call; at TP=2 on 2 cores the engine waits half the time, but in 2.7-&#181;s slices, and keeps its step rate; the test suite uses 0.32 cores</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/12_hw_utilization/README.md</span> &#167;1, &#167;3.2&#8211;&#167;3.5 (cells k2; t2 + k2t; k1h; link counters); T1, T5, T6. Avg wait = the EngineCore thread's run-queue time &#247; its wake-ups, computed here from 12's 2-Hz samples. Agent-side measures vary &#177;20% with the session mix.</p></div>
+</section>
+
+<!-- ===================== 5 &#183; RESULT 3: THE PHENOMENON, HBM SATURATES ===================== -->
+<section class="slide" data-title="Phenomenon: HBM capacity">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">5</span><span>Result &#183; 3 &#183; HBM &#183; the phenomenon: the KV pool saturates at the turning point</span></div>
+    <h2>HBM capacity binds: as sessions approach the turning point their KV fills the GPU's pool (91% in use at 16), and past it throughput falls <span class="nw">3&#8211;4&#215;</span></h2>
+    <div class="cfg"><span class="label">Setup</span><span class="chip">Qwen3-32B, Qwen3-8B &#183; bf16, thinking off</span><span class="chip">one H200, TP=1 &#183; vLLM 0.29.0</span><span class="chip">4-turn sessions, 10 codebases, + heavy tools</span><span class="chip">12: no think time, 1&#8211;32 agents</span><span class="chip">11: 30-s think pauses, 1&#8211;16 users, 502 sessions</span></div>
+  </div>
+  <div class="body" style="grid-template-columns: 520px 1fr; gap:26px">
+    <div class="stack" style="gap:6px">
+      <div class="legend"><span><span class="swatch grey"></span>with 30-s think pauses (11)</span><span><span class="swatch lead"></span>no think time (12); dashed: no level at 12</span></div>
+      <figure><svg viewBox="0 0 520 330" role="img" aria-label="Two panels against concurrent sessions on one H200 with Qwen3-32B. Top, lead calls per hour: with 30-second think pauses 719, 2,030, 3,077, 1,496 and 976 at 1, 4, 8, 12 and 16 sessions; without think time 2,541, 4,070 and 1,062 at 4, 8 and 16. Bottom: the share of the KV pool in use without think time, 37%, 71% and 91% at 4, 8 and 16; the prefix hit rate with think pauses, 86%, 82%, 87%, 45% and 2%. Past about 10 sessions the KV pool thrashes."><g><rect x="333.5" y="30" width="174.5" height="260" class="band-warn"></rect><text x="420.8" y="43" font-size="11" text-anchor="middle" class="t-warn">past the turning point:</text><text x="420.8" y="57" font-size="11" text-anchor="middle" class="t-warn">the KV pool thrashes</text><path d="M 56 160.0 H 500" class="grid"></path><text x="50" y="163.5" font-size="10" text-anchor="end" class="t-mono t-muted">0</text><path d="M 56 131.1 H 500" class="grid"></path><text x="50" y="134.6" font-size="10" text-anchor="end" class="t-mono t-muted">1,000</text><path d="M 56 102.2 H 500" class="grid"></path><text x="50" y="105.7" font-size="10" text-anchor="end" class="t-mono t-muted">2,000</text><path d="M 56 73.3 H 500" class="grid"></path><text x="50" y="76.8" font-size="10" text-anchor="end" class="t-mono t-muted">3,000</text><path d="M 56 44.4 H 500" class="grid"></path><text x="50" y="47.9" font-size="10" text-anchor="end" class="t-mono t-muted">4,000</text><path d="M 56 290.0 H 500" class="grid"></path><text x="50" y="293.5" font-size="10" text-anchor="end" class="t-mono t-muted">0%</text><path d="M 56 245.0 H 500" class="grid"></path><text x="50" y="248.5" font-size="10" text-anchor="end" class="t-mono t-muted">50%</text><path d="M 56 200.0 H 500" class="grid"></path><text x="50" y="203.5" font-size="10" text-anchor="end" class="t-mono t-muted">100%</text><text x="56" y="16" font-size="12" class="t-title">lead calls per hour</text><text x="56" y="189" font-size="12" class="t-title">share of the KV pool in use (12) &#183; prefix hit (11)</text><text x="83.8" y="306" font-size="10" text-anchor="middle" class="t-mono t-muted">1</text><text x="167.0" y="306" font-size="10" text-anchor="middle" class="t-mono t-muted">4</text><text x="278.0" y="306" font-size="10" text-anchor="middle" class="t-mono t-muted">8</text><text x="389.0" y="306" font-size="10" text-anchor="middle" class="t-mono t-muted">12</text><text x="500.0" y="306" font-size="10" text-anchor="middle" class="t-mono t-muted">16</text><text x="500" y="322" font-size="10" text-anchor="end" class="t-muted">concurrent sessions on one H200</text><path d="M 83.8 139.2 L 167.0 101.4 L 278.0 71.1 L 389.0 116.8 L 500.0 131.8" class="line-grey"></path><path d="M 83.8 212.6 L 167.0 216.2 L 278.0 211.7 L 389.0 249.5 L 500.0 288.2" class="line-grey"></path><path d="M 167.0 86.6 L 278.0 42.4" class="line-lead"></path><path d="M 278.0 42.4 L 500.0 129.3" class="line-lead" style="stroke-dasharray:5 4"></path><path d="M 167.0 256.7 L 278.0 226.1" class="line-lead"></path><path d="M 278.0 226.1 L 500.0 208.1" class="line-lead" style="stroke-dasharray:5 4"></path><circle cx="83.8" cy="139.2" r="4.5" class="f-grey ring"><title>1 sessions, think pauses: 719 lead calls/h</title></circle><circle cx="167.0" cy="101.4" r="4.5" class="f-grey ring"><title>4 sessions, think pauses: 2,030 lead calls/h</title></circle><circle cx="278.0" cy="71.1" r="4.5" class="f-grey ring"><title>8 sessions, think pauses: 3,077 lead calls/h</title></circle><circle cx="389.0" cy="116.8" r="4.5" class="f-grey ring"><title>12 sessions, think pauses: 1,496 lead calls/h</title></circle><circle cx="500.0" cy="131.8" r="4.5" class="f-grey ring"><title>16 sessions, think pauses: 976 lead calls/h</title></circle><circle cx="167.0" cy="86.6" r="4.5" class="f-lead ring"><title>4 sessions, no think time: 2,541 lead calls/h</title></circle><circle cx="278.0" cy="42.4" r="4.5" class="f-lead ring"><title>8 sessions, no think time: 4,070 lead calls/h</title></circle><circle cx="500.0" cy="129.3" r="4.5" class="f-lead ring"><title>16 sessions, no think time: 1,062 lead calls/h</title></circle><circle cx="83.8" cy="212.6" r="4.5" class="f-grey ring"><title>1 sessions, think pauses: prefix hit 86%</title></circle><circle cx="167.0" cy="216.2" r="4.5" class="f-grey ring"><title>4 sessions, think pauses: prefix hit 82%</title></circle><circle cx="278.0" cy="211.7" r="4.5" class="f-grey ring"><title>8 sessions, think pauses: prefix hit 87%</title></circle><circle cx="389.0" cy="249.5" r="4.5" class="f-grey ring"><title>12 sessions, think pauses: prefix hit 45%</title></circle><circle cx="500.0" cy="288.2" r="4.5" class="f-grey ring"><title>16 sessions, think pauses: prefix hit 2%</title></circle><circle cx="167.0" cy="256.7" r="4.5" class="f-lead ring"><title>4 sessions, no think time: 37% of the KV pool in use</title></circle><circle cx="278.0" cy="226.1" r="4.5" class="f-lead ring"><title>8 sessions, no think time: 71% of the KV pool in use</title></circle><circle cx="500.0" cy="208.1" r="4.5" class="f-lead ring"><title>16 sessions, no think time: 91% of the KV pool in use</title></circle><text x="278" y="33.4" font-size="11" text-anchor="middle" class="t-mono t-lead">4,070</text><text x="278" y="92.0" font-size="11" text-anchor="middle" class="t-mono t-ink2">3,077</text><text x="492" y="150" font-size="11" text-anchor="end" class="t-mono t-ink2">976 &#183; 1,062</text><text x="278" y="204.7" font-size="10.5" text-anchor="middle" class="t-mono t-ink2">87% hit</text><text x="278" y="242.1" font-size="10.5" text-anchor="middle" class="t-mono t-lead">71% in use</text><text x="167" y="272.7" font-size="10.5" text-anchor="middle" class="t-mono t-lead">37%</text><text x="383" y="265.5" font-size="10.5" text-anchor="end" class="t-mono t-ink2">45%</text><text x="492" y="201.1" font-size="10.5" text-anchor="end" class="t-mono t-lead">91%</text><text x="506" y="291.2" font-size="10.5" class="t-mono t-ink2">2%</text></g></svg></figure>
+    </div>
+    <div class="stack" style="gap:10px">
+      <p class="label">What changes past the turning point &#183; 11's runs, with think pauses</p>
+      <table class="data xs">
+        <thead><tr><th class="n">sessions</th><th class="n">lead calls/h</th><th class="n">call slowdown<span class="sub">vs alone</span></th><th class="n">prefix hit</th><th class="n">GPU on<span class="sub">eviction recompute</span></th><th>what binds</th></tr></thead>
+        <tbody>
+          <tr><td class="n">1</td><td class="n">719</td><td class="n">0.99&#215;</td><td class="n">86%</td><td class="n">0%</td><td class="nw">nothing; GPU idle 24%</td></tr>
+          <tr><td class="n">4</td><td class="n">2,030</td><td class="n">1.65&#215;</td><td class="n">82%</td><td class="n">0%</td><td class="nw">compute: shared steps</td></tr>
+          <tr class="hi"><td class="n">8</td><td class="n"><b>3,077</b></td><td class="n">2.36&#215;</td><td class="n">87%</td><td class="n">2%</td><td class="nw">compute; the peak</td></tr>
+          <tr><td class="n">12</td><td class="n warn">1,496</td><td class="n warn">10.0&#215;</td><td class="n warn">45%</td><td class="n warn">65%</td><td class="nw">KV capacity</td></tr>
+          <tr><td class="n">16</td><td class="n warn">976</td><td class="n warn">17.7&#215;</td><td class="n warn">2%</td><td class="n warn">74%</td><td class="nw">KV capacity</td></tr>
+        </tbody>
+      </table>
+      <ul class="list tight"><li><b>What we validate</b>: with the host ruled out (Result 2), what stops throughput from growing with sessions. HBM capacity: after 61 GiB of weights the KV pool holds 258k tokens, about 10 sessions' contexts</li><li><b>When the KV fits, nothing collapses</b>: the 8B, with smaller weights and KV, never fills its pool (58% in use at 32 agents) and levels off at 24&#8211;25k calls/h</li><li><b>Below the turning point, HBM bandwidth sets the pace</b>: a batch-1 decode step uses 70% of it and 5% of the tensor cores; 93&#8211;94% of a call's slowdown is other sessions sharing its steps</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: 12 README &#167;3.2&#8211;&#167;3.3, &#167;3.6&#8211;&#167;3.7 (T1, T2, T4, T6); 11 README &#167;3.2&#8211;&#167;3.4 (T2, T3; think time median 30 s). In use = referenced by a running request.</p></div>
+</section>
+
+<!-- ===================== 6 &#183; RESULT 3: THE RELIEF, A HOST-DRAM TIER ===================== -->
+<section class="slide" data-title="Cure: KV in host DRAM">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">6</span><span>Result &#183; 3 &#183; HBM &#183; the relief: a host-DRAM tier for evicted KV</span></div>
+    <h2>Offloading evicted KV to host DRAM relieves HBM while DRAM holds the working set: 64 GiB gives 1.65&#215; on an RTX, 128 GiB <span class="nw">2.8&#8211;3&#215;</span> on an H200</h2>
+    <div class="cfg"><span class="label">Setup</span><span class="chip">Qwen3-32B, bf16, thinking off</span><span class="chip">vLLM 0.29.0 + CPU KV offload, LRU</span><span class="chip">H200: 128 GiB tier &#183; 12 live, 11 replay</span><span class="chip">RTX PRO 6000: 64 GiB tier &#183; 13, run 10-04</span></div>
+  </div>
+  <div class="body" style="grid-template-columns: 1.15fr 1fr; gap:30px">
+    <div class="stack" style="gap:8px">
+      <p class="label">The same load with and without a DRAM tier &#183; one GPU</p>
+      <table class="data xs">
+        <thead><tr><th>load &#183; source</th><th class="n">lead calls/h<span class="sub">GPU only &#8594; + DRAM tier</span></th><th class="n">gain</th><th class="n">median call, s<span class="sub">GPU only &#8594; + tier</span></th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="4">RTX PRO 6000 &#183; KV pool 89k tokens &#8776; 3.8 contexts &#183; 64 GiB tier</td></tr>
+          <tr><td>4 agents, heavy mix &#183; 13, smoke run</td><td class="n">786 &#8594; 1,296<span class="sub">a later run: 1,311</span></td><td class="n">1.65&#215;</td><td class="n">9.98 &#8594; 7.30<span class="sub">later run: 5.51</span></td></tr>
+          <tr class="grp"><td colspan="4">H200 &#183; KV pool 258k tokens &#8776; 10 contexts &#183; 128 GiB DRAM tier</td></tr>
+          <tr class="hi"><td>16 agents, no think time &#183; 12, live</td><td class="n">1,062 &#8594; <b>3,142</b></td><td class="n"><b>3.0&#215;</b></td><td class="n">36.3 &#8594; 11.8</td></tr>
+          <tr><td>16 users, think pauses &#183; 11, replay</td><td class="n">1,036 &#8594; 2,905</td><td class="n">2.8&#215;</td><td class="n">33.6 &#8594; 9.9</td></tr>
+          <tr><td>32 users, think pauses &#183; 11, replay</td><td class="n">1,141 &#8594; 1,253</td><td class="n warn">1.1&#215;</td><td class="n">85.6 &#8594; 87.1</td></tr>
+          <tr class="grp"><td colspan="4">for comparison &#183; no DRAM tier: a session gate, 8 sessions active</td></tr>
+          <tr><td>16 users, think pauses &#183; 11, live</td><td class="n">976 &#8594; 3,394</td><td class="n">3.5&#215;</td><td class="n">33.9 &#8594; 3.2</td></tr>
+          <tr><td>16 users, the same replayed trace &#183; 11</td><td class="n">1,036 &#8594; 2,937</td><td class="n">2.8&#215;</td><td class="n">33.6 &#8594; 2.9</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="stack" style="gap:12px">
+      <ul class="list tight"><li><b>What we validate</b>: whether idle host DRAM (~250 GB per GPU; 64&#8211;128 GiB used here) can hold the KV the GPU pool evicts and bring it back faster than recomputing it</li><li><b>A restore beats a recompute</b>: a 23.5k-token context comes back from DRAM in 0.31 s and takes 6.08 s to recompute on the RTX (19.5&#215;). Recompute after eviction falls from 18.3% of prompt tokens to 0% there, and from 64&#8211;73% of GPU time to 1.8% on the H200</li><li><b>Only while DRAM holds the working set</b>: at 32 sessions 128 GiB no longer does (1.1&#215;; in simulation, dropping dead versions from it helps, slide 12). The H200 tier used 130 GiB of DRAM and 5 GB/s of PCIe (30 at peak, of 55)</li><li><b>Limits</b>: the RTX runs are smoke runs (two identical runs loaded 27.7% vs 14.5% of prompt tokens from DRAM; S3 repeats them); a tier does nothing for decodes stalled behind prefill (slide 10)</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: 12 README &#167;3.5 (o1 vs p2a); 11 README &#167;3.7 (replays of n16 / n32; live gate); 13 RESULTS &#167;3&#8211;&#167;4, <span class="mono">S0_ceilings.md</span> (B1), <span class="mono">S2_b1_s2b.md, S2_b1_s2f.md</span>. Median call = lead-call latency p50.</p></div>
+</section>
+
+<!-- ===================== 7 &#183; THE HARNESS SYSTEM: AN OVERVIEW ===================== -->
+<section class="slide" data-title="The harness system">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">7</span><span><span class="sec">II &#183; A</span> The harness system &#183; an overview</span></div>
+    <h2>Each user's harness works a task graph with a lead and teammates; every agent's call re-sends its whole context to one shared vLLM backend</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto auto; gap:8px; align-content:start">
+    <div class="legend"><span><span class="swatch lead-soft"></span>a lead's task</span><span><span class="swatch mate"></span>a teammate's task</span><span>arrow: must finish first (blockedBy) &#183; three illustrative task graphs</span><span><span class="swatch" style="background:none;border:1.5px solid var(--warn)"></span>where the system binds today</span></div>
+    <figure><svg viewBox="0 0 1150 372" role="img" aria-label="Three independent users, each with its own harness: a lead and two teammates working a task board whose tasks form a dependency graph (a chain, a diamond and a fan-in). Every agent runs the s15 loop (prepare_context, call_llm, run tools) over layered context memory (the prompt, compacted history, files on disk), and every call goes to one shared vLLM backend: a CPU front end, the scheduler, an H200 whose HBM holds the weights and a 258k-token KV pool, and idle lower tiers (host DRAM, NVMe)."><g color="var(--ink-2)"><defs><marker id="ov1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-ink2"></path></marker><marker id="ov2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-lead"></path></marker></defs><rect x="0" y="0" width="366" height="118" rx="5" class="box"></rect><text x="12" y="17" font-size="12" class="t-title">User A &#183; its own harness and task board</text><path d="M 80 55 L 109 55" class="edge" marker-end="url(#ov1)"></path><path d="M 168 55 L 197 55" class="edge" marker-end="url(#ov1)"></path><path d="M 256 55 L 285 55" class="edge" marker-end="url(#ov1)"></path><rect x="22" y="44" width="58" height="22" rx="4" class="node-done"><title>User A, task t1: the lead's</title></rect><text x="51" y="59" font-size="11" text-anchor="middle" class="t-mono">t1</text><rect x="110" y="44" width="58" height="22" rx="4" class="box-mate"><title>User A, task t2: a teammate's</title></rect><text x="139" y="59" font-size="11" text-anchor="middle" class="t-mono">t2</text><rect x="198" y="44" width="58" height="22" rx="4" class="box-mate"><title>User A, task t3: a teammate's</title></rect><text x="227" y="59" font-size="11" text-anchor="middle" class="t-mono">t3</text><rect x="286" y="44" width="58" height="22" rx="4" class="node-done"><title>User A, task t4: the lead's</title></rect><text x="315" y="59" font-size="11" text-anchor="middle" class="t-mono">t4</text><rect x="12" y="90" width="44" height="18" rx="9" class="box-lead"></rect><text x="34" y="103" font-size="10.5" text-anchor="middle">lead</text><rect x="62" y="90" width="76" height="18" rx="9" class="box-mate"></rect><text x="100" y="103" font-size="10.5" text-anchor="middle">teammate 1</text><rect x="144" y="90" width="76" height="18" rx="9" class="box-mate"></rect><text x="182" y="103" font-size="10.5" text-anchor="middle">teammate 2</text><text x="230" y="103" font-size="10.5" class="t-muted">one session each</text><rect x="392" y="0" width="366" height="118" rx="5" class="box"></rect><text x="404" y="17" font-size="12" class="t-title">User B &#183; its own harness and task board</text><path d="M 490 55 L 541 39" class="edge" marker-end="url(#ov1)"></path><path d="M 490 55 L 541 71" class="edge" marker-end="url(#ov1)"></path><path d="M 600 39 L 651 55" class="edge" marker-end="url(#ov1)"></path><path d="M 600 71 L 651 55" class="edge" marker-end="url(#ov1)"></path><rect x="432" y="44" width="58" height="22" rx="4" class="node-done"><title>User B, task t1: the lead's</title></rect><text x="461" y="59" font-size="11" text-anchor="middle" class="t-mono">t1</text><rect x="542" y="28" width="58" height="22" rx="4" class="box-mate"><title>User B, task t2: a teammate's</title></rect><text x="571" y="43" font-size="11" text-anchor="middle" class="t-mono">t2</text><rect x="542" y="60" width="58" height="22" rx="4" class="box-mate"><title>User B, task t3: a teammate's</title></rect><text x="571" y="75" font-size="11" text-anchor="middle" class="t-mono">t3</text><rect x="652" y="44" width="58" height="22" rx="4" class="node-done"><title>User B, task t4: the lead's</title></rect><text x="681" y="59" font-size="11" text-anchor="middle" class="t-mono">t4</text><rect x="404" y="90" width="44" height="18" rx="9" class="box-lead"></rect><text x="426" y="103" font-size="10.5" text-anchor="middle">lead</text><rect x="454" y="90" width="76" height="18" rx="9" class="box-mate"></rect><text x="492" y="103" font-size="10.5" text-anchor="middle">teammate 1</text><rect x="536" y="90" width="76" height="18" rx="9" class="box-mate"></rect><text x="574" y="103" font-size="10.5" text-anchor="middle">teammate 2</text><text x="622" y="103" font-size="10.5" class="t-muted">one session each</text><rect x="784" y="0" width="366" height="118" rx="5" class="box"></rect><text x="796" y="17" font-size="12" class="t-title">User C &#183; its own harness and task board</text><path d="M 882 39 L 933 55" class="edge" marker-end="url(#ov1)"></path><path d="M 882 71 L 933 55" class="edge" marker-end="url(#ov1)"></path><path d="M 992 55 L 1043 55" class="edge" marker-end="url(#ov1)"></path><rect x="824" y="28" width="58" height="22" rx="4" class="box-mate"><title>User C, task t1: a teammate's</title></rect><text x="853" y="43" font-size="11" text-anchor="middle" class="t-mono">t1</text><rect x="824" y="60" width="58" height="22" rx="4" class="box-mate"><title>User C, task t2: a teammate's</title></rect><text x="853" y="75" font-size="11" text-anchor="middle" class="t-mono">t2</text><rect x="934" y="44" width="58" height="22" rx="4" class="node-done"><title>User C, task t3: the lead's</title></rect><text x="963" y="59" font-size="11" text-anchor="middle" class="t-mono">t3</text><rect x="1044" y="44" width="58" height="22" rx="4" class="box-mate"><title>User C, task t4: a teammate's</title></rect><text x="1073" y="59" font-size="11" text-anchor="middle" class="t-mono">t4</text><rect x="796" y="90" width="44" height="18" rx="9" class="box-lead"></rect><text x="818" y="103" font-size="10.5" text-anchor="middle">lead</text><rect x="846" y="90" width="76" height="18" rx="9" class="box-mate"></rect><text x="884" y="103" font-size="10.5" text-anchor="middle">teammate 1</text><rect x="928" y="90" width="76" height="18" rx="9" class="box-mate"></rect><text x="966" y="103" font-size="10.5" text-anchor="middle">teammate 2</text><text x="1014" y="103" font-size="10.5" class="t-muted">one session each</text><text x="12" y="130" font-size="10.5" class="t-muted">&#9660; every agent of every user runs this loop on its own context; all of them share one vLLM backend</text><rect x="0" y="134" width="600" height="114" rx="5" class="box-lead"></rect><text x="12" y="151" font-size="12.5" class="t-title t-lead">One agent session (the lead or a teammate) &#183; the s15 loop</text><rect x="14" y="162" width="140" height="26" rx="3" class="box"></rect><text x="84" y="179" font-size="11.5" text-anchor="middle" class="t-mono">prepare_context()</text><rect x="180" y="162" width="104" height="26" rx="3" class="box"></rect><text x="232" y="179" font-size="11.5" text-anchor="middle" class="t-mono">call_llm()</text><rect x="310" y="162" width="104" height="26" rx="3" class="box"></rect><text x="362" y="179" font-size="11.5" text-anchor="middle" class="t-mono">run tools</text><path d="M 154 175 H 178" class="edge" marker-end="url(#ov1)"></path><path d="M 284 175 H 308" class="edge" marker-end="url(#ov1)"></path><path d="M 362 188 V 200 H 84 V 190" class="edge" marker-end="url(#ov1)"></path><text x="432" y="172" font-size="10.5" class="t-ink2">turn end &#8594; memory extraction</text><text x="432" y="187" font-size="10.5" class="t-ink2">over the limit &#8594; compaction</text><text x="432" y="202" font-size="10.5" class="t-ink2">task board &#183; mailboxes</text><text x="14" y="220" font-size="11" class="t-ink2">a median 30 dependent calls per task; the next call follows ~0.1 s after the last</text><text x="14" y="237" font-size="11" class="t-ink2">the context grows with every call until compaction edits it in place</text><rect x="624" y="134" width="526" height="114" rx="5" class="box"></rect><text x="636" y="151" font-size="12.5" class="t-title">Layered memory for context management</text><text x="1138" y="151" font-size="10" text-anchor="end" class="t-muted">&#8595; compaction &#183; &#8593; recall, re-read</text><rect x="636" y="160" width="502" height="25" rx="3" class="box-lead"></rect><text x="646" y="176.5" font-size="10.5" class="t-title">in the prompt</text><text x="736" y="176.5" font-size="10.5" class="t-ink2">system prompt (tools, board, team, recalled memories) + history</text><rect x="636" y="189" width="502" height="25" rx="3" class="box-mate"></rect><text x="646" y="205.5" font-size="10.5" class="t-title">compacted</text><text x="736" y="205.5" font-size="10.5" class="t-ink2">old tool results &#8594; placeholders; history &#8594; archive marker, summary</text><rect x="636" y="218" width="502" height="25" rx="3" class="box-grey"></rect><text x="646" y="234.5" font-size="10.5" class="t-title">on disk</text><text x="736" y="234.5" font-size="10.5" class="t-ink2">saved tool outputs, transcripts; .memory/ records recalled every turn</text><path d="M 232 248 V 264" class="edge-lead" marker-end="url(#ov2)"></path><text x="242" y="260" font-size="10.5" class="t-lead">the whole context, every call: ~24k tokens, ~3.4k of them prefilled; reply ~95 tokens</text><rect x="0" y="266" width="1150" height="106" rx="5" class="box"></rect><text x="12" y="283" font-size="12.5" class="t-title">vLLM backend &#183; serves the call_llm() of every agent of every user</text><rect x="12" y="292" width="260" height="70" rx="4" class="box-soft"></rect><text x="22" y="309" font-size="11.5" class="t-title">Front end, on the CPU</text><text x="22" y="326" font-size="10.5" class="t-ink2">SDK &#183; HTTP &#183; chat template &#183; tokenise</text><text x="22" y="341" font-size="10.5" class="t-ink2">~3.5 ms per 1k tokens re-sent</text><rect x="296" y="292" width="280" height="70" rx="4" class="box-soft"></rect><text x="306" y="309" font-size="11.5" class="t-title">Scheduler</text><text x="306" y="326" font-size="10.5" class="t-ink2">queue &#8594; admit once KV blocks are free</text><text x="306" y="341" font-size="10.5" class="t-ink2">a step: &#8804; 8,192 prefill tokens + all decodes</text><rect x="600" y="292" width="280" height="70" rx="4" class="box-warn"></rect><text x="610" y="309" font-size="11.5" class="t-title">H200 &#183; Qwen3-32B</text><text x="610" y="326" font-size="10.5" class="t-ink2">HBM 140 GiB: weights 61, KV pool 63 GiB</text><text x="610" y="341" font-size="10.5" class="t-ink2">= 258k tokens &#8776; 10 sessions' contexts</text><text x="610" y="356" font-size="10.5" class="t-warn">binds: KV capacity, decode bandwidth</text><rect x="904" y="292" width="234" height="70" rx="4" class="box-dash"></rect><text x="914" y="309" font-size="11.5" class="t-title">Lower tiers, idle today</text><text x="914" y="326" font-size="10.5" class="t-ink2">host DRAM ~250 GB/GPU &#183; PCIe 55 GB/s</text><text x="914" y="341" font-size="10.5" class="t-ink2">NVMe flash &#183; 4 GB/s read (RTX)</text><path d="M 272 327 H 294" class="edge" marker-end="url(#ov1)"></path><path d="M 576 327 H 598" class="edge" marker-end="url(#ov1)"></path><path d="M 880 327 H 902" class="edge" marker-end="url(#ov1)"></path></g></svg></figure>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px"><ul class="list tight"><li><b>The unit of work is a session</b>: a median 30 dependent calls per task (p10&#8211;p90: 4&#8211;325)</li></ul><ul class="list tight"><li><b>Its working set is about one context window</b>: ~5&#8211;7 GiB of KV per session on Qwen3-32B</li></ul><ul class="list tight"><li><b>Teams multiply sessions</b>: a lead with k teammates is <span class="nw">1 + k</span> sessions on the same backend</li></ul></div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">s15_integrated_harness/ARCHITECTURE.md</span> &#167;1&#8211;&#167;2, &#167;6, &#167;9.1&#8211;&#167;9.2, &#167;9.5; 12 &#167;3.2&#8211;&#167;3.6; 14 <span class="mono">S0_predictions.md</span> (12's p2a: prompt, computed and output tokens); 10 &#167;4.1 (calls per task). The three task graphs are illustrative.</p></div>
+</section>
+
+<!-- ===================== 8 &#183; THE CURRENT BOTTLENECK ===================== -->
+<section class="slide" data-title="The bottleneck">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">8</span><span><span class="sec">II &#183; B</span> The current bottleneck of the profiled harness</span></div>
+    <h2>GPU HBM binds the profiled harness: its capacity past the turning point, its bandwidth in every decode step; everything else has room</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto; gap:16px; align-content:start">
+    <table class="data">
+      <thead><tr><th>part of the system</th><th>capacity per H200</th><th>what the harness uses (measured)</th><th>binds?</th></tr></thead>
+      <tbody>
+        <tr><td><b>Tool execution</b></td><td>the host's cores</td><td>&lt; 1% of session time on file and code tools; 15&#8211;45% with test suites or repository-wide greps (Result 1)</td><td><span class="verd no">no &#183; except heavy tools</span></td></tr>
+        <tr><td><b>Host CPU</b></td><td>12 cores</td><td>&#8804; 1.8 cores mean, 6.3 peak; one core serves 16 agents' vLLM (Result 2)</td><td><span class="verd no">no &#183; it costs latency only</span></td></tr>
+        <tr><td><b>PCIe &#183; NVLink</b></td><td>55 &#183; 478 GB/s</td><td>&#8804; 0.05 GB/s at TP=1; 2&#8211;11 GB/s at TP=2, &#8804; 5% (Result 2)</td><td><span class="verd no">no</span></td></tr>
+        <tr><td><b>GPU compute</b></td><td>989 TFLOPS bf16</td><td>batch-1 decode: tensor cores 5% busy; prefill steps 55&#8211;83%, ~40% of GPU time at 4&#8211;8 sessions</td><td><span class="verd cost">partly &#183; prefill below the turning point</span></td></tr>
+        <tr class="hi"><td><b>HBM bandwidth</b></td><td>4.8 TB/s</td><td>70% in decode; reading KV is 38&#8211;49% of a decode step from 8 sessions</td><td><span class="verd cost">yes &#183; every decode step</span></td></tr>
+        <tr class="hi"><td><b>HBM capacity</b></td><td>140 GiB: weights 61, KV pool 63 (258k tokens &#8776; 10 sessions)</td><td>91% of the pool in use at 16 sessions; evicted prefixes recomputed, 65&#8211;74% of GPU time (Result 3)</td><td><span class="verd cost">yes &#183; past 8&#8211;12 sessions</span></td></tr>
+        <tr><td><b>Host DRAM &#183; flash</b></td><td>~250 GB &#183; flash not measured on H200 nodes</td><td>idle; a 128 GiB KV tier fed at 5 GB/s buys 3&#215; (Result 3)</td><td><span class="verd no">no &#183; spare tiers</span></td></tr>
+      </tbody>
+    </table>
+    <div class="cols2" style="gap:0 34px">
+      <ul class="list"><li><b>Past the turning point, capacity binds</b>: the sessions' KV no longer fits, so idle prefixes are evicted and recomputed when their session returns; throughput falls 3&#8211;4&#215;</li></ul>
+      <ul class="list"><li><b>Below it, compute and bandwidth bind</b>: harness edits re-prefill 12&#8211;16k tokens in 14&#8211;23% of calls, and decodes wait behind prefill chunks for 21&#8211;45% of a call at 4&#8211;8 sessions</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: 06 &#167;C.4.6&#8211;C.4.8; 12 &#167;3.1&#8211;&#167;3.7; 11 &#167;3.3&#8211;&#167;3.4, &#167;3.6; 13 <span class="mono">S0_ceilings.md</span> (B3); 15 F1, F4 (step model). Host DRAM bandwidth cannot be measured on these nodes.</p></div>
+</section>
+
+<!-- ===================== 9 &#183; METHODS: FOUR ACCEPTED, TWO AGENT-SPECIFIC ===================== -->
+<section class="slide" data-title="Methods">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">9</span><span><span class="sec">II &#183; C</span> Methods &#183; what could relieve the bottleneck</span></div>
+    <h2>Six methods could relieve the HBM bottleneck: four accepted serving techniques, and two that need what only the harness knows</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto; align-content:start">
+    <div class="methods"><div class="method"><div class="mh"><span class="n">1</span>KV cache reuse across tiers</div><span class="grp">accepted &#183; skips prefill</span><ul><li><b>Is the prefix cached?</b> A hit skips its prefill; decode needs the KV in the decoding GPU's HBM</li><li><b>On which HBM?</b> This GPU's: a hit. Under DP keep sessions sticky; under P/D the decode GPU pulls the blocks it lacks</li><li><b>In DRAM, to which HBM?</b> The decoding GPU's: 0.31 s for 23.5k tokens (RTX), ~0.6 s on a loaded H200</li><li><b>On flash?</b> ~1.5&#8211;2 s to read (derived); slow writes keep it to idle sessions. Recompute: 3.3&#8211;6.1 s</li></ul><span class="go">Result 3: a DRAM tier gives 1.65&#8211;3&#215;</span></div><div class="method"><div class="mh"><span class="n">2</span>P/D disaggregation</div><span class="grp">accepted &#183; separates the phases</span><ul><li><b>What P:D ratio?</b> One TP=1 prefill GPU serves ~6.5k lead calls/h, one decode GPU ~10k: this workload balances near 3 P : 2 D (estimate)</li><li><b>Why split?</b> In vLLM a decode that shares an engine step with a prefill chunk waits for the whole chunk, up to ~1.2 s: 21&#8211;45% of a 32B call at 4&#8211;8 sessions; P/D removes that wait</li><li><b>Price</b>: a KV transfer per call; 14's sweep (queued) measures where it pays</li></ul><span class="go">&#8594; slide 10</span></div><div class="method"><div class="mh"><span class="n">3</span>Serving layouts: TP, DP, PP</div><span class="grp">accepted &#183; splits the model</span><ul><li><b>TP</b> splits weights and KV across GPUs: one larger pool (TP=2: 777k tokens, 3&#215; one GPU's) and 1.7&#8211;1.9&#215; faster calls; NVLink stays &#8804; 5%</li><li><b>DP</b> runs whole copies with separate pools: a session's KV lives on one copy, so keep sessions sticky</li><li><b>PP</b> runs the layers in stages: TP's capacity without its per-call speed-up (not measured)</li></ul><span class="go">12 &#167;3.5&#8211;&#167;3.6: TP=1 and TP=2 measured</span></div><div class="method"><div class="mh"><span class="n">4</span>Prefill time from the new tokens</div><span class="grp">accepted &#183; prices a call</span><ul><li><b>prefill(n new after c cached)</b> &#8776; 96.9 &#181;s&#183;n + 3.46 ns&#183;n&#183;(c + n/2) + 12.6 ms per chunk (11's step model, 2.03M steps, R&#178; = 1.000)</li><li><b>For example</b>: a 232-token append 0.05 s; a 12.6k-token edit after 7.9k cached 1.86 s; the whole 23.1k context 3.20 s</li><li><b>Use</b>: price a call on arrival: restore or recompute, route long prefills, order the queue</li></ul></div><div class="method agent"><div class="mh"><span class="n">5</span>Request type</div><span class="grp">agent-specific &#183; the harness knows it</span><ul><li><b>Resume or modify?</b> 77&#8211;86% of follow-up calls append to the cached history (a median 124&#8211;433 new tokens); 14&#8211;23% edit it and re-prefill 12&#8211;16k tokens</li><li><b>On or off the critical path?</b> The lead's next call keeps its user waiting; memory extraction (async since 09) and background summaries can wait</li><li><b>Policy</b> (proposed): hold a resume's cached prefix until it is admitted; run off-path work below every lead call</li></ul><span class="go">&#8594; slide 11</span></div><div class="method agent"><div class="mh"><span class="n">6</span>Dead blocks first</div><span class="grp">agent-specific &#183; the harness knows it</span><ul><li><b>Dead blocks</b>: after a modify, the replaced history's KV can never be hit again: 15&#8211;21k cached tokens per edit, 73&#8211;96% of evictions below the turning point</li><li><b>Evict them first</b>: vLLM's LRU cannot tell dead from idle; the harness knows which version it replaced</li><li><b>In simulation</b>: it helps while the pool has slack; in a 128 GiB DRAM tier at 32 sessions, 54% &#8594; 86% served</li></ul><span class="go">&#8594; slide 12</span></div></div>
+  </div>
+  <div class="foot"><p>Blue: accepted; orange: agent-specific. Sources: 13 RESULTS &#167;3, <span class="mono">S0_ceilings.md</span>; 12 &#167;3.5&#8211;&#167;3.6; 14 <span class="mono">S0_predictions.md</span>; 11 &#167;2.6; 15 &#167;4.1, &#167;4.6; 10 &#167;4.2.</p></div>
+</section>
+
+<!-- ===================== 10 &#183; METHOD 2: P/D, PREFILL VS DECODE ===================== -->
+<section class="slide" data-title="Method 2: P/D">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">10</span><span><span class="sec">II &#183; C</span> Method 2 &#183; P/D disaggregation &#183; prefill and decode in one engine step</span></div>
+    <h2>A decode sharing an engine step with a prefill chunk waits for the whole chunk; P/D removes that wait, and this workload balances near 3 P : 2 D</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 600px 1fr; gap:26px">
+    <figure><svg viewBox="0 0 600 282" role="img" aria-label="Engine steps over 2.4 seconds. On one colocated GPU, decode-only steps of about 25 ms run until a step that carries an 8,192-token prefill chunk; that step takes about 1.2 s and every running decode waits for it. With P/D, the prefill GPU runs the chunk while the decode GPU keeps stepping; the KV then moves over NVLink."><defs><marker id="pd1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-lead"></path></marker></defs><g><path d="M 84.0 30 V 244" class="grid"></path><text x="84.0" y="258" font-size="10" text-anchor="middle" class="t-mono t-muted">0 s</text><path d="M 189.0 30 V 244" class="grid"></path><text x="189.0" y="258" font-size="10" text-anchor="middle" class="t-mono t-muted">0.5 s</text><path d="M 294.0 30 V 244" class="grid"></path><text x="294.0" y="258" font-size="10" text-anchor="middle" class="t-mono t-muted">1 s</text><path d="M 399.0 30 V 244" class="grid"></path><text x="399.0" y="258" font-size="10" text-anchor="middle" class="t-mono t-muted">1.5 s</text><path d="M 504.0 30 V 244" class="grid"></path><text x="504.0" y="258" font-size="10" text-anchor="middle" class="t-mono t-muted">2 s</text><text x="588.0" y="274" font-size="10" text-anchor="end" class="t-muted">time, to scale (decode-only steps 23&#8211;30 ms, drawn at 25)</text><text x="0" y="14" font-size="12" class="t-title">What a decode sees in each engine step</text><text x="76" y="56" font-size="11.5" text-anchor="end" class="t-ink2">one GPU</text><text x="76" y="69" font-size="9.5" text-anchor="end" class="t-muted">colocated</text><rect x="84.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="89.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="94.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="99.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="105.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="110.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="115.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="120.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="126.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="131.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="136.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="141.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="147.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="152.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="157.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="162.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="168.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="173.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="178.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="183.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="189.0" y="40" width="250.8" height="34" class="f-warn"><title>one step: an 8,192-token prefill chunk plus every running decode, ~1.2 s</title></rect><text x="315.0" y="61" font-size="11.5" text-anchor="middle" class="t-title" style="fill:var(--surface)">one step: 8,192 prefill tokens + all decodes</text><rect x="441.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="446.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="451.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="456.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="462.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="467.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="472.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="477.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="483.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="488.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="493.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="498.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="504.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="509.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="514.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="519.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="525.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="530.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="535.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="540.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="546.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="551.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="556.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="561.75" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="567.00" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="572.25" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="577.50" y="40" width="4.05" height="34" class="f-ink2"></rect><rect x="582.75" y="40" width="4.05" height="34" class="f-ink2"></rect><path d="M 189.0 80 V 86 H 440.0 V 80" class="edge-warn"></path><text x="315.0" y="100" font-size="11" text-anchor="middle" class="t-warn">every running decode waits ~1.2 s for its next token: ~40&#8211;50 decode-only steps</text><text x="76" y="147" font-size="11.5" text-anchor="end" class="t-ink2">prefill GPU</text><text x="76" y="160" font-size="9.5" text-anchor="end" class="t-muted">P/D</text><path d="M 84.0 150 H 588.0" class="edge-hair"></path><rect x="189.0" y="136" width="250.8" height="28" class="f-warn"><title>the same chunk on the prefill GPU</title></rect><text x="315.0" y="154" font-size="11" text-anchor="middle" class="t-title" style="fill:var(--surface)">the same 8,192-token chunk</text><path d="M 443.0 166 V 190" class="edge-lead" marker-end="url(#pd1)"></path><text x="435.0" y="183" font-size="10.5" text-anchor="end" class="t-lead">KV over NVLink: D pulls only the blocks it lacks</text><text x="76" y="211" font-size="11.5" text-anchor="end" class="t-ink2">decode GPU</text><text x="76" y="224" font-size="9.5" text-anchor="end" class="t-shot">no chunk waits</text><rect x="84.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="89.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="94.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="99.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="105.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="110.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="115.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="120.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="126.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="131.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="136.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="141.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="147.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="152.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="157.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="162.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="168.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="173.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="178.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="183.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="189.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="194.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="199.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="204.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="210.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="215.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="220.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="225.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="231.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="236.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="241.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="246.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="252.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="257.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="262.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="267.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="273.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="278.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="283.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="288.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="294.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="299.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="304.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="309.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="315.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="320.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="325.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="330.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="336.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="341.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="346.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="351.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="357.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="362.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="367.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="372.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="378.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="383.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="388.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="393.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="399.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="404.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="409.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="414.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="420.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="425.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="430.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="435.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="441.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="446.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="451.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="456.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="462.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="467.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="472.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="477.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="483.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="488.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="493.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="498.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="504.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="509.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="514.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="519.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="525.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="530.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="535.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="540.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="546.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="551.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="556.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="561.75" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="567.00" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="572.25" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="577.50" y="196" width="4.05" height="28" class="f-ink2"></rect><rect x="582.75" y="196" width="4.05" height="28" class="f-ink2"></rect></g></svg></figure>
+    <div class="stack" style="gap:10px">
+      <p class="label">Decode time lost behind co-scheduled prefill &#183; share of call time</p>
+      <table class="data xs">
+        <thead><tr><th>setting</th><th class="n">4</th><th class="n">8</th><th class="n">16</th><th class="n">24&#8211;32<span class="sub">sessions</span></th></tr></thead>
+        <tbody>
+          <tr><td>32B, TP=1</td><td class="n">21&#8211;27%</td><td class="n"><b>35&#8211;45%</b></td><td class="n">51&#8211;61%<span class="sub">thrashing</span></td><td class="n">26%<span class="sub">queueing dominates</span></td></tr>
+          <tr><td>32B, TP=1 + 128 GiB DRAM tier</td><td class="n na">&#8212;</td><td class="n na">&#8212;</td><td class="n">29%</td><td class="n na">&#8212;</td></tr>
+          <tr><td>32B, TP=2</td><td class="n na">&#8212;</td><td class="n">35%</td><td class="n na">&#8212;</td><td class="n">61%</td></tr>
+          <tr><td>8B, TP=1</td><td class="n">3%</td><td class="n na">&#8212;</td><td class="n">13&#8211;19%</td><td class="n">23%</td></tr>
+        </tbody>
+      </table>
+      <ul class="list tight"><li><b>The P:D ratio</b>: one TP=1 prefill GPU serves ~6.5k lead calls/h (0.55 GPU-s of prefill per call), one decode GPU ~10k (about 10 decodes fit its pool): this workload balances near 3 P : 2 D</li><li><b>So 1p1d and 2p2d would be prefill-bound, 3p1d decode-bound</b> (estimates; 14 measures them)</li><li><b>Most of that prefill is recompute</b>: removing edits and evictions at the source shrinks the stall and the P side together, moving the balance toward D</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: 13 <span class="mono">S0_ceilings.md</span> (B3, 12's and 11's cells); 14 <span class="mono">S0_predictions.md</span>; 12 &#167;3.3 (1.2-s chunks). The 3 : 2 ratio is derived from the per-GPU bounds.</p></div>
+</section>
+
+<!-- ===================== 11 &#183; METHOD 5: REQUEST TYPES, BACKGROUND WORK ===================== -->
+<section class="slide" data-title="Method 5: request types">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">11</span><span><span class="sec">II &#183; C</span> Method 5 &#183; request types &#183; on or off the critical path</span></div>
+    <h2>Memory extraction already runs off the critical path; compaction does not: its summary blocks the round, its edits force re-prefill</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto; gap:20px; align-content:start">
+    <table class="data">
+      <thead><tr><th>operation</th><th>when</th><th>what it costs</th><th>on the critical path today?</th><th>how to take it off</th></tr></thead>
+      <tbody>
+        <tr><td><b>Memory extraction</b></td><td>after every lead turn</td><td>13&#8211;21 s per turn; 35% of wall time while it was synchronous (GLM)</td><td><span class="verd yes">no &#183; async since 09</span></td><td>keep it async (with per-turn recall it cut the harness's blocking time 93&#8211;99%); also run it below every user call's priority</td></tr>
+        <tr><td><b>Summary compaction</b></td><td>still over the limit after micro-compaction and trimming; the model's <span class="mono">compact</span>; an overflow</td><td>~80 s on the thinking 27B; 5&#8211;8 s on the 8B</td><td><span class="verd cost">yes &#183; the round waits</span></td><td>summarise in the background once the history nears the limit; swap the summary in at the next call</td></tr>
+        <tr class="hi"><td><b>Micro-compaction</b>: old tool results become placeholders</td><td>history over the limit</td><td>14&#8211;23% of follow-up calls edit; each re-prefills 12&#8211;16k tokens (~1.9 s; 1.7&#8211;2.4 s across 11's cells, derived); ~70% of the 32B's recomputed tokens</td><td><span class="verd cost">yes &#183; the next call</span></td><td>keep and shift the surviving KV (10: &#8722;80% of post-edit prefill); or edit during a pause and pre-prefill the new prompt before the session returns</td></tr>
+        <tr><td><b>Snip compaction</b>: the middle of the history archived</td><td>every round past 50 messages</td><td>rewrites the prompt after message 3 on every call; in 96.7% of 10's compaction events; 11&#8211;13 ran with it off</td><td><span class="verd cost">yes &#183; every call</span></td><td>archive in large batches, when the cache is cold anyway; or keep it off</td></tr>
+        <tr><td><b>Per-second timestamp</b> in the system prompt</td><td>every call</td><td>edits 99.8% of calls; 935 vs 3,077 lead calls/h at 8 sessions</td><td><span class="verd cost">yes &#183; every call</span></td><td>take it out (step 19, carried)</td></tr>
+      </tbody>
+    </table>
+    <ul class="list"><li><b>The rule</b>: work no user is waiting for runs below every lead call's priority, and starts from the session's cached prefix</li><li><b>Edits are cheap for the harness and dear for the server</b>: ~10 ms of context preparation against ~1.9 s of re-prefill per edit at 23k tokens</li></ul>
+  </div>
+  <div class="foot"><p>Sources: 05 Part A; 09 Part B; 06 &#167;C.4.4 (Qwen3.8-27B / Qwen3-8B on RTX); 13 <span class="mono">PROPOSAL.md</span> &#167;1; 15 F1; 10 &#167;2, &#167;4.1&#8211;&#167;4.2; 11 &#167;2.2, &#167;2.6 (step model), &#167;3.6; <span class="mono">code.py</span> prepare_context.</p></div>
+</section>
+
+<!-- ===================== 12 &#183; METHOD 6: DEAD BLOCKS FIRST ===================== -->
+<section class="slide" data-title="Method 6: dead blocks first">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">12</span><span><span class="sec">II &#183; C</span> Method 6 &#183; dead blocks first &#183; an offline log analysis (15)</span></div>
+    <h2>Dead-first helps only while the pool has slack; in a simulated 128 GiB DRAM tier at 32 sessions, dropping dead versions lifts 54% to 86% served</h2>
+    <div class="cfg"><span class="label">Setup</span><span class="chip">offline: kv_lifecycle &#183; pool_sim</span><span class="chip">11's live cells + 12's p1a</span><span class="chip">Qwen3-32B &#183; one H200 &#183; 258k-token pool</span><span class="chip">40,960-token window, compaction at the window</span></div>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1.05fr; gap:30px">
+    <div class="stack" style="gap:8px">
+      <p class="label">Trace simulation on 11's recorded timing, no feedback</p>
+      <table class="data">
+        <thead><tr><th>trace &#183; setting</th><th class="n">vLLM's LRU<span class="sub">simulated</span></th><th class="n">dead-first<span class="sub">simulated</span></th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="3">GPU pool only &#183; eviction recompute, share of computed tokens</td></tr>
+          <tr><td>8 sessions &#183; full pool</td><td class="n">3.4%</td><td class="n fix">0.0%</td></tr>
+          <tr><td>8 sessions &#183; 75% of the pool</td><td class="n">7.9%</td><td class="n fix">2.6%</td></tr>
+          <tr><td>8 sessions &#183; 60% of the pool</td><td class="n">33.3%</td><td class="n">31.5%</td></tr>
+          <tr><td>12 sessions &#183; at the turning point</td><td class="n">44.9%</td><td class="n">41.1%</td></tr>
+          <tr><td>16 sessions &#183; gated to 8 active</td><td class="n">11.3%</td><td class="n">11.2%</td></tr>
+          <tr class="grp"><td colspan="3">write-through DRAM tier &#183; prefix served &#183; right: dead versions dropped from DRAM</td></tr>
+          <tr><td>32 sessions &#183; 128 GiB</td><td class="n">54%</td><td class="n fix">86%</td></tr>
+          <tr><td>32 sessions &#183; 256 GiB</td><td class="n">99%</td><td class="n">100%</td></tr>
+          <tr><td>16 sessions &#183; 64 GiB</td><td class="n">91%</td><td class="n">96%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="stack" style="gap:12px">
+      <ul class="list"><li><b>What we validate</b>: whether evicting dead blocks first helps. Dead blocks (superseded versions after an edit, re-rendered replies) are 73&#8211;96% of evictions below the turning point or under the gate, and at least 19&#8211;24% of the pool at 8 sessions</li><li><b>In simulation dead-first never loses to LRU, but the turning point does not move</b>: past it, idle prefixes are pushed out by other sessions' live data, not by garbage</li><li><b>Conclusion</b>: on the GPU dead-first is cheap hygiene; its value is in a write-through DRAM tier, where every edit stores a 12&#8211;16k-token version that dies at the next edit</li><li><b>Calibrated on 11's real offload replays</b>: exact at 16 sessions (98.0 vs 98.5% served), 22 points optimistic at 32</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Source: <span class="mono">research/15_agent_serving_synthesis/README.md</span> &#167;4.1 (F2), &#167;4.6; <span class="mono">pool_sim.md, pool_sim_sweep.md, pool_sim_dram.md</span>. Dead = a block its session's next request can never hit.</p></div>
+</section>
+
+</div>
+</div>
+<div class="hud"><div class="bar" id="bar"></div></div>
+<div class="hint">← → navigate · O overview · P print</div>
+<div class="counter"><span id="ctr">1 / 12</span><button id="ovbtn" type="button" aria-label="Toggle overview">overview</button></div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var body = document.body;
+  var bar = document.getElementById('bar');
+  var ctr = document.getElementById('ctr');
+  var idx = 0;
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    document.documentElement.style.setProperty('--s', String(s));
+  }
+  function show(i, push) {
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === idx); });
+    bar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    ctr.textContent = (idx + 1) + ' / ' + slides.length;
+    document.title = (slides[idx].dataset.title ? slides[idx].dataset.title + ' · ' : '') + 'Memory Tiers for Agent Serving';
+    if (push !== false) { try { history.replaceState(null, '', '#' + (idx + 1)); } catch (e) {} }
+  }
+  function fromHash() {
+    var n = parseInt((location.hash || '#1').slice(1), 10);
+    show(isNaN(n) ? 0 : n - 1, false);
+  }
+  function toggleOverview(force) {
+    var on = typeof force === 'boolean' ? force : !body.classList.contains('overview');
+    body.classList.toggle('overview', on);
+    if (!on) { show(idx); window.scrollTo(0, 0); }
+  }
+
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', fromHash);
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'l': case 'j':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx + 1); } break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'h': case 'k':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx - 1); } break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End': e.preventDefault(); show(slides.length - 1); break;
+      case 'o': case 'O': toggleOverview(); break;
+      case 'Escape': toggleOverview(false); break;
+      case 'p': case 'P': window.print(); break;
+    }
+  });
+  slides.forEach(function (el, k) {
+    el.addEventListener('click', function (e) {
+      if (body.classList.contains('overview')) { show(k); toggleOverview(false); return; }
+      var r = stage.getBoundingClientRect();
+      if (e.clientX - r.left > r.width * 0.5) show(idx + 1); else show(idx - 1);
+    });
+  });
+  document.getElementById('ovbtn').addEventListener('click', function () { toggleOverview(); });
+  window.addEventListener('beforeprint', function () { body.classList.remove('overview'); });
+
+  if (location.search.indexOf('export') !== -1) body.classList.add('export');
+  fit();
+  fromHash();
+})();
+</script>

@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import bisect
 import json
+import linecache
 import lzma
 import math
 import os
@@ -1129,19 +1130,50 @@ def engine_thread(srv: Server, steps: list[tuple], m0: float, m1: float) -> dict
     return res
 
 
-def _frame(st: list[str], skip=("threading.py", "torch/")) -> str:
-    """The innermost frame outside `skip`: for a stack inside torch, the vLLM line that called it."""
+def _label(frame: str) -> str:
+    """A frame for a table. Inductor's generated code (vLLM's torch.compile cache) becomes
+    `compiled layer:<line> <call on that line>`, read from the cached source while it exists."""
+    if "torch_compile_cache" not in frame:
+        return frame
+    path, line, _func = frame.rsplit(":", 2)
+    code = linecache.getline(path, int(line)).strip()
+    return f"compiled layer:{line} {code.split('(', 1)[0]}" if code else f"compiled layer:{line}"
+
+
+def _frame(st: list[str], skip=("threading.py", "torch/", "torch_compile_cache", "<string>")) -> str:
+    """The innermost frame outside `skip`: for a stack inside torch or compiled code, the vLLM caller."""
     for f in st:
         if not any(s in f for s in skip):
             return f
     return st[-1] if st else "?"
 
 
+STACK_GROUPS = ("GEMM launch", "attention-op launch", "other compiled-layer launch", "end-of-step wait",
+                "other (scheduling, input preparation, sampling)")
+
+
+def _group(st: list[str]) -> str:
+    head = st[:3]
+    if any("async_utils.py" in f and f.endswith(":get_output") for f in head):
+        return "end-of-step wait"                      # AsyncOutput.copy_event.synchronize(), blocking=True
+    if any("flash_attn" in f or "reshape_and_cache" in f for f in head):
+        return "attention-op launch"
+    if st and "torch_compile_cache" in st[0]:
+        label = _label(st[0])
+        return "GEMM launch" if "extern_kernels." in label and label.endswith("mm") else "other compiled-layer launch"
+    return STACK_GROUPS[-1]
+
+
 def engine_stacks(steps: list[tuple], stk: list[dict], defs: dict, m0: float, m1: float, top: int = 6) -> dict:
-    """Engine-thread CPU by stack location, for samples inside a long GPU step, in short steps, or neither."""
+    """Where the engine thread is (share of samples) and the CPU charged there, for samples inside a long
+    GPU step, in short steps, or neither. A sample's CPU is that of the 20 ms before it, charged to the
+    stack at its end: right where the thread stays put (long steps), smeared onto the wait where it
+    alternates work and sleep within 20 ms (short steps). Time shares have no such bias."""
     ls, le = _union([(s[0], s[1]) for s in steps if s[1] - s[0] > LONG_STEP_S])
     ss, se = _union([(s[0], s[1]) for s in steps if s[1] - s[0] < SHORT_STEP_S])
-    acc = {c: defaultdict(float) for c in ("long", "short", "other")}
+    loc_cpu = {c: defaultdict(float) for c in ("long", "short", "other")}
+    loc_n = {c: defaultdict(int) for c in loc_cpu}
+    grp_n = {c: defaultdict(int) for c in loc_cpu}
     cpu = defaultdict(float)
     wall = defaultdict(float)
     held = defaultdict(int)
@@ -1153,22 +1185,26 @@ def engine_stacks(steps: list[tuple], stk: list[dict], defs: dict, m0: float, m1
         t = r["t"]
         cls = "long" if _inside(ls, le, t, t) else "short" if _inside(ss, se, t, t) else "other"
         st = defs.get(r["id"], [])
-        key = (st[0] if st else "?", _frame(st))
-        acc[cls][key] += r["cpu"]
+        key = (_label(st[0]) if st else "?", _frame(st))
+        loc_cpu[cls][key] += r["cpu"]
+        loc_n[cls][key] += 1
+        grp_n[cls][_group(st)] += 1
         cpu[cls] += r["cpu"]
         wall[cls] += r["dt"]
         count[cls] += 1
         if ms and r["dt"] > 3 * ms:
             held[cls] += 1
     out = {}
-    for cls in acc:
-        if not count[cls]:
+    for cls in loc_cpu:
+        n = count[cls]
+        if not n:
             continue
-        rows = sorted(acc[cls].items(), key=lambda kv: -kv[1])[:top]
-        out[cls] = {"samples": count[cls], "busy": cpu[cls] / wall[cls] if wall[cls] else None,
-                    "gil_held_share": held[cls] / count[cls],
-                    "top": [{"frame": k[0], "vllm": k[1], "cpu_s": v, "share": v / cpu[cls] if cpu[cls] else None}
-                            for k, v in rows]}
+        rows = sorted(loc_n[cls], key=lambda k: -loc_n[cls][k])[:top]
+        out[cls] = {"samples": n, "busy": cpu[cls] / wall[cls] if wall[cls] else None,
+                    "gil_held_share": held[cls] / n,
+                    "groups": {g: grp_n[cls][g] / n for g in STACK_GROUPS},
+                    "top": [{"frame": k[0], "vllm": k[1], "time_share": loc_n[cls][k] / n, "cpu_s": loc_cpu[cls][k],
+                             "cpu_share": loc_cpu[cls][k] / cpu[cls] if cpu[cls] else None} for k in rows]}
     return out
 
 
@@ -1187,10 +1223,13 @@ def phases(args) -> int:
           f"short steps only = samples spanning >= 5 steps, all < {1e3 * SHORT_STEP_S:.0f} ms.", "",
           "| cell / level | N | busy | steps/s | thread CPU ms/step | schedule ms | update ms | scheduler share of CPU | "
           "long steps | busy inside long step (n; share >= 0.95) | busy, short steps only (n) |", "|" + "---|" * 11]
-    t9 = ["# T9 · Where the EngineCore thread's CPU goes (stack samples, cells run with HW_STACK_MS)", "",
-          "Per class: samples, busy (thread CPU / wall), share of samples where the sampler waited > 3 periods "
-          "(GIL held), then the top stack locations by CPU: innermost frame, and the innermost frame outside "
-          "torch / threading.", ""]
+    t9 = ["# T9 · Where the EngineCore thread is, and its CPU (stack samples, cells run with HW_STACK_MS)", "",
+          f"Classes: samples inside a step whose launch -> result exceeds {LONG_STEP_S:.0f} s (`long`), inside "
+          f"steps under {1e3 * SHORT_STEP_S:.0f} ms (`short`), or neither. busy = thread CPU / wall; GIL held = "
+          "share of samples where the sampler waited > 3 periods. Group and location columns are shares of "
+          "samples (where the thread is). CPU s charges each 20-ms interval's CPU to the stack at its end: "
+          "reliable where the thread stays at one location (long steps), smeared onto the wait in short "
+          "steps, where the thread works and sleeps within 20 ms.", ""]
     any_stk = False
     for name in names:
         for srv_dir in sorted((CELLS / name / "server").glob("*")):
@@ -1214,15 +1253,19 @@ def phases(args) -> int:
                           f"{fmt(e['busy_short_only'])} ({e['n_short_only']}) |")
                 if stk:
                     any_stk = True
+                    es = engine_stacks(steps, stk, defs, m0, m1)
                     t9 += [f"## {tag} (N = {lv['n']})", "",
-                           "| class | samples | busy | GIL held | innermost frame | vLLM frame | CPU s | share |",
-                           "|" + "---|" * 8]
-                    for cls, c in engine_stacks(steps, stk, defs, m0, m1).items():
+                           "| class | samples | busy | GIL held | " + " | ".join(STACK_GROUPS) + " |",
+                           "|" + "---|" * (4 + len(STACK_GROUPS))]
+                    for cls, c in es.items():
+                        t9.append(f"| {cls} | {c['samples']} | {fmt(c['busy'])} | {fmt(c['gil_held_share'])} | "
+                                  + " | ".join(fmt(c["groups"][g]) for g in STACK_GROUPS) + " |")
+                    t9 += ["", "| class | location (innermost frame) | vLLM caller | time share | CPU s | CPU share |",
+                           "|" + "---|" * 6]
+                    for cls, c in es.items():
                         for i, row in enumerate(c["top"]):
-                            lead = (f"| {cls} | {c['samples']} | {fmt(c['busy'])} | {fmt(c['gil_held_share'])} "
-                                    if i == 0 else "| | | | ")
-                            t9.append(f"{lead}| `{row['frame']}` | `{row['vllm']}` | {fmt(row['cpu_s'], 1)} | "
-                                      f"{fmt(row['share'])} |")
+                            t9.append(f"| {cls if i == 0 else ''} | `{row['frame']}` | `{row['vllm']}` | "
+                                      f"{fmt(row['time_share'])} | {fmt(row['cpu_s'], 1)} | {fmt(row['cpu_share'])} |")
                     t9.append("")
             print(f"{name}: {srv_dir.name} done", flush=True)
     TABLES.mkdir(parents=True, exist_ok=True)

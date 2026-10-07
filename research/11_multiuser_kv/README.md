@@ -24,21 +24,21 @@
 > **Presented:** —
 
 **Contents** — Short answer · §1 Question · §2 Method · §3 Results (§3.1 what ran, §3.2 the load curve,
-§3.3 where a call's time goes, §3.4 the mechanism above the knee, §3.5 the causal test, §3.6 the
+§3.3 where a call's time goes, §3.4 the mechanism above the turning point, §3.5 the causal test, §3.6 the
 harness's own cache busting, §3.7 policies, §3.8 verification) · §4 Conclusions · §5 Caveats ·
 §6 Reproduction · Data inventory · Changes during the run
 
 ## Short answer
 
-- **KV contention is the bottleneck, but only past a knee, and past the knee it dominates.** The knee
+- **KV contention is the bottleneck, but only past a turning point, and past the turning point it dominates.** The turning point
   is where the users' combined working sets exceed the KV pool: 8-12 users here (258k-token pool,
   about 20-30k tokens of context per user).
-- **Below the knee (N ≤ 8) the GPU is saturated by useful work.**
+- **Below the turning point (N ≤ 8) the GPU is saturated by useful work.**
   - A user's calls slow down 1.7-2.4× from sharing steps with other users. 93-94% of that is compute
     sharing: other users' prefill chunks in my steps cost 1.6-2.8 s per call, decode batching 0.5-1.6 s.
   - Eviction touches 0-1% of prompt tokens and costs ≤ 4% of the excess latency.
   - Throughput grows to 3,077 lead calls/h (95 turns/h) at N=8.
-- **Above the knee the prefix cache stops working and the server thrashes.**
+- **Above the turning point the prefix cache stops working and the server thrashes.**
   - At N ≥ 16 the prefix-hit rate falls from 86% to 1-2%, and 84-85% of prompt tokens are histories
     re-prefilled because their KV had been evicted.
   - Re-prefilling evicted prefixes takes 65-74% of GPU time.
@@ -253,7 +253,7 @@ latency**: from a user's message to the harness's final answer. **paired wall ra
 same specs, of session wall time in the row's cell over the other cell's. *What it says:* one H200
 serves up to about 8 of these users with a 1.7-2.4× per-call slowdown and rising throughput; from 12
 users on, every extra user reduces the total work done, and a session takes 7.6× as long at N=16 as at
-N=8. Past the knee the curve is flat (N=16 and N=32 do the same work per hour); the extra users only
+N=8. Past the turning point the curve is flat (N=16 and N=32 do the same work per hour); the extra users only
 queue.
 
 ### 3.3 Where a lead call's time goes
@@ -293,7 +293,7 @@ histories inside my steps (13.6-23.7 s per call), then queueing for KV and for s
 "ongoing requests are straggled" effect, and it comes from recompute, not from preemption (0.00 s per call
 everywhere) or the frontend (≤ 0.9 s).
 
-### 3.4 The mechanism above the knee
+### 3.4 The mechanism above the turning point
 
 Prompt tokens by class, share of all lead-call prompt tokens (T3):
 
@@ -342,7 +342,7 @@ re-prefills its history. Thrashing, not a tail effect.
 
 *What it says:* the same 8 users with the same tasks move from the compute-bound regime into the
 thrashing regime when only the KV capacity changes, and land where 16 users on the full pool land (978
-vs 976 lead calls/h). The knee is set by KV capacity against the users' working sets, not by the number
+vs 976 lead calls/h). The turning point is set by KV capacity against the users' working sets, not by the number
 of users or by compute.
 
 ### 3.6 The harness's own cache busting (N=8)
@@ -446,7 +446,7 @@ being recomputed. *What it says:*
 ## 5. Caveats
 
 - One model (dense GQA, 256 KiB/token), one GPU type, vLLM 0.29 defaults, one harness, solo sessions.
-  The knee moves with KV per token, pool size and context length: an MLA or hybrid model, fp8 KV, or a
+  The turning point moves with KV per token, pool size and context length: an MLA or hybrid model, fp8 KV, or a
   shorter context would put it at more users.
 - Think times are synthetic (lognormal, median 30 s) and tool pauses are this sandbox's (milliseconds).
   Longer tool pauses (tests, builds, web calls) would expose prefixes to eviction below N=8.
@@ -515,7 +515,7 @@ sbatch --export=NONE research/11_multiuser_kv/mu_cpu.sbatch replay
   large file read the retried call overflowed again and 2 of 3 overflowing turns ended in errors. The
   limit became the model's input window in the harness's units (134,000 characters, §2.2).
 - **Stage 2 moved from N=16 to N=8** (2026-09-27): N=16 was deep in the thrashing regime, where each
-  contrast would drown and cost ~7 GPU-hours; N=12 was added to locate the knee.
+  contrast would drown and cost ~7 GPU-hours; N=12 was added to locate the turning point.
 - **Stage 3 = the session gate live** (2026-09-27): the gate was added to `mu_scheduler.py` (tested on
   CPU with vLLM's scheduler in the loop) because it is the direct form of "let the ongoing sessions
   finish" and needs no coordination between harness processes; it ran live before the replay study

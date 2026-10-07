@@ -17,6 +17,7 @@
 #   sbatch --export=NONE research/12_hw_utilization/hw.sbatch - p2a,p2b p2c                    # J1
 #   sbatch --export=NONE research/12_hw_utilization/hw.sbatch - k1h,k1l k2,k3                  # J2
 #   sbatch --export=NONE --mem=320G research/12_hw_utilization/hw.sbatch t2,k2t o1 -          # J3
+#   sbatch --export=NONE --time=02:00:00 research/12_hw_utilization/hw.sbatch - s1 s2       # J4 (follow-up)
 # Resubmitting the same arguments resumes (finished cells and levels are skipped).
 cd /mnt/home/yqi10/learn-claude-code || exit 1
 exec bash research/12_hw_utilization/hw_pipeline.sh "${1:--}" "${2:--}" "${3:--}"
