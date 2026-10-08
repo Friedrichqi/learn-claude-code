@@ -35,9 +35,29 @@ python3 research/common/drive_data.py pull 11 12        # fresh clone: fetch top
 ```
 
 - `push` never deletes anything on Drive.
+- `push --min-age 30m` leaves files modified in the last 30 minutes for later. Use it while a run may still be writing.
 - `pull` only adds missing files, so local results that aren't pushed yet are never overwritten. Pass `--overwrite` to replace local files that differ.
 - Topics are folder names or their number prefix.
-- Drive accepts about 3 new files per second, so a topic with 10k+ files takes about an hour. Run big pushes with `nohup` on the login node.
+- Pushes and pulls never overlap; a second one waits for the first.
+- Drive takes about 1.2 new files per second, so a topic with 10k files takes about 2 hours. Run big pushes with `nohup` on the login node.
+
+## Automatic sync
+
+A watcher on alpha1 pushes every topic once an hour, so you don't need to run `push` yourself. It includes new
+`research/NN_*` folders and leaves files modified in the last 30 minutes for the next round.
+
+```
+python3 research/common/drive_data.py watch --status    # running? how did the last round go?
+python3 research/common/drive_data.py watch --stop      # stop it (e.g. before editing drive_data.py)
+python3 research/common/drive_data.py watch --ensure    # start it unless it is running
+python3 research/common/drive_data.py watch --once      # one round now, in the foreground
+```
+
+- **Why a watcher:** there is no scheduler to use on this cluster. User crontab is not allowed, `scrontab` is disabled, and systemd linger is off.
+- **Keeping it alive:** the watcher runs detached, like a `nohup` job. A Claude Code `SessionStart` hook in `.claude/settings.local.json` runs `watch --ensure` on alpha1, so after a reboot it comes back with your next session.
+- **Files:** its log, its last-round summary and the push lock are in `~/.cache/lcc-drive-sync/`.
+- **When a round does nothing:** listing every topic on Drive takes about 2 minutes. A round is skipped while a manual push or pull holds the lock.
+- **After editing `drive_data.py`:** run `watch --stop` and then `watch --ensure`, so the watcher loads the new code.
 
 ## Setup on a new machine
 

@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""push / status / pull round trip of drive_data.py against a local directory standing in for Google
-Drive.  Run: python3 -m pytest research/common/test_drive_data.py (skips without rclone)."""
+"""push / status / pull round trip and the automatic watcher of drive_data.py, against a local
+directory standing in for Google Drive and a temporary state directory (so the real watcher's lock
+is never touched).  Run: python3 -m pytest research/common/test_drive_data.py (skips without rclone)."""
 
 from __future__ import annotations
 
+import fcntl
 import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -16,9 +19,23 @@ TOOL = Path(__file__).resolve().with_name("drive_data.py")
 pytestmark = pytest.mark.skipif(shutil.which("rclone") is None, reason="rclone not installed")
 
 
+def env(research: Path) -> dict[str, str]:
+    out = dict(os.environ, LCC_DATA_STATE=str(research.parent / "state"))
+    out.pop("SLURM_JOB_ID", None)                       # watch --ensure refuses to start inside a job
+    return out
+
+
+def cmd(research: Path, remote: Path, *args: str) -> list[str]:
+    return [sys.executable, str(TOOL), "--research-dir", str(research), "--remote", str(remote), *args]
+
+
 def run(research: Path, remote: Path, *args: str) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, str(TOOL), "--research-dir", str(research),
-                           "--remote", str(remote), *args], capture_output=True, text=True)
+    return subprocess.run(cmd(research, remote, *args), capture_output=True, text=True, env=env(research))
+
+
+def age(path: Path, seconds: float) -> None:
+    t = time.time() - seconds
+    os.utime(path, (t, t), follow_symlinks=False)
 
 
 def make_topic(research: Path) -> Path:
@@ -92,3 +109,57 @@ def test_unknown_topic(tmp_path: Path) -> None:
     make_topic(research)
     res = run(research, tmp_path / "drive", "push", "99")
     assert res.returncode != 0 and "not found" in res.stderr
+
+
+def test_round_leaves_young_files_and_yields_to_a_manual_push(tmp_path: Path) -> None:
+    research, remote = tmp_path / "research", tmp_path / "drive"
+    data = make_topic(research)
+    for p in data.rglob("*"):
+        age(p, 7200)                                    # everything two hours old ...
+    (data / "runs" / "run_live.jsonl").write_text("{}\n")   # ... except a file a run is still writing
+    mirror = remote / "research" / "01_demo" / "data"
+
+    (tmp_path / "state").mkdir()
+    with open(tmp_path / "state" / "transfer.lock", "a") as held:   # a manual push is running
+        fcntl.flock(held, fcntl.LOCK_EX)
+        res = run(research, remote, "watch", "--once")
+        assert res.returncode == 0 and "skipped" in res.stdout, res.stdout + res.stderr
+        assert not mirror.exists()
+        waiting = subprocess.Popen(cmd(research, remote, "push", "--min-age", "1h"), env=env(research),
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        time.sleep(1.5)
+        assert waiting.poll() is None and not mirror.exists()          # a manual push waits its turn
+    out, err = waiting.communicate(timeout=60)
+    assert waiting.returncode == 0 and "waiting for it" in err, err
+    assert (mirror / "runs" / "run_1.jsonl").exists() and not (mirror / "runs" / "run_live.jsonl").exists()
+
+    res = run(research, remote, "watch", "--once", "--min-age", "1h")
+    assert res.returncode == 0 and "done: rc 0" in res.stdout, res.stdout + res.stderr
+    assert not (mirror / "runs" / "run_live.jsonl").exists()          # still too young
+    st = run(research, remote, "watch", "--status")
+    assert st.returncode == 1 and "not running" in st.stdout and "last success:" in st.stdout, st.stdout
+
+    age(data / "runs" / "run_live.jsonl", 7200)                       # the run finished long ago
+    assert run(research, remote, "watch", "--once", "--min-age", "1h").returncode == 0
+    assert (mirror / "runs" / "run_live.jsonl").read_text() == "{}\n"
+
+
+def test_ensure_starts_one_detached_watcher_and_stop_ends_it(tmp_path: Path) -> None:
+    research, remote, state = tmp_path / "research", tmp_path / "drive", tmp_path / "state"
+    make_topic(research)
+    try:
+        res = run(research, remote, "watch", "--ensure", "--every", "1h", "--min-age", "0s")
+        assert res.returncode == 0 and "started watcher" in res.stdout, res.stdout + res.stderr
+        deadline = time.time() + 60
+        while not (state / "last_round.json").exists() and time.time() < deadline:
+            time.sleep(0.2)
+        st = run(research, remote, "watch", "--status")
+        assert st.returncode == 0 and "watcher: running" in st.stdout and "rc 0" in st.stdout, st.stdout
+        assert (remote / "research" / "01_demo" / "data" / "runs" / "run_1.jsonl").exists()
+        assert "done: rc 0" in (state / "watch.log").read_text()
+        again = run(research, remote, "watch", "--ensure")
+        assert "already running" in again.stdout, again.stdout
+    finally:
+        res = run(research, remote, "watch", "--stop")
+    assert "stopped watcher" in res.stdout, res.stdout
+    assert run(research, remote, "watch", "--status").returncode == 1
