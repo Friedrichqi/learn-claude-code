@@ -930,28 +930,65 @@ PROMPT_SECTIONS = {
 }
 
 
+# The system prompt heads every lead request, and chat templates render the tool
+# schemas right after it, so one changed byte here invalidates the server's prefix
+# cache for the whole request. It is therefore built once per session from static
+# sections plus a session-start snapshot of the memory catalog, and then reused
+# verbatim (no clock: a per-second timestamp made every call a cache miss). What
+# changes during the session is appended instead: recalled memory records and
+# catalog updates go into the newest user message (append_context_updates), and an
+# MCP connection is announced by connect_mcp's own tool result.
+_session_system_prompt: str | None = None
+_delivered_context = {"memory_catalog": "", "memories": ""}
+
+
 def assemble_system_prompt(context: dict) -> str:
-    # The system prompt is rebuilt each turn from live context. This is where
-    # memory, skill catalog, MCP state, and active teammates become visible.
-    sections = [PROMPT_SECTIONS["identity"],
-                PROMPT_SECTIONS["tools"],
-                PROMPT_SECTIONS["tasks"],
-                PROMPT_SECTIONS["teams"],
-                PROMPT_SECTIONS["workspace"],
-                PROMPT_SECTIONS["memory"],
-                PROMPT_SECTIONS["compaction"],
-                PROMPT_SECTIONS["efficiency"]]
-    sections.append(f"Current time: {datetime.now().isoformat(timespec='seconds')}")
-    sections.append("Skills catalog:\n" + list_skills() +
-                    "\nUse load_skill(name) when a skill is relevant.")
-    if context.get("memory_catalog"):
-        sections.append(f"Memory catalog:\n{context['memory_catalog']}")
-    if context.get("memories"):
-        sections.append(f"Relevant memory records:\n{context['memories']}")
-    mcp_names = list(mcp_clients.keys())
-    if mcp_names:
-        sections.append(f"Connected MCP servers: {', '.join(mcp_names)}")
-    return "\n\n".join(sections)
+    global _session_system_prompt
+    if _session_system_prompt is None:
+        sections = [PROMPT_SECTIONS["identity"],
+                    PROMPT_SECTIONS["tools"],
+                    PROMPT_SECTIONS["tasks"],
+                    PROMPT_SECTIONS["teams"],
+                    PROMPT_SECTIONS["workspace"],
+                    PROMPT_SECTIONS["memory"],
+                    PROMPT_SECTIONS["compaction"],
+                    PROMPT_SECTIONS["efficiency"]]
+        sections.append("Skills catalog:\n" + list_skills() +
+                        "\nUse load_skill(name) when a skill is relevant.")
+        catalog = context.get("memory_catalog") or ""
+        if catalog:
+            sections.append(f"Memory catalog:\n{catalog}")
+        _delivered_context["memory_catalog"] = catalog
+        _session_system_prompt = "\n\n".join(sections)
+    return _session_system_prompt
+
+
+def append_context_updates(messages: list, context: dict) -> None:
+    """Append what changed in the live context since the last lead call to the
+    newest user message, which the model has not seen yet. Earlier bytes of the
+    request stay identical, so the prefix cache stays valid (append-only)."""
+    assemble_system_prompt(context)  # take the session-start snapshot first
+    notes = []
+    catalog = context.get("memory_catalog") or ""
+    if catalog != _delivered_context["memory_catalog"]:
+        notes.append(f"<memory-catalog-update>\n{catalog or '(empty)'}\n"
+                     "</memory-catalog-update>")
+        _delivered_context["memory_catalog"] = catalog
+    memories = context.get("memories") or ""
+    if memories and memories != _delivered_context["memories"]:
+        notes.append("<memory-recall>\nRelevant memory records:\n"
+                     f"{memories}\n</memory-recall>")
+        _delivered_context["memories"] = memories
+    if not notes:
+        return
+    blocks = [{"type": "text", "text": note} for note in notes]
+    if messages and messages[-1].get("role") == "user":
+        content = messages[-1]["content"]
+        if isinstance(content, str):
+            content = [{"type": "text", "text": content}]
+        messages[-1]["content"] = list(content) + blocks
+    else:
+        messages.append({"role": "user", "content": blocks})
 
 
 # -- Basic Tools --
@@ -3578,6 +3615,7 @@ def agent_loop(messages: list, context: dict, active_request: str):
 
         prepare_context(messages, active_request)
         context = update_context(context, messages)
+        append_context_updates(messages, context)
         tools, handlers = assemble_tool_pool()
 
         try:

@@ -354,11 +354,18 @@ class AgentTeamsRuntimeTests(unittest.TestCase):
             messages = [{"role": "user", "content": "Format this file."}]
 
             context = lesson.update_context({}, messages)
+            lesson.append_context_updates(messages, context)
             system = lesson.assemble_system_prompt(context)
             lesson.remember_after_turn(messages)
 
+            # The catalog is a session-start snapshot in the static system
+            # prompt; recalled records are appended to the newest user turn.
             self.assertIn("Memory catalog", system)
-            self.assertIn("Relevant memory records", system)
+            self.assertNotIn("Relevant memory records", system)
+            self.assertIn("Relevant memory records",
+                          messages[-1]["content"][-1]["text"])
+            self.assertEqual(messages[0]["content"][0]["text"],
+                             "Format this file.")
             self.assertEqual(
                 [name for name, _payload in calls],
                 ["recall", "extract", "consolidate"],

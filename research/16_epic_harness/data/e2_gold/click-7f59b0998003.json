@@ -1,0 +1,844 @@
+{
+ "codebase": "click",
+ "seed_hash": "7f59b09980036a57dc57cc5dac0f6119b19ec18a3bda7ff1b5de9aa15e6730fc",
+ "spec": {
+  "setup": "import click\n@click.command()\n@click.option('--name', default='world')\ndef hello(name):\n    click.echo('Hello ' + name)\n",
+  "call": "hello.main(args=['--name', 'x'], standalone_mode=False)"
+ },
+ "executed": [
+  {
+   "rel": "_compat.py",
+   "qualname": "_find_binary_writer",
+   "start": 194,
+   "end": 209,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "_force_correct_text_stream",
+   "start": 241,
+   "end": 284,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "_force_correct_text_writer",
+   "start": 303,
+   "end": 316,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "_get_windows_console_stream",
+   "start": 530,
+   "end": 533,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "_is_binary_writer",
+   "start": 163,
+   "end": 173,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "_is_compat_stream_attr",
+   "start": 221,
+   "end": 227,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "_is_compatible_text_stream",
+   "start": 230,
+   "end": 238,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "_is_jupyter_kernel_output",
+   "start": 495,
+   "end": 499,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "_make_cached_stream_func.<locals>.func",
+   "start": 553,
+   "end": 570,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "_stream_is_misconfigured",
+   "start": 212,
+   "end": 218,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "get_text_stdout",
+   "start": 347,
+   "end": 351,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "is_ascii_encoding",
+   "start": 43,
+   "end": 48,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "isatty",
+   "start": 540,
+   "end": 544,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "should_strip_ansi",
+   "start": 502,
+   "end": 513,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "_compat.py",
+   "qualname": "strip_ansi",
+   "start": 491,
+   "end": 492,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command._main_shell_completion",
+   "start": 1597,
+   "end": 1627,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.get_help_option",
+   "start": 1192,
+   "end": 1224,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.get_help_option_names",
+   "start": 1177,
+   "end": 1190,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.get_params",
+   "start": 1102,
+   "end": 1156,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.get_params.<locals>.<genexpr>",
+   "start": 1114,
+   "end": 1114,
+   "count": 2,
+   "matched": false
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.get_params.<locals>.<genexpr>",
+   "start": 1128,
+   "end": 1128,
+   "count": 6,
+   "matched": false
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.get_params.<locals>.<genexpr>",
+   "start": 1129,
+   "end": 1129,
+   "count": 2,
+   "matched": false
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.invoke",
+   "start": 1401,
+   "end": 1415,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.main",
+   "start": 1484,
+   "end": 1595,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.make_context",
+   "start": 1328,
+   "end": 1363,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.make_parser",
+   "start": 1226,
+   "end": 1231,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Command.parse_args",
+   "start": 1365,
+   "end": 1399,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Context.__enter__",
+   "start": 549,
+   "end": 552,
+   "count": 3,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Context.__exit__",
+   "start": 554,
+   "end": 566,
+   "count": 3,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Context.__init__",
+   "start": 340,
+   "end": 514,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Context._close_with_exception_info",
+   "start": 696,
+   "end": 712,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Context._default_map_has",
+   "start": 761,
+   "end": 773,
+   "count": 4,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Context.get_parameter_source",
+   "start": 940,
+   "end": 956,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Context.invoke",
+   "start": 857,
+   "end": 910,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Context.lookup_default",
+   "start": 785,
+   "end": 805,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Context.scope",
+   "start": 568,
+   "end": 604,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Context.set_parameter_source",
+   "start": 931,
+   "end": 938,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option.__init__",
+   "start": 2951,
+   "end": 3030,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option._infer_flag_kind",
+   "start": 3054,
+   "end": 3085,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option._parse_decls",
+   "start": 3235,
+   "end": 3294,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option._pick_type",
+   "start": 3087,
+   "end": 3124,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option._resolve_lazy_default",
+   "start": 3126,
+   "end": 3148,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option._validate",
+   "start": 3150,
+   "end": 3170,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option.add_to_parser",
+   "start": 3296,
+   "end": 3336,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option.consume_value",
+   "start": 3589,
+   "end": 3643,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option.flag_activation_value",
+   "start": 3041,
+   "end": 3052,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option.get_default",
+   "start": 3195,
+   "end": 3227,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option.is_bool_flag",
+   "start": 3032,
+   "end": 3039,
+   "count": 5,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option.process_value",
+   "start": 3645,
+   "end": 3660,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option.resolve_envvar_value",
+   "start": 3517,
+   "end": 3539,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Option.value_from_envvar",
+   "start": 3541,
+   "end": 3587,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Parameter.__init__",
+   "start": 2299,
+   "end": 2371,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Parameter.__repr__",
+   "start": 2406,
+   "end": 2407,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Parameter.consume_value",
+   "start": 2481,
+   "end": 2527,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Parameter.get_default",
+   "start": 2445,
+   "end": 2476,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Parameter.handle_parse_result",
+   "start": 2730,
+   "end": 2816,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Parameter.process_value",
+   "start": 2603,
+   "end": 2667,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Parameter.resolve_envvar_value",
+   "start": 2669,
+   "end": 2712,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Parameter.type_cast_value",
+   "start": 2529,
+   "end": 2583,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "Parameter.type_cast_value.<locals>.convert",
+   "start": 2554,
+   "end": 2555,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "augment_usage_errors",
+   "start": 123,
+   "end": 139,
+   "count": 6,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "iter_params_for_processing",
+   "start": 142,
+   "end": 166,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "core.py",
+   "qualname": "iter_params_for_processing.<locals>.sort_key",
+   "start": 158,
+   "end": 164,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "decorators.py",
+   "qualname": "_param_memo",
+   "start": 314,
+   "end": 321,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "decorators.py",
+   "qualname": "help_option",
+   "start": 603,
+   "end": 627,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "decorators.py",
+   "qualname": "help_option.<locals>.show_help",
+   "start": 612,
+   "end": 616,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "decorators.py",
+   "qualname": "option",
+   "start": 352,
+   "end": 377,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "decorators.py",
+   "qualname": "option.<locals>.decorator",
+   "start": 373,
+   "end": 375,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "globals.py",
+   "qualname": "get_current_context",
+   "start": 20,
+   "end": 41,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "globals.py",
+   "qualname": "pop_context",
+   "start": 49,
+   "end": 51,
+   "count": 3,
+   "matched": true
+  },
+  {
+   "rel": "globals.py",
+   "qualname": "push_context",
+   "start": 44,
+   "end": 46,
+   "count": 3,
+   "matched": true
+  },
+  {
+   "rel": "globals.py",
+   "qualname": "resolve_color_default",
+   "start": 54,
+   "end": 67,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_Option.__init__",
+   "start": 128,
+   "end": 163,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_Option.process",
+   "start": 169,
+   "end": 182,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_Option.takes_value",
+   "start": 165,
+   "end": 167,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_OptionParser.__init__",
+   "start": 241,
+   "end": 263,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_OptionParser._get_value_from_state",
+   "start": 430,
+   "end": 468,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_OptionParser._match_long_opt",
+   "start": 363,
+   "end": 388,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_OptionParser._process_args_for_args",
+   "start": 316,
+   "end": 325,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_OptionParser._process_args_for_options",
+   "start": 327,
+   "end": 341,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_OptionParser._process_opts",
+   "start": 470,
+   "end": 500,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_OptionParser.add_option",
+   "start": 265,
+   "end": 288,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_OptionParser.parse_args",
+   "start": 298,
+   "end": 314,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_ParsingState.__init__",
+   "start": 217,
+   "end": 221,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_normalize_opt",
+   "start": 120,
+   "end": 124,
+   "count": 3,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_split_opt",
+   "start": 111,
+   "end": 117,
+   "count": 3,
+   "matched": true
+  },
+  {
+   "rel": "parser.py",
+   "qualname": "_unpack_args",
+   "start": 51,
+   "end": 108,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "types.py",
+   "qualname": "BoolParamType.convert",
+   "start": 859,
+   "end": 871,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "types.py",
+   "qualname": "BoolParamType.str_to_bool",
+   "start": 844,
+   "end": 857,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "types.py",
+   "qualname": "ParamType.__call__",
+   "start": 148,
+   "end": 156,
+   "count": 2,
+   "matched": true
+  },
+  {
+   "rel": "types.py",
+   "qualname": "StringParamType.convert",
+   "start": 296,
+   "end": 312,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "types.py",
+   "qualname": "_guess_type",
+   "start": 1296,
+   "end": 1328,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "types.py",
+   "qualname": "convert_type",
+   "start": 1341,
+   "end": 1382,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "utils.py",
+   "qualname": "_detect_program_name",
+   "start": 562,
+   "end": 614,
+   "count": 1,
+   "matched": true
+  },
+  {
+   "rel": "utils.py",
+   "qualname": "echo",
+   "start": 252,
+   "end": 346,
+   "count": 1,
+   "matched": true
+  }
+ ],
+ "spine_funcs": [
+  [
+   "core.py",
+   "Command.main"
+  ],
+  [
+   "core.py",
+   "Command.make_context"
+  ],
+  [
+   "core.py",
+   "Command.invoke"
+  ],
+  [
+   "core.py",
+   "Context.invoke"
+  ]
+ ],
+ "spine_files": [
+  "core.py"
+ ],
+ "spine_mode": "curated",
+ "spine_deepest": [
+  [
+   "core.py",
+   "Command.main"
+  ],
+  [
+   "core.py",
+   "Command.make_context"
+  ],
+  [
+   "core.py",
+   "Command.parse_args"
+  ],
+  [
+   "core.py",
+   "Command.make_parser"
+  ],
+  [
+   "core.py",
+   "Command.get_params"
+  ],
+  [
+   "core.py",
+   "Command.get_help_option"
+  ],
+  [
+   "decorators.py",
+   "option.<locals>.decorator"
+  ],
+  [
+   "core.py",
+   "Option.__init__"
+  ],
+  [
+   "core.py",
+   "Parameter.__init__"
+  ],
+  [
+   "core.py",
+   "Option._parse_decls"
+  ],
+  [
+   "parser.py",
+   "_split_opt"
+  ]
+ ],
+ "error": null,
+ "static": false,
+ "override": {
+  "source": "curated",
+  "dropped": []
+ }
+}

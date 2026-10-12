@@ -1,0 +1,114 @@
+{
+ "phase": "main",
+ "seed": "epic16",
+ "lanes": 2,
+ "repeats": 4,
+ "shift_reps": 2,
+ "aa_reps": 2,
+ "selection": {
+  "r1": [
+   "httpx-M2-to_bytes_or_str",
+   "requests-M2-should_bypass_proxies",
+   "s15_harness-M2-update_task",
+   "click-M2-open_stream",
+   "yaml-M2-load",
+   "typer-M1",
+   "tqdm-M1",
+   "requests-M1",
+   "packaging-M1",
+   "httpx-M1",
+   "yaml-M1",
+   "packaging-M3-version"
+  ],
+  "r2": []
+ },
+ "summary": {
+  "runs": 240,
+  "blocks": 48,
+  "arms": {
+   "R1": {
+    "epic128": 48,
+    "epic32": 48,
+    "epic64": 48,
+    "prefix": 48,
+    "prefix_aa": 24,
+    "shift": 24
+   },
+   "R2": {}
+  },
+  "cells": 12,
+  "per_template": {
+   "M1": 120,
+   "M2": 100,
+   "M3": 20
+  },
+  "codebases": {
+   "tqdm": 20,
+   "requests": 40,
+   "packaging": 40,
+   "yaml": 40,
+   "click": 20,
+   "s15_harness": 20,
+   "typer": 20,
+   "httpx": 40
+  },
+  "lanes": {
+   "0": 120,
+   "1": 120
+  }
+ },
+ "codebases": {
+  "requests": {
+   "seed": "/data/fritz/venv/lib/python3.12/site-packages/requests",
+   "version": "2.34.2",
+   "seed_hash": "c36e4e80fb0b670ebdb790bbc3339ba1f623d1cda9b5938a952019385dbba5e3"
+  },
+  "click": {
+   "seed": "/data/fritz/venv/lib/python3.12/site-packages/click",
+   "version": "8.5.0",
+   "seed_hash": "7f59b09980036a57dc57cc5dac0f6119b19ec18a3bda7ff1b5de9aa15e6730fc"
+  },
+  "jinja2": {
+   "seed": "/data/fritz/venv/lib/python3.12/site-packages/jinja2",
+   "version": "3.1.6",
+   "seed_hash": "03258c05e68a3754d2c4218feb82b398c8c09f9a77a59b735b141c18ff08d2eb"
+  },
+  "rich": {
+   "seed": "/data/fritz/venv/lib/python3.12/site-packages/rich",
+   "version": "15.0.0",
+   "seed_hash": "226e35dfb777f1222277ab5c920202feceb35ed6f79f9b8339cd2cfee517fd6b"
+  },
+  "httpx": {
+   "seed": "/data/fritz/venv/lib/python3.12/site-packages/httpx",
+   "version": "0.28.1",
+   "seed_hash": "6b49d3bb7f0aa995da547e8a2532f9b36137d319d952fd507292d6408758040f"
+  },
+  "yaml": {
+   "seed": "/data/fritz/venv/lib/python3.12/site-packages/yaml",
+   "version": "6.0.3",
+   "seed_hash": "c6db2e6e6e92f1ac69b10071484a1ba7f03cb46b118fdace5dcb317b64f7206e"
+  },
+  "packaging": {
+   "seed": "/data/fritz/venv/lib/python3.12/site-packages/packaging",
+   "version": "26.3",
+   "seed_hash": "44c405acefc0614cb826c77dea0bf97bd1e1cfb96c02891ba027ead08c0781c9"
+  },
+  "tqdm": {
+   "seed": "/data/fritz/venv/lib/python3.12/site-packages/tqdm",
+   "version": "4.70.1",
+   "seed_hash": "3d1f0d2fff56e2bc315f9237f6d1d3e8f92722a694e954eb714fc5d6d1123c04"
+  },
+  "typer": {
+   "seed": "/data/fritz/venv/lib/python3.12/site-packages/typer",
+   "version": "0.27.3",
+   "seed_hash": "2f3449efdb98abef4d7e7d3ded3e4867a0b7e3d9f85889877989653a81461e6c"
+  },
+  "s15_harness": {
+   "seed": "/home/fritz/learn-claude-code/s15_integrated_harness",
+   "version": "repo",
+   "seed_hash": "152f99794cc3284f481a9694947fa858bfca399b1cac2f9aa659b93c72d4173c"
+  }
+ },
+ "source_10": "research/10_rope_shift/workloads.py",
+ "source_08": "research/08_context_inheritance/codebase_workloads.py"
+}
