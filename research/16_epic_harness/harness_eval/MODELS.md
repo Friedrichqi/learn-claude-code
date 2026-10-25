@@ -1,0 +1,185 @@
+# Open-weight models for the s15 profiling round: sizes, KV-cache architectures, base performance
+
+Survey date: 2026-10-11. Scope: models that fit on at most 4x H100 80GB (320 GB), served with vLLM 0.31.0, with
+published agentic scores high enough that a later KV perturbation (shift / EPIC re-rotation of reused KV after
+context edits) can move accuracy visibly. Numbers are tagged **V** (vendor), **I** (independent: Vals, Scale) or
+**X** (measured by another vendor in its own model card); "—" means not found. Sources are listed at the end.
+
+## 1. Why the cache architecture matters for the next round
+
+| family | what is cached | what RoPE re-rotation can fix | what it cannot |
+|---|---|---|---|
+| (a) full attention, GQA + RoPE | K, V for every layer and token | every layer's K (rotate by the shift) | the content computed over the old context (staleness) |
+| (b) hybrid linear attention (Gated DeltaNet, Mamba, KDA) | KV only in the few attention layers; a recurrent state elsewhere | the attention layers' K | the recurrent state: after an edit every later token must be recomputed for the linear layers anyway, so "shift" means re-rotated attention KV plus a stale state, and saves little compute |
+| (c) compressed / latent KV (MLA, DeepSeek-V4 CSA/HCA) | a latent vector + a small RoPE key (MLA); pooled blocks (V4) | the separate RoPE key (MLA); V4's RoPE dims, exactly only for shifts aligned to the 128-token pooling blocks | pooled entries that straddle the edit |
+| (d) sliding window + global layers | KV of the last W tokens in local layers, full KV in global layers | all layers' K | NoPE global layers ignore positions entirely |
+
+## 2. Candidates (fit on 4x H100)
+
+| # | model (HF repo) | released | params (total / active) | weights | context | min vLLM | license |
+|---|---|---|---|---|---|---|---|
+| **(a) full attention** |||||||
+| 1 | MiniMax-M2.7 (`MiniMaxAI/MiniMax-M2.7`) | 2026-04-12 | 229B / 10B | FP8 ~220-230 GB | 196K | latest, TP4 | custom |
+| 2 | Devstral 2 (`mistralai/Devstral-2-123B-Instruct-2512`) | 2025-12 | 123B dense | FP8 ~125 GB (est.) | 256K | latest + mistral_common ≥1.8.6 | modified MIT |
+| 3 | Devstral Small 2 (`mistralai/Devstral-Small-2-24B-Instruct-2512`) | 2025-12 | 24B dense | FP8 ~25 GB (est.) | 256K | as #2 | Apache-2.0 |
+| — | Qwen3-32B (`Qwen/Qwen3-32B`) — legacy comparison | 2025-04 | 32B dense | BF16 ~65 GB | 32K native | any | Apache-2.0 |
+| **(b) hybrid linear attention** |||||||
+| 4 | **Qwen3.8-27B** (`Qwen/Qwen3.8-27B`, `-FP8`) | 2026-08-14 | 27B dense (+ vision) | BF16 ~56 GB; FP8 30.9 GB | 262K (1M YaRN) | ≥0.17.0 | Apache-2.0 |
+| 5 | Qwen3.6-27B (`Qwen/Qwen3.6-27B`) | 2026-04-22 | 27B dense | BF16 / FP8 | 262K | ≥0.19.0 | Apache-2.0 |
+| 6 | Qwen3.8-Flash-Next (`Qwen/Qwen3.8-Flash-Next`) | 2026-08 | ~180B / 6B | FP8 ~180 GB (est.) | 262K | dedicated image | qwen-community-1.0 |
+| 7 | Nemotron 3 Super (`nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-FP8`) | 2026-03-11 | 120B / 12B | FP8 ~124 GB (est.) | 1M | 0.18.1 | NVIDIA Open Model |
+| **(c) compressed / latent / sparse KV** |||||||
+| 8 | **DeepSeek-V4-Flash-0731** (`deepseek-ai/DeepSeek-V4-Flash-0731`) | 2026-07-31 | 284B / 13B | FP4 experts + FP8, 166.9 GB | 1M | ≥0.25; 0.27.x crashes on H100 | MIT |
+| 9 | GLM-4.7-Flash (`zai-org/GLM-4.7-Flash`) | 2026-01 | 30B / 3B | BF16 62.5 GB | 202K | in stable | MIT |
+| 10 | Mistral Small 4 (`mistralai/Mistral-Small-4-119B-2603`) | 2026-03-16 | 119B / 6.5B | FP8 ~120 GB (est.) | 256K | latest + mistral_common ≥1.11 | Apache-2.0 |
+| **(d) sliding window / local-global** |||||||
+| 11 | MiMo-V2.6-Flash (`XiaomiMiMo/MiMo-V2.6-Flash-*`) | 2026-09-22 | 309B / 15B | MXFP4/FP8 173 GB | 1M | 0.31.0 | MIT |
+| 12 | Laguna S 2.1 (`poolside/Laguna-S-2.1`, `-FP8`) | 2026-07 | 118B / ~8B | FP8 ~121 GB | 256K-1M | ≥0.25.0 | OpenMDW-1.1 |
+| 13 | Muse Glimmer-30B (`meta-models/Muse-Glimmer-30B`) | 2026-08-10 | 29.6B dense | BF16 ~60 GB (est.) | 131K+ | ≥0.27.0 | Apache-2.0 |
+| 14 | Gemma 4 31B (`google/gemma-4-31B-it`) | 2026-04 | 30.7B dense | BF16 62.6 GB | 256K | in 0.31 | Apache-2.0 |
+| 15 | gpt-oss-120b (`openai/gpt-oss-120b`) | 2025-08 | 117B / 5.1B | MXFP4 60.8 GiB | 131K | ≥0.10.1 | Apache-2.0 |
+
+### Cache layout and fit (KV per token in BF16; estimates from each config)
+
+| # | attention layout | re-rotatable KV | not re-rotatable / NoPE | KV per token | H100s for ≥64K |
+|---|---|---|---|---|---|
+| 1 | 62 full layers, 48Q / 8KV, head 128 | all 62 layers (RoPE on 64 of 128 dims) | — | 248 KiB | 4 (tight) |
+| 3 | 40 full layers, 32Q / 8KV | all (YaRN x48) | — | 160 KiB | 1 |
+| — | Qwen3-32B: 64 full layers, 64Q / 8KV, head 128 | all | — | 256 KiB | 1 (32K, ~2 sessions) |
+| 4 | 16 x (3 Gated DeltaNet + 1 gated attention); attention 24Q / 4KV, head 256 | 16 attention layers (64 of 256 dims, θ=1e7) | 48 DeltaNet layers (~72 MiB state / seq) | 64 KiB | 1 (FP8) |
+| 7 | 40 Mamba-2 + 40 MoE + 8 attention (2KV) | none (vLLM applies no RoPE there) | 40 Mamba-2 layers | 8 KiB | 2 |
+| 8 | 43 layers: 2 sliding-window, then alternating CSA (4-token pooling, top-512) / HCA (128-token pooling); 128-token window in every layer; one shared 512-dim K=V | last 64 dims of each entry (BF16) | pooling boundaries: exact only for 128-aligned shifts | ~3-4 KiB | 4 by memory (vendor H100 recipes use 8) |
+| 9 | 47 MLA layers: 512-dim latent + 64-dim RoPE key | the RoPE key | — | 53 KiB | 1-2 |
+| 12 | 12 global + 36 sliding (W=512), 8KV | all (global: half the dims) | — | 48 KiB | 2-4 |
+| 13 | 13 global + 39 local (W=2048), 2KV | local layers | global layers are NoPE | 13 KiB | 1 |
+| 14 | 10 global + 50 sliding (W=1024); global shares K=V | sliding fully, global 25 % of dims | shared K=V complicates in-place rotation | 40-80 KiB | 1-2 |
+| 15 | alternating full / 128-token window, 8KV, sinks | all | — | 36 KiB | 1 |
+
+## 3. Published scores
+
+| # | SWE-bench Verified | SWE-bench Pro | Terminal-Bench | GAIA |
+|---|---|---|---|---|
+| 1 MiniMax-M2.7 | I 73.8 | V 56.22 | V TB2 57.0; I 2.0 47.19; I 2.1 48.69 | — |
+| 2 Devstral 2 | V 72.2; I 62.8 | — | V TB2 32.6 | — |
+| 3 Devstral Small 2 | V 68.0 | — | V TB2 22.5 | — |
+| Qwen3-32B | 14 % on Verified Mini with SWE-agent (X2, this machine) | I 3.4 | 1.9 on 2.0 (secondary) | — |
+| 4 **Qwen3.8-27B** | **I 86.0** | V 61.7 (Claude Code harness, Qwen-patched tasks) | V 2.1 73.0; **I 2.1 58.43** | — |
+| 5 Qwen3.6-27B | V 77.2; I 70.0 | V 53.5; X 50.2 | V 2.0 59.3; I 2.0 44.94; X 2.1 60.7 | — |
+| 7 Nemotron 3 Super | V 63.08 | — | V 2.1 39.61 | — |
+| 8 **DeepSeek-V4-Flash-0731** | **I 88.8** (preview V 79.0) | X 56.0 (preview V 52.6) | V 2.1 82.7; **I 2.1 67.04**; I 4.0 18.69 | — |
+| 9 GLM-4.7-Flash | V 59.2 | — | — | — (τ2 V 79.5) |
+| 10 Mistral Small 4 | — | — | I 2.0 16.85 | — |
+| 11 MiMo-V2.6-Flash | — | — | V 2.1 87.6; V 4.0 28.8; I 4.0 24.24 | — |
+| 12 Laguna S 2.1 | — | V 59.4 | V 2.1 70.2 | — |
+| 13 Muse Glimmer-30B | V 76.0 | V 51.2 | V 2.1 51.7 | — (Gaia2 43.3) |
+| 14 Gemma 4 31B | X 52.0 / 66.6; I 53.92 | X 35.7 / 36.9 | I 2.0 39.33; X 2.1 43.4 | — |
+| 15 gpt-oss-120b | V 62.4; I 33.6 | I 16.2 | I 2.0 18.7-19.1 | — |
+
+Harnesses behind the numbers: Vals uses mini-SWE-agent (SWE-bench Verified) and Terminus 2 (TB 2.0/2.1); Scale
+uses SWE-agent with a 250-turn limit (SWE-bench Pro); Qwen3.6 used an in-house bash + file-edit scaffold; Qwen3.8's
+SWE-bench Pro used Claude Code on Qwen-patched tasks; DeepSeek's 0731 numbers use an unreleased "DeepSeek Harness".
+Vendor and independent numbers differ by up to ~30 points (gpt-oss-120b Verified 62.4 vs 33.6). No candidate
+publishes GAIA; HAL's GAIA board stops at 2025 DeepSeek models (~25-30 %).
+
+Benchmark versions: Terminal-Bench **2.1** (89 tasks; 2.0 with 28 tasks fixed) is used. 3.0 (Jul 2026) and 4.0
+(Aug 2026) are new, much harder sets (DeepSeek-V4-Flash-0731 18.7 % on 4.0) where 27B models sit at the floor.
+
+## 4. Shortlist and why
+
+| role | model | architecture | size | serving here |
+|---|---|---|---|---|
+| legacy comparison | Qwen3-32B | (a) full attention | 32B dense | 1 GPU, BF16, 32K, non-thinking (topic 16 setup) |
+| small, linear-attention hybrid | **Qwen3.8-27B-FP8** | (b) Gated DeltaNet hybrid | 27B dense | 1 GPU, FP8, 128K, thinking |
+| large, compressed / sparse KV | **DeepSeek-V4-Flash-0731** (backup: GLM-4.7-Flash, MLA, 1 GPU) | (c) | 284B / 13B | 4 GPUs TP=4, 128K, Think High |
+| large, full attention | **MiniMax-M2.7** | (a) | 229B / 10B | 4 GPUs TP=4, 128K, interleaved thinking |
+| optional | Gemma 4 31B | (d) sliding window | 31B dense | 2 GPUs (only if the budget allows) |
+
+- Three cache architectures among the new models, two size classes (27B dense; 229-284B MoE with 10-13B active),
+  all with independent SWE-bench Verified ≥ 73.8 and TB 2.1 ≥ 48.7: far from the floor.
+- Qwen3.8-27B is the strongest model ≤ 35B with independent numbers; DeepSeek-V4-Flash-0731 the strongest that
+  fits; MiniMax-M2.7 the strongest pure full-attention model that fits (the cleanest target for re-rotation).
+- Qwen3-32B is kept as the link to topic 16's EPIC results; its published SWE-bench Pro and TB numbers are near
+  the floor, so it is exempt from the base-rate gate.
+- Risks: DeepSeek-V4-Flash has no validated 4x H100 recipe (one 4x H100 report capped max length at 22K on vLLM
+  0.25); MiniMax-M2.7 leaves room for only a few 64K sessions at BF16 KV.
+
+## 5. Not verified
+GAIA for every candidate; vendor SWE-bench Verified for Qwen3.8-27B, Laguna, MiMo, Flash-Next; DeepSeek-V4-Flash
+and MiMo on H100 at TP=4; Gemma 4's shared K=V storage in vLLM; whether DeepSeek-V4's indexer keys carry RoPE;
+vLLM 0.31 keeps sliding-window KV out of the prefix cache (check before measuring re-rotation on SWA models).
+
+## 6. After the profile and the EPIC round (2026-10-13, e3 on 2026-10-14, e4 on 2026-10-17): what to use next
+
+Measured with s15 (250 lead calls; 30 tasks × 3 trials per benchmark; REPORT.md sections 2 and 7):
+
+| model | SWE-bench Verified | SWE-bench Pro | Terminal-Bench | KV reuse after the snip (EPIC round) |
+|---|---|---|---|---|
+| DeepSeek-V4-Flash-0731 | 0.900 | 0.944 | 0.589 | Design B ported, selftests only. It rebuilds pooled and indexer caches from stored attention inputs (about 344 KB per token). Large run-to-run noise. |
+| Qwen3.8-27B-FP8 | 0.789 | 0.967 | 0.500 | The vendor template is append-only (round-trip 99.0 %). Reuse saves no compute (DeltaNet). Fidelity tracks MiniMax's. |
+| MiniMax-M2.7 | 0.644 | 0.867 | 0.478 | Prompt tokens computed per call −91 % (epic128). Pre-registered e3 (300 blocks): epic128 is non-inferior at a 5-point margin, −0.010 [−0.043, +0.023], and epic128a1's earlier drop did not replicate. |
+| Qwen3-32B | 0.089 | 0.067 | 0.022 | Near the floor under s15. Kept only as topic 16's link. |
+
+**Recommendations.**
+- **KV-reuse research (shift and EPIC): MiniMax-M2.7.**
+  - It is full attention, so re-rotation is exact. The live port, the append-only template and the gates all
+    worked at 450 trials.
+  - Its SWE pass@1 of 0.644 leaves room in both directions.
+  - Pro and Terminal-Bench, one replicate (e2):
+    - prefill per call fell 81–91 % for shift and epic128;
+    - on Pro the EPIC arms landed within 0.02–0.08 of the control; epic128a1 −0.083 is the only interval that
+      excludes zero, and only just;
+    - Terminal-Bench is too time-bound on an emulating server to judge, since its two identical control arms
+      differed by 0.30.
+    - A Terminal-Bench round needs a bigger host pool, a decode reserve of at least 12K tokens, and token-level
+      history.
+  - **e3, pre-registered** (2026-10-14): 100 new SWE-bench Verified tasks × 3 replicates, 300 paired blocks per arm.
+    - epic128 is non-inferior at a 5-point margin: −0.010 [−0.043, +0.023].
+    - epic128a1 is −0.000 [−0.033, +0.033]: the e1/e2 drop was not reproduced.
+    - epic128a4 is +0.017 [−0.014, +0.047], and it still cuts prefill by 77 %.
+    - Pooled with e1 and e2: epic128 −0.008 [−0.036, +0.020]; epic128a1 −0.023 [−0.050, +0.004].
+  - **e4, divergence-triggered full recomputation** (2026-10-15 to 17, pre-registered, exploratory): 7 arms ×
+    30 tasks × 3 replicates on all three benchmarks.
+    - The new arm `epic128rjsd` recomputes after a snip with probability JSD between the first-token
+      distributions under the original and the after-EPIC cache.
+    - Against the control:
+      SWE-bench Verified +0.028 [-0.021, +0.077]; Pro +0.017 [-0.040, +0.073]; Terminal-Bench +0.028 [-0.065, +0.121].
+    - It computes 1,301, 1,583, 1,576 prompt tokens per call
+      (8.4%, 7.9%, 8.2% of the prompt), against epic128's
+      647, 953, 614 and the baseline's 7,223, 6,734, 9,939.
+    - JSD tracks the real error: Spearman ρ +0.53, +0.60, +0.44.
+    - But two probes of the same cache already differ by a JSD of 0.035, 0.031, 0.053,
+      against a mean decision JSD of 0.053, 0.046, 0.073. Without batch-invariant
+      kernels, much of the signal is noise.
+    - All other arms' intervals cover 0, except epic128 on Pro: +0.117 [+0.035, +0.198],
+      one of 18 exploratory intervals.
+  - Next steps:
+    - a smaller margin needs far more blocks: 2 points at 80 % power needs about 6× e3's 300;
+    - a token-level history in the harness, which would remove the remaining round-trip misses;
+    - a timed run with real reuse (a CUDA-graph engine with the pool on the GPU), to measure the throughput gain on
+      a prefill-bound server.
+- **Best accuracy per GPU: Qwen3.8-27B** (one GPU).
+  - Its thinking makes runs long: 15 of 90 baseline SWE runs and 37 of 90 Terminal-Bench runs hit the agent
+    timeout.
+  - For KV reuse it serves only as an accuracy probe: the hybrid's DeltaNet layers recompute every token after
+    an edit.
+- **Strongest model that fits: DeepSeek-V4-Flash** (TP=4 on 4× H100, 128K in the baseline).
+  - Reuse would need the design-B store and eager hooks.
+  - Its own noise is large: 7–10 % between two computations of the same attention inputs, likely from FP8, MoE
+    routing and sparse top-k selection flipping on near-ties. Reuse effects would take many replicates and a
+    noise-floor arm to resolve.
+- Qwen3-32B and the optional Gemma 4 add little now. Drop Qwen3-32B unless topic-16 comparability is needed.
+
+**Section 5, settled.**
+- DeepSeek-V4-Flash serves at TP=4 on H100: 128K with CUDA graphs in the baseline, and eager for the EPIC hooks.
+- DeepSeek-V4's indexer keys carry RoPE, applied before FP8 quantization.
+- GAIA was skipped: the search key returned 403.
+- The other items remain unverified.
+
+## Sources
+Model cards and configs on Hugging Face for every repo named above; vLLM recipes (recipes.vllm.ai) for
+Qwen3.8-27B, DeepSeek-V4-Flash, MiMo-V2.6-Flash, Laguna S 2.1, Muse Glimmer-30B; vLLM issues 49101 and 52065
+(DeepSeek-V4-Flash on H100); DeepSeek-V4 report (arXiv 2606.19348) and HF blog; MiniMax vLLM deploy guide and
+"why M2 ended up as a full-attention model"; Vals leaderboards (vals.ai/benchmarks/swebench, terminal-bench-2,
+terminal-bench-2-1, terminal-bench-4); Scale SWE-bench Pro public leaderboard (labs.scale.com); gpt-oss report
+(arXiv 2508.10925); HAL GAIA board (hal.cs.princeton.edu/gaia); Terminal-Bench 2.1 / 3.0 / 4.0 release notes
+(tbench.ai, github.com/harbor-framework/terminal-bench); vLLM 0.31.0 release notes.

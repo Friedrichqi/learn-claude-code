@@ -1,0 +1,738 @@
+<title>Harness Serving Progress</title>
+<meta name="description" content="Summary for a wider audience, 28 October 2026: the s15 agent harness, every profiling experiment from 1 September to 21 October grouped by what it measured, and the harness-aware serving design we build next.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #eef1f5;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --ink: #141922;
+  --ink-2: #47505f;
+  --muted: #7a8391;
+  --hair: #d5dbe3;
+  --hair-2: #e6eaf0;
+  --lead: #2a78d6;
+  --lead-soft: #cde2fb;
+  --lead-ink: #1c5cab;
+  --mate: #eb6834;
+  --mate-soft: #fbd9c9;
+  --mate-ink: #b8451c;
+  --mate-1: #f7c9b3;
+  --mate-2: #f29d76;
+  --mate-3: #eb6834;
+  --mate-4: #b8451c;
+  --shot: #1baf7a;
+  --grey-mark: #aeb6c2;
+  --warn: #d03b3b;
+  --focus: #1c5cab;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1117;
+    --surface: #161c25;
+    --surface-2: #1c232e;
+    --ink: #eef1f5;
+    --ink-2: #b9c1cd;
+    --muted: #8791a0;
+    --hair: #2b3441;
+    --hair-2: #232b36;
+    --lead: #3987e5;
+    --lead-soft: #1c355a;
+    --lead-ink: #8dbcf5;
+    --mate: #d95926;
+    --mate-soft: #4a2416;
+    --mate-ink: #f0a17e;
+    --mate-1: #5a2d1c;
+    --mate-2: #9a4222;
+    --mate-3: #d95926;
+    --mate-4: #f29d76;
+    --shot: #199e70;
+    --grey-mark: #5c6673;
+    --warn: #e66767;
+    --focus: #8dbcf5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1117;
+  --surface: #161c25;
+  --surface-2: #1c232e;
+  --ink: #eef1f5;
+  --ink-2: #b9c1cd;
+  --muted: #8791a0;
+  --hair: #2b3441;
+  --hair-2: #232b36;
+  --lead: #3987e5;
+  --lead-soft: #1c355a;
+  --lead-ink: #8dbcf5;
+  --mate: #d95926;
+  --mate-soft: #4a2416;
+  --mate-ink: #f0a17e;
+  --mate-1: #5a2d1c;
+  --mate-2: #9a4222;
+  --mate-3: #d95926;
+  --mate-4: #f29d76;
+  --shot: #199e70;
+  --grey-mark: #5c6673;
+  --warn: #e66767;
+  --focus: #8dbcf5;
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.4;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+h1, h2, h3 { margin: 0; font-family: var(--display); font-weight: 700; text-wrap: balance; letter-spacing: -0.015em; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+b, strong { font-weight: 600; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- deck chrome ---------- */
+.deck { position: fixed; inset: 0; }
+.stage {
+  position: absolute;
+  width: 1280px; height: 720px;
+  left: calc((100vw - 1280px * var(--s, 1)) / 2);
+  top: calc((100vh - 720px * var(--s, 1)) / 2);
+  transform: scale(var(--s, 1));
+  transform-origin: top left;
+}
+.slide {
+  position: absolute; inset: 0;
+  width: 1280px; height: 720px;
+  padding: 44px 64px 40px;
+  background: var(--surface);
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+  border: 1px solid var(--hair);
+}
+.slide.active { display: flex; }
+.slide-head { display: flex; flex-direction: column; gap: 8px; }
+.eyebrow {
+  display: flex; align-items: baseline; gap: 14px;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.eyebrow .num { font-family: var(--mono); letter-spacing: 0; color: var(--ink-2); }
+.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--hair); transform: translateY(-4px); }
+.slide h2 { font-size: 32px; line-height: 1.12; max-width: 1100px; }
+.slide h2 .dim { color: var(--muted); font-weight: 500; }
+.body { flex: 1; min-height: 0; display: grid; gap: 28px; }
+.foot {
+  display: flex; gap: 22px; align-items: baseline;
+  font-size: 11.5px; color: var(--muted); line-height: 1.35;
+  border-top: 1px solid var(--hair-2); padding-top: 10px;
+}
+.foot .mono { font-size: 11px; color: var(--ink-2); }
+.foot p { max-width: none; }
+
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 3px; background: var(--hair-2);
+}
+.hud .bar { height: 100%; width: 0; background: var(--lead); transition: width 200ms ease; }
+.counter {
+  position: fixed; right: 18px; bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted);
+  display: flex; gap: 14px; align-items: center;
+}
+.counter button {
+  font: inherit; color: var(--ink-2); background: var(--surface); border: 1px solid var(--hair); border-radius: 4px;
+  padding: 2px 8px; cursor: pointer;
+}
+.counter button:hover { border-color: var(--muted); }
+.hint { position: fixed; left: 18px; bottom: 10px; font-size: 12px; color: var(--muted); }
+
+/* overview mode */
+body.overview { overflow: auto; }
+body.overview .deck { position: static; }
+body.overview .stage { position: static; transform: none; width: auto; height: auto; display: grid;
+  grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 24px; }
+body.overview .slide { display: flex; position: relative; zoom: 0.3; cursor: pointer; }
+body.overview .slide:hover { outline: 6px solid var(--lead); }
+body.overview .hud, body.overview .hint { display: none; }
+
+body.export .hud, body.export .counter, body.export .hint { display: none; }
+body.export .slide { border: 0; }
+
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .deck, .stage { position: static; transform: none; width: auto; height: auto; }
+  .slide { display: flex; position: relative; page-break-after: always; break-after: page; border: 0; }
+  .hud, .counter, .hint { display: none; }
+}
+
+/* ---------- content primitives ---------- */
+.two { grid-template-columns: 1fr 1fr; }
+.wide-left { grid-template-columns: 1.25fr 1fr; }
+.wide-right { grid-template-columns: 1fr 1.25fr; }
+.stack { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.label {
+  font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.label.lead { color: var(--lead-ink); }
+.label.mate { color: var(--mate-ink); }
+.claim { font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.25; letter-spacing: -0.01em; }
+.note { font-size: 13.5px; color: var(--ink-2); max-width: 62ch; }
+.list { display: flex; flex-direction: column; gap: 9px; list-style: none; font-size: 14.5px; color: var(--ink); }
+.list li { padding-left: 16px; position: relative; }
+.list li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+.list.tight { gap: 6px; font-size: 13.5px; }
+.list li b { font-weight: 600; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; align-items: baseline; }
+.kv dt { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.kv dd { margin: 0; color: var(--ink); }
+figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 11.5px; padding: 1px 7px; border: 1px solid var(--hair); border-radius: 3px; color: var(--ink-2); background: var(--surface-2); }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.swatch.lead { background: var(--lead); } .swatch.mate { background: var(--mate); } .swatch.shot { background: var(--shot); } .swatch.grey { background: var(--grey-mark); }
+
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.data th, table.data td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--hair-2); vertical-align: top; }
+table.data th { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--hair); }
+table.data td.n, table.data th.n { text-align: right; }
+table.data td.mono { font-size: 12px; }
+table.data tr.hi td { background: var(--surface-2); }
+
+/* diagram text */
+svg text { font-family: var(--body); fill: var(--ink); }
+svg .t-title { font-family: var(--display); font-weight: 700; }
+svg .t-mono { font-family: var(--mono); }
+svg .t-muted { fill: var(--muted); }
+svg .t-ink2 { fill: var(--ink-2); }
+svg .t-lead { fill: var(--lead-ink); }
+svg .t-mate { fill: var(--mate-ink); }
+svg .box { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .box-soft { fill: var(--surface-2); stroke: var(--hair); stroke-width: 1; }
+svg .box-lead { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.2; }
+svg .box-mate { fill: var(--mate-soft); stroke: var(--mate); stroke-width: 1.2; }
+svg .box-dash { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+svg .edge { stroke: var(--ink-2); stroke-width: 1.3; fill: none; }
+svg .edge-lead { stroke: var(--lead); stroke-width: 1.4; fill: none; }
+svg .edge-mate { stroke: var(--mate); stroke-width: 1.4; fill: none; }
+svg .edge-dash { stroke: var(--muted); stroke-width: 1.2; fill: none; stroke-dasharray: 4 3; }
+svg .grid { stroke: var(--hair-2); stroke-width: 1; }
+svg .axis { stroke: var(--hair); stroke-width: 1; }
+svg .f-lead { fill: var(--lead); } svg .f-mate { fill: var(--mate); } svg .f-grey { fill: var(--grey-mark); } svg .f-shot { fill: var(--shot); }
+svg .f-m1 { fill: var(--mate-1); } svg .f-m2 { fill: var(--mate-2); } svg .f-m3 { fill: var(--mate-3); } svg .f-m4 { fill: var(--mate-4); }
+svg .f-surface { fill: var(--surface); }
+svg .node-done { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.3; }
+svg .node-open { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .node-ghost { fill: var(--surface-2); stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+
+/* bar table (slide 5) */
+.bartable { display: grid; grid-template-columns: 250px 1fr 58px 58px; gap: 8px 14px; align-items: center; font-size: 13.5px; }
+.bartable .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.bartable .m { color: var(--ink); line-height: 1.25; }
+.bartable .bars { display: flex; flex-direction: column; gap: 3px; }
+.bartable .bar { height: 11px; border-radius: 0 3px 3px 0; position: relative; }
+.bartable .bar.lead { background: var(--lead); }
+.bartable .bar.mate { background: var(--mate); }
+.bartable .v { font-variant-numeric: tabular-nums; text-align: right; font-family: var(--mono); font-size: 13px; }
+.bartable .v.lead { color: var(--lead-ink); } .bartable .v.mate { color: var(--mate-ink); }
+
+/* dumbbells (slide 6) */
+.dumbbells { display: grid; grid-template-columns: 130px 1fr; gap: 16px 18px; align-items: center; font-size: 13.5px; }
+.dumbbells .m { color: var(--ink); }
+.dumbbells .track { position: relative; height: 26px; }
+.dumbbells .track::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 1px; background: var(--hair); }
+.dumbbells .seg { position: absolute; top: 11.5px; height: 2px; background: var(--ink-2); }
+.dumbbells .dot { position: absolute; top: 6px; width: 14px; height: 14px; border-radius: 50%; transform: translateX(-50%); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--hair); }
+.dumbbells .dot.a { background: var(--grey-mark); } .dumbbells .dot.b { background: var(--lead); }
+.dumbbells .lab { position: absolute; top: -8px; transform: translateX(-50%); font-family: var(--mono); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.dumbbells .lab.b { color: var(--lead-ink); top: 22px; }
+
+/* tiers (last slide) */
+.tiers { display: grid; grid-template-rows: repeat(4, 1fr); gap: 10px; min-height: 0; }
+.tier { display: grid; grid-template-columns: 160px 1fr; gap: 14px; padding: 10px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.tier .name { font-family: var(--display); font-weight: 700; font-size: 15.5px; line-height: 1.2; }
+.tier .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0; }
+.tier .what { font-size: 12.5px; line-height: 1.38; color: var(--ink-2); }
+.tier .what b { color: var(--ink); }
+.tier.hot { border-left-color: var(--lead); }
+.tier.warm { border-left-color: var(--mate); }
+.tier.cold { border-left-color: var(--grey-mark); }
+.tier.drop { border-left-color: var(--warn); }
+
+/* cover */
+.cover { justify-content: space-between; background: var(--surface); }
+.cover .title { font-size: 58px; line-height: 1.02; letter-spacing: -0.03em; max-width: 1000px; font-weight: 800; }
+.cover .sub { font-size: 21px; color: var(--ink-2); max-width: 820px; line-height: 1.35; margin-top: 18px; }
+.cover .meta { display: flex; gap: 40px; font-size: 13px; color: var(--muted); }
+.cover .meta b { display: block; color: var(--ink); font-weight: 500; }
+.cover .rule { height: 6px; width: 120px; background: var(--lead); }
+
+/* questions */
+.qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 44px; align-content: start; padding-top: 8px; }
+.q { display: grid; grid-template-columns: 36px 1fr; gap: 10px; font-size: 17px; line-height: 1.38; }
+.q .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 22px; line-height: 1.1; }
+.q b { font-weight: 600; }
+
+/* ---------- additions for the 2026-09-16 deck ---------- */
+/* tier ladder: rungs are tiers, gaps are the boundaries between them */
+.ladder { display: flex; flex-direction: column; min-height: 0; }
+.rung { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 9px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.rung .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
+.rung .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 10.5px; color: var(--muted); margin-top: 3px; }
+.rung .what { font-size: 12px; line-height: 1.36; color: var(--ink-2); }
+.rung .what b { color: var(--ink); }
+.rung.gpu { border-left-color: var(--lead); } .rung.cache { border-left-color: var(--shot); } .rung.prompt { border-left-color: var(--mate); } .rung.disk { border-left-color: var(--grey-mark); }
+.gapx { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 5px 14px 5px 18px; align-items: center; }
+.gapx .arrow { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.3; }
+.gapx .price { font-size: 12px; color: var(--ink); background: var(--surface); border: 1px dashed var(--hair); border-radius: 4px; padding: 5px 10px; line-height: 1.35; }
+.gapx .price b { color: var(--lead-ink); font-family: var(--mono); font-weight: 500; }
+.gapx .price.ask { font-family: var(--display); font-weight: 700; color: var(--muted); font-size: 15px; padding: 3px 10px; }
+/* paired bars (slides 3 and 5): ghost = baseline, filled = the measured arm */
+.pairs { display: grid; grid-template-columns: 1fr 300px 90px; gap: 7px 14px; align-items: center; font-size: 12.5px; }
+.pairs .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.pairs .m { color: var(--ink); line-height: 1.25; }
+.pairs .m small { display: block; color: var(--muted); font-size: 11px; }
+.pairs .bars { display: flex; flex-direction: column; gap: 3px; }
+.pairs .bar { height: 9px; border-radius: 0 3px 3px 0; }
+.pairs .bar.ghost { background: var(--grey-mark); opacity: 0.55; }
+.pairs .bar.mate { background: var(--mate); }
+.pairs .bar.lead { background: var(--lead); }
+.pairs .v { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); line-height: 1.3; }
+.pairs .v b { color: var(--ink); font-weight: 500; }
+/* dense grids */
+.three { grid-template-columns: 1fr 1fr 1fr; }
+.list.tight.xs { font-size: 12.5px; gap: 5px; }
+.note.xs { font-size: 12px; }
+table.data.xs { font-size: 12px; } table.data.xs th, table.data.xs td { padding: 4px 8px; }
+.tag { display: inline-block; font-family: var(--mono); font-size: 10.5px; padding: 0 6px; border-radius: 3px; border: 1px solid var(--hair); color: var(--ink-2); background: var(--surface-2); margin-right: 4px; vertical-align: 1px; }
+.tag.m { color: var(--lead-ink); border-color: var(--lead-soft); background: var(--lead-soft); }
+.tag.r { color: var(--mate-ink); border-color: var(--mate-soft); background: var(--mate-soft); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 22px; align-content: start; }
+.nw { white-space: nowrap; }
+table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
+.step { display: grid; grid-template-columns: 26px 1fr; gap: 8px; font-size: 12.5px; line-height: 1.35; }
+.step .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 15px; line-height: 1.15; }
+.step b { font-weight: 600; }
+.step .group { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+/* ---------- additions for the 2026-09-23 deck ---------- */
+/* verdicts: what is deployable and what is retired */
+.verdicts { display: grid; gap: 7px; align-content: start; }
+.verdict { display: grid; grid-template-columns: 20px 1fr; gap: 9px; padding: 6px 12px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.verdict .n { font-family: var(--display); font-weight: 700; font-size: 13.5px; line-height: 1.3; }
+.verdict .what { font-size: 12.5px; line-height: 1.34; color: var(--ink-2); }
+.verdict .what b { color: var(--ink); font-weight: 600; }
+.verdict.keep { border-left-color: var(--shot); } .verdict.keep .n { color: var(--shot); }
+.verdict.drop { border-left-color: var(--warn); } .verdict.drop .n { color: var(--warn); }
+/* arm legend colours: grey = untreated baseline, orange = direct predecessors, blue = transitive closure */
+.swatch.warn { background: var(--warn); }
+svg .t-shot { fill: var(--shot); }
+.bartable .bar.grey { background: var(--grey-mark); }
+.bartable .v.grey { color: var(--muted); }
+.pairs .bar.grey { background: var(--grey-mark); }
+/* denser still, for the six-note week */
+.list.tight.xxs { font-size: 11.8px; gap: 4px; }
+.list.tight.xxs li { padding-left: 13px; }
+.list.tight.xxs li::before { width: 5px; height: 5px; top: 0.58em; }
+table.data.xxs { font-size: 11.5px; }
+.kv.xs { font-size: 12px; gap: 4px 12px; } .kv.xs dt { font-size: 11px; }
+.steps.two-up { grid-template-columns: 1fr 1fr; }
+/* reading keys: every table carries its own terms, metrics and what the values say */
+.key { display: grid; gap: 6px 20px; align-content: start; }
+.key.k2 { grid-template-columns: 1fr 1fr; }
+.key.k3 { grid-template-columns: 1fr 1fr 1fr; }
+.key .kh { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 3px; margin-bottom: 5px; border-bottom: 1px solid var(--hair-2); }
+.gloss { display: grid; grid-template-columns: max-content 1fr; gap: 3px 9px; margin: 0; font-size: 11.5px; line-height: 1.32; align-items: baseline; }
+.gloss dt { font-family: var(--mono); font-size: 10.5px; color: var(--ink); white-space: nowrap; }
+.gloss dd { margin: 0; color: var(--ink-2); }
+.gloss b { color: var(--ink); font-weight: 600; }
+/* table furniture: group rows, sub-labels, cells not run, interval verdicts */
+table.data tr.grp td { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-top: 7px; padding-bottom: 3px; border-bottom: 1px solid var(--hair); background: none; }
+table.data th.grp { text-align: center; border-bottom: 1px solid var(--hair-2); }
+table.data .sub { display: block; font-family: var(--body); font-size: 10.5px; line-height: 1.3; color: var(--muted); margin-top: 1px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+table.data td.na { color: var(--muted); }
+table.data td.warn { color: var(--warn); }
+.verd { font-family: var(--mono); font-size: 10.5px; white-space: nowrap; }
+.verd.yes { color: var(--shot); } .verd.no { color: var(--muted); } .verd.cost { color: var(--warn); }
+svg .t-warn { fill: var(--warn); }
+svg .box-shot { fill: none; stroke: var(--shot); stroke-width: 1.2; stroke-dasharray: 4 3; }
+svg .band-shot { fill: var(--shot); opacity: 0.07; }
+svg .whisk { stroke-width: 2.2; stroke-linecap: round; fill: none; }
+.lc { text-transform: none; letter-spacing: 0; }
+/* ---------- additions for the 2026-09-30 deck ---------- */
+/* colour meaning. section 1: grey = shift RoPE and random picks, blue = EPIC, orange = CacheBlend,
+   green = a repaired cost, red = a cost. section 2: grey = stock vLLM, blue = the session gate,
+   red = thrashing. section 3: blue = this harness, ink = the paper's number. */
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--ink-2); align-items: center; }
+table.data td.fix { background: color-mix(in srgb, var(--shot) 17%, var(--surface)); }
+table.data.arms th { padding: 3px 6px; vertical-align: bottom; }
+table.data.arms td { padding: 1.5px 6px; }
+table.data.arms tr.grp td { padding-top: 4px; padding-bottom: 1px; }
+table.data.arms th .sub { font-size: 9.5px; }
+table.data.arms td.mono { white-space: nowrap; }
+.fixchip { background: color-mix(in srgb, var(--shot) 17%, var(--surface)); padding: 0 3px; border-radius: 2px; }
+.warnchip { color: var(--warn); }
+.swatch.ink2 { background: var(--ink-2); }
+.swatch.hair { background: var(--hair); }
+svg .f-warn { fill: var(--warn); }
+svg .f-ink2 { fill: var(--ink-2); }
+svg .f-soft { fill: var(--surface-2); }
+svg .f-lead-soft { fill: var(--lead-soft); }
+svg .f-hair { fill: var(--hair); }
+svg .box-grey { fill: var(--surface-2); stroke: var(--grey-mark); stroke-width: 1; }
+svg .box-warn { fill: none; stroke: var(--warn); stroke-width: 1.4; }
+svg .edge-warn { stroke: var(--warn); stroke-width: 1.3; fill: none; }
+svg .edge-grey { stroke: var(--grey-mark); stroke-width: 1.3; fill: none; }
+svg .edge-hair { stroke: var(--hair); stroke-width: 1; fill: none; }
+svg .line-lead { stroke: var(--lead); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .line-grey { stroke: var(--grey-mark); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .ring { stroke: var(--surface); stroke-width: 2; }
+/* the three sections: a small numbered tag in eyebrows and tables */
+.sec { display: inline-block; font-family: var(--mono); font-size: 10.5px; line-height: 1.2; padding: 0 5px; border-radius: 3px; border: 1px solid var(--hair); color: var(--ink-2); background: var(--surface-2); letter-spacing: 0; }
+/* a table cell that is a sentence, not a number */
+table.data td.txt { font-size: 11px; line-height: 1.3; color: var(--ink-2); }
+table.data.xxs td.tight, table.data.xxs th.tight { padding-left: 4px; padding-right: 4px; }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+.pend { border: 1px dashed var(--muted); border-radius: 4px; padding: 10px 14px; color: var(--muted); font-size: 12.5px; }
+/* compact reading keys under tall tables */
+.key.tight .gloss { font-size: 11px; gap: 2px 8px; line-height: 1.28; }
+.key.tight .gloss dt { font-size: 10px; }
+.key.tight .list.tight.xxs { font-size: 11.2px; gap: 3px; line-height: 1.3; }
+.key.kk { grid-template-columns: 1fr 1.6fr; }
+figcaption.xs { font-size: 11px; line-height: 1.3; }
+/* ---------- additions for the 2026-10-07 deck ---------- */
+/* colour meaning. part I: grey = baseline arm, blue = the arm under test, green = a fix, red = a limit or a
+   cost. part II: blue = KV the server reuses, orange = known content it recomputes, ink = new work, red = waste. */
+/* setup chips: the configuration a topic ran on, under its h2 */
+.cfg { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.cfg .label { margin-right: 2px; font-size: 10.5px; }
+.cfg .chip { font-size: 10.5px; padding: 0 6px; line-height: 1.6; }
+/* the part-II section tag in eyebrows */
+.eyebrow .sec { text-transform: none; letter-spacing: 0; }
+/* a fitted model, set as a formula */
+.formula { font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--ink); background: var(--surface-2); border-left: 4px solid var(--lead); border-radius: 0 4px 4px 0; padding: 9px 14px; }
+.formula b { color: var(--lead-ink); font-weight: 500; }
+.formula .c { color: var(--ink-2); font-size: 12px; }
+/* a legend that carries values */
+.vlegend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 18px; font-size: 12px; color: var(--ink-2); }
+.vlegend b { color: var(--ink); font-weight: 600; font-family: var(--mono); font-size: 11.5px; }
+.swatch.lead-soft { background: var(--lead-soft); border: 1px solid var(--lead); }
+.swatch.ink { background: var(--ink-2); }
+table.data td.good { color: var(--shot); }
+table.data.xs td.txt2, table.data.xs th.txt2 { font-size: 11.5px; line-height: 1.32; }
+svg .line-ink2 { stroke: var(--ink-2); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .band-warn { fill: var(--warn); opacity: 0.07; }
+svg .f-lead-soft-s { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1; }
+.steps.six { grid-template-columns: repeat(3, 1fr); gap: 26px 30px; }
+.steps.six .step { font-size: 14px; }
+.steps.six .list.tight { font-size: 14px; gap: 6px; }
+/* the methods box: one card per method; blue = an accepted method, orange = needs what only the harness knows */
+.methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 16px; align-content: start; }
+.method { padding: 9px 13px 10px; border-left: 4px solid var(--lead); background: var(--surface-2); border-radius: 0 4px 4px 0; font-size: 12px; line-height: 1.36; color: var(--ink-2); }
+.method.agent { border-left-color: var(--mate); }
+.method .mh { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; color: var(--ink); }
+.method .mh .n { color: var(--lead-ink); margin-right: 7px; }
+.method.agent .mh .n { color: var(--mate-ink); }
+.method .grp { display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 2px 0 5px; }
+.method ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.method li { padding-left: 11px; position: relative; }
+.method li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); }
+.method b { color: var(--ink); font-weight: 600; }
+.method .go { display: block; margin-top: 5px; font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+/* ---------- additions for the 2026-10-28 deck ---------- */
+/* colour meaning. slide 1: blue = KV the server reuses, orange = known text it recomputes, ink = new text.
+   slide 2: per chart; blue = reused KV or the arm under test, orange = repeated work, grey = context.
+   slide 3: grey = today's server, blue = what we would add. */
+.body.fig-bullets { grid-template-rows: auto auto; gap: 10px; align-content: start; }
+/* slide 2: six groups in two rows (the harness, the server); columns read as pairs */
+.pm-grid { grid-template-columns: 20px repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
+.pm-row { display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--hair); }
+.pm-row span { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.pm-cell { display: flex; flex-direction: column; gap: 5px; min-width: 0; min-height: 0; padding: 7px 10px; background: var(--surface-2); border-radius: 4px; }
+.pm-h { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; letter-spacing: -0.01em; }
+.pm-chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.pm-chips .tp { font-size: 11px; line-height: 1.5; padding: 0 6px; border: 1px solid var(--hair); border-radius: 3px; color: var(--ink-2); background: var(--surface); white-space: nowrap; }
+.pm-chips .tp.part { border-style: dashed; border-color: var(--muted); }
+.pm-chips .tp.arch { border-style: dashed; border-color: var(--muted); color: var(--muted); text-decoration: line-through; text-decoration-color: var(--muted); }
+.pm-chips .to { color: var(--muted); font-size: 11px; }
+.pm-cell figure { margin-top: 1px; flex: none; }
+.pm-take { margin-top: auto; font-size: 12px; line-height: 1.32; color: var(--ink-2); }
+.pm-take b { color: var(--ink); font-weight: 600; }
+svg .ring2 { stroke: var(--surface-2); stroke-width: 2; }
+svg .line-mate2 { stroke: var(--mate-2); stroke-width: 2; fill: none; }
+/* backups B1-B11: the complete inventory */
+table.data { line-height: normal; }
+table.data.bk { font-size: 10.6px; table-layout: fixed; }
+table.data.bk th { font-size: 9.5px; padding: 2px 6px; }
+table.data.bk td { padding: 2.5px 6px; line-height: 1.25; color: var(--ink-2); }
+table.data.bk td.tq b { display: block; font-family: var(--display); font-weight: 700; font-size: 11.2px; color: var(--ink); line-height: 1.2; }
+table.data.bk td.tq .id { font-family: var(--mono); font-size: 9.5px; color: var(--muted); margin-right: 4px; font-weight: 400; }
+table.data.bk td.tq i { font-style: normal; color: var(--muted); }
+table.data.bk td.res { color: var(--ink); }
+table.data.bk td.st { font-family: var(--mono); font-size: 9.8px; }
+table.data.bk.tight td { padding-top: 1px; padding-bottom: 1px; }
+.st-done { color: var(--shot); } .st-part { color: var(--lead-ink); } .st-arch { color: var(--muted); } .st-park { color: var(--mate-ink); }
+.cc-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.15fr; gap: 12px; align-content: start; }
+.cc { padding: 8px 11px 9px; background: var(--surface-2); border-top: 4px solid var(--hair); border-radius: 0 0 4px 4px; }
+.cc.keep { border-top-color: var(--shot); } .cc.lead { border-top-color: var(--lead); } .cc.open { border-top-color: var(--grey-mark); } .cc.drop { border-top-color: var(--warn); }
+.cc .ch { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
+.cc .cs { display: block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 2px 0 7px; }
+.cc .list.tight.xxs { font-size: 11px; gap: 4px; line-height: 1.3; color: var(--ink-2); }
+.cr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; align-content: start; }
+.cr-grid .label { margin-bottom: 3px; }
+.cr { display: grid; grid-template-columns: 44px 1fr; gap: 3px 8px; font-size: 11px; line-height: 1.32; color: var(--ink-2); }
+.cr .t { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.st-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; align-content: start; }
+.st-c { display: grid; grid-template-columns: 20px 1fr auto; gap: 5px; align-items: baseline; font-size: 10.6px; line-height: 1.25; padding: 2px 6px; border-left: 3px solid var(--hair); background: var(--surface-2); color: var(--ink-2); }
+.st-c .n { font-family: var(--mono); color: var(--ink); }
+.st-c .s { font-family: var(--mono); font-size: 9.5px; }
+.st-c.done { border-left-color: var(--shot); } .st-c.open, .st-c.part { border-left-color: var(--lead); } .st-c.arch, .st-c.sup { border-left-color: var(--grey-mark); } .st-c.park { border-left-color: var(--mate); }
+/* slide 7: prior work by component */
+.cv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.cv-card { background: var(--surface-2); border-left: 4px solid var(--lead); border-radius: 0 4px 4px 0; padding: 6px 11px 7px;
+  display: grid; gap: 3px; align-content: start; font-size: 11.6px; line-height: 1.34; color: var(--ink-2); }
+.cv-card b { color: var(--ink); font-weight: 600; }
+.cv-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13.5px; }
+.cv-h b { font-family: var(--display); font-weight: 700; }
+.cv-h span { font-family: var(--mono); font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+.cv-k { display: inline-block; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--lead-ink); margin-right: 6px; }
+.cv-k.ext { color: var(--muted); }
+.cv-k.new { color: var(--mate-ink); }
+.cv-dim { color: var(--muted); }
+.cv-dir { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(9, auto); grid-auto-flow: column;
+  gap: 1px 18px; font-size: 11px; line-height: 1.32; color: var(--ink-2); }
+.cv-e b { color: var(--ink); font-weight: 600; }
+.cv-aff { color: var(--ink-2); }
+</style>
+
+<div class="deck" id="deck">
+<div class="stage" id="stage">
+
+<!-- ===================== 1 &#183; THE HARNESS ===================== -->
+<section class="slide" data-title="The harness">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">1</span><span>The system we study &#183; an agent harness (our s15)</span></div>
+    <h2>A harness loops model calls over a prompt it keeps editing</h2>
+  </div>
+  <div class="body fig-bullets"><figure><svg viewBox="0 0 1152 428" role="img" aria-label="Diagram of the s15 agent harness. Left: the lead agent. A turn starts on a user message or an event and is a loop of rounds: prepare the prompt, call the model, and if the reply asks for tools, run them in order and append all results as one new message; a reply that asks for no tool ends the turn. Middle: helpers the lead&#x27;s tools start: a subagent with a fresh context that returns only its final answer, teammates that run their own loops in parallel and claim ready tasks, a task board whose tasks wait on the tasks that block them, and mailboxes that wake the lead. Right: four context edits the lead makes before a call: append, a rolling snip past 50 messages, shrinking old tool results, and a summary that replaces the history; each edit makes the server recompute the text after the edit. Bottom: one model server answers every call."><g><defs><marker id="s1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-ink2"></path></marker></defs><rect x="0" y="0" width="364" height="320" rx="4" class="box"></rect><text x="12" y="21" font-size="14" class="t-title">Lead agent</text><text x="95.1464" y="21" font-size="11" class="t-muted">the main model &#183; 26 tools</text><rect x="12" y="32" width="340" height="280" rx="4" class="box-dash"></rect><text x="22" y="50" font-size="11.5" class="t-title">TURN</text><text x="60.7952" y="50" font-size="10.5" class="t-ink2">one activation of the lead</text><text x="22" y="64" font-size="10.5" class="t-muted">starts: a user message or an event (mail, timer, job done)</text><text x="22" y="78" font-size="10.5" class="t-muted">ends: a reply that asks for no tool</text><rect x="24" y="86" width="316" height="218" rx="4" class="box-soft"></rect><text x="34" y="103" font-size="11.5" class="t-title">ROUND</text><text x="80.744" y="103" font-size="10.5" class="t-ink2">one model call + the tools it asks for</text><rect x="40" y="112" width="284" height="38" rx="4" class="box"></rect><text x="50" y="127" font-size="12" class="t-title">&#9312; Prepare the prompt</text><text x="50" y="142" font-size="10.5" class="t-muted">context edits (right) &#183; memory recall &#183; notices</text><path d="M 182 150 V 158" class="edge" marker-end="url(#s1a)"></path><rect x="40" y="160" width="284" height="38" rx="4" class="box"></rect><text x="50" y="175" font-size="12" class="t-title">&#9313; Call the model</text><text x="50" y="190" font-size="10.5" class="t-muted">prefill the prompt, then decode the reply</text><path d="M 182 198 V 206" class="edge" marker-end="url(#s1a)"></path><rect x="40" y="208" width="170" height="24" rx="12" class="box-dash"></rect><text x="125" y="224" font-size="11" text-anchor="middle">Reply asks for tools?</text><path d="M 210 220 H 232" class="edge" marker-end="url(#s1a)"></path><text x="221" y="215" font-size="10" text-anchor="middle" class="t-muted">no</text><rect x="234" y="200" width="90" height="48" rx="4" class="box-grey"></rect><text x="244" y="215" font-size="11.5" class="t-title">Turn ends</text><text x="244" y="229" font-size="10" class="t-muted">memory saved</text><text x="244" y="241" font-size="10" class="t-muted">in background</text><path d="M 125 232 V 246" class="edge" marker-end="url(#s1a)"></path><text x="131" y="243" font-size="10" class="t-muted">yes</text><rect x="40" y="248" width="284" height="40" rx="4" class="box"></rect><text x="50" y="263" font-size="12" class="t-title">&#9314; Run the tools, in order</text><text x="50" y="279" font-size="10.5" class="t-muted">permission check &#183; all results &#8594; one new message</text><path d="M 40 268 H 32 V 131 H 38" class="edge" marker-end="url(#s1a)"></path><text x="40" y="299" font-size="10" class="t-muted">&#8634; back to &#9312; for the next round</text><path d="M 324 268 H 378 V 31 H 390" class="edge" marker-end="url(#s1a)"></path><path d="M 378 119 H 390" class="edge" marker-end="url(#s1a)"></path><path d="M 378 225 H 390" class="edge" marker-end="url(#s1a)"></path><text x="351" y="263" font-size="10" text-anchor="middle" class="t-muted">starts</text><rect x="392" y="0" width="368" height="62" rx="4" class="box"></rect><text x="402" y="18" font-size="13" class="t-title">Subagent</text><text x="750" y="18" font-size="10" text-anchor="end" class="t-mono t-muted">task tool</text><text x="402" y="35" font-size="11" class="t-ink2">fresh, empty context &#183; up to 30 rounds &#183; 5 tools</text><text x="402" y="51" font-size="11" class="t-ink2">the lead waits; only its final answer comes back</text><rect x="404" y="70" width="368" height="82" rx="4" class="box-soft"></rect><rect x="398" y="74" width="368" height="82" rx="4" class="box-soft"></rect><rect x="392" y="78" width="368" height="82" rx="4" class="box"></rect><text x="402" y="96" font-size="13" class="t-title">Teammates &#215;N</text><text x="750" y="96" font-size="10" text-anchor="end" class="t-mono t-muted">spawn_teammate</text><text x="402" y="112" font-size="11" class="t-ink2">each runs its own loop on its own thread, in parallel</text><text x="402" y="127" font-size="11" class="t-ink2">10 tools &#183; no round limit &#183; context never edited</text><text x="402" y="142" font-size="11" class="t-ink2">when idle, claims a ready task (checks every 2 s)</text><path d="M 724 160 V 174" class="edge" marker-end="url(#s1a)"></path><text x="717" y="171" font-size="10" text-anchor="end" class="t-muted">claim &#183; complete</text><rect x="392" y="176" width="368" height="98" rx="4" class="box"></rect><text x="402" y="194" font-size="13" class="t-title">Task board</text><text x="479.779" y="194" font-size="10.5" class="t-muted">tasks + &#8220;blocked by&#8221; edges, set by the lead</text><path d="M 460 214 L 492 214" class="edge" marker-end="url(#s1a)"></path><path d="M 460 214 L 492 246" class="edge" marker-end="url(#s1a)"></path><path d="M 460 246 L 492 246" class="edge" marker-end="url(#s1a)"></path><path d="M 550 214 L 582 230" class="edge" marker-end="url(#s1a)"></path><path d="M 550 246 L 582 230" class="edge" marker-end="url(#s1a)"></path><rect x="404" y="204" width="56" height="20" rx="3" class="box-grey"><title>plan: done</title></rect><text x="432" y="218" font-size="10.5" text-anchor="middle" class="t-mono t-muted">plan &#10003;</text><rect x="404" y="236" width="56" height="20" rx="3" class="box-grey"><title>data: done</title></rect><text x="432" y="250" font-size="10.5" text-anchor="middle" class="t-mono t-muted">data &#10003;</text><rect x="494" y="204" width="56" height="20" rx="3" class="box"><title>build: in progress</title></rect><rect x="495" y="205" width="4" height="18" rx="1" class="f-ink2"></rect><text x="524" y="218" font-size="10.5" text-anchor="middle" class="t-mono">build</text><rect x="494" y="236" width="56" height="20" rx="3" class="box"><title>test: ready</title></rect><text x="522" y="250" font-size="10.5" text-anchor="middle" class="t-mono">test</text><rect x="584" y="220" width="56" height="20" rx="3" class="node-ghost"><title>report: blocked</title></rect><text x="612" y="234" font-size="10.5" text-anchor="middle" class="t-mono t-muted">report</text><rect x="660" y="204" width="14" height="9" rx="2" class="box-grey"></rect><text x="680" y="212.5" font-size="10" class="t-ink2">done</text><rect x="660" y="218" width="14" height="9" rx="2" class="box"></rect><rect x="661" y="219" width="3" height="7" rx="1" class="f-ink2"></rect><text x="680" y="226.5" font-size="10" class="t-ink2">in progress</text><rect x="660" y="232" width="14" height="9" rx="2" class="box"></rect><text x="680" y="240.5" font-size="10" class="t-ink2">ready</text><rect x="660" y="246" width="14" height="9" rx="2" class="node-ghost"></rect><text x="680" y="254.5" font-size="10" class="t-ink2">blocked</text><text x="404" y="268" font-size="10.5" class="t-muted">ready = not started, no owner, every blocker done</text><rect x="392" y="284" width="368" height="36" rx="4" class="box-soft"></rect><text x="402" y="300" font-size="12.5" class="t-title">Mailboxes</text><text x="472.91" y="300" font-size="11" class="t-ink2">one inbox per agent; new mail wakes the lead</text><text x="402" y="314" font-size="10" class="t-muted">results &#183; idle notices &#183; messages &#183; plan approvals</text><path d="M 772 124 H 778 V 302 H 762" class="edge" marker-end="url(#s1a)"></path><path d="M 392 302 H 366" class="edge" marker-end="url(#s1a)"></path><rect x="788" y="0" width="364" height="320" rx="4" class="box"></rect><text x="800" y="21" font-size="14" class="t-title">Context edits</text><text x="897.208" y="21" font-size="11" class="t-muted">lead only &#183; before every call</text><text x="800" y="50" font-size="12.5" class="t-title">Append</text><text x="800" y="65" font-size="10" class="t-mono t-muted">every call</text><rect x="914" y="39" width="25" height="16" rx="1" class="f-lead"><title>Append: reused from the KV cache</title></rect><rect x="940" y="39" width="135" height="16" rx="1" class="f-lead"><title>Append: reused from the KV cache</title></rect><rect x="1076" y="39" width="63" height="16" rx="1" class="f-ink2"><title>Append: new text</title></rect><text x="914" y="70" font-size="10.5" class="t-ink2">system prompt frozen for the session;</text><text x="914" y="83" font-size="10.5" class="t-ink2">new results and notices go at the end</text><text x="800" y="116" font-size="12.5" class="t-title">Rolling snip</text><text x="800" y="131" font-size="10" class="t-mono t-muted">&gt; 50 messages</text><rect x="914" y="105" width="29" height="16" rx="1" class="f-lead"><title>Rolling snip: reused from the KV cache</title></rect><rect x="944" y="105" width="5" height="16" rx="1" class="f-ink2"><title>Rolling snip: new text</title></rect><rect x="950" y="105" width="125" height="16" rx="1" class="f-mate"><title>Rolling snip: known text, recomputed because it moved</title></rect><rect x="1076" y="105" width="63" height="16" rx="1" class="f-ink2"><title>Rolling snip: new text</title></rect><text x="914" y="136" font-size="10.5" class="t-ink2">keeps messages 1&#8211;3 and the last 46;</text><text x="914" y="149" font-size="10.5" class="t-ink2">fires again on every call past 50</text><text x="800" y="182" font-size="12.5" class="t-title">Shrink results</text><text x="800" y="197" font-size="10" class="t-mono t-muted">over the limit</text><rect x="914" y="171" width="69" height="16" rx="1" class="f-lead"><title>Shrink results: reused from the KV cache</title></rect><rect x="984" y="171" width="4" height="16" rx="1" class="f-ink2"><title>Shrink results: new text</title></rect><rect x="989" y="171" width="39" height="16" rx="1" class="f-mate"><title>Shrink results: known text, recomputed because it moved</title></rect><rect x="1029" y="171" width="4" height="16" rx="1" class="f-ink2"><title>Shrink results: new text</title></rect><rect x="1034" y="171" width="41" height="16" rx="1" class="f-mate"><title>Shrink results: known text, recomputed because it moved</title></rect><rect x="1076" y="171" width="63" height="16" rx="1" class="f-ink2"><title>Shrink results: new text</title></rect><text x="914" y="202" font-size="10.5" class="t-ink2">old tool results &#8594; placeholders, then</text><text x="914" y="215" font-size="10.5" class="t-ink2">1,000-character previews</text><text x="800" y="248" font-size="12.5" class="t-title">Summary</text><text x="800" y="263" font-size="10" class="t-mono t-muted">last resort</text><rect x="914" y="237" width="29" height="16" rx="1" class="f-lead"><title>Summary: reused from the KV cache</title></rect><rect x="944" y="237" width="63" height="16" rx="1" class="f-ink2"><title>Summary: new text</title></rect><rect x="1009" y="237" width="131" height="16" rx="2" class="box-dash"><title>the old history, dropped</title></rect><text x="1074" y="248.5" font-size="10" text-anchor="middle" class="t-muted">history dropped</text><text x="914" y="268" font-size="10.5" class="t-ink2">a model-written summary replaces the</text><text x="914" y="281" font-size="10.5" class="t-ink2">history (also on request, or on overflow)</text><rect x="800" y="291" width="12" height="10" rx="2" class="f-lead"></rect><text x="817" y="300" font-size="10.5" class="t-ink2">reused KV (cached)</text><rect x="923.93" y="291" width="12" height="10" rx="2" class="f-mate"></rect><text x="940.93" y="300" font-size="10.5" class="t-ink2">recomputed</text><rect x="1011.43" y="291" width="12" height="10" rx="2" class="f-ink2"></rect><text x="1028.43" y="300" font-size="10.5" class="t-ink2">new text</text><rect x="1085.48" y="291" width="12" height="10" rx="2" class="box-dash"></rect><text x="1102.48" y="300" font-size="10.5" class="t-ink2">dropped</text><path d="M 182 320 V 332" class="edge" marker-end="url(#s1a)"></path><path d="M 576 320 V 332" class="edge" marker-end="url(#s1a)"></path><rect x="0" y="334" width="1152" height="52" rx="4" class="box-soft"></rect><text x="12" y="354" font-size="13" class="t-title">Model server</text><text x="103.572" y="354" font-size="11" class="t-ink2">one engine answers every call: lead, subagent, teammates, memory, summaries</text><text x="12" y="374" font-size="10.5" class="t-title">prefill:</text><text x="50.1128" y="374" font-size="10.5" class="t-ink2">read the prompt, store its KV (the model&#x27;s per-token state)</text><text x="349.008" y="374" font-size="10.5" class="t-title">decode:</text><text x="393.584" y="374" font-size="10.5" class="t-ink2">write the reply, one token at a time</text><text x="585.274" y="374" font-size="10.5" class="t-title">prefix cache:</text><text x="655.933" y="374" font-size="10.5" class="t-ink2">reuse KV up to the first changed token</text><text x="0" y="414" font-size="10" class="t-muted" letter-spacing="0.8">ALSO IN THE HARNESS</text><rect x="121.7" y="400" width="132.545" height="20" rx="3" class="box-soft"></rect><text x="128.7" y="414" font-size="10.5" class="t-ink2">skills, loaded on demand</text><rect x="260.245" y="400" width="97.265" height="20" rx="3" class="box-soft"></rect><text x="267.245" y="414" font-size="10.5" class="t-ink2">permission hooks</text><rect x="363.51" y="400" width="117.005" height="20" rx="3" class="box-soft"></rect><text x="370.51" y="414" font-size="10.5" class="t-ink2">background shell jobs</text><rect x="486.515" y="400" width="73.64" height="20" rx="3" class="box-soft"></rect><text x="493.515" y="414" font-size="10.5" class="t-ink2">timers (cron)</text><rect x="566.155" y="400" width="62.93" height="20" rx="3" class="box-soft"></rect><text x="573.155" y="414" font-size="10.5" class="t-ink2">MCP tools</text><rect x="635.085" y="400" width="75.95" height="20" rx="3" class="box-soft"></rect><text x="642.085" y="414" font-size="10.5" class="t-ink2">git worktrees</text><rect x="717.035" y="400" width="92.33" height="20" rx="3" class="box-dash"></rect><text x="724.035" y="414" font-size="10.5" class="t-ink2">goal check (s17)</text><rect x="815.365" y="400" width="121.1" height="20" rx="3" class="box-dash"></rect><text x="822.365" y="414" font-size="10.5" class="t-ink2">workflow scripts (s16)</text><text x="944.465" y="414" font-size="10" class="t-muted">dashed: add-ons not in our runs</text></g></svg></figure><ul class="list tight"><li><b>Benchmark runs use a slim harness</b>: lead, subagent and task board only; there the rolling snip makes up 99.9% of all edited prompt text</li><li><b>Why it matters to the server</b>: between edits the prompt only grows at its end, so cached KV is reused (freezing the system prompt, your Oct 9 change, lifted reuse from 4.2% to 89.3%); every edit forces a recompute of everything after it</li></ul></div>
+  <div class="foot"><p>Sources: <span class="mono">s15_integrated_harness/code.py</span> (agent_loop, prepare_context, snip_compact, micro_compact, fit_tool_results, compact_history, spawn_subagent, the task board, MessageBus); <span class="mono">research/method_develop/README.md</span> (the snip&#x27;s share of edited text, from 85,527 recorded transitions).</p></div>
+</section>
+
+<!-- ===================== 2 &#183; WHAT WE PROFILED ===================== -->
+<section class="slide" data-title="What we profiled">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">2</span><span>What we profiled &#183; 17 topics in six groups</span></div>
+    <h2>The GPU keeps recomputing known text, and reusing it is safe</h2>
+    <div class="cfg"><span class="label">In all</span><span class="chip">Sep 1 &#8211; Oct 21</span><span class="chip">17 topics</span><span class="chip">6 models run live</span><span class="chip">3 benchmarks</span><span class="chip">9,000+ agent runs</span><span class="chip">500+ GPU-hours</span></div>
+  </div>
+  <div class="body pm-grid"><div class="pm-row"><span>The harness</span></div><div class="pm-cell"><p class="pm-h">How the harness behaves</p><div class="pm-chips"><span class="tp" title="topic 01">Tracing</span><span class="tp" title="topic 07">Task graph</span><span class="tp" title="topic 16, harness_eval">Benchmark profile</span></div><figure><svg viewBox="0 0 345 120" role="img" aria-label="Dumbbell chart, SWE-bench Verified: the share of the prompt served from the cache before and after the rolling snip starts. MiniMax M2.7 92% to 23%, DeepSeek V4 Flash 91% to 16%, Qwen3.8 27B 79% to 12%, Qwen3 32B 67% to 30%. Over all 4 models and 3 benchmarks: 61-92% before, 9-54% after."><g><defs><marker id="s2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-grey"></path></marker></defs><text x="0" y="10" font-size="10" class="t-muted">share of the prompt served from the cache &#183; SWE-bench Verified</text><circle cx="5" cy="21" r="4" class="f-lead-soft-s"></circle><text x="13" y="24.5" font-size="10" class="t-ink2">before the snip starts</text><circle cx="119.6" cy="21" r="4" class="f-lead"></circle><text x="127.6" y="24.5" font-size="10" class="t-ink2">after</text><path d="M 110 98 H 330" class="axis"></path><path d="M 110 34 V 98" class="grid"></path><text x="110" y="110" font-size="10" text-anchor="middle" class="t-mono t-muted tick">0%</text><path d="M 220 34 V 98" class="grid"></path><text x="220" y="110" font-size="10" text-anchor="middle" class="t-mono t-muted tick">50%</text><path d="M 330 34 V 98" class="grid"></path><text x="330" y="110" font-size="10" text-anchor="middle" class="t-mono t-muted tick">100%</text><text x="0" y="46" font-size="11" class="t-ink2">MiniMax M2.7</text><path d="M 306.4 42 H 167.6" class="edge-grey" marker-end="url(#s2a)"></path><circle cx="312.4" cy="42" r="4.5" class="f-lead-soft-s"><title>MiniMax M2.7, before the snip starts: 92%</title></circle><circle cx="160.6" cy="42" r="4.5" class="f-lead ring2"><title>MiniMax M2.7, after: 23%</title></circle><text x="320.4" y="45.5" font-size="10" class="t-mono t-ink2">92</text><text x="152.6" y="45.5" font-size="10" text-anchor="end" class="t-mono t-ink2">23</text><text x="0" y="64" font-size="11" class="t-ink2">DeepSeek V4 Flash</text><path d="M 304.2 60 H 152.2" class="edge-grey" marker-end="url(#s2a)"></path><circle cx="310.2" cy="60" r="4.5" class="f-lead-soft-s"><title>DeepSeek V4 Flash, before the snip starts: 91%</title></circle><circle cx="145.2" cy="60" r="4.5" class="f-lead ring2"><title>DeepSeek V4 Flash, after: 16%</title></circle><text x="318.2" y="63.5" font-size="10" class="t-mono t-ink2">91</text><text x="137.2" y="63.5" font-size="10" text-anchor="end" class="t-mono t-ink2">16</text><text x="0" y="82" font-size="11" class="t-ink2">Qwen3.8 27B</text><path d="M 277.8 78 H 143.4" class="edge-grey" marker-end="url(#s2a)"></path><circle cx="283.8" cy="78" r="4.5" class="f-lead-soft-s"><title>Qwen3.8 27B, before the snip starts: 79%</title></circle><circle cx="136.4" cy="78" r="4.5" class="f-lead ring2"><title>Qwen3.8 27B, after: 12%</title></circle><text x="291.8" y="81.5" font-size="10" class="t-mono t-ink2">79</text><text x="128.4" y="81.5" font-size="10" text-anchor="end" class="t-mono t-ink2">12</text><text x="0" y="100" font-size="11" class="t-ink2">Qwen3 32B</text><path d="M 251.4 96 H 183" class="edge-grey" marker-end="url(#s2a)"></path><circle cx="257.4" cy="96" r="4.5" class="f-lead-soft-s"><title>Qwen3 32B, before the snip starts: 67%</title></circle><circle cx="176" cy="96" r="4.5" class="f-lead ring2"><title>Qwen3 32B, after: 30%</title></circle><text x="265.4" y="99.5" font-size="10" class="t-mono t-ink2">67</text><text x="168" y="99.5" font-size="10" text-anchor="end" class="t-mono t-ink2">30</text></g></svg></figure><p class="pm-take"><b>Its edits break the cache</b>: past 50 messages it trims the history on every call; in all runs hits fall from 61&#8211;92% to 9&#8211;54%</p></div><div class="pm-cell"><p class="pm-h">One user&#x27;s session</p><div class="pm-chips"><span class="tp" title="topic 05">Round latency</span><span class="tp" title="topic 06">Tool cost</span><span class="tp" title="topic 09">Efficiency</span></div><figure><svg viewBox="0 0 345 120" role="img" aria-label="Stacked bars, one user on a hosted model: where a lead round&#x27;s time goes. Coding: model call 92.9%, harness preparation 7.0%, tools 0.1%, 7.7 s per round. File Q&amp;A: 99.8%, 0.1%, 0.1%, 9.7 s. Math: 99.8%, 0.1%, 0.1%, 7.6 s."><g><text x="0" y="10" font-size="10" class="t-muted">one user, hosted model: where a lead round&#x27;s time goes</text><text x="0" y="33" font-size="11" class="t-ink2">Coding</text><rect x="64" y="22" width="206.238" height="14" rx="1" class="f-ink2"><title>Coding: model call 92.9% of the round</title></rect><rect x="271.738" y="22" width="14.262" height="14" rx="1" class="f-grey"><title>Coding: harness preparation 7.0%, tools 0.1%</title></rect><text x="71" y="32.5" font-size="10" class="t-mono" style="fill: var(--surface)">model call 92.9%</text><text x="294" y="33" font-size="10.5" class="t-mono t-ink2">7.7 s</text><text x="64" y="47" font-size="10" class="t-muted">harness prep 7.0% &#183; tools 0.1%</text><text x="0" y="65" font-size="11" class="t-ink2">File Q&amp;A</text><rect x="64" y="54" width="221.556" height="14" rx="1" class="f-ink2"><title>File Q&amp;A: model call 99.8% of the round</title></rect><rect x="287.056" y="54" width="1.5" height="14" rx="1" class="f-grey"><title>File Q&amp;A: harness preparation 0.1%, tools 0.1%</title></rect><text x="71" y="64.5" font-size="10" class="t-mono" style="fill: var(--surface)">model call 99.8%</text><text x="294" y="65" font-size="10.5" class="t-mono t-ink2">9.7 s</text><text x="64" y="79" font-size="10" class="t-muted">harness prep 0.1% &#183; tools 0.1%</text><text x="0" y="97" font-size="11" class="t-ink2">Math</text><rect x="64" y="86" width="221.556" height="14" rx="1" class="f-ink2"><title>Math: model call 99.8% of the round</title></rect><rect x="287.056" y="86" width="1.5" height="14" rx="1" class="f-grey"><title>Math: harness preparation 0.1%, tools 0.1%</title></rect><text x="71" y="96.5" font-size="10" class="t-mono" style="fill: var(--surface)">model call 99.8%</text><text x="294" y="97" font-size="10.5" class="t-mono t-ink2">7.6 s</text><text x="64" y="111" font-size="10" class="t-muted">harness prep 0.1% &#183; tools 0.1%</text></g></svg></figure><p class="pm-take"><b>Tools and harness prep cost milliseconds</b> for one user. With many users, edits cause 60&#8211;80% of prefill</p></div><div class="pm-cell"><p class="pm-h">Repeated input</p><div class="pm-chips"><span class="tp" title="topic 02">Re-reads</span><span class="tp arch" title="topic 03, archived">Context tweaks</span><span class="tp" title="topic 08">Task handoff</span></div><figure><svg viewBox="0 0 345 120" role="img" aria-label="Stacked bars, share of file reads in our team workloads. Lead: 41% first reads, 53% re-opened files, 6% exact repeats. Teammates: 6% first reads, 94% re-opened, 0% exact repeats. 82% of the lead&#x27;s re-reads came after compaction shrank its history."><g><text x="0" y="10" font-size="10" class="t-muted">share of file reads, our team workloads (Sep 8&#8211;11)</text><rect x="0" y="16" width="11" height="9" rx="2" class="box-grey"></rect><text x="15" y="24.5" font-size="10" class="t-ink2">first read</text><rect x="68.8" y="16" width="11" height="9" rx="2" class="f-m2"></rect><text x="83.8" y="24.5" font-size="10" class="t-ink2">re-opened file</text><rect x="158.8" y="16" width="11" height="9" rx="2" class="f-m4"></rect><text x="173.8" y="24.5" font-size="10" class="t-ink2">exact repeat</text><text x="0" y="48" font-size="11" class="t-ink2">Lead</text><rect x="74" y="36" width="107.06" height="16" rx="1" class="box-grey"><title>Lead: first read 41%</title></rect><rect x="183.06" y="36" width="138.98" height="16" rx="1" class="f-m2"><title>Lead: re-opened 53%</title></rect><rect x="324.04" y="36" width="13.96" height="16" rx="1" class="f-m4"><title>Lead: exact repeat 6%</title></rect><text x="74" y="64" font-size="10" class="t-muted">59% re-open a file; 6% are exact repeats</text><text x="0" y="82" font-size="11" class="t-ink2">Teammates</text><rect x="74" y="70" width="13.96" height="16" rx="1" class="box-grey"><title>Teammates: first read 6%</title></rect><rect x="89.96" y="70" width="248.04" height="16" rx="1" class="f-m2"><title>Teammates: re-opened 94%</title></rect><text x="74" y="98" font-size="10" class="t-muted">94% re-open a file, paging through big files</text><text x="0" y="112" font-size="10.5" class="t-ink2">82% of the lead&#x27;s re-reads come right after a compaction</text></g></svg></figure><p class="pm-take"><b>Agents re-read what compaction dropped</b>; across real coding tasks only ~1% of a task&#x27;s input was fetched before</p></div><div class="pm-row"><span>The server</span></div><div class="pm-cell"><p class="pm-h">Reusing KV after edits</p><div class="pm-chips"><span class="tp arch" title="topic 04, archived">Splice</span><span class="to">&#8594;</span><span class="tp" title="topic 10">Re-rotation</span><span class="to">&#8594;</span><span class="tp" title="topic 16">Live loop</span><span class="to">&#8594;</span><span class="tp" title="harness_eval rounds e1&#8211;e4">Benchmarks</span></div><figure><svg viewBox="0 0 345 120" role="img" aria-label="Forest plot, pre-registered test on 100 SWE-bench Verified tasks times 3: change in tasks solved against full recompute, in points with 90% intervals. An identical rerun: +2.0 [-1.7, +5.7]. Reuse (EPIC-128): -1.0 [-4.3, +2.3], above the -5 point loss limit set in advance. Prompt computed per call: full recompute 47.7%, reuse 4.3% (6,937 to 634 tokens, -91%)."><g><text x="0" y="10" font-size="10" class="t-muted">change in % of tasks solved vs full recompute (90% interval)</text><rect x="118" y="17" width="18.3333" height="44" rx="0" class="band-warn"></rect><path d="M 136.333 17 V 61" class="edge-warn"></path><path d="M 228 17 V 61" class="axis"></path><text x="136.333" y="72" font-size="10" text-anchor="middle" class="t-mono t-muted tick">&#8722;5</text><text x="228" y="72" font-size="10" text-anchor="middle" class="t-mono t-muted tick">0</text><text x="319.667" y="72" font-size="10" text-anchor="middle" class="t-mono t-muted tick">+5</text><text x="126.333" y="72" font-size="10" text-anchor="end" class="t-warn">limit</text><text x="0" y="35" font-size="11" class="t-ink2">identical rerun</text><path d="M 196.833 31 H 332.5" class="line-grey"></path><circle cx="264.667" cy="31" r="4.5" class="f-grey ring2"><title>identical rerun: +2.0 points [&#8722;1.7, +5.7]</title></circle><text x="264.667" y="24.5" font-size="10" text-anchor="middle" class="t-mono t-ink2">+2.0</text><text x="0" y="54" font-size="11" class="t-ink2">reuse (EPIC-128)</text><path d="M 149.167 50 H 270.167" class="line-lead"></path><circle cx="209.667" cy="50" r="4.5" class="f-lead ring2"><title>reuse (EPIC-128): &#8722;1.0 points [&#8722;4.3, +2.3]</title></circle><text x="209.667" y="43.5" font-size="10" text-anchor="middle" class="t-mono t-ink2">&#8722;1.0</text><text x="0" y="87" font-size="10" class="t-muted">prompt computed per call</text><text x="112" y="101" font-size="10" text-anchor="end" class="t-ink2">full recompute</text><rect x="118" y="93" width="104.94" height="8" rx="1" class="f-mate"><title>full recompute: 47.7% of the prompt computed</title></rect><text x="228.94" y="101" font-size="10" class="t-mono t-ink2">47.7%</text><text x="112" y="115" font-size="10" text-anchor="end" class="t-ink2">reuse</text><rect x="118" y="107" width="9.46" height="8" rx="1" class="f-lead"><title>reuse: 4.3% of the prompt computed</title></rect><text x="133.46" y="115" font-size="10" class="t-mono t-ink2">4.3%  (&#8722;91%)</text></g></svg></figure><p class="pm-take"><b>Reuse keeps accuracy</b>: pre-registered, 100 tasks &#215; 3, inside the 5-point limit with 91% fewer prompt tokens</p></div><div class="pm-cell"><p class="pm-h">Many users, one GPU</p><div class="pm-chips"><span class="tp" title="topic 11">Many users</span><span class="tp" title="topic 12">Hardware</span><span class="tp part" title="topic 13, partly run">Memory tiers</span><span class="tp part" title="topic 14, bounds only">P/D split</span></div><figure><svg viewBox="0 0 345 120" role="img" aria-label="Line chart, Qwen3-32B on one H200: lead calls per hour, all users together, by number of users at once. 1 user 719 and 752 (two runs), 4 users 2,030, 8 users 3,077, 12 users 1,496, 16 users 976, 32 users 990. With a session gate (at most 8 users active): 3,394 at 16 users (3.5 times) and 3,793 at 32 (3.8 times). Cache hits fall from 87% at 8 users to 2% at 16."><g><text x="0" y="10" font-size="10" class="t-muted">lead calls per hour, all users &#183; Qwen3-32B, one H200</text><path d="M 34 98 H 340" class="grid"></path><text x="28" y="101.5" font-size="10" text-anchor="end" class="t-mono t-muted tick">0</text><path d="M 34 60 H 340" class="grid"></path><text x="28" y="63.5" font-size="10" text-anchor="end" class="t-mono t-muted tick">2K</text><path d="M 34 22 H 340" class="grid"></path><text x="28" y="25.5" font-size="10" text-anchor="end" class="t-mono t-muted tick">4K</text><path d="M 186 18 V 98" class="edge-dash"></path><text x="190" y="93" font-size="10" class="t-muted">memory full</text><path d="M 46 84.0 L 102 59.4 L 158 39.5 L 214 69.6 L 270 79.5 L 326 79.2" class="line-ink2"></path><circle cx="46" cy="84.0255" r="3.5" class="f-ink2 ring2"><title>1 user: 719 and 752 lead calls/h (two runs)</title></circle><circle cx="102" cy="59.43" r="3.5" class="f-ink2 ring2"><title>4 users: 2,030 lead calls/h</title></circle><circle cx="158" cy="39.537" r="3.5" class="f-ink2 ring2"><title>8 users: 3,077 lead calls/h</title></circle><circle cx="214" cy="69.576" r="3.5" class="f-ink2 ring2"><title>12 users: 1,496 lead calls/h</title></circle><circle cx="270" cy="79.456" r="3.5" class="f-ink2 ring2"><title>16 users: 976 lead calls/h</title></circle><circle cx="326" cy="79.19" r="3.5" class="f-ink2 ring2"><title>32 users: 990 lead calls/h</title></circle><path d="M 270 33.5 L 326 25.9" class="edge-lead" stroke-dasharray="3 3"></path><circle cx="270" cy="33.514" r="4" class="f-lead ring2"><title>16 users with a session gate: 3,394 lead calls/h (3.5&#215;)</title></circle><circle cx="326" cy="25.933" r="4" class="f-lead ring2"><title>32 users with a session gate: 3,793 lead calls/h (3.8&#215;)</title></circle><text x="158" y="32.537" font-size="10" text-anchor="middle" class="t-mono t-ink2">3,077</text><text x="46" y="76.712" font-size="10" text-anchor="middle" class="t-mono t-ink2">719&#8211;752</text><text x="264" y="92.456" font-size="10" text-anchor="middle" class="t-mono t-ink2">976</text><text x="322" y="92.19" font-size="10" text-anchor="middle" class="t-mono t-ink2">990</text><text x="262" y="27.514" font-size="10" text-anchor="end" class="t-lead">gate 3.5&#215;</text><text x="318" y="19.933" font-size="10" text-anchor="end" class="t-lead">3.8&#215;</text><text x="196" y="52" font-size="10" class="t-ink2">cache hits 87% &#8594; 2%</text><text x="46" y="111" font-size="10" text-anchor="middle" class="t-mono t-muted tick">1</text><text x="102" y="111" font-size="10" text-anchor="middle" class="t-mono t-muted tick">4</text><text x="158" y="111" font-size="10" text-anchor="middle" class="t-mono t-muted tick">8</text><text x="214" y="111" font-size="10" text-anchor="middle" class="t-mono t-muted tick">12</text><text x="270" y="111" font-size="10" text-anchor="middle" class="t-mono t-muted tick">16</text><text x="326" y="111" font-size="10" text-anchor="middle" class="t-mono t-muted tick">32</text><text x="0" y="111" font-size="10" class="t-muted">users:</text></g></svg></figure><p class="pm-take"><b>KV memory overflows</b>: past 8 users work drops by two-thirds; a session gate restores 3.5&#8211;3.8&#215;</p></div><div class="pm-cell"><p class="pm-h">Synthesis and design</p><div class="pm-chips"><span class="tp" title="topic 15">Synthesis</span><span class="tp" title="topic 17 (method_develop), offline">Design check</span><span class="tp" title="related_work">Prior work</span></div><figure><svg viewBox="0 0 345 120" role="img" aria-label="Stacked bars, share of GPU time spent recomputing known text, from topic 11&#x27;s runs. 4 users: 30% after harness edits, 0% after eviction. 16 users: 10% after edits, 74% after eviction. 16 users behind a session gate: 34% after edits, 6% after eviction. At 12 and 32 users eviction takes 65% and 74%."><g><text x="0" y="10" font-size="10" class="t-muted">share of GPU time spent recomputing known text</text><rect x="0" y="16" width="11" height="9" rx="2" class="f-m2"></rect><text x="15" y="24.5" font-size="10" class="t-ink2">after the harness&#x27;s edits</text><rect x="137.3" y="16" width="11" height="9" rx="2" class="f-m4"></rect><text x="152.3" y="24.5" font-size="10" class="t-ink2">after eviction (memory full)</text><text x="0" y="45" font-size="11" class="t-ink2">4 users</text><rect x="74" y="34" width="72" height="14" rx="1" class="f-m2"><title>4 users: 30% of GPU time after the harness&#x27;s edits</title></rect><text x="110" y="44.5" font-size="10" text-anchor="middle" class="t-mono">30%</text><text x="0" y="69" font-size="11" class="t-ink2">16 users</text><rect x="74" y="58" width="24" height="14" rx="1" class="f-m2"><title>16 users: 10% of GPU time after the harness&#x27;s edits</title></rect><text x="86" y="68.5" font-size="10" text-anchor="middle" class="t-mono">10%</text><rect x="100" y="58" width="177.6" height="14" rx="1" class="f-m4"><title>16 users: 74% of GPU time after eviction</title></rect><text x="283.6" y="69" font-size="10" class="t-mono t-ink2">74%</text><text x="0" y="93" font-size="11" class="t-ink2">16, gated</text><rect x="74" y="82" width="81.6" height="14" rx="1" class="f-m2"><title>16, gated: 34% of GPU time after the harness&#x27;s edits</title></rect><text x="114.8" y="92.5" font-size="10" text-anchor="middle" class="t-mono">34%</text><rect x="157.6" y="82" width="14.4" height="14" rx="1" class="f-m4"><title>16, gated: 6% of GPU time after eviction</title></rect><text x="178" y="93" font-size="10" class="t-mono t-ink2">6%</text><text x="0" y="112" font-size="10" class="t-muted">eviction takes 65% at 12 users and 74% at 32</text></g></svg></figure><p class="pm-take"><b>The GPU redoes known work</b>: eviction with many users, edits otherwise; 99.5% of edits are known a round ahead</p></div></div>
+  <div class="foot"><p>Chips are topics (dashed = partly run, struck = archived). KV cache: the model&#x27;s saved per-token state for a prompt; a cache hit reuses it. EPIC-128: shift the kept KV to its new place and recompute the first 128 tokens of each moved run. Every experiment: backups B1&#8211;B5; conclusions: B6; corrections: B7. Sources: topic READMEs, <span class="mono">E0a_census_mu.md</span>, <span class="mono">harness_eval/REPORT.md</span>.</p></div>
+</section>
+
+<!-- ===================== 3 &#183; WHAT WE BUILD NEXT ===================== -->
+<section class="slide" data-title="What we build next">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">3</span><span>What we build next &#183; harness-aware serving</span></div>
+    <h2>Next we build a harness-aware server and test it under load</h2>
+  </div>
+  <div class="body fig-bullets"><figure><svg viewBox="0 0 1152 430" role="img" aria-label="Design of harness-aware serving, with today&#x27;s server in grey and what we would add in blue. The harness announces its next call, sends its edits as diffs and times them to server load. The request scheduler runs calls that are ready and urgent ones first. The memory manager keeps KV across GPU memory, CPU memory and flash and evicts by next use; inside it a new repair planner shifts the kept KV after an edit and recomputes a few tokens. The GPU reconfigurator switches GPUs between prefill and decode before a burst. Evidence: 99.5% of edits are known a round ahead; edits are 10-17% of one session&#x27;s work and 27-30% of GPU time at 4-8 users; decodes stall behind prefill for 21-45% of a call; past 16 users cache hits fall from 86% to 1-2% and a session gate gives 3.5-3.8 times; repair stays inside the 5-point limit with 91% fewer prompt tokens. Roadmap: offline check done, then a simulator, then a live server, with four parallel tracks, and one open question: what reuse buys when many users fill GPU memory."><g><defs><marker id="s3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-grey"></path></marker><marker id="s3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-lead"></path></marker></defs><rect x="0" y="5" width="14" height="10" rx="2" class="box-grey"></rect><text x="20" y="14" font-size="10.5" class="t-ink2">today&#x27;s server</text><rect x="0" y="22" width="14" height="10" rx="2" class="f-lead"></rect><text x="20" y="31" font-size="10.5" class="t-ink2">what we would add</text><text x="0" y="48" font-size="10.5" class="t-ink2">&#9670; evidence, and how it was obtained</text><rect x="0" y="96" width="184" height="196" rx="4" class="box"></rect><text x="10" y="116" font-size="14" class="t-title">Harness</text><text x="10" y="131" font-size="10.5" class="t-muted">the agent loop (slide 1)</text><text x="10" y="147" font-size="11" class="t-muted">today: sends a prompt, waits</text><text x="10" y="163" font-size="11" class="t-lead">+ announces its next call</text><text x="10" y="178" font-size="11" class="t-lead">+ sends its edits as diffs</text><text x="10" y="193" font-size="11" class="t-lead">+ times edits to server load</text><rect x="8" y="202" width="168" height="47" rx="3" class="box-soft"></rect><text x="15" y="216" font-size="10" class="t-ink2">&#9670; 99.5% of edited text is</text><text x="15" y="229" font-size="10" class="t-ink2">known a round ahead</text><text x="15" y="242" font-size="10" class="t-ink2">(offline check)</text><rect x="262" y="96" width="206" height="196" rx="4" class="box"></rect><text x="272" y="116" font-size="14" class="t-title">Request scheduler</text><text x="272" y="131" font-size="10.5" class="t-muted">which call runs next</text><text x="272" y="147" font-size="11" class="t-muted">today: first come, first served</text><text x="272" y="163" font-size="11" class="t-lead">+ runs calls that are ready</text><text x="272" y="178" font-size="11" class="t-lead">   and whose KV is in place</text><text x="272" y="193" font-size="11" class="t-lead">+ urgent calls before background</text><rect x="270" y="202" width="190" height="47" rx="3" class="box-soft"></rect><text x="277" y="216" font-size="10" class="t-ink2">&#9670; edits: 10&#8211;17% of one session&#x27;s</text><text x="277" y="229" font-size="10" class="t-ink2">work; 27&#8211;30% of GPU time at</text><text x="277" y="242" font-size="10" class="t-ink2">4&#8211;8 users (offline estimate)</text><rect x="548" y="0" width="212" height="124" rx="4" class="box"></rect><text x="558" y="20" font-size="14" class="t-title">GPU reconfigurator</text><text x="558" y="35" font-size="10.5" class="t-muted">which GPUs prefill, which decode</text><text x="558" y="51" font-size="11" class="t-muted">today: a fixed split, set at launch</text><text x="558" y="67" font-size="11" class="t-lead">+ switch roles before a burst</text><rect x="556" y="76" width="196" height="34" rx="3" class="box-soft"></rect><text x="563" y="90" font-size="10" class="t-ink2">&#9670; decodes stall behind prefill: 21&#8211;45%</text><text x="563" y="103" font-size="10" class="t-ink2">of a call at 4&#8211;8 users (server logs)</text><rect x="548" y="140" width="212" height="290" rx="4" class="box"></rect><text x="558" y="160" font-size="14" class="t-title">Memory manager</text><text x="558" y="175" font-size="10.5" class="t-muted">where each session&#x27;s KV lives</text><text x="558" y="191" font-size="11" class="t-muted">today: GPU memory only;</text><text x="558" y="204" font-size="11" class="t-muted">evicts the least recently used</text><text x="558" y="220" font-size="11" class="t-lead">+ tiers: GPU, CPU memory, flash</text><text x="558" y="235" font-size="11" class="t-lead">+ evict by next use, stale first</text><text x="558" y="250" font-size="11" class="t-lead">+ preload before the call</text><rect x="556" y="259" width="196" height="34" rx="3" class="box-soft"></rect><text x="563" y="273" font-size="10" class="t-ink2">&#9670; 16+ users: hits 86% &#8594; 1&#8211;2%;</text><text x="563" y="286" font-size="10" class="t-ink2">a session gate: 3.5&#8211;3.8&#215; (measured)</text><rect x="556" y="324" width="196" height="98" rx="4" class="box-lead"></rect><text x="566" y="343" font-size="13" class="t-title">Repair planner (new)</text><text x="566" y="359" font-size="11" class="t-ink2">after an edit: shift the kept KV</text><text x="566" y="373" font-size="11" class="t-ink2">and recompute a few tokens</text><rect x="564" y="381" width="180" height="34" rx="3" class="box-soft"></rect><text x="571" y="395" font-size="10" class="t-ink2">&#9670; inside the 5-point limit, 91%</text><text x="571" y="408" font-size="10" class="t-ink2">fewer prompt tokens (pre-registered)</text><path d="M 186 116 H 260" class="edge-grey" marker-end="url(#s3a)" marker-start="url(#s3a)"></path><text x="223" y="110" font-size="10" text-anchor="middle" class="t-muted">prompt, reply</text><path d="M 186 166 H 260" class="edge-lead" marker-end="url(#s3b)"></path><text x="223" y="160" font-size="10" text-anchor="middle" class="t-lead">intent</text><path d="M 260 232 H 186" class="edge-lead" marker-end="url(#s3b)" stroke-dasharray="4 3"></path><text x="223" y="226" font-size="10" text-anchor="middle" class="t-lead">server load</text><path d="M 470 196 H 546" class="edge-lead" marker-end="url(#s3b)"></path><text x="508" y="190" font-size="10" text-anchor="middle" class="t-lead">next use</text><path d="M 546 262 H 470" class="edge-lead" marker-end="url(#s3b)"></path><text x="508" y="256" font-size="10" text-anchor="middle" class="t-lead">what&#x27;s kept</text><path d="M 420 94 V 62 H 546" class="edge-lead" marker-end="url(#s3b)" marker-start="url(#s3b)"></path><text x="483" y="56" font-size="10" text-anchor="middle" class="t-lead">forecast &#183; GPU roles</text><path d="M 92 292 V 414 H 530 V 372 H 554" class="edge-lead" marker-end="url(#s3b)"></path><text x="311" y="408" font-size="10" text-anchor="middle" class="t-lead">edits as diffs, a round ahead</text><text x="788" y="12" font-size="10" class="t-muted" letter-spacing="0.8">ROADMAP</text><rect x="788" y="20" width="364" height="70" rx="4" class="box-grey"></rect><text x="800" y="38" font-size="12.5" class="t-title">&#10003; Done (Oct 13) &#183; offline check</text><text x="800" y="54" font-size="10.5" class="t-ink2">recorded runs, no GPUs: edits are a large and predictable</text><text x="800" y="68" font-size="10.5" class="t-ink2">share of work; recomputing stale KV in the background</text><text x="800" y="82" font-size="10.5" class="t-ink2">does not pay, so the design relies on cheap repair</text><path d="M 970 90 V 101" class="edge" marker-end="url(#s3a)"></path><rect x="788" y="103" width="364" height="84" rx="4" class="box-lead"></rect><text x="800" y="121" font-size="12.5" class="t-title">Next &#183; a simulator (CPU)</text><text x="800" y="137" font-size="10.5" class="t-ink2">our design vs vLLM&#x27;s default, a session gate and</text><text x="800" y="151" font-size="10.5" class="t-ink2">5 published policies, at 4&#8211;16 users at once</text><text x="800" y="165" font-size="10.5" class="t-ink2">metric: lead calls per hour at equal p95 turn time</text><text x="800" y="179" font-size="10.5" class="t-ink2">go on only if it is &#8805; 10% better than the best</text><path d="M 970 187 V 198" class="edge" marker-end="url(#s3a)"></path><rect x="788" y="200" width="364" height="56" rx="4" class="box"></rect><text x="800" y="218" font-size="12.5" class="t-title">Then &#183; a live server (1&#8211;2 GPUs)</text><text x="800" y="234" font-size="10.5" class="t-ink2">real, not emulated, KV reuse with 4&#8211;32 users at once</text><text x="800" y="248" font-size="10.5" class="t-ink2">against the harness with its fixes as the baseline</text><rect x="788" y="266" width="364" height="86" rx="4" class="box-soft"></rect><text x="800" y="284" font-size="12.5" class="t-title">In parallel</text><text x="800" y="300" font-size="10.5" class="t-ink2">&#8226; KV for hybrid models (Qwen3.8: linear + attention layers)</text><text x="800" y="314" font-size="10.5" class="t-ink2">&#8226; study DeepSeek&#x27;s DeepInfer engine (open since Oct 20)</text><text x="800" y="328" font-size="10.5" class="t-ink2">&#8226; can the harness forecast GPU demand better than a queue?</text><text x="800" y="342" font-size="10.5" class="t-ink2">&#8226; token-level history in the harness</text><rect x="788" y="362" width="364" height="64" rx="4" class="box-dash"></rect><text x="800" y="380" font-size="12.5" class="t-title">? Open question</text><text x="800" y="396" font-size="10.5" class="t-ink2">what reuse buys when many users fill GPU memory;</text><text x="800" y="410" font-size="10.5" class="t-ink2">timings from one session cannot answer it</text></g></svg></figure><ul class="list tight"><li><b>KV repair held up</b>: in a pre-registered test it stayed inside the 5-point accuracy limit while computing 91% fewer prompt tokens</li><li><b>Papers already cover 13 of the design&#x27;s 22 parts</b>; 4 of the 5 uncovered parts concern the harness&#x27;s edits (drift tracking, clean-up of stale versions, feedback to the harness, edits as diffs)</li></ul></div>
+  <div class="foot"><p>Your questions: backup B8; your brainstorm and the Oct 7 methods: B9; every next step: B10; prior work: B11. Sources: <span class="mono">method_develop/README.md</span>, <span class="mono">11_multiuser_kv</span>, <span class="mono">13_tiered_memory/RESULTS.md</span>, <span class="mono">harness_eval/REPORT.md</span> &#167;7, <span class="mono">102126/conclusion.md</span>.</p></div>
+</section>
+
+<!-- ===================== 4 &#183; EVERY EXPERIMENT (1/5) ===================== -->
+<section class="slide" data-title="Every experiment (1/5)">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">4</span><span><span class="sec">backup</span> B1 &#183; Every experiment (1/5): the harness and one user, topics 01&#8211;05</span></div>
+    <h2>The harness re-reads and rewrites its context; tools are cheap</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto; align-content: start"><table class="data bk"><colgroup><col style="width:21%"><col style="width:21%"><col style="width:50%"><col style="width:8%"></colgroup><thead><tr><th>topic and question</th><th>what we ran</th><th>what it showed</th><th>status</th></tr></thead><tbody><tr><td class="tq"><b><span class="id">01</span>Tracing</b><i>What does a trace of s15 record?</i></td><td>JSONL tracing of s15, used by every later topic; 3 sample traces and a 3 h 12 min stress run with 28 teammates (Qwen3.8-27B); 7 GLM pilot sessions</td><td class="res">a lead cycle took 2.1&#8211;19.1 s and tools 0.03&#8211;146 ms, permission waits dominated; memory extraction stopped at its 1,000-token cap in 3 of 4 runs; stress run: 57 tasks and 96 edges, the lead compacted 18 times, teammates never; 6 teammates hit the 262,144-token limit; 105 of 109 bash calls were denied; recommended: compact teammates, raise the memory budget, repair truncated tool batches</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">02</span>Input redundancy</b><i>How much file input is re-read or duplicated?</i></td><td>GLM: baseline, lead-only, shared-file team, budget, subagent and disjoint-file runs; the 28-teammate trace; a budget sweep; prefix-replay, cache-lifetime and streaming probes (2 aborted first attempts); Part B team workloads at 50k and 512k characters</td><td class="res">59% / 94% of lead / teammate reads re-open a file (6% / 0% exact); 82% of the lead&#x27;s re-reads follow a compaction; 50k &#8594; 200k characters: 100 calls, 808 s &#8594; 7 calls, 168 s; the lead re-read a file its subagent had just summarised; each fetched byte was re-sent 12.9&#8211;15.7&#215;, yet teammates hit the cache for 90&#8211;91% of tokens and the lead for 8&#8211;19%; teammates copy (N&#8722;1)/N of shared files (52&#8211;80%), 0% of disjoint ones; whole-result hashing sees only 0&#8211;3% of it; the provider cache keeps a prefix 300 s idle, not 600 s; at 512k the lead stops compacting, teammates do not change</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">03</span>Context interventions</b><i>Do batch reads, outlines or a stable prefix cut rounds?</i></td><td>GLM at 50k&#8211;200k characters: shell-allowed and shell-denied matrices (stable prefix, outlines, batch reads, all three), blind-judged answers; 25 runs quarantined; a digest of products</td><td class="res">stable prefix: cache hit 15% &#8594; 60% and 65% fewer uncached tokens, but the same rounds and the worst answers (14/20 vs 18); batch reads: 134 &#8594; 56 rounds at 100k, yet only 10&#8211;61% of requested files at 50k; outlines: the best answers (19/20); only sizing the budget helps without a quality cost; no product runs fetches inside the engine</td><td class="st st-arch">archived</td></tr><tr><td class="tq"><b><span class="id">04</span>KV splice</b><i>Can KV survive a micro-compaction edit by splicing and re-rotating it?</i></td><td>3 GLM runs at 50k (re-acquisition is 30&#8211;60% of rounds), replayed on CPU on Qwen2.5-1.5B and 7B; behaviour and retention probes</td><td class="res">a splice computes 31&#8211;41% of a recompute&#x27;s tokens (61% fewer prefill tokens); its error equals the edit&#x27;s own on 1.5B (0.045 vs 0.046 nats/token, 96.8% top-1 agreement) but doubles on 7B (0.085 vs 0.043); without the RoPE correction KL reaches 1.02; re-reads do not fall, so it saves compute, not rounds</td><td class="st st-arch">archived &#8594; 10</td></tr><tr><td class="tq"><b><span class="id">05</span>Latency breakdown</b><i>What does one agentic round cost end to end?</i></td><td>GLM (hosted), 24 runs: coding, file Q&amp;A and math, team and solo; a provider probe; 50k vs 512k; then 24 Qwen3.8-27B runs on vLLM</td><td class="res">one user: the model call is 93&#8211;99.9% of a round, harness prep about 10 ms, tools 0.1&#8211;0.5%; turn-end memory extraction took 35% of wall time (made async in 09); the 3.7 s fixed cost per call was the hosted API&#x27;s, not the harness&#x27;s; the provider&#x27;s cache is strictly prefix-based; a solo lead was 1.4&#8211;1.8&#215; faster than a team; on vLLM rounds were 1.5&#8211;2.8&#215; longer at the same quality</td><td class="st st-done">done &#183; one user</td></tr></tbody></table></div>
+  <div class="foot"><p>The question behind topics 01&#8211;09: where does a multi-agent coding harness spend its time and its context, and which of that is redundant? Sources: the topic READMEs 01&#8211;05; 03 and 04 are archived. &#8220;One user&#8221; marks single-session timing, which says nothing about many users.</p></div>
+</section>
+
+<!-- ===================== 5 &#183; EVERY EXPERIMENT (2/5) ===================== -->
+<section class="slide" data-title="Every experiment (2/5)">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">5</span><span><span class="sec">backup</span> B2 &#183; Every experiment (2/5): tools, task graph, inheritance, efficiency, topics 06&#8211;09</span></div>
+    <h2>Tools are cheap; the task graph is exact; real reuse is small</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto; align-content: start"><table class="data bk"><colgroup><col style="width:21%"><col style="width:21%"><col style="width:50%"><col style="width:8%"></colgroup><thead><tr><th>topic and question</th><th>what we ran</th><th>what it showed</th><th>status</th></tr></thead><tbody><tr><td class="tq"><b><span class="id">06</span>Tool cost</b><i>What does a tool cost, does advertising the cost steer the model, are tools 30&#8211;85% of time?</i></td><td>a 2,556-dispatch probe; 893 choice trials, 80 loops, 24 sessions; a census of 1,801 runs; a sweep of 32 tools; injected-latency and heavy-tool cells; a literature check (2 runaway jobs cancelled)</td><td class="res">most tools cost 0.2&#8211;10 ms (create_worktree 607 ms); mean call 12.4 ms, 0.09% of 1,042 h; the board scan adds 2.35 ms per task on NFS; an advertised cost steers only between equivalent tools (97&#8211;100% vs 53%), read_file stays at 44&#8211;45%, one policy sentence moves it 31% &#8594; 9%; tools that call a model are almost all model time; heavy tools reach 15&#8211;45% on the 27B, 35&#8211;89% with a fast 8B; on the 27B a tool would need 5&#8211;21 s per call to reach 30%; the paper&#x27;s 30&#8211;85% comes from synthetic requests and is not replicated (coding agents elsewhere: 2&#8211;5%)</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">07</span>Task DAG</b><i>Does the lead build a task graph, and does it tell a server what a successor needs?</i></td><td>GLM and DeepSeek: 3 gate checks, 9 team runs, 128 scripted trials, 24 traces, a retrospective census and a 44-run census (pilots, 1 killed run and 10 refused DeepSeek runs excluded)</td><td class="res">the lead&#x27;s graph is exact (45/45 edges, 0 false; none in 23 flat runs), built in one wave; 59 earlier runs had no edges because their prompts called the tasks independent; an unrelated earlier task already covers 52.0% of a later task&#x27;s bytes; aligned boards add byte coverage, a placebo board does not; handing a successor its predecessors&#x27; bytes: 7.22 &#8594; 2.50 rounds scripted, 5.17 &#8594; 3.00 in the harness, while a summary does nothing; keeping all earlier reads recalls 85.6% vs 36.0% via the graph</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">08</span>Context inheritance</b><i>How far up the graph should inheritance reach, on real trajectories too?</i></td><td>96 scripted trials, 18 harness runs, a budget sweep and a 180-trial coverage sweep, live closure cells; replay of 1,200 SWE trajectories and HAL; lm-eval and codebase censuses (s15 works as an lm-eval model)</td><td class="res">scripted: 8.00 &#8594; 1.50 rounds with all ancestors, but live gains straddle 0 (13.0 &#8594; 9.8 rounds; only 42.4% of rounds are pure reads); coverage is a step, only all documents help; real SWE reuse is 0.8&#8211;1.2% of bytes, &#964;-bench and GAIA up to 38.2%; line-level keys help code, not API work; agents also re-fetch within a trajectory; LFU 19.2% vs LRU 15.8%, graph order is no better than LRU, so graph-directed retention retired; range keys lift removable rounds 36.4% &#8594; 90.9%; boards appear on codebase work, never on lm-eval; the read-only workload was inconclusive; the live lm-eval sweep never ran</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">09</span>Efficiency</b><i>Which cost term dominates a run, and what does attacking it buy?</i></td><td>a cost model and a step-by-step plan; a baseline scoreboard, a fixed-cost probe of the hosted API and a smoke run; 24 optimized Qwen3.8-27B runs against 05&#x27;s baseline; an LMCache trial; 8 inheritance cells</td><td class="res">wall time = rounds &#215; (fixed + prefill + decode) + harness work; for one user, 2.3&#215; faster at equal quality: thinking off cut output 53&#8211;82%, async memory cut harness time 93&#8211;99%, a batching hint cut file-Q&amp;A rounds 77%; LMCache cannot serve the hybrid model; every inheritance cell hit the 900 s cap</td><td class="st st-done">done &#183; one user</td></tr></tbody></table></div>
+  <div class="foot"><p>Sources: the topic READMEs 06&#8211;09 in research/.</p></div>
+</section>
+
+<!-- ===================== 6 &#183; EVERY EXPERIMENT (3/5) ===================== -->
+<section class="slide" data-title="Every experiment (3/5)">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">6</span><span><span class="sec">backup</span> B3 &#183; Every experiment (3/5): KV reuse and many users on shared GPUs, topics 10&#8211;13</span></div>
+    <h2>With many users, KV memory binds and recompute is the waste</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto; align-content: start"><table class="data bk"><colgroup><col style="width:21%"><col style="width:21%"><col style="width:50%"><col style="width:8%"></colgroup><thead><tr><th>topic and question</th><th>what we ran</th><th>what it showed</th><th>status</th></tr></thead><tbody><tr><td class="tq"><b><span class="id">10</span>RoPE shift, selective recompute</b><i>If a server keeps the KV that survives an edit and re-rotates it, what breaks, and can EPIC repair it?</i></td><td>a defective first pilot, then 500 live Qwen3-32B runs &#8594; 683 compaction events replayed under 6&#8211;7 arms on 3 models (48,666 scored records); 200 timed events per model</td><td class="res">96.7% of compaction events include a snip; re-rotation skips 79.6% of post-edit prefill; ~30% of next rounds change (noise floor 4&#8211;6%), no more than the edit itself; costs: verbatim copies &#8722;8.9 points, and Qwen3-8B stops admitting evicted content is gone; without the rotation 71&#8211;76% change; EPIC (recomputing 4&#8211;11% of reused tokens) repairs both on GQA models (next-round KL falls 33&#8211;58%), CacheBlend partly, a random 15% not at all, MLA not; time to first token 1,097 &#8594; 90 (shift) or 121 ms (EPIC-128)</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">11</span>Multi-user KV</b><i>When one GPU serves many harness users, is KV contention the bottleneck?</i></td><td>Qwen3-32B on one H200: pilot and 12 cells, 97,498 calls; a half-pool test; a live session gate; 14 replays (91 GPU-h); verified against vLLM&#x27;s own logs; two planned contrasts skipped</td><td class="res">peak 3,077 lead calls/h at 8 users, 976&#8211;990 at 16&#8211;32; past 16, hits fall 86% &#8594; 1&#8211;2% and 65&#8211;74% of GPU time re-prefills evicted histories, with no preemption; halving the pool reproduces it (87% &#8594; 12% hits, 978 calls/h); a session gate gives 3.5&#8211;3.8&#215;, turn p95 5.5&#8211;6.3&#215; lower; in replay, CPU offload 2.8&#215; at 16 users, FCFS priority 1.3&#8211;1.4&#215;, TTL pins 1.2&#215;, smaller chunks nothing; the per-second timestamp alone: 2% hits, 935 calls/h; memory costs almost nothing (3,084 calls/h)</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">12</span>Hardware utilization</b><i>Is the CPU the bottleneck, as recent papers say? (your question, Oct 2)</i></td><td>Qwen3-32B and 8B on H200 pairs: a sampler A/B, one agent, 4&#8211;32 agents, core knock-downs, TP=2 links, CPU offload (1,532 sessions, 133,144 calls, 25 GPU-h)</td><td class="res">no CPU bottleneck: the busiest host used 1.8 of 12 cores, and 8 agents on 1 core lose nothing; GPU memory binds: one 32B agent uses ~70 of the 130 GiB vLLM holds, the pool is 91% live at 16 agents; the front end costs ~3.5 ms per 1k prompt tokens; NVLink under 5%; CPU KV offload 1,062 &#8594; 3,142 calls/h at 16 agents; ~50&#8211;60 MB of host memory per agent; stack sampling: the engine&#x27;s busy core is kernel-launch spin</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">13</span>Tiered memory</b><i>Can HBM, peer HBM, DRAM and flash tiers remove the bottlenecks? (your question, Oct 3)</i></td><td>S0 ceilings on 11/12 logs and a tool-duration predictor; S1 code, tests and a D1 replay; S2 probes and live smoke tests on 1 RTX</td><td class="res">decodes stall behind prefill for 21&#8211;45% of a 32B call at 4&#8211;8 users; 74&#8211;89% of evictions happen while a call is queued; restoring a 23.5k-token context from DRAM takes 0.31 s vs 6.08 s to recompute (19.5&#215;); session-resident tokens are exact (794/794), front end &#8722;75&#8211;77%, reply re-prefill &#8722;90%; a 64 GiB DRAM tier: 1.65&#215; calls/h; the first hints lost 23%, neutral once fixed; S3&#8211;S5 not run</td><td class="st st-part">partly run</td></tr></tbody></table></div>
+  <div class="foot"><p>Sources: the topic READMEs 10&#8211;13 and 13_tiered_memory/RESULTS.md.</p></div>
+</section>
+
+<!-- ===================== 7 &#183; EVERY EXPERIMENT (4/5) ===================== -->
+<section class="slide" data-title="Every experiment (4/5)">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">7</span><span><span class="sec">backup</span> B4 &#183; Every experiment (4/5): P/D, synthesis, EPIC in the loop, the benchmark profile, topics 14&#8211;16</span></div>
+    <h2>Fixing the harness first lifted reuse; EPIC repairs little drift</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto; align-content: start"><table class="data bk"><colgroup><col style="width:21%"><col style="width:21%"><col style="width:50%"><col style="width:8%"></colgroup><thead><tr><th>topic and question</th><th>what we ran</th><th>what it showed</th><th>status</th></tr></thead><tbody><tr><td class="tq"><b><span class="id">14</span>P/D crossover</b><i>At what load does P/D disaggregation stop beating colocated serving, on 2 and 4 GPUs? (your question, Oct 5)</i></td><td>S0: code, tests and bounds fixed before any run</td><td class="res">predictions, not measurements: on 2 GPUs 1p1d caps at about 6,500 lead calls/h, below dp2 (7,900) and tp2 (8,700); on 4 GPUs 3p1d reaches about 10,000 against 15,800 for dp4 and 17,300 for tp2dp2, so P/D can win only at low load; the sweeps (~164 GPU-h) and hypotheses H1&#8211;H8 never ran</td><td class="st st-part">S0 only</td></tr><tr><td class="tq"><b><span class="id">15</span>Agent-serving synthesis</b><i>How does serving a harness differ from vanilla multi-user serving? (your question, Oct 5)</i></td><td>no new runs: a synthesis of 01&#8211;14, offline analyzers on 11/12 logs, pool simulations</td><td class="res">KV residency of session working sets binds, not compute; recompute has three faces: edits 60&#8211;80% of prefill below the turning point, eviction 65&#8211;74% of GPU time above it, decode stalls 21&#8211;45%; a cache miss costs an agent 1.4&#8211;1.7&#215; the call&#x27;s own decode; ~95% of prefill is already-computed content; KV reads take 38&#8211;49% of a decode step; dead blocks hold &#8805; 19&#8211;24% of the pool; 54&#8211;60% of what an edit discards survives at shifted positions; simulated: dead-first eviction does not move the turning point, a DRAM tier 54% &#8594; 86%, pin-at-arrival halves eviction recompute; FP8 KV would fit about 2&#215; the users (inferred); ideas I1&#8211;I24 and theses T1&#8211;T3 not run</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">16</span>EPIC in the live loop</b><i>How much KV can EPIC-32/64/128 restore inside the whole harness, against full re-prefill? (your ask, Oct 8)</i></td><td>Qwen3-32B on up to 4 H100s (about 47 GPU-h): reuse census, 12 selftests, 64-run pilot, 48-cell screen, 240 live runs, 30 replays, 600 timed calls, 200 SWE-agent runs; a survey of agent evaluation</td><td class="res">your append-only change: KV reuse 4.2% &#8594; 87.0% (static system message) &#8594; 89.3% (plus template), 99% of what is reusable; with snips 51.1%; EPIC-32/64/128 remove only 11/22/30% of shift&#x27;s drift; every EPIC arm non-inferior at a 0.08 margin (a weak test); plain shift hits the call budget more often; prompt computed 55% &#8594; 9&#8211;12%; time to first token 494 &#8594; 70&#8211;86 ms; batch-invariant kernels cost 2.6&#215; decode, so not used; no EPIC arm beats plain shift on the job; R2 and X1 were not run; SWE-agent resolves 7/50 vs 6&#8211;11/50</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">16</span>Benchmark profile</b><i>Run s15 on more benchmarks and at least 3 cache architectures (your ask, Oct 11)</i></td><td>a model survey; a 50-task pilot (s15 vs SWE-agent); Harbor and vLLM: 4 models &#215; SWE-bench Verified, Pro, Terminal-Bench &#215; 30 tasks &#215; 3 trials (1,080)</td><td class="res">pilot: s15 4/50 vs SWE-agent 7/50, graders agree 49/49; pass@1 Verified / Pro / Terminal-Bench: DeepSeek-V4-Flash .90/.94/.59, Qwen3.8-27B .79/.97/.50, MiniMax-M2.7 .64/.87/.48, Qwen3-32B .09/.07/.02 (retired); the snip cuts hits 61&#8211;92% &#8594; 9&#8211;54%; GAIA skipped</td><td class="st st-done">done</td></tr></tbody></table></div>
+  <div class="foot"><p>Sources: the topic READMEs 14&#8211;16, harness_eval/REPORT.md and MODELS.md. Topic 14&#x27;s numbers are predictions, fixed before any run.</p></div>
+</section>
+
+<!-- ===================== 8 &#183; EVERY EXPERIMENT (5/5) ===================== -->
+<section class="slide" data-title="Every experiment (5/5)">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">8</span><span><span class="sec">backup</span> B5 &#183; Every experiment (5/5): rounds e1&#8211;e4, drift, other models, the design check</span></div>
+    <h2>KV repair keeps accuracy, while drift grows with each shift</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto; align-content: start"><table class="data bk"><colgroup><col style="width:21%"><col style="width:21%"><col style="width:50%"><col style="width:8%"></colgroup><thead><tr><th>topic and question</th><th>what we ran</th><th>what it showed</th><th>status</th></tr></thead><tbody><tr><td class="tq"><b><span class="id">16</span>Rounds e1, e2</b><i>How does EPIC after the snip change accuracy, also on Pro and Terminal-Bench? (your ask, Oct 13)</i></td><td>MiniMax-M2.7, reuse emulated on 4 H100s; pilots, then e1 450 trials (Verified), e2 300 (Pro, Terminal-Bench)</td><td class="res">pilots fixed the template, memory and KV watermark; e1: the pre-registered sequence stopped at the age cap, no arm declared non-inferior; e2: Terminal-Bench&#x27;s two identical controls differed by 30 points, so no conclusion; the age cap&#x27;s drop did not replicate in e3</td><td class="st st-arch">superseded by e3</td></tr><tr><td class="tq"><b><span class="id">16</span>Round e3</b><i>Does EPIC curation cause a distinguishable accuracy drop? (your ask, Oct 13)</i></td><td>pre-registered: 100 new Verified tasks &#215; 3 replicates &#215; 5 arms (1,500 trials)</td><td class="res">EPIC-128: &#8722;1.0 points [&#8722;4.3, +2.3], non-inferior at a 5-point margin; age cap &#8722;0.0; prompt computed per call 6,937 &#8594; 634 tokens (&#8722;91%)</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">16</span>Round e4</b><i>When is a full recompute urgent? Recompute with a probability from the divergence between the original and the after-EPIC KV (your ask, Oct 15)</i></td><td>JSD only, TVD and EXP logged: 7 arms &#215; 3 benchmarks &#215; 30 tasks &#215; 3 (1,890 trials, 141.7 GPU-h)</td><td class="res">14 of 15 reuse intervals cover 0; JSD tracks the real error (Spearman 0.44&#8211;0.60) but its noise floor is 66&#8211;72% of its mean; it recomputed 5&#8211;7% of decisions</td><td class="st st-park">parked</td></tr><tr><td class="tq"><b><span class="id">16</span>Drift by shifts</b><i>Show the KL rising with the number of shifts (your ask, Oct 21)</i></td><td>topic 16&#x27;s replay re-analysed by the number of snips so far (CPU)</td><td class="res">shift&#x27;s reply KL is 0.0006 after the first snip and 0.0165 by snips 16&#8211;31; a KV rebuilt fresh and shifted once stays at or below 0.0062</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">16</span>Other architectures</b><i>Test DeepSeek-V4-Flash and Qwen3.8 too (your ask, Oct 13)</i></td><td>Qwen3.8 replay and a 5-task pilot; DeepSeek-V4-Flash design and selftests</td><td class="res">hybrid Qwen3.8: reuse computed 66.5% of the prompt (its DeltaNet layers rerun) where 5.7&#8211;6.1% would do; first-token KL 0.007 &#8594; 0.032&#8211;0.035 after 20+ snips; DeepSeek: 7&#8211;10% run-to-run noise hides exactness</td><td class="st st-part">exploratory &#8594; 23</td></tr><tr><td class="tq"><b><span class="id">17</span>Design check</b><i>Complete and develop your brainstorm: request types, a per-request DAG, four components (Oct 13)</i></td><td>offline (CPU): 1,116 benchmark trials, topic 16 replays, topic 11 logs; 4 rules fixed in advance</td><td class="res">edits are 9.7&#8211;17.3% of one session&#x27;s lead chain and 30% / 27% of GPU time at 4 / 8 users; 97.9% of edited text is known at round start, 99.5% when the previous reply ends; exact refresh fails (49% of its value at 0.32 of the tokens; 6&#8211;11% fits tool pauses; a 10% decode slowdown fits only 3&#8211;25 prefill tokens per step), so repair = EPIC; snip hysteresis would cut edit work 10.0% &#8594; 0.7%</td><td class="st st-done">done</td></tr><tr><td class="tq"><b><span class="id">17</span>P:D control</b><i>Dynamic P:D ratio hints from the harness to the GPU reconfigurator (your ask, Oct 13)</i></td><td>a model-based analysis in the design doc</td><td class="res">below the turning point a lead call waits 0.01 s in the queue, so the queue is the wrong signal; prefill GPUs per decode GPU swing 0.45&#8211;9 with harness state (estimate); check E0g proposed</td><td class="st st-part">proposal</td></tr><tr><td class="tq"><b><span class="id">RW</span>Related work</b><i>What do products and papers already do?</i></td><td>4 reading notes on products and papers; a teaching deck on KV reuse</td><td class="res">mapped onto the design: papers cover 13 of its 22 parts (B11)</td><td class="st st-arch">reading</td></tr></tbody></table></div>
+  <div class="foot"><p>Sources: harness_eval/REPORT.md, data/replay_kl_by_moves.md, method_develop/README.md, the design doc&#x27;s P:D tab, research/related_work. Reuse was emulated: token counts, not time.</p></div>
+</section>
+
+<!-- ===================== 9 &#183; WHAT WE CONCLUDED ===================== -->
+<section class="slide" data-title="What we concluded">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">9</span><span><span class="sec">backup</span> B6 &#183; what we concluded</span></div>
+    <h2>What holds, what is offline only, what is open, what we dropped</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto; align-content: start"><div class="cc-grid"><div class="cc keep"><p class="ch">Established</p><span class="cs">measured on every run, or pre-registered</span><ul class="list tight xxs"><li><b>Fix the harness before measuring a cache</b>: a per-second timestamp held KV reuse at 4.2%; a frozen system prompt and an append-only template give 89.3%</li><li><b>The rolling snip is the one frequent edit</b>: 99.9% of edited text in benchmark runs; it cuts cache hits from 61&#8211;92% to 9&#8211;54%</li><li><b>KV repair is safe for accuracy</b>: shift + EPIC-128 costs under 5 points (pre-registered, 100 tasks &#215; 3) and computes 91% fewer prompt tokens; plain shift loops more</li><li><b>Drift grows with every shift</b> (reply KL 0.0006 &#8594; 0.0165) and EPIC repairs only 11&#8211;30% of it; accuracy does not need the rest</li><li><b>With many users, GPU memory binds</b>, not compute, CPU or links: past 16 users hits fall to 1&#8211;2%; a session gate restores 3.5&#8211;3.8&#215;; KV reads also take 38&#8211;49% of a decode step</li><li><b>Tools are cheap here</b> (mean 12.4 ms); a cost hint steers the model only between equivalent tools</li><li><b>Teams copy shared files</b>: (N&#8722;1)/N of the bytes; the lead re-reads what compaction dropped (82%); only sizing the budget fixes the lead without a quality cost</li><li><b>The lead&#x27;s task graph is exact</b> (45/45 edges); passing predecessors&#x27; bytes cuts rounds 5.17 &#8594; 3.00, but read rounds are a minority (42.4%)</li></ul></div><div class="cc lead"><p class="ch">Offline only</p><span class="cs">from logs, replays or models</span><ul class="list tight xxs"><li><b>Edits are material and predictable</b>: &#8776;30% of GPU time at 4&#8211;8 users, 99.5% known a round ahead</li><li><b>The waste is known text</b>: ~95% of prefill below the turning point was computed before; dead blocks hold &#8805; 19&#8211;24% of the pool</li><li><b>Decodes stall behind prefill</b> for 21&#8211;45% of a call at 4&#8211;8 users</li><li><b>A DRAM tier</b> would serve 54% &#8594; 86% of prefixes at 32 users (simulated, 22 points optimistic)</li><li><b>Retention rules</b>: key on content ranges, spend the budget on prediction, widen the pool, do not partition per agent</li></ul></div><div class="cc open"><p class="ch">Not yet established</p><span class="cs">the next experiments</span><ul class="list tight xxs"><li><b>The payoff with many users filling GPU memory</b>: emulated reuse computes every token, so it needs a real reuse path</li><li><b>Margins under 5 points</b>: 2 points at 80% power needs about 6&#215; e3&#x27;s 300 blocks</li><li><b>Terminal-Bench accuracy</b>: its round-trip check is 95.7&#8211;96.6%, below 99%, until the harness keeps token-level history</li><li><b>Hybrid and compressed-KV models</b> (Qwen3.8, DeepSeek); the design&#x27;s scheduling and residency claims; the P/D crossover; live closure inheritance</li><li><b>Inferred only</b>: FP8 KV fitting about 2&#215; the users</li></ul></div><div class="cc drop"><p class="ch">Retired, parked or withdrawn</p><span class="cs">kept out of every slide (details: B7)</span><ul class="list tight xxs"><li><b>Retired</b>: exact background refresh (49% of its value at 0.32 of the tokens); graph-directed retention; &#8220;evict what is simplest to recover&#8221;; lm-eval as a task source; KV splice and the context interventions; scheduling knobs against thrashing</li><li><b>Parked</b>: divergence triggers JSD, TVD, EXP (noise floor 66&#8211;72% of the signal; batch-invariant probes cost 2.6&#215; decode); live DeepSeek reuse</li><li><b>Dropped</b>: Qwen3-32B as the study model (pass@1 0.02&#8211;0.09); GAIA</li><li><b>Withdrawn</b>: every single-session time conclusion (job-time ratios, &#8220;decode dominates&#8221;, throughput ceilings, &#8220;P/D and KV reuse do not pay&#8221;); &#8220;no arm differs detectably&#8221;; e1/e2&#x27;s age-cap drop; &#8220;tools take 30&#8211;85%&#8221; here; the early prefill fit (~8&#215; too high)</li></ul></div></div></div>
+  <div class="foot"><p>Sources: weekly_progress/102126/slides.html slide 8 and conclusion.md, 091626/tiered_memory_conclusion.md, 092326/conclusion.md, the 090926, 093026 and 100726 summary slides, and the topic READMEs.</p></div>
+</section>
+
+<!-- ===================== 10 &#183; CORRECTIONS ===================== -->
+<section class="slide" data-title="Corrections">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">10</span><span><span class="sec">backup</span> B7 &#183; every correction on record</span></div>
+    <h2>Claims we corrected or withdrew, so none of them reappears</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto; align-content: start"><div class="cr-grid"><div><p class="label">The harness and its input (01&#8211;04)</p><div class="cr"><span class="t">02</span><span>the pooled latency fit overstated prefill ~8&#215;, so its &#8220;1&#8211;3%&#8221; headroom and Part B&#x27;s decode shares are void</span><span class="t">01, 02</span><span>six teammates died at the 262k limit, not five; the trace has 18 compactions and 39 history shrinks, not one</span><span class="t">02</span><span>X3&#x27;s round range and the teammate cache-hit range were restated from the committed traces; a Part B share matches neither table</span><span class="t">03, 04</span><span>two coverage counts, the re-send saving and the quota-killed count were corrected; 03 and 04 cannot be reproduced (flags never committed); 04&#x27;s first replay is partial</span></div></div><div><p class="label">Tools, task graph, inheritance (06&#8211;08)</p><div class="cr"><span class="t">06</span><span>&#8220;except five&#8221; is four tools; one p-value restated; the &#8220;&#8776;6 s&#8221; injected delay averaged 3.0&#8211;4.2 s</span><span class="t">07</span><span>Part A&#x27;s &#8220;edges only when the prompt names the mechanism&#8221; is contradicted by Part B; three counts restated (edges, W5 traces, workloads)</span><span class="t">08</span><span>the first eviction grid is withdrawn (LFU 19.2% vs LRU 15.8% replaces 21.9% vs 3.0%); &#964;-bench same-task contamination removed; harness-stage arms were under-injected; several figures are not reproducible</span><span class="t">Sep 23</span><span>&#8220;no real-harness interval excludes zero&#8221; is wrong (the W5 handoff&#x27;s does); synthetic beliefs (24&#8211;39% reuse, mutation as the mechanism) revised by real data; graph-aware retention retired</span></div></div><div><p class="label">Serving (09&#8211;15)</p><div class="cr"><span class="t">09</span><span>a graph-ordered figure and a direction (5.17 &#8594; 3.00) corrected; its constants differ from 05&#x27;s; &#8220;P/D and KV reuse do not pay&#8221; holds for one session only</span><span class="t">11</span><span>the first throughput definition was replaced (it gave 12 users an impossible turn rate)</span><span class="t">12</span><span>the &#8220;5.7-core test suite&#8221; was a sampler artefact; two explanations were wrong</span><span class="t">13</span><span>the hints&#x27; first loss was first blamed on preemption</span><span class="t">15</span><span>the pool simulator is 22 points optimistic at 32 users</span></div></div><div><p class="label">KV reuse rounds (16, harness_eval, 17)</p><div class="cr"><span class="t">16</span><span>&#8220;no arm differs detectably&#8221; is too strong (shift differs; the identical copy fails the margin); gate E0&#x27;s bar was impossible, so it was corrected</span><span class="t">10-21</span><span>withdrawn: every single-session time claim (job time, throughput ceilings), including topic 16&#x27;s and the index&#x27;s</span><span class="t">HE</span><span>the re-prefill share is 83&#8211;96%; &#8220;baseline&#8221; meant two things; the e1 plan file was overwritten; MODELS.md&#x27;s hybrid &#8220;shift&#8221; description is wrong (DeltaNet layers are recomputed exactly)</span><span class="t">HE</span><span>not presented: e1/e2&#x27;s age-cap drop, e4&#x27;s one interval excluding 0 (EPIC-128 on Pro), Qwen3.8 reply-level metrics</span><span class="t">17</span><span>&#8220;refresh fits neither tool pauses nor decode steps&#8221; overstates D3; two stale commit notes fixed</span></div></div></div></div>
+  <div class="foot"><p>Sources: the cleanup notes in each topic README, 102126/conclusion.md (corrections), 092326/conclusion.md and the 091626 deck. Sep 23 = the 092326 conclusion note; HE = harness_eval; 10-21 = the review of that day.</p></div>
+</section>
+
+<!-- ===================== 11 &#183; YOUR IDEAS ===================== -->
+<section class="slide" data-title="Your ideas">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">11</span><span><span class="sec">backup</span> B8 &#183; your questions and decisions</span></div>
+    <h2>Your questions and decisions, and where each one stands</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto; align-content: start"><table class="data bk tight"><colgroup><col style="width:7%"><col style="width:53%"><col style="width:17%"><col style="width:23%"></colgroup><thead><tr><th>date</th><th>your question or decision</th><th>what we did</th><th>where it stands</th></tr></thead><tbody><tr><td class="st">Sep 9</td><td class="res">Five brainstorm points: lead-first eviction, a hot cache for the lead, cross-teammate sharing, DRAM for idle agents, dropping finished-task history (who proposed them is not recorded)</td><td>a four-tier team KV hierarchy; topics 02, 08, 11, 13; steps 2, 5, 12</td><td class="st-part">sharing measured, pinboard parked; DRAM tier 1.65&#215;; eviction order: LFU gains little; history-dropping not carried</td></tr><tr><td class="st">Oct 2</td><td class="res">Papers say the CPU may be the bottleneck: measure CPU, GPU, DRAM, HBM (reserved vs used), PCIe and NVLink</td><td>topic 12</td><td class="st-done">answered: no CPU bottleneck; GPU memory binds (B3)</td></tr><tr><td class="st">Oct 3</td><td class="res">Which parts bottleneck now, and can tiered memory remove them? A proposal first, then S0&#8211;S2</td><td>topic 13</td><td class="st-part">partly answered; S3&#8211;S5 carried (B3)</td></tr><tr><td class="st">Oct 5</td><td class="res">Measure the turning point of P/D disaggregation on 2 and 4 GPUs</td><td>topic 14, S0</td><td class="st-part">open: the sweep never ran (B4)</td></tr><tr><td class="st">Oct 5</td><td class="res">What separates serving an agent system from vanilla multi-user serving?</td><td>topic 15</td><td class="st-done">answered: KV residency binds (B4)</td></tr><tr><td class="st">Oct 8</td><td class="res">Benchmark EPIC-32/64/128 on the entire harness against full re-prefill; survey how people evaluate harnesses</td><td>topic 16; a survey</td><td class="st-done">answered (B4)</td></tr><tr><td class="st">Oct 9</td><td class="res">Make the original system&#x27;s KV reuse very high: delete the time step, go append-only</td><td>s15 change</td><td class="st-done">done: reuse 4.2% &#8594; 89.3%</td></tr><tr><td class="st">Oct 11</td><td class="res">Add GAIA, SWE-bench Pro and Terminal-Bench; run them with our harness; at least 3 cache architectures with a decent base score</td><td>an adapter; the 4-model profile</td><td class="st-done">done (B4); GAIA skipped</td></tr><tr><td class="st">Oct 12</td><td class="res">Keep Qwen3-32B as the legacy model; DeepSeek-V4-Flash first, GLM-4.7-Flash as backup; ease the call budget; skip GAIA</td><td>budget 150 &#8594; 250 calls</td><td class="st-done">done; Qwen3-32B later retired</td></tr><tr><td class="st">Oct 13</td><td class="res">How does EPIC after the snip change accuracy, also on Pro and Terminal-Bench? Does curation cause a distinguishable drop?</td><td>rounds e1, e2, e3</td><td class="st-done">answered: under 5 points (B5)</td></tr><tr><td class="st">Oct 13</td><td class="res">Use the append-only template; test DeepSeek-V4-Flash and Qwen3.8 too</td><td>replay, pilot, selftests</td><td class="st-part">the hybrid saves no compute yet &#8594; step 23</td></tr><tr><td class="st">Oct 13</td><td class="res">Complete and develop my brainstorm; label the parts papers cover; explore dynamic P:D hints</td><td>design doc, offline check, P:D tab</td><td class="st-part">design done; simulator next (B9, B11)</td></tr><tr><td class="st">Oct 15</td><td class="res">When is a full recompute urgent? Use the original-vs-after-EPIC divergence; JSD first, TVD and EXP later</td><td>round e4</td><td class="st-park">parked: noise floor 66&#8211;72% of the signal</td></tr><tr><td class="st">Oct 15</td><td class="res">Move harness_eval into 16_epic_harness; move the repository to /data/fritz</td><td>done</td><td class="st-part">commit still pending</td></tr><tr><td class="st">Oct 19</td><td class="res">Conclude the last two weeks on existing data; tear down Docker-in-Docker</td><td>the 10-21 deck</td><td class="st-done">done</td></tr><tr><td class="st">Oct 21</td><td class="res">Delete every &#8220;prefill saves little time&#8221; claim: one user says nothing about many users filling HBM</td><td>claims withdrawn</td><td class="st-part">the open question on slide 3</td></tr><tr><td class="st">Oct 21</td><td class="res">Plot KL against the number of shifts</td><td>a re-analysis</td><td class="st-done">done: KL rises (B5)</td></tr><tr><td class="st">Oct 21</td><td class="res">Show which design parts papers cover, with authors and affiliations</td><td>prior-work map</td><td class="st-done">13 of 22 parts covered (B11)</td></tr><tr><td class="st">Oct 21</td><td class="res">Work out KV management for hybrid models such as Qwen3.8</td><td>step 23</td><td class="st-part">open</td></tr><tr><td class="st">Oct 21</td><td class="res">Study DeepSeek&#x27;s DeepInfer, open-sourced on Oct 20</td><td>step 24</td><td class="st-part">first read done; open</td></tr><tr><td class="st">Oct 22</td><td class="res">Three summary slides for a wider audience, then check they cover everything</td><td>this deck</td><td class="st-done">done: backups B1&#8211;B11</td></tr><tr><td class="st">Oct 8&#8211;15</td><td class="res">Operating rules: one H100 first, then up to 4 GPUs claimed in the lab sheet; free GPUs when done; GPUs 0&#8211;3 only; leave the repository unchanged; no commits</td><td>followed in every run</td><td class="st-done">in force</td></tr><tr><td class="st">Oct 11&#8211;21</td><td class="res">Clarifying questions: the live EPIC server, K shifted in all layers, margins and power, why refresh failed, first-token vs reply KL, paired blocks</td><td>answered in session</td><td class="st-done">definitions now on the slides</td></tr></tbody></table></div>
+  <div class="foot"><p>Sources: the plan files and the session records from Oct 7 on; for Oct 2&#8211;5 the topic READMEs 12&#8211;15, which mark their questions as yours. Earlier questions (topics 01&#8211;11) carry no attribution; they are in B1&#8211;B3.</p></div>
+</section>
+
+<!-- ===================== 12 &#183; BRAINSTORM AND METHODS ===================== -->
+<section class="slide" data-title="Brainstorm and methods">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">12</span><span><span class="sec">backup</span> B9 &#183; your 10-13 brainstorm and the methods of Oct 7</span></div>
+    <h2>Your design brainstorm became the design; the six methods stand</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1.45fr 1fr; gap: 22px; align-content: start"><div class="stack" style="gap:6px"><p class="label">Your design brainstorm, as refined</p><table class="data bk"><colgroup><col style="width:38%"><col style="width:36%"><col style="width:26%"></colgroup><thead><tr><th>your idea (10-13)</th><th>became</th><th>where it stands</th></tr></thead><tbody><tr><td class="res">Harness calls fall into a few kinds, unlike chat or multi-agent serving</td><td>thesis: harness agents edit their own context while many sessions share a GPU</td><td>stands, reframed</td></tr><tr><td class="res">Four request types: modify history, re-prefill behind it, resume decoding, off-path calls</td><td>effect (append, modify, side) &#215; urgency (critical, deferrable, background)</td><td>edits: 9.7&#8211;17.3% of one session, 30% / 27% of GPU time at 4 / 8 users</td></tr><tr><td class="res">A must-follow per-request DAG</td><td>the session DAG with data, barrier and version edges</td><td>two edges hard only in some cases; untested</td></tr><tr><td class="res">Valid and ready signals</td><td>VALID when dependencies are done; READY when resources are, and an edit can revoke it</td><td>design only</td></tr><tr><td class="res">A low-priority full recompute that grows urgent with repeated shifts</td><td>repair now, exact refresh later</td><td>refresh retired; under 5 points; KL rises with shifts</td></tr><tr><td class="res">Four components: scheduler, memory manager, GPU reconfigurator, harness</td><td>plus a repair planner and seven interfaces</td><td>design; the simulator is next</td></tr><tr><td class="res">Scheduler and memory exchange offload, preload and KV-location hints</td><td>next-use eviction, preload, clean-up of dead versions</td><td>dead-version clean-up is new; untested</td></tr><tr><td class="res">Scheduler sends P:D ratio hints to the reconfigurator</td><td>a layout from the DAG&#x27;s forecast</td><td>strengthened offline; check E0g proposed</td></tr><tr><td class="res">The harness hints at long waits and subagent spawns</td><td>intent: a pause with an ETA or a progress stream</td><td>pauses are short in our traces; untested</td></tr><tr><td class="res">P/D interruption; TP, DP and PP degrees; which tier holds the KV</td><td>preempt background work; a runtime TP-vs-DP choice; a restore-path cost model</td><td>untested</td></tr></tbody></table></div><div class="stack" style="gap:6px"><p class="label">The six methods proposed on Oct 7 (blue: accepted techniques; orange: need what only the harness knows)</p><div class="methods" style="grid-template-columns: 1fr 1fr; gap: 9px 12px"><div class="method"><div class="mh"><span class="n">1</span>KV reuse across tiers</div><span class="go">a DRAM tier gives 1.65&#8211;3&#215; (measured)</span></div><div class="method"><div class="mh"><span class="n">2</span>P/D disaggregation</div><span class="go">near 3 P : 2 D (estimate); the sweep never ran</span></div><div class="method"><div class="mh"><span class="n">3</span>Layouts: TP, DP, PP</div><span class="go">TP=2: 1.7&#8211;1.9&#215; faster calls (measured)</span></div><div class="method"><div class="mh"><span class="n">4</span>Prefill priced from new tokens</div><span class="go">the step model, used to price calls</span></div><div class="method agent"><div class="mh"><span class="n">5</span>Request types</div><span class="go">became the effect &#215; urgency classes</span></div><div class="method agent"><div class="mh"><span class="n">6</span>Dead blocks first</div><span class="go">simulated 54% &#8594; 86%; untested live</span></div></div></div></div>
+  <div class="foot"><p>Sources: the plan file for the design (Oct 13), the design doc, method_develop/README.md; methods: weekly_progress/100726/slides.html slide 9. The brainstorm&#x27;s images are not on disk; its text is in the plan file.</p></div>
+</section>
+
+<!-- ===================== 13 &#183; NEXT STEPS ===================== -->
+<section class="slide" data-title="Next steps">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">13</span><span><span class="sec">backup</span> B10 &#183; every next step so far</span></div>
+    <h2>Five of the 24 numbered next steps are still open</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto; gap: 14px; align-content: start"><div class="st-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 12px"><div class="st-c done" title="step 1: done"><span class="n">1</span><span>Memory extraction off the critical path</span><span class="s st-done">done</span></div><div class="st-c arch" title="step 2: dropped"><span class="n">2</span><span>Teammate compaction and a respawn rule</span><span class="s st-arch">dropped</span></div><div class="st-c arch" title="step 3: dropped"><span class="n">3</span><span>Attribute the stable-prefix quality loss</span><span class="s st-arch">dropped</span></div><div class="st-c arch" title="step 4: dropped"><span class="n">4</span><span>Cache-sharing summary compaction</span><span class="s st-arch">dropped</span></div><div class="st-c park" title="step 5: parked"><span class="n">5</span><span>A shared file block (pinboard)</span><span class="s st-park">parked</span></div><div class="st-c sup" title="step 6: superseded"><span class="n">6</span><span>KV re-attach on the Qwen replay</span><span class="s st-arch">superseded</span></div><div class="st-c part" title="step 7: partly"><span class="n">7</span><span>Measure self-hosted vLLM</span><span class="s st-part">partly</span></div><div class="st-c done" title="step 8: done"><span class="n">8</span><span>The splice error on a production model</span><span class="s st-done">done</span></div><div class="st-c arch" title="step 9: dropped"><span class="n">9</span><span>Latency breakdown above 50k tokens</span><span class="s st-arch">dropped</span></div><div class="st-c arch" title="step 10: dropped"><span class="n">10</span><span>Two routes for a tiered prototype</span><span class="s st-arch">dropped</span></div><div class="st-c part" title="step 11: partly"><span class="n">11</span><span>Housekeeping</span><span class="s st-part">partly</span></div><div class="st-c part" title="step 12: partly"><span class="n">12</span><span>Attack the eviction order</span><span class="s st-part">partly</span></div><div class="st-c arch" title="step 13: dropped"><span class="n">13</span><span>Graph-aware eviction</span><span class="s st-arch">dropped</span></div><div class="st-c arch" title="step 14: dropped"><span class="n">14</span><span>An EXPLAIN arm</span><span class="s st-arch">dropped</span></div><div class="st-c arch" title="step 15: dropped"><span class="n">15</span><span>Range addressing</span><span class="s st-arch">dropped</span></div><div class="st-c arch" title="step 16: dropped"><span class="n">16</span><span>LFU vs LRU end to end</span><span class="s st-arch">dropped</span></div><div class="st-c arch" title="step 17: dropped"><span class="n">17</span><span>A staleness policy</span><span class="s st-arch">dropped</span></div><div class="st-c part" title="step 18: partly"><span class="n">18</span><span>Async memory and two scheduling fixes</span><span class="s st-part">partly</span></div><div class="st-c done" title="step 19: done"><span class="n">19</span><span>Remove the timestamp</span><span class="s st-done">done</span></div><div class="st-c open" title="step 20: open"><span class="n">20</span><span>Ship a session gate</span><span class="s st-part">open</span></div><div class="st-c open" title="step 21: open"><span class="n">21</span><span>Where the turning point moves</span><span class="s st-part">open</span></div><div class="st-c open" title="step 22: open"><span class="n">22</span><span>Bound the board scan and tracer</span><span class="s st-part">open</span></div><div class="st-c open" title="step 23: open"><span class="n">23</span><span>KV for hybrid models</span><span class="s st-part">open</span></div><div class="st-c open" title="step 24: open"><span class="n">24</span><span>DeepSeek DeepInfer</span><span class="s st-part">open</span></div></div><div class="stack" style="gap:6px"><p class="label">Open, unnumbered (from Oct 19), and carried</p><ul class="list tight xs"><li><b>the simulator</b> (go/no-go: 10% over the best baseline), then a live server with real, not emulated, reuse</li><li><b>E0g</b>: does the harness forecast P:D demand better than the queue?</li><li><b>token-level history</b> in the harness, needed before any new Terminal-Bench round</li><li><b>carried</b>: topic 13&#x27;s S3&#8211;S5 and topic 14&#x27;s P/D sweep</li><li><b>housekeeping</b>: commit harness_eval and the rename; archive 28 GB of traces</li></ul></div></div>
+  <div class="foot"><p>Sources: steps 1&#8211;11 in weekly_progress/091626, 12&#8211;18 in 091626 and 092326, 19&#8211;22 in 093026, 23&#8211;24 in 102126; open items in 102126/conclusion.md. &#8220;Dropped&#8221; means not carried forward since.</p></div>
+</section>
+
+<!-- ===================== 14 &#183; B11 PRIOR WORK ===================== -->
+<section class="slide" data-title="Prior work">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">14</span><span><span class="sec">backup</span> B11 &#183; prior work on each component of the design (your request, Oct 21)</span></div>
+    <h2>Papers already cover 13 of the design's 22 parts; of the 5 no paper covers, 4 concern the harness's edits</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto; gap:12px; align-content: start">
+    <div class="cv-grid"><div class="cv-card"><p class="cv-h"><b>Request scheduler</b><span>6 of 8 parts covered</span></p><p class="cv-l"><span class="cv-k">covered</span><b>online DAG</b>: HexAGenT, Autellix &#183; <b>priority and critical path</b>: SmoothAgent, HexAGenT, TOPAS, Autellix, Tokencake &#183; <b>cost model</b>: SmoothAgent, HexAGenT, TOPAS, SMetric, xLLM &#183; <b>stall budget</b>: SmoothAgent, xLLM &#183; <b>background compaction</b>: SmoothAgent, Slipstream, LCM &#183; <b>exact lookahead KV</b>: SmoothAgent</p><p class="cv-l"><span class="cv-k ext">extend</span><b>a Modify effect (edits as requests)</b> &#183; <b>a READY state an edit can revoke</b></p></div><div class="cv-card"><p class="cv-h"><b>Memory manager and repair planner</b><span>4 of 7 parts covered</span></p><p class="cv-l"><span class="cv-k">covered</span><b>approximate repair</b>: Leyline, CacheSlide, AgentKVShift, EPIC &#183; <b>queue-time pins</b>: Continuum &#183; <b>next-use eviction</b>: Continuum, Tokencake, KVFlow, CacheScout, UNISON, CacheWise, Ask the Tool, Don&#8217;t Guess &#183; <b>preload</b>: Tokencake, KVFlow, CacheScout, UNISON, Ask the Tool, Don&#8217;t Guess</p><p class="cv-l"><span class="cv-k ext">extend</span><b>admission gated by DAG state</b></p><p class="cv-l"><span class="cv-k new">new</span><b>drift tracking and refresh</b> (partly: Leyline, CacheSlide, AgentKVShift) &#183; <b>dead-version GC, HBM and DRAM</b> (partly: KVFlow, CacheSlide, Leyline)</p></div><div class="cv-card"><p class="cv-h"><b>GPU reconfigurator</b><span>2 of 3 parts covered</span></p><p class="cv-l"><span class="cv-k">covered</span><b>P/D placement</b>: HexAGenT, xLLM, PPD, AMPD, ConServe &#183; <b>dynamic P:D</b>: xLLM, Dynamo Planner, PEARL; partly HeteroScale, AMPD</p><p class="cv-l"><span class="cv-k ext">extend</span><b>P:D sized from the harness's DAG forecast</b> (backup B3)</p><p class="cv-l"><span class="cv-k new">new</span><b>TP vs DP chosen at runtime</b> (partly: xLLM, Dynamo Planner, AMPD)</p></div><div class="cv-card"><p class="cv-h"><b>Harness</b><span>1 of 4 parts covered</span></p><p class="cv-l"><span class="cv-k">covered</span><b>duration and progress hints</b>: Continuum, Tokencake, CacheWise, Ask the Tool, Don&#8217;t Guess</p><p class="cv-l"><span class="cv-k ext">extend</span><b>edits timed to a cold cache</b></p><p class="cv-l"><span class="cv-k new">new</span><b>server-to-harness feedback</b> (partly: Ask the Tool, Don&#8217;t Guess) &#183; <b>live edit diffs for GQA models</b> (partly: Leyline, CacheSlide)</p></div></div>
+    <div class="stack" style="gap:6px">
+      <p class="label">The papers: corresponding author and affiliation, as each paper marks them <span class="lc">&#183; (last): none marked, so the last author</span></p>
+      <div class="cv-dir"><div class="cv-e"><b>AgentKVShift</b> &#183; Nilesh Prasad Pandey &#183; <span class="cv-aff">UC San Diego</span></div><div class="cv-e"><b>AMPD</b> &#183; Fangcheng Fu &#183; <span class="cv-aff">Shanghai Jiao Tong University</span></div><div class="cv-e"><b>Ask the Tool, Don&#8217;t Guess</b> &#183; Huanchen Zhang <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">Tsinghua University</span></div><div class="cv-e"><b>Autellix</b> &#183; Ion Stoica <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">UC Berkeley</span></div><div class="cv-e"><b>CacheScout</b> &#183; Liting Hu <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">UC Santa Cruz</span></div><div class="cv-e"><b>CacheSlide</b> &#183; Yunfei Gu, Chentao Wu &#183; <span class="cv-aff">Shanghai Jiao Tong University</span></div><div class="cv-e"><b>CacheWise</b> &#183; Haiying Shen <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">University of Virginia</span></div><div class="cv-e"><b>ConServe</b> &#183; Jianru Ding &#183; <span class="cv-aff">University of Chicago</span></div><div class="cv-e"><b>Continuum</b> &#183; Hanchen Li <span class="cv-dim">(v1 only)</span> &#183; <span class="cv-aff">UC Berkeley</span></div><div class="cv-e"><b>Dynamo Planner</b> &#183; documentation, not a paper &#183; <span class="cv-aff">NVIDIA</span></div><div class="cv-e"><b>EPIC</b> &#183; Tao Xie; Yizhou Shan &#183; <span class="cv-aff">Peking University; Huawei Cloud</span></div><div class="cv-e"><b>HeteroScale</b> &#183; Shufan Liu &#183; <span class="cv-aff">ByteDance Seed</span></div><div class="cv-e"><b>HexAGenT</b> &#183; Binhang Yuan <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">HKUST</span></div><div class="cv-e"><b>KVFlow</b> &#183; Zhengding Hu &#183; <span class="cv-aff">UC San Diego</span></div><div class="cv-e"><b>LCM</b> &#183; Theodore Blackman <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">Voltropy PBC</span></div><div class="cv-e"><b>Leyline</b> &#183; Harald K&#246;stler <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">NHR@FAU Erlangen</span></div><div class="cv-e"><b>Parallel Context Compaction</b> &#183; Mahmut Kandemir <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">Penn State</span></div><div class="cv-e"><b>PEARL</b> &#183; Youhui Bai &#183; <span class="cv-aff">USTC</span></div><div class="cv-e"><b>PPD</b> &#183; Zongze Li &#183; <span class="cv-aff">University of Chicago</span></div><div class="cv-e"><b>Slipstream</b> &#183; Ravi Netravali <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">Princeton University</span></div><div class="cv-e"><b>SMetric</b> &#183; Xingda Wei &#183; <span class="cv-aff">Shanghai Jiao Tong University (IPADS)</span></div><div class="cv-e"><b>SmoothAgent</b> &#183; Yufei Ding <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">UC San Diego</span></div><div class="cv-e"><b>Tokencake</b> &#183; Youwei Zhuo &#183; <span class="cv-aff">Peking University</span></div><div class="cv-e"><b>TOPAS</b> &#183; Haisheng Tan <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">USTC</span></div><div class="cv-e"><b>UNISON</b> &#183; Yan Li &#183; <span class="cv-aff">Fudan University</span></div><div class="cv-e"><b>xLLM</b> &#183; Tongxuan Liu, Ke Zhang + 7 &#183; <span class="cv-aff">JD.com and 5 universities</span></div></div>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: the design doc&#8217;s prior-work table and P:D tab (HeteroPanacea and Autopoiesis cover no part); author blocks read 2026-10-21; arXiv ids in <span class="mono">weekly_progress/102126/conclusion.md</span>.</p></div>
+</section>
+
+</div>
+</div>
+<div class="hud"><div class="bar" id="bar"></div></div>
+<div class="hint">← → navigate · O overview</div>
+<div class="counter"><span id="ctr">1 / 14</span><button id="ovbtn" type="button" aria-label="Toggle overview">overview</button></div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var body = document.body;
+  var bar = document.getElementById('bar');
+  var ctr = document.getElementById('ctr');
+  var idx = 0;
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    document.documentElement.style.setProperty('--s', String(s));
+  }
+  function show(i, push) {
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === idx); });
+    bar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    ctr.textContent = (idx + 1) + ' / ' + slides.length;
+    document.title = (slides[idx].dataset.title ? slides[idx].dataset.title + ' · ' : '') + 'Harness Serving Progress';
+    if (push !== false) { try { history.replaceState(null, '', '#' + (idx + 1)); } catch (e) {} }
+  }
+  function fromHash() {
+    var n = parseInt((location.hash || '#1').slice(1), 10);
+    show(isNaN(n) ? 0 : n - 1, false);
+  }
+  function toggleOverview(force) {
+    var on = typeof force === 'boolean' ? force : !body.classList.contains('overview');
+    body.classList.toggle('overview', on);
+    if (!on) { show(idx); window.scrollTo(0, 0); }
+  }
+
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', fromHash);
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'l': case 'j':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx + 1); } break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'h': case 'k':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx - 1); } break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End': e.preventDefault(); show(slides.length - 1); break;
+      case 'o': case 'O': toggleOverview(); break;
+      case 'Escape': toggleOverview(false); break;
+      case 'p': case 'P': window.print(); break;
+    }
+  });
+  slides.forEach(function (el, k) {
+    el.addEventListener('click', function (e) {
+      if (body.classList.contains('overview')) { show(k); toggleOverview(false); return; }
+      var r = stage.getBoundingClientRect();
+      if (e.clientX - r.left > r.width * 0.5) show(idx + 1); else show(idx - 1);
+    });
+  });
+  document.getElementById('ovbtn').addEventListener('click', function () { toggleOverview(); });
+  window.addEventListener('beforeprint', function () { body.classList.remove('overview'); });
+
+  if (location.search.indexOf('export') !== -1) body.classList.add('export');
+  fit();
+  fromHash();
+})();
+</script>

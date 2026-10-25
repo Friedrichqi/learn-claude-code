@@ -1,0 +1,172 @@
+# Model servers for the s15 benchmark profile. One entry per model; serve/serve.py turns it into `vllm serve`.
+# All on vLLM 0.31.0 (/data/fritz/venv), prefix caching on, CUDA graphs on (no EPIC hooks this round).
+# s15 sends no sampling parameters, so each model's generation_config.json applies (vLLM default).
+# `agent` holds the S15Agent kwargs (window_tokens sets s15's CONTEXT_LIMIT; max_tokens overrides s15's
+# per-call output budget for thinking models; the harness default is 8000, escalated to 16000).
+
+qwen3-32b:
+  hf: Qwen/Qwen3-32B
+  hf_home: /data/shared/huggingface
+  tp: 1
+  gpu_util: 0.92
+  max_model_len: 32768
+  args: [--enable-auto-tool-choice, --tool-call-parser, hermes, --reasoning-parser, qwen3,
+         --default-chat-template-kwargs, '{"enable_thinking": false}',
+         --chat-template, /data/fritz/learn-claude-code/research/16_epic_harness/harness_eval/vendor/s15/templates/qwen3_append_only.jinja,
+         --enable-prefix-caching, --enable-prompt-tokens-details, --max-num-seqs, "8"]
+  agent: {window_tokens: 32768, max_tokens_reserve: 8192}
+  arch: "full attention, GQA (64 layers, 8 KV heads), RoPE"
+  note: "legacy comparison; topic 16 setup (append-only template, non-thinking)"
+
+qwen3.8-27b:
+  hf: Qwen/Qwen3.8-27B-FP8
+  hf_home: /data/fritz/hf
+  tp: 1
+  gpu_util: 0.92
+  max_model_len: 131072
+  args: [--enable-auto-tool-choice, --tool-call-parser, qwen3_coder, --reasoning-parser, qwen3,
+         --language-model-only, --enable-prefix-caching, --enable-mamba-shared-prefix-checkpoint,
+         --enable-prompt-tokens-details, --max-num-seqs, "16"]
+  agent: {window_tokens: 131072, max_tokens_reserve: 32000, max_tokens: 32000, max_tokens_escalated: 64000}
+  arch: "hybrid: 48 Gated DeltaNet + 16 gated-attention layers (4 KV heads, partial RoPE)"
+  note: "thinking on (vendor default effort)"
+
+deepseek-v4-flash:
+  hf: deepseek-ai/DeepSeek-V4-Flash-0731
+  hf_home: /data/fritz/hf
+  tp: 4
+  gpu_util: 0.88
+  max_model_len: 131072
+  env: {SAFETENSORS_FAST_GPU: "1"}
+  unset_env: [PYTORCH_CUDA_ALLOC_CONF]
+  args: [--trust-remote-code, --kv-cache-dtype, fp8, --block-size, "256",
+         --attention_config.indexer_kv_dtype, fp8,
+         --tokenizer-mode, deepseek_v4, --tool-call-parser, deepseek_v4, --enable-auto-tool-choice,
+         --reasoning-parser, deepseek_v4,
+         --default-chat-template-kwargs, '{"thinking": true, "reasoning_effort": "high"}',
+         --enable-prefix-caching, --enable-prompt-tokens-details, --max-num-seqs, "32"]
+  agent: {window_tokens: 131072, max_tokens_reserve: 32000, max_tokens: 32000, max_tokens_escalated: 64000}
+  arch: "compressed/sparse: CSA (4-token pooling, top-512) + HCA (128-token pooling) + 128-token window"
+  note: "Think High; vendor recipes use 8 GPUs on H100 - serve test first, GLM-4.7-Flash is the backup"
+
+minimax-m2.7:
+  hf: MiniMaxAI/MiniMax-M2.7
+  hf_home: /data/fritz/hf
+  tp: 4
+  gpu_util: 0.92
+  max_model_len: 131072
+  env: {SAFETENSORS_FAST_GPU: "1"}
+  args: [--trust-remote-code, --enable-auto-tool-choice, --tool-call-parser, minimax_m2,
+         --reasoning-parser, minimax_m2_append_think,
+         --enable-prefix-caching, --enable-prompt-tokens-details, --max-num-seqs, "16"]
+  agent: {window_tokens: 131072, max_tokens_reserve: 32000, max_tokens: 32000, max_tokens_escalated: 64000}
+  arch: "full attention, GQA (62 layers, 8 KV heads), partial RoPE (64 of 128 dims)"
+  note: "interleaved thinking kept in content (append_think parser)"
+
+minimax-m2.7-epic:
+  # EPIC round (epic/, plan "EPIC round"): MiniMax-M2.7 on the live EPIC server. Every arm is served here and
+  # tagged per lead call (kv_transfer_params.epic); arms are kept apart by cache salt. Prefill runs eager so the
+  # connector's override hooks fire; decode uses full CUDA graphs. BF16 KV (auto), FlashAttention layout.
+  # e3 (2026-10-14): host pool 960K rows (e2 exhausted 640K) and shadow probes every 32nd call (every 8th before).
+  # Main run (e1): pilot ep1 filled the KV cache (99.6 % at 15 sessions, 4 preemptions), so the cache gets 0.93
+  # of each GPU (+~40K tokens) and --watermark keeps 8 % of it free when admitting requests, which leaves room
+  # for running requests' decode instead of preempting them.
+  hf: MiniMaxAI/MiniMax-M2.7
+  hf_home: /data/fritz/hf
+  tp: 4
+  gpu_util: 0.93
+  max_model_len: 131072
+  env: {SAFETENSORS_FAST_GPU: "1", PYTHONPATH: /data/fritz/learn-claude-code/research/16_epic_harness/harness_eval/epic,
+        EPIC_LOG: /data/fritz/learn-claude-code/research/16_epic_harness/harness_eval/runs/epic/minimax-m2.7-epic.calls.jsonl,
+        EPIC_POOL_ROWS: "960000", EPIC_IM_START: "200019", EPIC_MAX_MODEL_LEN: "131072",
+        EPIC_DECODE_RESERVE: "4096", EPIC_SHADOW_EVERY: "32", EPIC_LOG_DIV: "1", VLLM_ALLOW_INSECURE_SERIALIZATION: "1"}
+  args: [--trust-remote-code, --enable-auto-tool-choice, --tool-call-parser, minimax_m2,
+         --reasoning-parser, minimax_m2_append_think,
+         --enable-prefix-caching, --enable-prompt-tokens-details, --max-num-seqs, "48",
+         --chat-template, /data/fritz/learn-claude-code/research/16_epic_harness/harness_eval/epic/templates/minimax_m2_append_only.jinja,
+         --middleware, epic_server_ext.Middleware,
+         --kv-transfer-config, '{"kv_connector":"EpicConnector","kv_connector_module_path":"epic_connector","kv_role":"kv_both","kv_load_failure_policy":"fail","kv_connector_extra_config":{"store_device":"cpu","pool_rows":960000}}',
+         --attention-backend, FLASH_ATTN, --disable-cascade-attn, --no-async-scheduling,
+         --compilation-config, '{"mode":0,"cudagraph_mode":"FULL_DECODE_ONLY"}',
+         --max-num-batched-tokens, "8192", --watermark, "0.08"]
+  agent: {window_tokens: 131072, max_tokens_reserve: 32000, max_tokens: 32000, max_tokens_escalated: 64000}
+  arch: "full attention, GQA (62 layers, 8 KV heads), partial RoPE (64 of 128 dims)"
+  note: "EPIC server; append-only template (reasoning kept in every assistant turn)"
+
+qwen3.8-27b-epic:
+  # EPIC round, stage B (exploratory): Qwen3.8 is hybrid, so EpicConnectorHMA overrides K/V in the 16 attention layers
+  # only and never loads rows (EPIC_NO_LOAD: a restored row would lack its tokens' DeltaNet state). The 48 Gated
+  # DeltaNet layers compute every token, so EPIC saves under 1 % of the compute here: the arms measure accuracy only.
+  # Vendor template: it keeps every assistant turn's reasoning (preserve_thinking defaults to true), so prompts are
+  # append-only exactly as served in the baseline. One instance per GPU (--instance), each with its own EPIC_LOG.
+  hf: Qwen/Qwen3.8-27B-FP8
+  hf_home: /data/fritz/hf
+  tp: 1
+  gpu_util: 0.90
+  max_model_len: 131072
+  env: {SAFETENSORS_FAST_GPU: "1", PYTHONPATH: /data/fritz/learn-claude-code/research/16_epic_harness/harness_eval/epic,
+        EPIC_LOG: "/data/fritz/learn-claude-code/research/16_epic_harness/harness_eval/runs/epic/{key}.calls.jsonl",
+        EPIC_POOL_ROWS: "600000", EPIC_IM_START: "248045", EPIC_MAX_MODEL_LEN: "131072",
+        EPIC_DECODE_RESERVE: "8192", EPIC_SHADOW_EVERY: "8", EPIC_LOG_DIV: "1", EPIC_NO_LOAD: "1",
+        VLLM_ALLOW_INSECURE_SERIALIZATION: "1"}
+  args: [--enable-auto-tool-choice, --tool-call-parser, qwen3_coder, --reasoning-parser, qwen3,
+         --language-model-only, --enable-prefix-caching, --enable-mamba-shared-prefix-checkpoint,
+         --enable-prompt-tokens-details, --max-num-seqs, "16",
+         --middleware, epic_server_ext.Middleware,
+         --kv-transfer-config, '{"kv_connector":"EpicConnectorHMA","kv_connector_module_path":"epic_connector","kv_role":"kv_both","kv_load_failure_policy":"fail","kv_connector_extra_config":{"store_device":"cpu","pool_rows":600000}}',
+         --attention-backend, FLASH_ATTN, --disable-cascade-attn, --no-async-scheduling,
+         --compilation-config, '{"mode":0,"cudagraph_mode":"FULL_DECODE_ONLY"}',
+         --max-num-batched-tokens, "8192", --watermark, "0.08"]
+  agent: {window_tokens: 131072, max_tokens_reserve: 32000, max_tokens: 32000, max_tokens_escalated: 64000}
+  arch: "hybrid: 48 Gated DeltaNet + 16 gated-attention layers (4 KV heads, partial RoPE 64 of 256)"
+  note: "EPIC server (exploratory); vendor template; attention-only overrides, no loads"
+
+deepseek-v4-flash-epic:
+  # EPIC round, stage C (design and selftests only): epic/epic_dsv4.py stores each layer's attention input (position-free:
+  # the latent before RoPE and the compressor/indexer inputs are functions of it) and substitutes it at reused positions,
+  # so the fused kernels redo RoPE, FP8 quantization and pooling at the new positions. Eager (vLLM captures CUDA graphs
+  # for DSv4 even under mode 0; graphs skip the hooks), no loads, no shadow probes. Short context: selftests only.
+  hf: deepseek-ai/DeepSeek-V4-Flash-0731
+  hf_home: /data/fritz/hf
+  tp: 4
+  gpu_util: 0.88
+  max_model_len: 32768
+  env: {SAFETENSORS_FAST_GPU: "1", PYTHONPATH: /data/fritz/learn-claude-code/research/16_epic_harness/harness_eval/epic,
+        EPIC_LOG: /data/fritz/learn-claude-code/research/16_epic_harness/harness_eval/runs/epic/deepseek-v4-flash-epic.calls.jsonl,
+        EPIC_POOL_ROWS: "64000", EPIC_IM_START: "128803", EPIC_MAX_MODEL_LEN: "32768",
+        EPIC_DECODE_RESERVE: "1024", EPIC_SHADOW_EVERY: "0", EPIC_LOG_DIV: "1", EPIC_NO_LOAD: "1",
+        VLLM_ALLOW_INSECURE_SERIALIZATION: "1"}
+  unset_env: [PYTORCH_CUDA_ALLOC_CONF]
+  args: [--trust-remote-code, --kv-cache-dtype, fp8, --block-size, "256",
+         --attention_config.indexer_kv_dtype, fp8, --tokenizer-mode, deepseek_v4,
+         --enable-prefix-caching, --enable-prompt-tokens-details, --max-num-seqs, "16", --enforce-eager,
+         --middleware, epic_server_ext.Middleware,
+         --kv-transfer-config, '{"kv_connector":"EpicConnectorDSV4","kv_connector_module_path":"epic_dsv4","kv_role":"kv_both","kv_load_failure_policy":"fail","kv_connector_extra_config":{"store_device":"cpu"}}',
+         --no-async-scheduling, --max-num-batched-tokens, "8192"]
+  agent: {window_tokens: 32768, max_tokens_reserve: 4000, max_tokens: 4000, max_tokens_escalated: 8000}
+  arch: "compressed/sparse: CSA (4-token pooling, top-512) + HCA (128-token pooling) + 128-token window"
+  note: "EPIC server (design and selftests only); attention-input substitution, eager"
+
+glm-4.7-flash:
+  hf: zai-org/GLM-4.7-Flash
+  hf_home: /data/fritz/hf
+  tp: 1
+  gpu_util: 0.92
+  max_model_len: 131072
+  args: [--enable-auto-tool-choice, --tool-call-parser, glm47, --reasoning-parser, glm47,
+         --enable-prefix-caching, --enable-prompt-tokens-details, --max-num-seqs, "16"]
+  agent: {window_tokens: 131072, max_tokens_reserve: 32000, max_tokens: 32000, max_tokens_escalated: 64000}
+  arch: "MLA: 512-dim latent + 64-dim RoPE key (47 layers)"
+  note: "backup for DeepSeek-V4-Flash"
+
+# test-only: run/fake_model.py (scripted /v1/messages, no GPU) for batch.py checks; never served by vLLM
+fake:
+  hf: none
+  tp: 1
+  max_model_len: 32768
+  agent: {window_tokens: 32768, max_tokens_reserve: 8192}
+fake-b:
+  hf: none
+  tp: 1
+  max_model_len: 32768
+  agent: {window_tokens: 32768, max_tokens_reserve: 8192}

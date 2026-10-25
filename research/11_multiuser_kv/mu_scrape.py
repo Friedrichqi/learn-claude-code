@@ -18,6 +18,9 @@ mu_scheduler's commit and eviction counts against vLLM's own events.
 
     python research/11_multiuser_kv/mu_scrape.py run --metrics-url http://127.0.0.1:8601/metrics --gpu 0 \
         --out DIR/scrape.jsonl --server-pid PID --sweep-pid PID
+
+--gpu takes one NVML index (the record's "gpu" is one sample, as in topic 11) or a list such as 0,1 for a
+tensor-parallel server (then "gpu" is a list of samples, one per index; added 2026-10-24 for topic 18).
 """
 from __future__ import annotations
 
@@ -147,7 +150,9 @@ def run(args) -> int:
     stop = {"flag": False}
     signal.signal(signal.SIGTERM, lambda *_: stop.__setitem__("flag", True))
     signal.signal(signal.SIGINT, lambda *_: stop.__setitem__("flag", True))
-    gpu = GPU(args.gpu)
+    indices = [int(i) for i in str(args.gpu).split(",") if i.strip()]
+    gpus = [GPU(i) for i in indices]
+    sample_gpu = (lambda: gpus[0].sample()) if len(gpus) == 1 else (lambda: [g.sample() for g in gpus])
     cpu = CPU(args.server_pid, args.sweep_pid)
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     period = args.period
@@ -157,7 +162,7 @@ def run(args) -> int:
             t, wall = time.monotonic(), time.time()
             text = fetch(args.metrics_url)
             record = {"t": t, "wall": wall, "ok": text is not None,
-                      "m": parse_metrics(text) if text else None, "gpu": gpu.sample(), "cpu": cpu.sample(),
+                      "m": parse_metrics(text) if text else None, "gpu": sample_gpu(), "cpu": cpu.sample(),
                       "scrape_ms": round((time.monotonic() - t) * 1000, 1)}
             handle.write(json.dumps(record) + "\n")
             handle.flush()
@@ -231,7 +236,7 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run", help="poll until SIGTERM")
     r.add_argument("--metrics-url", required=True)
-    r.add_argument("--gpu", type=int, default=0, help="NVML index of this cell's GPU")
+    r.add_argument("--gpu", default="0", help="NVML index of this cell's GPU, or a list such as 0,1")
     r.add_argument("--out", required=True)
     r.add_argument("--server-pid", type=int, default=0)
     r.add_argument("--sweep-pid", type=int, default=0)

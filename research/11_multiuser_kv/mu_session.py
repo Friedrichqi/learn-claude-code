@@ -256,6 +256,9 @@ def run(args) -> int:
         stale.unlink()                                  # a retried attempt starts from a clean capture
     signal.signal(signal.SIGTERM, terminate)  # until the harness installs its own (same behaviour)
     sandbox = reset_sandbox(spec["seed"], spec["sandbox"])
+    # the harness finds itself in the server's status (research/18_harness_wait) under the same id as
+    # the X-Session-ID header below; unused unless an S15_* pacing feature is on
+    os.environ["S15_SESSION_ID"] = f"{label}~a{args.attempt}"
     budget = Budget(args.lead_cap_turn, args.lead_cap_session, args.deadline_s)
     counter = install_capture(run_dir / f"{label}.requests.jsonl", label, args.attempt, args.arrival_index,
                               budget, args.call_timeout_s)

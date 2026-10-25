@@ -1,0 +1,180 @@
+#!/usr/bin/env python3
+"""vLLM servers for the profiling round, on GPUs 0-3 only, stopped as soon as their batch is done.
+
+    serve.py start MODEL --gpus 0[,1,..] [--port P]   start, wait for /health, record runs/servers/MODEL.json
+    serve.py stop MODEL                                TERM the process group, then KILL; wait until GPUs empty
+    serve.py gpus 0,1,2,3                              print per-GPU memory / compute processes
+    serve.py empty 0,1                                 exit 0 if the GPUs have no compute process and < 1 GiB used
+
+Lifecycle logic follows research/16_epic_harness/epic_common.py (served / kill_group), copied, not imported.
+Model settings come from serve/models.yaml.
+"""
+from __future__ import annotations
+
+import argparse
+import contextlib
+import json
+import os
+import signal
+import socket
+import subprocess
+import sys
+import time
+import urllib.request
+from pathlib import Path
+
+import yaml
+
+ROOT = Path("/data/fritz/learn-claude-code/research/16_epic_harness/harness_eval")
+STATE = ROOT / "runs" / "servers"
+VLLM = "/data/fritz/venv/bin/vllm"
+ALLOWED_GPUS = {0, 1, 2, 3}
+
+
+def models() -> dict:
+    return yaml.safe_load((ROOT / "serve" / "models.yaml").read_text())
+
+
+def gpu_status(gpus: list[int]) -> dict[int, tuple[int, int]]:
+    """gpu -> (MiB used, number of compute processes)."""
+    out = {}
+    for g in gpus:
+        mem = subprocess.run(["nvidia-smi", f"--id={g}", "--query-gpu=memory.used", "--format=csv,noheader,nounits"],
+                             capture_output=True, text=True).stdout.strip()
+        apps = subprocess.run(["nvidia-smi", f"--id={g}", "--query-compute-apps=pid", "--format=csv,noheader"],
+                              capture_output=True, text=True).stdout.strip()
+        out[g] = (int(mem or 0), len([a for a in apps.splitlines() if a.strip()]))
+    return out
+
+
+def gpus_empty(gpus: list[int]) -> bool:
+    return all(mem < 1024 and procs == 0 for mem, procs in gpu_status(gpus).values())
+
+
+def free_port() -> int:
+    while True:
+        with socket.socket() as s:
+            s.bind(("127.0.0.1", 0))
+            port = s.getsockname()[1]
+        if "429" not in str(port) and "529" not in str(port):
+            return port
+
+
+def health(port: int) -> bool:
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=5) as r:
+            return r.status == 200
+    except Exception:                                           # noqa: BLE001
+        return False
+
+
+def start(name: str, gpus: list[int], port: int | None = None, timeout: int = 3600, instance: str = "") -> dict:
+    cfg = models()[name]
+    key = f"{name}@{instance}" if instance else name
+    if not set(gpus) <= ALLOWED_GPUS:
+        raise SystemExit(f"GPUs {gpus} outside the allowed set {sorted(ALLOWED_GPUS)}")
+    if len(gpus) != int(cfg.get("tp", 1)):
+        raise SystemExit(f"{name} needs {cfg.get('tp', 1)} GPU(s), got {gpus}")
+    if not gpus_empty(gpus):
+        raise SystemExit(f"GPUs {gpus} are not empty: {gpu_status(gpus)}")
+    STATE.mkdir(parents=True, exist_ok=True)
+    port = port or free_port()
+    log = STATE / f"{key}.log"
+    env = dict(os.environ)
+    for var in cfg.get("unset_env", []):
+        env.pop(var, None)
+    env.update({"CUDA_VISIBLE_DEVICES": ",".join(map(str, gpus)), "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+                "HF_HOME": cfg.get("hf_home", "/data/fritz/hf"), "HF_HUB_OFFLINE": "1", "VLLM_NO_USAGE_STATS": "1",
+                # FlashInfer JIT links against -lnvrtc; the pip CUDA wheels ship only libnvrtc.so.13
+                "LIBRARY_PATH": ":".join(filter(None, ["/data/fritz/cache/linklibs", env.get("LIBRARY_PATH", "")]))})
+    # "{key}" in an env value is the server key (name@instance), e.g. one EPIC_LOG per instance
+    env.update({k: str(v).replace("{key}", key) for k, v in (cfg.get("env") or {}).items()})
+    cmd = [VLLM, "serve", cfg["hf"], "--host", "127.0.0.1", "--port", str(port), "--served-model-name", name,
+           "--tensor-parallel-size", str(cfg.get("tp", 1)), "--gpu-memory-utilization", str(cfg.get("gpu_util", 0.9)),
+           "--max-model-len", str(cfg["max_model_len"]), "--seed", "0", "--uvicorn-log-level", "warning",
+           *[str(a) for a in cfg.get("args", [])]]
+    with open(log, "a") as f:
+        f.write(f"\n==== {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())} start {' '.join(cmd)}\n")
+    proc = subprocess.Popen(cmd, stdout=open(log, "a"), stderr=subprocess.STDOUT, env=env, start_new_session=True)
+    state = {"name": name, "key": key, "pid": proc.pid, "pgid": os.getpgid(proc.pid), "port": port, "gpus": gpus,
+             "url": f"http://127.0.0.1:{port}", "log": str(log), "started": time.time(), "cmd": cmd}
+    (STATE / f"{key}.json").write_text(json.dumps(state, indent=1))
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        if proc.poll() is not None:
+            tail = log.read_text()[-3000:]
+            stop(key)
+            raise SystemExit(f"{name} exited during startup (rc {proc.returncode}):\n{tail}")
+        if health(port):
+            state["ready_s"] = round(time.time() - t0, 1)
+            (STATE / f"{key}.json").write_text(json.dumps(state, indent=1))
+            return state
+        time.sleep(5)
+    stop(key)
+    raise SystemExit(f"{name} not healthy after {timeout}s")
+
+
+def stop(name: str, wait: int = 300) -> str:
+    path = STATE / f"{name}.json"
+    if not path.exists():
+        return f"{name}: no state"
+    state = json.loads(path.read_text())
+    for sig, grace in ((signal.SIGTERM, 60), (signal.SIGKILL, 10)):
+        try:
+            os.killpg(state["pgid"], sig)
+        except ProcessLookupError:
+            break
+        t0 = time.time()
+        while time.time() - t0 < grace:
+            try:
+                os.killpg(state["pgid"], 0)
+            except ProcessLookupError:
+                break
+            time.sleep(1)
+    t0 = time.time()
+    while time.time() - t0 < wait and not gpus_empty(state["gpus"]):
+        time.sleep(3)
+    status = gpu_status(state["gpus"])
+    try:
+        current = json.loads(path.read_text()) if path.exists() else {}
+    except json.JSONDecodeError:
+        current = {}
+    if current.get("pid") == state["pid"]:          # a successor may already have written its own state here
+        path.rename(STATE / f"{name}.stopped-{int(time.time())}.json")
+    else:
+        (STATE / f"{name}.stopped-{int(time.time())}.json").write_text(json.dumps(state, indent=1))
+    line = f"{name}: stopped; GPUs {status} ({'empty' if gpus_empty(state['gpus']) else 'NOT EMPTY'})"
+    with open(state["log"], "a") as f:
+        f.write(f"==== {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())} {line}\n")
+    return line
+
+
+@contextlib.contextmanager
+def served(name: str, gpus: list[int]):
+    state = start(name, gpus)
+    try:
+        yield state
+    finally:
+        print(stop(name), flush=True)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("cmd", choices=["start", "stop", "gpus", "empty"])
+    ap.add_argument("arg")
+    ap.add_argument("--gpus", default="")
+    ap.add_argument("--port", type=int, default=0)
+    ap.add_argument("--instance", default="")
+    a = ap.parse_args()
+    if a.cmd == "start":
+        print(json.dumps(start(a.arg, [int(g) for g in a.gpus.split(",")], a.port or None, instance=a.instance)))
+    elif a.cmd == "stop":
+        print(stop(a.arg))
+    elif a.cmd == "gpus":
+        print(gpu_status([int(g) for g in a.arg.split(",")]))
+    elif a.cmd == "empty":
+        sys.exit(0 if gpus_empty([int(g) for g in a.arg.split(",")]) else 1)
+
+
+if __name__ == "__main__":
+    main()

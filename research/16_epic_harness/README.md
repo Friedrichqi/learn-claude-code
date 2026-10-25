@@ -9,7 +9,7 @@
 > **Models / providers:** `Qwen/Qwen3-32B` (BF16, non-thinking) served by vLLM 0.31.0; SWE-agent 1.0.1
 > (JetBrains "Complexity Trap" fork, commit bf15b5f) for X2.
 >
-> **Commits:** — (uncommitted).
+> **Commits:** a03117a (2026-10-12). The follow-up study in `harness_eval/` (2026-10-12 to 10-17) is not committed yet.
 >
 > **Background research:** [BACKGROUND.md](BACKGROUND.md), a survey of how agent harnesses and agentic
 > systems are evaluated, and of how KV-reuse methods measure fidelity against full prefill.

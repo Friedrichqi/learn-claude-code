@@ -1,10 +1,20 @@
-"""Observing (and optionally KV-pinning) scheduler for vLLM 0.29.0 -- research/11_multiuser_kv.
+"""Observing (and optionally KV-pinning) scheduler for vLLM 0.29.0 and 0.31.0 -- research/11_multiuser_kv.
 
 vLLM builds the scheduler inside its EngineCore process from `--scheduler-cls`, so this module must be
 importable there:
 
     PYTHONPATH=research/11_multiuser_kv MU_SCHED_LOG=/node-local/sched.jsonl \
         vllm serve Qwen/Qwen3-32B ... --scheduler-cls mu_scheduler.MUScheduler
+
+MUScheduler subclasses vLLM's AsyncScheduler (async scheduling, vLLM's default); MUSyncScheduler is the
+same observer on the plain Scheduler, for servers run with --no-async-scheduling. [2026-10-24, topic 18:
+ported to vLLM 0.31.0 with the 0.29.0 paths unchanged. 0.31 keeps skipped (deferred) requests inside the
+waiting queues and marks them in `deferred_waiting` instead of a separate `skipped_waiting` queue; the
+step record's wq / sk keep their meaning (waiting not deferred / deferred). New queue-head reasons:
+`defer` (blocked status) and `stale` (in-flight output of a preempted request). With MU_STRICT=1 a
+setup error (e.g. an unsupported vLLM version) raises, so the server does not start, instead of the
+default fail-open (an `err` record, then the stock scheduler: a gate arm would silently run as no gate).
+Subclasses get `_on_commit` / `_on_evict` / `_on_reset` callbacks for per-chain block accounting.]
 
 Without MU_SCHED_LOG and MU_PIN the class is the stock AsyncScheduler (no hook installed). With
 MU_SCHED_LOG it records, without changing any scheduling decision:
@@ -66,9 +76,10 @@ import msgspec
 
 import vllm
 from vllm.v1.core.sched.async_scheduler import AsyncScheduler
+from vllm.v1.core.sched.scheduler import Scheduler
 from vllm.v1.request import RequestStatus
 
-EXPECTED_VLLM = "0.29.0"
+SUPPORTED_VLLM = ("0.29.0", "0.31.0")
 TOOL_CALL_TOKEN = int(os.environ.get("MU_TOOLCALL_TOKEN", "151657"))    # Qwen3 <tool_call>
 PURPOSES = {"ld", "mx", "mr", "mc", "cs", "os", "tm", "un"}
 SUFFIX = re.compile(r"-[0-9a-f]{8}$")
@@ -181,7 +192,10 @@ class Pin:
         self.blocks, self.t0, self.exp, self.pri = blocks, t0, exp, pri
 
 
-class MUScheduler(AsyncScheduler):
+class MUMixin:
+    """The observer, the pins and the gate; mixed into AsyncScheduler (MUScheduler) or Scheduler
+    (MUSyncScheduler) at the end of this module."""
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._on = False
@@ -194,14 +208,17 @@ class MUScheduler(AsyncScheduler):
         try:
             self._setup()
             self._on = True
-        except Exception as exc:                                   # never block serving
+        except Exception as exc:                                   # never block serving (unless strict)
             self._emit({"k": "err", "t": time.monotonic(), "where": "init", "exc": repr(exc),
                         "tb": traceback.format_exc()[-2000:]})
             self._pin_on = False
+            if os.environ.get("MU_STRICT", "0") == "1":
+                self._close()
+                raise
 
     # -- setup ---------------------------------------------------------------------------------------
     def _setup(self) -> None:
-        assert vllm.__version__ == EXPECTED_VLLM, f"mu_scheduler is written against vLLM {EXPECTED_VLLM}"
+        assert vllm.__version__ in SUPPORTED_VLLM, f"mu_scheduler supports vLLM {SUPPORTED_VLLM}, not {vllm.__version__}"
         groups = self.kv_cache_config.kv_cache_groups
         assert len(groups) == 1, "one full-attention KV group expected (dense model)"
         assert self.hash_block_size == self.block_size, "hash block size must equal block size"
@@ -252,8 +269,12 @@ class MUScheduler(AsyncScheduler):
         self._orig_alloc = self.kvm.allocate_slots
         self.kvm.allocate_slots = self._alloc_hook
         sc = self.scheduler_config
+        is_async = isinstance(self, AsyncScheduler)
+        if is_async != bool(getattr(sc, "async_scheduling", False)):
+            self._emit({"k": "warn", "t": time.monotonic(), "what": "scheduler class vs async_scheduling",
+                        "cls": type(self).__name__, "async_scheduling": bool(getattr(sc, "async_scheduling", False))})
         self._emit({"k": "hdr", "t": time.monotonic(), "wall": time.time(), "pid": os.getpid(),
-                    "vllm": vllm.__version__, "nblk": n, "bs": self.bs,
+                    "vllm": vllm.__version__, "cls": type(self).__name__, "nblk": n, "bs": self.bs,
                     "mnbt": sc.max_num_batched_tokens, "mns": sc.max_num_seqs,
                     "mml": self.max_model_len, "policy": str(self.policy.value),
                     "watermark": getattr(sc, "watermark", None),
@@ -303,6 +324,47 @@ class MUScheduler(AsyncScheduler):
             else:
                 hi = mid - 1
         return lo
+
+    def _queue_view(self):
+        """(waiting and not deferred, deferred, head of the queue).
+
+        0.29 moves a request the scan skips into its own `skipped_waiting` queue; 0.31 keeps it in
+        `waiting` / `kv_holding_waiting` (drained first) and marks it in the `deferred_waiting` set. The
+        head is the request the next scan will try first: the first not-deferred one, else the first."""
+        skipped = getattr(self, "skipped_waiting", None)
+        if skipped is not None:                                       # vLLM 0.29
+            wq, sk = len(self.waiting), len(skipped)
+            if not (wq or sk):
+                return wq, sk, None
+            try:
+                return wq, sk, (self.waiting if wq else skipped).peek_request()
+            except Exception:
+                return wq, sk, None
+        deferred = self.deferred_waiting                              # vLLM 0.31
+        total = len(self.waiting) + len(self.kv_holding_waiting)
+        first = None
+        for q in (self.kv_holding_waiting, self.waiting):
+            for r in q:
+                if first is None:
+                    first = r
+                if r not in deferred:
+                    return total - len(deferred), len(deferred), r
+        return total - len(deferred), len(deferred), first
+
+    def _blocked_waiting(self) -> list:
+        """Waiting requests the scan cannot schedule yet (async KV loads among them)."""
+        skipped = getattr(self, "skipped_waiting", None)
+        return list(skipped) if skipped is not None else list(self.deferred_waiting)
+
+    # subclass hooks: a block of chain `ci` was committed (hashed) / evicted from the prefix cache
+    def _on_commit(self, ci: int, bid: int, i: int) -> None:
+        pass
+
+    def _on_evict(self, ci: int, bid: int, live: bool) -> None:
+        pass
+
+    def _on_reset(self) -> None:
+        pass
 
     @staticmethod
     def _lcp(a: list[int], b: list[int]) -> int:
@@ -453,33 +515,32 @@ class MUScheduler(AsyncScheduler):
                 dc += n - pf
                 dcr.append(st.idx)
         head = hwhy = None
-        wq = len(self.waiting)
-        sk = len(self.skipped_waiting)
-        if wq or sk:
-            queue_ = self.waiting if wq else self.skipped_waiting
-            try:
-                hr = queue_.peek_request()
-            except Exception:
-                hr = None
-            if hr is not None:
-                hs = self.req.get(hr.request_id)
-                head = hs.idx if hs else None
-                if hr.request_id in self._gated_ids:
-                    hwhy = "gate"
-                elif out.preempted_req_ids:
-                    hwhy = "pre"
-                elif len(self.running) >= self.max_num_running_reqs:
-                    hwhy = "seq"
-                elif hr.request_id in self.alloc_fail:
-                    hwhy = "kv"
-                elif out.total_num_scheduled_tokens >= self.max_num_scheduled_tokens:
-                    hwhy = "tok"
-                elif hr.status == RequestStatus.WAITING_FOR_REMOTE_KVS:
-                    hwhy = "load"
-                else:
-                    hwhy = "other"
+        wq, sk, hr = self._queue_view()
+        if hr is not None:
+            hs = self.req.get(hr.request_id)
+            head = hs.idx if hs else None
+            deferred = getattr(self, "deferred_waiting", None)
+            active = len(self.running) + getattr(self, "num_waiting_for_streaming_input", 0)
+            if hr.request_id in self._gated_ids:
+                hwhy = "gate"
+            elif out.preempted_req_ids:
+                hwhy = "pre"
+            elif active >= getattr(self, "max_num_active_reqs", self.max_num_running_reqs):
+                hwhy = "seq"
+            elif hr.request_id in self.alloc_fail:
+                hwhy = "kv"
+            elif out.total_num_scheduled_tokens >= self.max_num_scheduled_tokens:
+                hwhy = "tok"
+            elif hr.status == RequestStatus.WAITING_FOR_REMOTE_KVS:
+                hwhy = "load"
+            elif deferred is not None and hr in deferred:
+                hwhy = "defer"
+            elif getattr(hr, "num_stale_output_tokens", 0) and not getattr(hr, "drop_stale_output", False):
+                hwhy = "stale"
+            else:
+                hwhy = "other"
         if self.connector is not None:                      # offload arm: async loads in flight
-            for req in list(self.skipped_waiting):
+            for req in self._blocked_waiting():
                 s = self.req.get(req.request_id)
                 if s is not None and req.status == RequestStatus.WAITING_FOR_REMOTE_KVS and s.phase == "Q":
                     s.phase, s.t_load = "L", now
@@ -497,7 +558,7 @@ class MUScheduler(AsyncScheduler):
         rec = {"k": "step", "n": self.step_n, "s0": s0, "s1": now, "l": None, "u0": None, "u1": None,
                "run": len(self.running), "wq": wq, "sk": sk, "tok": out.total_num_scheduled_tokens,
                "pf": [pf_fresh, pf_evict, pf_pre], "dc": dc, "pfl": pfl, "dcr": dcr,
-               "adm": n_adm, "res": n_res, "pre": len(out.preempted_req_ids), "fin": len(out.finished_req_ids),
+               "adm": n_adm, "res": n_res, "pre": len(out.preempted_req_ids or ()), "fin": len(out.finished_req_ids),
                "free": self.bp.get_num_free_blocks(), "ev": n_ev, "com": self.com_n,
                "pin": [sum(1 for c in self.chain_list if c.pin), self.pinned_blocks] if self._pin_on else None,
                "head": head, "hwhy": hwhy, "obs_us": round((time.monotonic() - now) * 1e6)}
@@ -633,6 +694,7 @@ class MUScheduler(AsyncScheduler):
                     slot[0] += 1
                     slot[1 if live else 2] += 1
                     self.owner[bid] = -1
+                    self._on_evict(ci, bid, live)
             except Exception as exc:
                 self._fail("evict", exc)
         return evicted
@@ -657,6 +719,8 @@ class MUScheduler(AsyncScheduler):
                     self.cidx[bid] = i
                     self.chash[bid] = h
                     self.com_n += 1
+                    if ci >= 0:
+                        self._on_commit(ci, bid, i)
             except Exception as exc:
                 self._fail("cache", exc)
 
@@ -778,6 +842,9 @@ class MUScheduler(AsyncScheduler):
         ok = super().reset_prefix_cache(*args, **kwargs)
         if self._on and ok:
             self.ever.clear()
+            for bid in range(self.nblk):
+                self.owner[bid] = -1
+            self._on_reset()
             self._emit({"k": "reset", "t": time.monotonic(), "ok": bool(ok)})
         return ok
 
@@ -798,3 +865,11 @@ class MUScheduler(AsyncScheduler):
                           "hwhy": hwhy})
                 self.idle_run = None
             sink.close()
+
+
+class MUScheduler(MUMixin, AsyncScheduler):
+    """The observer on vLLM's AsyncScheduler (async scheduling, the default)."""
+
+
+class MUSyncScheduler(MUMixin, Scheduler):
+    """The observer on the plain Scheduler, for servers run with --no-async-scheduling."""

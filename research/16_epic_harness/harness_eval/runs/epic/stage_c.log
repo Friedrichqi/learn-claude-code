@@ -1,0 +1,81 @@
+2026-10-13T11:18:06Z starting deepseek-v4-flash-epic on GPUs 0-3
+{"name": "deepseek-v4-flash-epic", "key": "deepseek-v4-flash-epic", "pid": 864589, "pgid": 864589, "port": 51877, "gpus": [0, 1, 2, 3], "url": "http://127.0.0.1:51877", "log": "/data/fritz/harness_eval/runs/servers/deepseek-v4-flash-epic.log", "started": 1791890287.75638, "cmd": ["/data/fritz/venv/bin/vllm", "serve", "deepseek-ai/DeepSeek-V4-Flash-0731", "--host", "127.0.0.1", "--port", "51877", "--served-model-name", "deepseek-v4-flash-epic", "--tensor-parallel-size", "4", "--gpu-memory-utilization", "0.88", "--max-model-len", "32768", "--seed", "0", "--uvicorn-log-level", "warning", "--trust-remote-code", "--kv-cache-dtype", "fp8", "--block-size", "256", "--attention_config.indexer_kv_dtype", "fp8", "--tokenizer-mode", "deepseek_v4", "--enable-prefix-caching", "--enable-prompt-tokens-details", "--max-num-seqs", "16", "--enforce-eager", "--middleware", "epic_server_ext.Middleware", "--kv-transfer-config", "{\"kv_connector\":\"EpicConnectorDSV4\",\"kv_connector_module_path\":\"epic_dsv4\",\"kv_role\":\"kv_both\",\"kv_load_failure_policy\":\"fail\",\"kv_connector_extra_config\":{\"store_device\":\"cpu\"}}", "--no-async-scheduling", "--max-num-batched-tokens", "8192"], "ready_s": 100.0}
+2026-10-13T11:19:47Z ready on http://127.0.0.1:51877; selftests
+FAIL  S1_shift_override_equals_recompute_at_delta_0 {"kl": [0.005765, 0.021191]}
+ok    S1_shift_vs_prefix_within_noise {"kl": [0.008328, 0.010625]}
+ok    S1_epicinf_vs_prefix_within_noise {"kl": [0.039944, 0.009868]}
+ok    S2_no_errors {"n": 0, "first": null}
+ok    S2_shift_reuses_and_stays_sane {"S": 1902, "C": 28, "max_delta": 5342, "aged_out": 0, "first_kl_vs_prefix": null, "same_prompt": false}
+ok    S2_epic128_reuses_and_stays_sane {"S": 1774, "C": 156, "max_delta": 5342, "aged_out": 0, "first_kl_vs_prefix": null, "same_prompt": false}
+ok    S2_epic128a1_reuses_and_stays_sane {"S": 1774, "C": 156, "max_delta": 5342, "aged_out": 0, "first_kl_vs_prefix": null, "same_prompt": false}
+ok    S3_ranks_consistent {"overridden_tokens": [235898, 235898, 235898, 235898], "hooks": [43, 43, 43, 43], "rope_dim": [null, null, null, null], "view_shape": [30760, 1, 64, 584]}
+ok    S4_pool_empty_after_end {"pool_used": 0, "sessions": 0}
+SOME CHECKS FAILED
+2026-10-13T11:21:03Z selftests rc=1; stopping the server
+deepseek-v4-flash-epic: stopped; GPUs {0: (0, 0), 1: (0, 0), 2: (0, 0), 3: (0, 0)} (empty)
+2026-10-13T11:21:19Z stage C done
+==== rerun with noise-floor S1 and fixed-reply / 128-aligned S2 (11:22:40)
+2026-10-13T11:22:41Z starting deepseek-v4-flash-epic on GPUs 0-3
+{"name": "deepseek-v4-flash-epic", "key": "deepseek-v4-flash-epic", "pid": 878095, "pgid": 878095, "port": 48085, "gpus": [0, 1, 2, 3], "url": "http://127.0.0.1:48085", "log": "/data/fritz/harness_eval/runs/servers/deepseek-v4-flash-epic.log", "started": 1791890562.4707117, "cmd": ["/data/fritz/venv/bin/vllm", "serve", "deepseek-ai/DeepSeek-V4-Flash-0731", "--host", "127.0.0.1", "--port", "48085", "--served-model-name", "deepseek-v4-flash-epic", "--tensor-parallel-size", "4", "--gpu-memory-utilization", "0.88", "--max-model-len", "32768", "--seed", "0", "--uvicorn-log-level", "warning", "--trust-remote-code", "--kv-cache-dtype", "fp8", "--block-size", "256", "--attention_config.indexer_kv_dtype", "fp8", "--tokenizer-mode", "deepseek_v4", "--enable-prefix-caching", "--enable-prompt-tokens-details", "--max-num-seqs", "16", "--enforce-eager", "--middleware", "epic_server_ext.Middleware", "--kv-transfer-config", "{\"kv_connector\":\"EpicConnectorDSV4\",\"kv_connector_module_path\":\"epic_dsv4\",\"kv_role\":\"kv_both\",\"kv_load_failure_policy\":\"fail\",\"kv_connector_extra_config\":{\"store_device\":\"cpu\"}}", "--no-async-scheduling", "--max-num-batched-tokens", "8192"], "ready_s": 130.0}
+2026-10-13T11:24:52Z ready on http://127.0.0.1:48085; selftests
+ok    S1_shift_substitution_within_recompute_noise_at_delta_0 {"kl_shift_vs_epicinf": [0.04967, 0.021366], "kl_epicinf_vs_prefix": [0.014866, 0.043231]}
+FAIL  S1_shift_vs_prefix_within_noise {"kl": [0.076222, 0.01892]}
+ok    S1_epicinf_vs_prefix_within_noise {"kl": [0.014866, 0.043231]}
+ok    S2_no_errors {"n": 0, "first": null}
+ok    S2_shift_reuses_and_stays_sane {"S": 1859, "C": 71, "max_delta": 5342, "first_kl_vs_prefix": 0.029626, "same_prompt": true}
+ok    S2a128_shift_reuses_and_stays_sane {"S": 1868, "C": 62, "max_delta": 5248, "first_kl_vs_prefix": 0.033867, "same_prompt": true}
+ok    S2_epic128_reuses_and_stays_sane {"S": 1736, "C": 194, "max_delta": 5342, "first_kl_vs_prefix": 0.028337, "same_prompt": true}
+ok    S2_epic128a1_reuses_and_stays_sane {"S": 1731, "C": 199, "max_delta": 5342, "first_kl_vs_prefix": 0.021661, "same_prompt": true}
+ok    S3_ranks_consistent {"overridden_tokens": [310890, 310890, 310890, 310890], "hooks": [43, 43, 43, 43], "rope_dim": [null, null, null, null], "view_shape": [30760, 1, 64, 584]}
+ok    S4_pool_empty_after_end {"pool_used": 0, "sessions": 0}
+SOME CHECKS FAILED
+2026-10-13T11:26:37Z selftests rc=1; stopping the server
+deepseek-v4-flash-epic: stopped; GPUs {0: (0, 0), 1: (0, 0), 2: (0, 0), 3: (0, 0)} (empty)
+2026-10-13T11:26:52Z stage C done
+==== rerun with D^X (attention-input deviation) checks (11:28:39)
+2026-10-13T11:28:40Z starting deepseek-v4-flash-epic on GPUs 0-3
+{"name": "deepseek-v4-flash-epic", "key": "deepseek-v4-flash-epic", "pid": 896272, "pgid": 896272, "port": 32853, "gpus": [0, 1, 2, 3], "url": "http://127.0.0.1:32853", "log": "/data/fritz/harness_eval/runs/servers/deepseek-v4-flash-epic.log", "started": 1791890921.1713693, "cmd": ["/data/fritz/venv/bin/vllm", "serve", "deepseek-ai/DeepSeek-V4-Flash-0731", "--host", "127.0.0.1", "--port", "32853", "--served-model-name", "deepseek-v4-flash-epic", "--tensor-parallel-size", "4", "--gpu-memory-utilization", "0.88", "--max-model-len", "32768", "--seed", "0", "--uvicorn-log-level", "warning", "--trust-remote-code", "--kv-cache-dtype", "fp8", "--block-size", "256", "--attention_config.indexer_kv_dtype", "fp8", "--tokenizer-mode", "deepseek_v4", "--enable-prefix-caching", "--enable-prompt-tokens-details", "--max-num-seqs", "16", "--enforce-eager", "--middleware", "epic_server_ext.Middleware", "--kv-transfer-config", "{\"kv_connector\":\"EpicConnectorDSV4\",\"kv_connector_module_path\":\"epic_dsv4\",\"kv_role\":\"kv_both\",\"kv_load_failure_policy\":\"fail\",\"kv_connector_extra_config\":{\"store_device\":\"cpu\"}}", "--no-async-scheduling", "--max-num-batched-tokens", "8192"], "ready_s": 120.0}
+2026-10-13T11:30:41Z ready on http://127.0.0.1:32853; selftests
+FAIL  S1_dx_reused_inputs_match_fresh_at_delta_0 {"dx": 0.09329261815127697}
+FAIL  S1_shift_substitution_within_recompute_noise_at_delta_0 {"kl_shift_vs_epicinf": [0.177283, 0.025306], "kl_epicinf_vs_prefix": []}
+FAIL  S1_shift_vs_prefix_within_noise {"kl": []}
+FAIL  S1_epicinf_vs_prefix_within_noise {"kl": []}
+ok    S2_shift_dx_sane {"dx": 0.29950343742590513}
+ok    S2_epic128_dx_sane {"dx": 0.29076220891065496}
+ok    S2_epic128a1_dx_sane {"dx": 0.2931889028591565}
+ok    S2a128_shift_dx_sane {"dx": 0.242186329718821}
+ok    S2_no_errors {"n": 0, "first": null}
+ok    S2_shift_reuses_and_stays_sane {"S": 1859, "C": 71, "max_delta": 5342, "first_kl_vs_prefix": 0.086583, "same_prompt": true}
+ok    S2a128_shift_reuses_and_stays_sane {"S": 1861, "C": 69, "max_delta": 5248, "first_kl_vs_prefix": 0.268835, "same_prompt": true}
+ok    S2_epic128_reuses_and_stays_sane {"S": 1774, "C": 156, "max_delta": 5342, "first_kl_vs_prefix": 0.02646, "same_prompt": true}
+ok    S2_epic128a1_reuses_and_stays_sane {"S": 1757, "C": 173, "max_delta": 5342, "first_kl_vs_prefix": 0.052436, "same_prompt": true}
+ok    S3_ranks_consistent {"overridden_tokens": [313341, 313341, 313341, 313341], "hooks": [43, 43, 43, 43], "rope_dim": [null, null, null, null], "view_shape": [30760, 1, 64, 584]}
+ok    S4_pool_empty_after_end {"pool_used": 0, "sessions": 0}
+SOME CHECKS FAILED
+2026-10-13T11:32:27Z selftests rc=1; stopping the server
+deepseek-v4-flash-epic: stopped; GPUs {0: (0, 0), 1: (0, 0), 2: (0, 0), 3: (0, 0)} (empty)
+2026-10-13T11:32:40Z stage C done
+==== rerun: fixed-reply S1 and prefill-rows-only S1p (11:34:00)
+2026-10-13T11:34:01Z starting deepseek-v4-flash-epic on GPUs 0-3
+{"name": "deepseek-v4-flash-epic", "key": "deepseek-v4-flash-epic", "pid": 911800, "pgid": 911800, "port": 34543, "gpus": [0, 1, 2, 3], "url": "http://127.0.0.1:34543", "log": "/data/fritz/harness_eval/runs/servers/deepseek-v4-flash-epic.log", "started": 1791891242.7011733, "cmd": ["/data/fritz/venv/bin/vllm", "serve", "deepseek-ai/DeepSeek-V4-Flash-0731", "--host", "127.0.0.1", "--port", "34543", "--served-model-name", "deepseek-v4-flash-epic", "--tensor-parallel-size", "4", "--gpu-memory-utilization", "0.88", "--max-model-len", "32768", "--seed", "0", "--uvicorn-log-level", "warning", "--trust-remote-code", "--kv-cache-dtype", "fp8", "--block-size", "256", "--attention_config.indexer_kv_dtype", "fp8", "--tokenizer-mode", "deepseek_v4", "--enable-prefix-caching", "--enable-prompt-tokens-details", "--max-num-seqs", "16", "--enforce-eager", "--middleware", "epic_server_ext.Middleware", "--kv-transfer-config", "{\"kv_connector\":\"EpicConnectorDSV4\",\"kv_connector_module_path\":\"epic_dsv4\",\"kv_role\":\"kv_both\",\"kv_load_failure_policy\":\"fail\",\"kv_connector_extra_config\":{\"store_device\":\"cpu\"}}", "--no-async-scheduling", "--max-num-batched-tokens", "8192"], "ready_s": 105.0}
+2026-10-13T11:35:47Z ready on http://127.0.0.1:34543; selftests
+FAIL  S1_dx_reused_inputs_match_fresh_at_delta_0 {"dx": 0.0955898736774782}
+FAIL  S1p_dx_prefill_rows_match_fresh_at_delta_0 {"dx": 0.07413951054667965}
+ok    S1_shift_substitution_within_recompute_noise_at_delta_0 {"kl_shift_vs_epicinf": [0.021831, 0.016723], "kl_epicinf_vs_prefix": [0.030713, 0.070026]}
+ok    S1_shift_vs_prefix_within_noise {"kl": [0.022865, 0.039473]}
+FAIL  S1_epicinf_vs_prefix_within_noise {"kl": [0.030713, 0.070026]}
+ok    S2_shift_dx_sane {"dx": 0.30170035787922295}
+ok    S2_epic128_dx_sane {"dx": 0.291511985413437}
+ok    S2_epic128a1_dx_sane {"dx": 0.2921792137479803}
+ok    S2a128_shift_dx_sane {"dx": 0.23879876507372497}
+ok    S2_no_errors {"n": 0, "first": null}
+ok    S2_shift_reuses_and_stays_sane {"S": 1878, "C": 52, "max_delta": 5342, "first_kl_vs_prefix": 0.086417, "same_prompt": true}
+ok    S2a128_shift_reuses_and_stays_sane {"S": 1859, "C": 71, "max_delta": 5248, "first_kl_vs_prefix": 0.031314, "same_prompt": true}
+ok    S2_epic128_reuses_and_stays_sane {"S": 1740, "C": 190, "max_delta": 5342, "first_kl_vs_prefix": 0.076949, "same_prompt": true}
+ok    S2_epic128a1_reuses_and_stays_sane {"S": 1740, "C": 190, "max_delta": 5342, "first_kl_vs_prefix": 0.046719, "same_prompt": true}
+ok    S3_ranks_consistent {"overridden_tokens": [312438, 312438, 312438, 312438], "hooks": [43, 43, 43, 43], "rope_dim": [null, null, null, null], "view_shape": [30760, 1, 64, 584]}
+ok    S4_pool_empty_after_end {"pool_used": 0, "sessions": 0}
+SOME CHECKS FAILED
+2026-10-13T11:37:34Z selftests rc=1; stopping the server
+deepseek-v4-flash-epic: stopped; GPUs {0: (0, 0), 1: (0, 0), 2: (0, 0), 3: (0, 0)} (empty)
+2026-10-13T11:37:49Z stage C done

@@ -75,6 +75,30 @@ TRACE_RUNTIME = load_trace_runtime()
 TRACE = TRACE_RUNTIME.NullTraceRecorder()
 _trace_initialized = False
 
+
+def load_hold_runtime():
+    """Load the sibling pacing runtime (the `wait` tool, the server status line and the
+    harness-side holds of research/18_harness_wait). It is inert unless S15_* is set."""
+    module_name = "integrated_harness_hold_runtime"
+    runtime = sys.modules.get(module_name)
+    if runtime is None:
+        path = Path(__file__).resolve().with_name("hold_runtime.py")
+        spec = importlib.util.spec_from_file_location(module_name, path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"Unable to load hold runtime from {path}")
+        runtime = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = runtime
+        try:
+            spec.loader.exec_module(runtime)
+        except Exception:
+            sys.modules.pop(module_name, None)
+            raise
+    runtime.reload()  # this process's S15_* settings
+    return runtime
+
+
+HOLD = load_hold_runtime()
+
 load_dotenv(override=True)
 
 WORKDIR = Path.cwd()
@@ -942,11 +966,19 @@ _session_system_prompt: str | None = None
 _delivered_context = {"memory_catalog": "", "memories": ""}
 
 
+def tools_prompt() -> str:
+    text = PROMPT_SECTIONS["tools"]
+    if HOLD.CONFIG.wait_tool:
+        text = (text.replace("connect_mcp.", "connect_mcp, wait.", 1) if "connect_mcp." in text
+                else f"{text} Also available: wait.")
+    return text
+
+
 def assemble_system_prompt(context: dict) -> str:
     global _session_system_prompt
     if _session_system_prompt is None:
         sections = [PROMPT_SECTIONS["identity"],
-                    PROMPT_SECTIONS["tools"],
+                    tools_prompt(),
                     PROMPT_SECTIONS["tasks"],
                     PROMPT_SECTIONS["teams"],
                     PROMPT_SECTIONS["workspace"],
@@ -1215,6 +1247,36 @@ def call_tool_handler(handler, args: dict, name: str) -> str:
             tool=name,
         )
         return output
+
+
+def run_wait_tool(seconds=None, reason: str | None = None) -> str:
+    return HOLD.run_wait(seconds, reason, TRACE)
+
+
+def wait_tools() -> list[dict]:
+    """The `wait` schema when S15_WAIT_TOOL=1 (appended to an agent's tool list)."""
+    return [HOLD.wait_tool()] if HOLD.CONFIG.wait_tool else []
+
+
+def is_deferred_wait(block) -> bool:
+    return HOLD.CONFIG.wait_tool and getattr(block, "name", None) == HOLD.WAIT_TOOL_NAME
+
+
+def run_deferred_waits(deferred: list, results: list) -> None:
+    """Run a round's `wait` calls after its other tool calls (the end of the round) and put
+    their results at the placeholders `deferred` = [(index in results, block)] kept."""
+    for index, block in deferred:
+        with TRACE.span("tool_start", "tool_end", trace_tool_data(block)) as tool_span:
+            blocked = trigger_hooks("PreToolUse", block)
+            if blocked:
+                output, status = str(blocked), "denied"
+            else:
+                output = call_tool_handler(run_wait_tool, block.input, block.name)
+                trigger_hooks("PostToolUse", block, output)
+                status = "error" if output.startswith("Error:") else "ok"
+            tool_span.finish(status=status, tool_call_id=block.id, tool=block.name,
+                             result=TRACE.summarize_output(output), deferred=True)
+        results[index] = {"type": "tool_result", "tool_use_id": block.id, "content": output}
 
 
 def _normalize_todos(todos):
@@ -1783,7 +1845,7 @@ def spawn_teammate_thread(name: str, role: str, prompt: str,
              "input_schema": {"type": "object",
                               "properties": {"task_id": {"type": "string"}},
                               "required": ["task_id"]}},
-        ]
+        ] + wait_tools()
 
         sub_handlers = {
             "bash": _run_bash, "read_file": _run_read,
@@ -1826,11 +1888,17 @@ def spawn_teammate_thread(name: str, role: str, prompt: str,
             ]
             if tool_calls:
                 results = []
+                deferred_waits = []
                 for block in tool_calls:
+                    if is_deferred_wait(block):
+                        deferred_waits.append((len(results), block))
+                        results.append(None)
+                        continue
                     output = _run_teammate_tool(name, block, sub_handlers)
                     results.append({"type": "tool_result",
                                     "tool_use_id": block.id,
                                     "content": str(output)})
+                run_deferred_waits(deferred_waits, results)
                 messages.append({"role": "user", "content": results})
                 continue
 
@@ -2258,14 +2326,19 @@ def spawn_subagent(description: str) -> str:
                 with TRACE.model_scope("one_shot"):
                     response = client.messages.create(
                         model=MODEL, system=SUB_SYSTEM, messages=messages,
-                        tools=SUB_TOOLS, max_tokens=8000)
+                        tools=SUB_TOOLS + wait_tools(), max_tokens=8000)
                 messages.append({"role": "assistant", "content": response.content})
                 if not has_tool_use(response.content):
                     stop_reason = "no_tool_use"
                     break
                 results = []
+                deferred_waits = []
                 for block in response.content:
                     if block.type != "tool_use":
+                        continue
+                    if is_deferred_wait(block):
+                        deferred_waits.append((len(results), block))
+                        results.append(None)
                         continue
                     with TRACE.span(
                         "tool_start", "tool_end", trace_tool_data(block)
@@ -2288,6 +2361,7 @@ def spawn_subagent(description: str) -> str:
                     results.append({"type": "tool_result",
                                     "tool_use_id": block.id,
                                     "content": str(output)})
+                run_deferred_waits(deferred_waits, results)
                 messages.append({"role": "user", "content": results})
             agent_span.finish(
                 rounds=rounds, status="completed", stop_reason=stop_reason
@@ -3138,8 +3212,10 @@ def connect_mcp(name: str) -> str:
 def assemble_tool_pool() -> tuple[list[dict], dict]:
     """Merge builtin tools + all MCP tools into one pool."""
     global mcp_tool_policies
-    tools = list(BUILTIN_TOOLS)
+    tools = list(BUILTIN_TOOLS) + wait_tools()
     handlers = dict(BUILTIN_HANDLERS)
+    if HOLD.CONFIG.wait_tool:
+        handlers[HOLD.WAIT_TOOL_NAME] = run_wait_tool
     policies: dict[str, str] = {}
     origins = {tool["name"]: f"built-in tool {tool['name']!r}"
                for tool in tools}
@@ -3592,9 +3668,19 @@ def agent_loop(messages: list, context: dict, active_request: str):
     max_tokens = DEFAULT_MAX_TOKENS
 
     unacknowledged_cron_jobs: list[CronJob] = []
+    # research/18_harness_wait (inert unless S15_* is set): a harness-side hold may run before a
+    # turn's first call ("start") or after a tool round ("mid"); the server status line is appended
+    # once per round. The retry paths below (`continue`) set neither, so a re-issued call is not held
+    # or annotated twice.
+    hold_kind = "start"
+    status_due = True
+    HOLD.begin_turn()
     while True:
         # One cycle: inject scheduled/background work, prepare context, call
         # the model, execute tool_use blocks, append tool_results, repeat.
+        if hold_kind is not None:
+            HOLD.maybe_hold(hold_kind, TRACE)
+            hold_kind = None
         fired = consume_cron_queue()
         unacknowledged_cron_jobs.extend(fired)
         for job in fired:
@@ -3617,6 +3703,9 @@ def agent_loop(messages: list, context: dict, active_request: str):
         context = update_context(context, messages)
         append_context_updates(messages, context)
         tools, handlers = assemble_tool_pool()
+        if status_due:
+            HOLD.append_status_line(messages)
+            status_due = False
 
         try:
             response = call_llm(messages, context, tools, state, max_tokens)
@@ -3696,10 +3785,15 @@ def agent_loop(messages: list, context: dict, active_request: str):
         )
         results = []
         compact_requested = False
+        deferred_waits = []          # wait runs after the round's other tools
         for block in response.content:
             if block.type != "tool_use":
                 continue
             print(f"\033[36m> {block.name}\033[0m")
+            if is_deferred_wait(block):
+                deferred_waits.append((len(results), block))
+                results.append(None)
+                continue
             with TRACE.span(
                 "tool_start", "tool_end", trace_tool_data(block)
             ) as tool_span:
@@ -3770,7 +3864,10 @@ def agent_loop(messages: list, context: dict, active_request: str):
                 results.append({"type": "tool_result",
                                 "tool_use_id": block.id, "content": output})
 
+        run_deferred_waits(deferred_waits, results)
         messages.append({"role": "user", "content": build_user_content(results)})
+        hold_kind = "mid"
+        status_due = True
         if compact_requested:
             TRACE.emit(
                 "harness_decision",

@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+"""Run s15 on one benchmark against one already-running model server, in disk-sized chunks.
+
+    batch.py --model qwen3-32b --url http://127.0.0.1:PORT --bench swe --phase p1 --tasks first:50 --k 1
+
+Each chunk is one Harbor job (`jobs/<model>/<bench>/<phase>__cNN`), run inside the s15-eval image; a finished
+job is skipped on rerun. Before each chunk the image set is snapshotted and afterwards only our new images are
+removed (run/images.py). Task lists come from run/subsets.json: `qual` (first 12), `profile` (all), `first:N`,
+`range:A:B`, or explicit ids.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import yaml
+
+ROOT = Path("/data/fritz/harness_eval")
+sys.path.insert(0, str(ROOT / "run"))
+import images  # noqa: E402
+
+DATASET = {"swe": "datasets/swe-bench-verified-prebuilt", "swepro": "vendor/SWE-bench_Pro-os/v2/tasks",
+           "tbench": "datasets/terminal-bench-2-1", "gaia": "datasets/gaia"}
+CHUNK = {"swe": 3, "swepro": 2, "tbench": 4, "gaia": 8}            # tasks per job (disk: images per task)
+MIN_FREE_GB = {"swe": 10, "swepro": 12, "tbench": 10, "gaia": 6}
+KIND = {"swe": "heavy", "swepro": "heavy", "tbench": "light", "gaia": "tiny"}
+SLOTS = ROOT / "run" / "state" / "slots.json"          # {"heavy": n, "light": m}: chunks in flight, all stages
+
+
+def _alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+        return True
+    except (ProcessLookupError, ValueError):
+        return False
+    except PermissionError:
+        return True
+
+
+def release(slot: Path) -> None:
+    try:
+        if int((slot / "pid").read_text() or 0) == os.getpid():
+            shutil.rmtree(slot, ignore_errors=True)
+    except (OSError, ValueError):
+        pass
+
+
+def acquire(kind: str, logf, need_gb: float = 0.0) -> Path:
+    """A machine-wide slot for one chunk: Docker's root disk is shared and small, so the number of chunks
+    pulling large task images at the same time is capped across every running stage."""
+    while True:
+        limits = json.loads(SLOTS.read_text()) if SLOTS.is_file() else {"heavy": 1, "light": 3}
+        if need_gb and images.free_gb() < need_gb:
+            log(f"waiting: {images.free_gb():.1f} GB free on Docker's disk, need {need_gb}", logf)
+            time.sleep(120)
+            continue
+        for i in range(int(limits.get(kind, 1))):
+            d = ROOT / "run" / "state" / f"slot_{kind}_{i}"
+            try:
+                d.mkdir(parents=True)
+                (d / "pid").write_text(str(os.getpid()))
+                return d
+            except FileExistsError:
+                try:
+                    pid = int((d / "pid").read_text() or 0)
+                except (OSError, ValueError):
+                    pid = 0
+                if pid and not _alive(pid):
+                    shutil.rmtree(d, ignore_errors=True)
+        log(f"waiting for a {kind} slot", logf)
+        time.sleep(60)
+
+
+def task_list(bench: str, spec: str) -> list[str]:
+    sub = json.loads((ROOT / "run" / "subsets.json").read_text())[bench]["tasks"]
+    if spec == "qual":
+        return sub[:12]
+    if spec == "profile":
+        return sub
+    if spec.startswith("first:"):
+        return sub[: int(spec.split(":")[1])]
+    if spec.startswith("range:"):
+        _, a, b = spec.split(":")
+        return sub[int(a):int(b)]
+    return spec.split(",")
+
+
+def job_done(path: Path) -> bool:
+    res = path / "result.json"
+    if not res.is_file():
+        return False
+    try:
+        data = json.loads(res.read_text())
+    except json.JSONDecodeError:
+        return False
+    return bool(data.get("finished_at"))
+
+
+def log(line: str, f) -> None:
+    msg = f"{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())} {line}"
+    print(msg, flush=True)
+    f.write(msg + "\n")
+    f.flush()
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--model", required=True)
+    ap.add_argument("--url", required=True)
+    ap.add_argument("--bench", required=True, choices=sorted(DATASET))
+    ap.add_argument("--phase", required=True)
+    ap.add_argument("--tasks", default="qual")
+    ap.add_argument("--k", type=int, default=1)
+    ap.add_argument("--concurrency", type=int, default=0, help="Harbor -n (default: tasks per chunk x k, max 6)")
+    ap.add_argument("--chunk", type=int, default=0)
+    ap.add_argument("--agent-timeout-multiplier", type=float, default=0)
+    ap.add_argument("--extra-ak", action="append", default=[])
+    ap.add_argument("--max-lead-calls", type=int, default=0,
+                    help="default: 150 for the pilot/smoke phases (p1*, p2; comparable with X2), 250 otherwise")
+    a = ap.parse_args()
+
+    cfg = yaml.safe_load((ROOT / "serve" / "models.yaml").read_text())[a.model]
+    tasks = task_list(a.bench, a.tasks)
+    chunk = a.chunk or CHUNK[a.bench]
+    out = ROOT / "jobs" / a.model / a.bench
+    out.mkdir(parents=True, exist_ok=True)
+    logf = open(ROOT / "runs" / f"batch_{a.model}_{a.bench}_{a.phase}.log", "a")
+    cap = a.max_lead_calls or (150 if a.phase.startswith(("p1", "p2")) else 250)
+    ak = {"base_url": a.url, "served_model": a.model, "bench": a.bench, "max_lead_calls": cap,
+          **{k: v for k, v in (cfg.get("agent") or {}).items()}}
+    if a.bench == "gaia":
+        ak["env_file"] = str(ROOT / "secrets.env")
+    for item in a.extra_ak:
+        k, v = item.split("=", 1)
+        ak[k] = v
+    heavy_file = ROOT / "run" / "state" / "disk_heavy_tasks.txt"
+    disk_heavy = set(heavy_file.read_text().split()) if heavy_file.is_file() else set()
+    log(f"start model={a.model} bench={a.bench} phase={a.phase} tasks={len(tasks)} k={a.k} chunk={chunk} "
+        f"url={a.url}", logf)
+    stop_dir = ROOT / "run" / "state" / "stop"
+    normal = [t for t in tasks if t not in disk_heavy]
+    plan = [(f"{a.phase}__c{i // chunk:02d}", normal[i: i + chunk], False) for i in range(0, len(normal), chunk)]
+    plan += [(f"{a.phase}__h_{t[:40]}", [t], True) for t in tasks if t in disk_heavy]
+    for name, part, is_heavy in plan:
+        if (stop_dir / "all").exists() or (stop_dir / a.model).exists() or (stop_dir / a.bench).exists() or \
+                (stop_dir / os.environ.get("S15_STAGE", "-")).exists():
+            log(f"stop file present; ending before {name}", logf)
+            break
+        if job_done(out / name):
+            log(f"skip {name} (done)", logf)
+            continue
+        lock = out / f"{name}.lock"
+        while True:
+            try:
+                lock.mkdir()
+                (lock / "pid").write_text(str(os.getpid()))
+                (lock / "tasks").write_text("\n".join(part))
+                break
+            except FileExistsError:
+                try:
+                    owner = int((lock / "pid").read_text() or 0)
+                except (OSError, ValueError):
+                    owner = 0
+                if owner and _alive(owner):
+                    # another batch on the same server runs this chunk: wait for it (a stage stops its server
+                    # when its own batches return, so returning early could cut the other batch's trials off)
+                    log(f"waiting for {name} (run by pid {owner})", logf)
+                    time.sleep(60)
+                    continue
+                shutil.rmtree(lock, ignore_errors=True)
+        if job_done(out / name):
+            shutil.rmtree(lock, ignore_errors=True)
+            log(f"skip {name} (done by another batch)", logf)
+            continue
+        slot = acquire("heavy" if is_heavy else KIND[a.bench], logf, 24 if is_heavy else MIN_FREE_GB[a.bench])
+        snap = f"{a.model}_{a.bench}_{name}"
+        images.snapshot(snap)
+        n = 1 if is_heavy else (a.concurrency or min(len(part) * a.k, 6))
+        cmd = [str(ROOT / "run" / "eval.sh"), "harbor", "run", "-p", DATASET[a.bench], "-e", "docker",
+               "-a", "adapter.harbor_agent:S15Agent", "-m", a.model, "-o", str(out.relative_to(ROOT)),
+               "--job-name", name, "-n", str(n), "-k", str(a.k), "-q", "-y"]
+        for t in part:
+            cmd += ["-i", t]
+        for k, v in ak.items():
+            cmd += ["--ak", f"{k}={v}"]
+        if a.agent_timeout_multiplier:
+            cmd += ["--agent-timeout-multiplier", str(a.agent_timeout_multiplier)]
+        if a.bench == "swe":
+            # Harbor's SWE-bench verifier waits 3000 s; the official harness stops tests at 1800 s
+            cmd += ["--verifier-timeout-multiplier", "0.6"]
+        t0 = time.time()
+        log(f"run {name}: {' '.join(part)}", logf)
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        tail = "\n".join((r.stdout + r.stderr).strip().splitlines()[-6:])
+        log(f"done {name} rc={r.returncode} in {time.time() - t0:.0f}s | {tail}", logf)
+        removed = images.cleanup(snap, part)
+        try:
+            removed += images.sweep()
+        except Exception as exc:                        # noqa: BLE001
+            log(f"sweep failed: {exc}", logf)
+        release(slot)
+        shutil.rmtree(lock, ignore_errors=True)
+        log(f"cleanup {name}: removed {len(removed)} images, {images.free_gb():.1f} GB free", logf)
+    log("finished", logf)
+
+
+if __name__ == "__main__":
+    main()

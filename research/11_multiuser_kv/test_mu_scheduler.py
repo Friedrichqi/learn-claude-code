@@ -28,7 +28,8 @@ import time
 from collections import deque
 from pathlib import Path
 
-os.environ.setdefault("HF_HOME", "/projects/co/jlin4/agenticllm/hf_cache")
+os.environ.setdefault("HF_HOME", "/data/shared/huggingface" if Path("/data/shared/huggingface").is_dir()
+                      else "/projects/co/jlin4/agenticllm/hf_cache")
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -38,6 +39,7 @@ from vllm.sampling_params import SamplingParams  # noqa: E402
 from vllm.utils.hashing import get_hash_fn_by_name  # noqa: E402
 from vllm.v1.core.kv_cache_utils import get_request_block_hasher, init_none_hash  # noqa: E402
 from vllm.v1.core.sched.async_scheduler import AsyncScheduler  # noqa: E402
+from vllm.v1.core.sched.scheduler import Scheduler  # noqa: E402
 from vllm.v1.kv_cache_interface import FullAttentionSpec, KVCacheConfig, KVCacheGroupSpec  # noqa: E402
 from vllm.v1.outputs import ModelRunnerOutput  # noqa: E402
 from vllm.v1.request import Request  # noqa: E402
@@ -49,23 +51,26 @@ BLOCKS, BS = 48, 16
 _CONFIG = {}
 
 
-def vllm_config() -> VllmConfig:
-    if "vc" not in _CONFIG:
+def vllm_config(async_scheduling: bool = True) -> VllmConfig:
+    key = "vc" if async_scheduling else "vc_sync"
+    if key not in _CONFIG:
         mc = ModelConfig(model="Qwen/Qwen3-32B", max_model_len=512, skip_tokenizer_init=True)
         sc = SchedulerConfig(max_num_seqs=8, max_num_batched_tokens=128, max_model_len=512,
-                             enable_chunked_prefill=True, is_encoder_decoder=False, async_scheduling=True)
+                             enable_chunked_prefill=True, is_encoder_decoder=False,
+                             async_scheduling=async_scheduling)
         cc = CacheConfig(block_size=BS, enable_prefix_caching=True)
         cc.num_gpu_blocks = BLOCKS
-        _CONFIG["vc"] = VllmConfig(model_config=mc, scheduler_config=sc, cache_config=cc,
-                                   device_config=DeviceConfig(device="cuda"))
-        hf = get_hash_fn_by_name(_CONFIG["vc"].cache_config.prefix_caching_hash_algo)
-        init_none_hash(hf)
-        _CONFIG["hasher"] = get_request_block_hasher(BS, hf)
-    return _CONFIG["vc"]
+        _CONFIG[key] = VllmConfig(model_config=mc, scheduler_config=sc, cache_config=cc,
+                                  device_config=DeviceConfig(device="cuda"))
+        if "hasher" not in _CONFIG:
+            hf = get_hash_fn_by_name(_CONFIG[key].cache_config.prefix_caching_hash_algo)
+            init_none_hash(hf)
+            _CONFIG["hasher"] = get_request_block_hasher(BS, hf)
+    return _CONFIG[key]
 
 
-def build(cls, env: dict):
-    vc = vllm_config()
+def build(cls, env: dict, async_scheduling: bool = True):
+    vc = vllm_config(async_scheduling)
     for key in [k for k in os.environ if k.startswith("MU_")]:
         del os.environ[key]
     os.environ.update(env)
@@ -90,7 +95,7 @@ def workload(seed: int = 7, users: int = 5, turns: int = 4):
     return plan
 
 
-def drive(s, plan, max_steps: int = 5000, tick_s: float = 0.0):
+def drive(s, plan, max_steps: int = 5000, tick_s: float = 0.0, depth: int = 2):
     """Feed the users' requests (a user's next request arrives `pause` steps after its previous one
     finished), run the async schedule/update order with fake outputs; returns per-step schedules."""
     hasher = _CONFIG["hasher"]
@@ -117,7 +122,7 @@ def drive(s, plan, max_steps: int = 5000, tick_s: float = 0.0):
             samples = {rid: not s.requests[rid].is_prefill_chunk for rid in so.num_scheduled_tokens}
             pending.append((so, samples))
             schedules.append(dict(so.num_scheduled_tokens))
-        if len(pending) == 2 or (pending and not s.has_requests()):
+        if len(pending) == depth or (pending and not s.has_requests()):
             so, samples = pending.popleft()
             rids = list(so.num_scheduled_tokens)
             tokens = []
@@ -254,6 +259,74 @@ def test_external_id_and_chain():
     assert mu_scheduler.chain_key(R) == ("MU-n16-S001~a2", "mx")
     R.session_id = "sess"
     assert mu_scheduler.chain_key(R) == ("sess", "mx")
+
+
+# -- added 2026-10-24 for the vLLM 0.31.0 port (topic 18) ------------------------------------------------
+def test_sync_observer_changes_no_decision():
+    """MUSyncScheduler (for --no-async-scheduling) schedules exactly like the stock Scheduler."""
+    plan = workload()
+    ref, _ = drive(build(Scheduler, {}, async_scheduling=False), plan, depth=1)
+    path = tempfile.mktemp(suffix=".jsonl", prefix="mu_sched_test_sync_")
+    s = build(mu_scheduler.MUSyncScheduler, {"MU_SCHED_LOG": path, "MU_POOL_WALK_S": "0"}, async_scheduling=False)
+    got, _ = drive(s, plan, depth=1)
+    s.shutdown()
+    log = read_log(path)
+    assert got == ref, "MUSyncScheduler scheduled differently from Scheduler"
+    assert not [r for r in log if r["k"] in ("err", "warn")], [r for r in log if r["k"] in ("err", "warn")][:1]
+    assert [r for r in log if r["k"] == "hdr"][0]["cls"] == "MUSyncScheduler"
+
+
+def test_class_vs_async_mismatch_warns():
+    path = tempfile.mktemp(suffix=".jsonl", prefix="mu_sched_test_warn_")
+    s = build(mu_scheduler.MUSyncScheduler, {"MU_SCHED_LOG": path}, async_scheduling=True)
+    s.shutdown()
+    assert [r for r in read_log(path) if r["k"] == "warn"], "expected a warn record"
+
+
+def test_strict_mode_raises_on_setup_error():
+    saved = mu_scheduler.SUPPORTED_VLLM
+    mu_scheduler.SUPPORTED_VLLM = ("0.0.0",)
+    try:
+        path = tempfile.mktemp(suffix=".jsonl", prefix="mu_sched_test_strict_")
+        s = build(mu_scheduler.MUScheduler, {"MU_SCHED_LOG": path})       # default: fail open
+        s.shutdown()                                                         # flush the log
+        assert not s._on and [r for r in read_log(path) if r["k"] == "err"]
+        try:
+            build(mu_scheduler.MUScheduler, {"MU_SCHED_LOG": path, "MU_STRICT": "1"})
+        except AssertionError:
+            pass
+        else:
+            raise AssertionError("MU_STRICT=1 should raise on an unsupported version")
+    finally:
+        mu_scheduler.SUPPORTED_VLLM = saved
+
+
+class _Counting(mu_scheduler.MUScheduler):
+    """Per-chain commit / evict accounting through the subclass hooks."""
+
+    def _setup(self):
+        super()._setup()
+        self.res = {}
+
+    def _on_commit(self, ci, bid, i):
+        self.res[ci] = self.res.get(ci, 0) + 1
+
+    def _on_evict(self, ci, bid, live):
+        self.res[ci] -= 1
+
+
+def test_commit_evict_hooks_balance():
+    path = tempfile.mktemp(suffix=".jsonl", prefix="mu_sched_test_hooks_")
+    s = build(_Counting, {"MU_SCHED_LOG": path, "MU_POOL_WALK_S": "0"})
+    drive(s, workload())
+    s.shutdown()
+    assert not [r for r in read_log(path) if r["k"] == "err"]
+    owned = {}
+    for b in s.bp.blocks:
+        if b._block_hash is not None and s.owner[b.block_id] >= 0:
+            owned[s.owner[b.block_id]] = owned.get(s.owner[b.block_id], 0) + 1
+    assert {c: n for c, n in s.res.items() if n} == owned, (s.res, owned)
+    assert all(n >= 0 for n in s.res.values())
 
 
 if __name__ == "__main__":      # the project venv has no pytest; run the tests directly

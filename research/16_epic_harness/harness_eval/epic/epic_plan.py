@@ -1,0 +1,552 @@
+#!/usr/bin/env python3
+"""Planner of the live EPIC server: how call k of a session reuses the KV its previous call left.
+
+Standalone (no research imports): epic_server_ext imports it inside vLLM's API-server process, and the
+offline tools and tests import it by name.
+
+Alignment
+  `splice_plan` is topic 10's token-level difflib alignment (10_rope_shift/arms.py:65, copied verbatim),
+  kept as the reference. `block_plan` is what the server runs: both sequences are split at <|im_start|>
+  (one block per chat turn), the block hashes are aligned with difflib, and token-level difflib runs only
+  inside replaced block pairs (test C2 checks it keeps >= 99.5% of splice_plan's reuse). Both return
+  segments tiling `new`: ("reuse", j1, j2, i1) copied from old[i1:i1+j2-j1], or ("fresh", j1, j2); reuse
+  runs shorter than MIN_RUN are fresh, and the last prompt token is always fresh.
+
+Rows
+  A session entry describes the KV the arm actually used for every position of its last sequence (prompt
+  plus generated tokens, minus the last one, whose KV is never computed): the store slot holding the row,
+  the position the row was computed at (birth; rows are stored post-RoPE as computed and re-rotated once,
+  by position - birth, wherever they are placed) and its age (edits it has been reused across since it
+  was last computed fresh). Computed rows get new slots, birth = position, age 0.
+
+Arms (one call)
+  P0 = the exact prefix the server's prefix cache can serve: the leading reuse run with i1 = j1 = 0, cut so
+  at least one prompt token is computed, rounded down to the 16-token block.
+  prefix   nothing else; [P0, P) is computed (vanilla prefix caching)
+  shift    every reused token in [P0, P) is overridden with its stored row, re-rotated
+  epicK    as shift, except the first K tokens of every reused run that does not start at 0 (EPIC's
+           LegoLink run heads, 10_rope_shift/repair.py run_heads), which are computed
+  <arm>aN  (harness_eval port) the arm with bounded staleness: a reused row that would cross its (N+1)-th
+           edit is computed instead, so no row is older than N edits (topic 16 §5.6)
+  <arm>rM  (harness_eval e4) the arm, plus a stochastic full recomputation at every curated (edited) call: the
+           server compares the first-token distributions under the original cache (every row in its first-ever
+           version, `orig_view`) and under the arm's cache, and recomputes [h, P) (`recompute_plan`) with
+           probability M = jsd | tvd | exp of the two. Only these arms track the originals (Entry.orig_slot).
+  The rows of [0, P0) keep slot, birth and age; overridden rows keep slot and birth and age by one;
+  computed rows are saved to new slots. When vLLM's prefix cache matches beyond P0 (an older sequence of
+  the session shares more of the prompt than the previous one, e.g. a recurring snip-marker prefix), the
+  forward uses the cache's rows there: the connector copies them to a reserve and absorb_apc puts them
+  in the entry.
+"""
+from __future__ import annotations
+
+import difflib
+import hashlib
+import re
+from dataclasses import dataclass, field
+
+import numpy as np
+
+MIN_RUN = 16                  # reuse runs shorter than this are recomputed (block granularity)
+BLOCK = 16                    # vLLM's KV block: prefix-cache hits are whole blocks
+ARM_K = {"prefix": None, "prefix_aa": None, "shift": 0, "epic32": 32, "epic64": 64, "epic128": 128,
+         "epicinf": 1 << 30}          # epicinf recomputes every reused run: the null-EPIC control (G5)
+_AGED = re.compile(r"^(shift|epic(\d+|inf))a(\d+)$")
+_RECOMP = re.compile(r"^(shift|epic(?:\d+|inf))r(jsd|tvd|exp)$")
+RECOMPUTE_METRICS = ("jsd", "tvd", "exp")
+
+
+def arm_params(arm: str) -> tuple[int | None, int | None]:
+    """(k, max_age) of an arm. Besides ARM_K's arms, '<base>a<N>' (harness_eval port; topic 16 §5.6) is the
+    base arm with bounded staleness: a reused row that would have crossed more than N edits is recomputed
+    instead, so no row's age exceeds N. E.g. epic128a8, shifta4."""
+    if arm in ARM_K:
+        return ARM_K[arm], None
+    m = _RECOMP.match(arm)
+    if m is not None:                    # e4: the base arm's plan; the recompute decision is the server's
+        return ARM_K[m.group(1)], None
+    m = _AGED.match(arm)
+    if m is None:
+        raise KeyError(arm)
+    base = m.group(1)
+    return ARM_K[base], int(m.group(3))
+
+
+def recompute_metric(arm) -> str | None:
+    """'jsd' | 'tvd' | 'exp' for the e4 recompute arms ('<base>r<metric>', e.g. epic128rjsd), else None."""
+    m = _RECOMP.match(arm) if isinstance(arm, str) else None
+    return m.group(2) if m is not None and m.group(1) in ARM_K else None
+
+
+def is_arm(arm) -> bool:
+    try:
+        arm_params(arm)
+        return True
+    except (KeyError, TypeError):
+        return False
+
+
+# -- alignment ------------------------------------------------------------------------------------
+
+def splice_plan(old: list[int], new: list[int]) -> list[tuple]:
+    """10_rope_shift/arms.py:65, verbatim."""
+    ops = difflib.SequenceMatcher(None, old, new, autojunk=False).get_opcodes()
+    segs: list[list] = []
+
+    def add_fresh(j1, j2):
+        if j1 >= j2:
+            return
+        if segs and segs[-1][0] == "fresh" and segs[-1][2] == j1:
+            segs[-1][2] = j2
+        else:
+            segs.append(["fresh", j1, j2])
+
+    for tag, i1, i2, j1, j2 in ops:
+        if tag == "equal" and j2 - j1 >= MIN_RUN:
+            segs.append(["reuse", j1, j2, i1])
+        else:
+            add_fresh(j1, j2)
+    if segs and segs[-1][0] == "reuse":
+        last = segs[-1]
+        last[2] -= 1
+        if last[2] - last[1] < MIN_RUN:
+            segs.pop()
+            add_fresh(last[1], len(new))
+        else:
+            add_fresh(last[2], len(new))
+    return [tuple(s) for s in segs]
+
+
+def blocks(ids: list[int], im_start: int) -> list[tuple[int, int]]:
+    """[start, end) of each chat-turn block: a new block starts at every <|im_start|>."""
+    starts = [i for i, t in enumerate(ids) if t == im_start and i > 0]
+    bounds = [0, *starts, len(ids)]
+    return [(a, b) for a, b in zip(bounds, bounds[1:]) if b > a]
+
+
+def _hash(ids: list[int]) -> bytes:
+    return hashlib.blake2b(np.asarray(ids, dtype=np.int64).tobytes(), digest_size=16).digest()
+
+
+def _finish(raw: list[tuple], n: int) -> list[tuple]:
+    """Merge contiguous same-delta reuse pieces, drop short runs, tile [0, n), last token fresh."""
+    merged: list[list] = []
+    for j1, j2, i1 in sorted(raw):
+        if merged and merged[-1][1] == j1 and merged[-1][2] + (merged[-1][1] - merged[-1][0]) == i1:
+            merged[-1][1] = j2
+        else:
+            merged.append([j1, j2, i1])
+    segs: list[list] = []
+    pos = 0
+    for j1, j2, i1 in merged:
+        if j2 > n - 1:
+            j2 = n - 1
+        if j2 - j1 < MIN_RUN:
+            continue
+        if j1 > pos:
+            segs.append(["fresh", pos, j1])
+        segs.append(["reuse", j1, j2, i1])
+        pos = j2
+    if pos < n:
+        segs.append(["fresh", pos, n])
+    out: list[tuple] = []
+    for s in segs:                                   # coalesce adjacent fresh pieces
+        if out and s[0] == "fresh" and out[-1][0] == "fresh" and out[-1][2] == s[1]:
+            out[-1] = ("fresh", out[-1][1], s[2])
+        else:
+            out.append(tuple(s))
+    return out
+
+
+def block_plan(old: list[int], new: list[int], im_start: int) -> list[tuple]:
+    if not new:
+        return []
+    ob, nb = blocks(old, im_start), blocks(new, im_start)
+    oh = [_hash(old[a:b]) for a, b in ob]
+    nh = [_hash(new[a:b]) for a, b in nb]
+    raw: list[tuple] = []
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, oh, nh, autojunk=False).get_opcodes():
+        if tag == "equal":
+            for k in range(i2 - i1):
+                (oa, obb), (na, nbb) = ob[i1 + k], nb[j1 + k]
+                raw.append((na, nbb, oa))
+        elif tag == "replace":
+            oa, ozz = ob[i1][0], ob[i2 - 1][1]
+            na, nzz = nb[j1][0], nb[j2 - 1][1]
+            sub = difflib.SequenceMatcher(None, old[oa:ozz], new[na:nzz], autojunk=False)
+            for m in sub.get_matching_blocks():
+                if m.size:
+                    raw.append((na + m.b, na + m.b + m.size, oa + m.a))
+    return _finish(raw, len(new))
+
+
+# -- rows and plans -------------------------------------------------------------------------------
+
+@dataclass
+class Entry:
+    """The KV a session's last call used, per position of its sequence."""
+    tokens: list[int]
+    slot: np.ndarray            # int64 store slot per position
+    birth: np.ndarray           # int64 position the row was computed at
+    age: np.ndarray             # int32 edits survived since last fresh compute
+    reused: np.ndarray          # int32 times the row has been reused at a shifted position
+    prompt_len: int
+    call: int
+    # e4 recompute arms only (None elsewhere): the slot and birth of each position's first-ever row version
+    # (kept while the entry lives, reset to the fresh rows by a full recomputation), and h: rows [0, h) were never
+    # overridden or recomputed since the last full recomputation (None: no edit since)
+    orig_slot: np.ndarray | None = None
+    orig_birth: np.ndarray | None = None
+    h: int | None = None
+
+    def __len__(self) -> int:
+        return len(self.tokens)
+
+    def held(self) -> np.ndarray:
+        """Every slot this entry references, one reference per occurrence (the unit of retain/release)."""
+        return self.slot if self.orig_slot is None else np.concatenate([self.slot, self.orig_slot])
+
+
+@dataclass
+class Plan:
+    arm: str
+    k: int | None
+    n: int                       # prompt length
+    p0: int                      # exact prefix served by the prefix cache (or loaded)
+    segs: list[tuple]
+    load: list[list]             # [dst_lo, dst_hi, slot_lo, delta]   rows of [0, P0) (cache-miss fallback)
+    override: list[list]         # [pos_lo, pos_hi, slot_lo, delta]   reused rows kept stale
+    compute: list[list]          # [pos_lo, pos_hi]                   positions computed in [P0, n)
+    heads: int                   # EPIC run-head tokens computed
+    slot: np.ndarray = field(repr=False, default=None)    # rows of the prompt positions after the call
+    birth: np.ndarray = field(repr=False, default=None)
+    age: np.ndarray = field(repr=False, default=None)
+    reused: np.ndarray = field(repr=False, default=None)
+    stats: dict = field(default_factory=dict)
+    served: int = 0              # prefix the cache actually served when it matched beyond p0 (absorb_apc)
+    src: np.ndarray = field(repr=False, default=None)         # old position of each reused position, else -1
+    orig_slot: np.ndarray = field(repr=False, default=None)   # recompute arms: originals (-1: a new token)
+    orig_birth: np.ndarray = field(repr=False, default=None)
+    h: int | None = None         # the entry's h after this call
+    recompute: bool = False      # a full recomputation of [h, P) (recompute_plan)
+
+
+def runs_of(positions: np.ndarray, slot: np.ndarray, birth: np.ndarray) -> list[list]:
+    """Group positions into [pos_lo, pos_hi, slot_lo, delta] runs of consecutive positions whose rows
+    sit in consecutive slots with consecutive births (one rotation delta per run)."""
+    out: list[list] = []
+    if len(positions) == 0:
+        return out
+    pos = positions.astype(np.int64)
+    s = slot[pos]
+    b = birth[pos]
+    brk = np.nonzero((np.diff(pos) != 1) | (np.diff(s) != 1) | (np.diff(b) != 1))[0] + 1
+    for chunk in np.split(np.arange(len(pos)), brk):
+        lo, hi = int(pos[chunk[0]]), int(pos[chunk[-1]]) + 1
+        out.append([lo, hi, int(s[chunk[0]]), int(pos[chunk[0]] - b[chunk[0]])])
+    return out
+
+
+def ranges_of(positions: np.ndarray) -> list[list]:
+    if len(positions) == 0:
+        return []
+    pos = positions.astype(np.int64)
+    brk = np.nonzero(np.diff(pos) != 1)[0] + 1
+    return [[int(c[0]), int(c[-1]) + 1] for c in np.split(pos, brk)]
+
+
+def run_heads(segs: list[tuple], k: int, lo: int, hi: int) -> set[int]:
+    """First k tokens of every reused run in [lo, hi) (EPIC's recomputed tokens);
+    10_rope_shift/repair.py:87, verbatim."""
+    out: set[int] = set()
+    for seg in segs:
+        if seg[0] == "reuse" and seg[1] > 0 and lo <= seg[1] < hi:
+            out.update(range(seg[1], min(seg[1] + k, seg[2], hi)))
+    return out
+
+
+def plan_call(arm: str, entry: Entry | None, new: list[int], im_start: int,
+              prev_prompt_len: int | None = None, segs: list[tuple] | None = None) -> Plan:
+    """The plan of one call. `entry` is the session's previous sequence (None for its first call). `segs` (e4)
+    passes an alignment in: the original-cache probe reuses the arm's own, and a full recomputation is explicit."""
+    k, max_age = arm_params(arm)
+    n = len(new)
+    if segs is not None:
+        segs = [tuple(s) for s in segs]
+    elif entry is None or len(entry) == 0:
+        segs = [("fresh", 0, n)]
+    else:
+        segs = block_plan(entry.tokens, new, im_start)
+    # exact prefix: the leading reuse run that starts at 0 in both sequences
+    exact = segs[0][2] if segs and segs[0][0] == "reuse" and segs[0][1] == 0 and segs[0][3] == 0 else 0
+    p0 = (min(exact, n - 1) // BLOCK) * BLOCK
+    slot = np.full(n, -1, dtype=np.int64)
+    birth = np.arange(n, dtype=np.int64)
+    age = np.zeros(n, dtype=np.int32)
+    reused = np.zeros(n, dtype=np.int32)
+    if p0:
+        slot[:p0] = entry.slot[:p0]
+        birth[:p0] = entry.birth[:p0]
+        age[:p0] = entry.age[:p0]
+        reused[:p0] = entry.reused[:p0]
+    over_mask = np.zeros(n, dtype=bool)
+    after_edit = np.zeros(n, dtype=bool)        # reused across an edit (not the exact prefix's tail)
+    src = np.full(n, -1, dtype=np.int64)
+    if k is not None:
+        heads = run_heads(segs, k, p0, n) if k else set()
+        for seg in segs:
+            if seg[0] != "reuse":
+                continue
+            j1, j2, i1 = seg[1], seg[2], seg[3]
+            lo = max(j1, p0)
+            if lo >= j2:
+                continue
+            pos = np.arange(lo, j2)
+            src[lo:j2] = i1 + (pos - j1)
+            over_mask[lo:j2] = True
+            after_edit[lo:j2] = j1 > 0
+        if heads:
+            over_mask[np.fromiter(heads, dtype=np.int64)] = False
+    else:
+        heads = set()
+    aged_out = 0
+    if max_age is not None and over_mask.any():
+        cand = np.nonzero(over_mask)[0]
+        would = entry.age[src[cand]] + after_edit[cand].astype(np.int32)
+        old = cand[would > max_age]
+        over_mask[old] = False                  # recomputed fresh: birth = position, age 0
+        aged_out = int(len(old))
+    opos = np.nonzero(over_mask)[0]
+    if len(opos):
+        s_idx = src[opos]
+        slot[opos] = entry.slot[s_idx]
+        birth[opos] = entry.birth[s_idx]
+        shifted = s_idx != opos
+        age[opos] = entry.age[s_idx] + after_edit[opos].astype(np.int32)
+        reused[opos] = entry.reused[s_idx] + shifted.astype(np.int32)
+    compute_mask = np.ones(n, dtype=bool)
+    compute_mask[:p0] = False
+    compute_mask[opos] = False
+    cpos = np.nonzero(compute_mask)[0]
+    plan = Plan(arm=arm, k=k, n=n, p0=p0, segs=segs,
+                load=runs_of(np.arange(p0), slot, birth) if p0 else [],
+                override=runs_of(opos, slot, birth),
+                compute=ranges_of(cpos), heads=len(heads),
+                slot=slot, birth=birth, age=age, reused=reused)
+    reuse_total = sum(s[2] - s[1] for s in segs if s[0] == "reuse")
+    reply_lo = prev_prompt_len if prev_prompt_len is not None else (entry.prompt_len if entry else 0)
+    reply_reuse = int(np.sum((src[opos] >= reply_lo))) if len(opos) and entry else 0
+    edited = any(s[0] == "reuse" and s[1] > 0 for s in segs) or (entry is not None and exact < len(entry))
+    plan.stats = {"P": n, "E": p0, "S": int(len(opos)), "H": len(heads), "C": int(len(cpos)),
+                  "F": int(len(cpos)) - len(heads), "reuse_avail": int(reuse_total), "exact": int(exact),
+                  "runs": sum(1 for s in segs if s[0] == "reuse" and s[1] > 0),
+                  "reply_reused": reply_reuse, "edited": bool(edited),
+                  "max_delta": int(max((abs(s[1] - s[3]) for s in segs if s[0] == "reuse"), default=0)),
+                  "age_mean_over": float(age[opos].mean()) if len(opos) else 0.0,
+                  "age_max_over": int(age[opos].max()) if len(opos) else 0,
+                  "aged_out": aged_out}
+    plan.src = src
+    if entry is not None:
+        # h: the running minimum of p0 over the edited calls since the last full recomputation
+        plan.h = (p0 if entry.h is None else min(int(entry.h), p0)) if edited else entry.h
+    if recompute_metric(arm) is not None:
+        if entry is not None and len(entry) and entry.orig_slot is None:
+            raise ValueError(f"{arm}: the session entry carries no originals")
+        o_slot = np.full(n, -1, dtype=np.int64)
+        o_birth = np.arange(n, dtype=np.int64)
+        if entry is not None and len(entry):
+            o_slot[:p0] = entry.orig_slot[:p0]
+            o_birth[:p0] = entry.orig_birth[:p0]
+            has = src >= 0                    # overridden rows and run heads keep their source's original
+            o_slot[has] = entry.orig_slot[src[has]]
+            o_birth[has] = entry.orig_birth[src[has]]
+        plan.orig_slot, plan.orig_birth = o_slot, o_birth
+    return plan
+
+
+def orig_view(entry: Entry) -> Entry:
+    """The entry with every row in its first-ever version: plan_call("shift", orig_view(e), new, ...,
+    segs=<the arm's segs>) is the original-cache forward of a call (e4's decision probe O)."""
+    n = len(entry)
+    return Entry(tokens=entry.tokens, slot=entry.orig_slot, birth=entry.orig_birth,
+                 age=np.zeros(n, dtype=np.int32), reused=np.zeros(n, dtype=np.int32),
+                 prompt_len=entry.prompt_len, call=entry.call)
+
+
+def same_as_original(plan: Plan) -> bool:
+    """True when the plan's cache is the original cache: no sourced row is recomputed (no run head, no aged-out
+    row) and every kept row (exact prefix and overrides) is its first-ever version. Then the original-cache and
+    the arm's forwards are the same computation, and the divergence is 0 by construction."""
+    kept = np.zeros(plan.n, dtype=bool)
+    kept[:plan.p0] = True
+    for lo, hi, _s, _d in plan.override:
+        kept[lo:hi] = True
+    if ((plan.src >= 0) & ~kept).any():
+        return False
+    pos = np.nonzero(kept)[0]
+    return bool((plan.slot[pos] == plan.orig_slot[pos]).all() and (plan.birth[pos] == plan.orig_birth[pos]).all())
+
+
+def recompute_plan(arm: str, entry: Entry, new: list[int], im_start: int, h: int | None) -> Plan:
+    """A full recomputation (e4): keep the never-edited head [0, h) (bit-exact rows, loaded or served at delta 0)
+    and compute [h, P) fresh. The alignment is explicit, so no later block can be matched as a shifted reuse. The
+    resulting entry is all fresh, and its originals are these rows."""
+    n = len(new)
+    h = (min(int(h or 0), n - 1) // BLOCK) * BLOCK
+    segs = [("reuse", 0, h, 0), ("fresh", h, n)] if h else [("fresh", 0, n)]
+    plan = plan_call(arm, entry, new, im_start, segs=segs)
+    assert plan.p0 == h and not plan.override, (plan.p0, h, plan.override)
+    # rows [0, h) are fresh by the definition of h; a stale one there would be a bookkeeping error
+    stale = int(((plan.age[:h] > 0) | (plan.birth[:h] != np.arange(h))).sum()) if h else 0
+    plan.age[:h] = 0
+    plan.reused[:h] = 0
+    plan.orig_slot[:h] = plan.slot[:h]
+    plan.orig_birth[:h] = plan.birth[:h]
+    plan.h = None
+    plan.recompute = True
+    plan.stats.update(recompute=True, h_stale=stale)
+    return plan
+
+
+def next_entry(plan: Plan, new: list[int], gen: list[int], new_slots: np.ndarray, decode_slots: np.ndarray,
+               call: int) -> Entry:
+    """The entry after the call: prompt rows from the plan (computed positions in `new_slots` order),
+    then the decode rows (generated tokens but the last), all fresh."""
+    slot = plan.slot.copy()
+    cpos = np.concatenate([np.arange(a, b) for a, b in plan.compute]) if plan.compute else \
+        np.zeros(0, dtype=np.int64)
+    assert len(cpos) == len(new_slots), (len(cpos), len(new_slots))
+    slot[cpos] = new_slots
+    birth = plan.birth.copy()
+    birth[cpos] = cpos
+    age = plan.age.copy()
+    age[cpos] = 0
+    reused = plan.reused.copy()
+    reused[cpos] = 0
+    m = max(0, len(gen) - 1)
+    dpos = np.arange(plan.n, plan.n + m, dtype=np.int64)
+    o_slot = o_birth = None
+    if plan.orig_slot is not None:
+        o_slot, o_birth = plan.orig_slot.copy(), plan.orig_birth.copy()
+        fresh = o_slot < 0                       # new tokens: their first version is the row computed now
+        o_slot[fresh] = slot[fresh]
+        o_birth[fresh] = np.nonzero(fresh)[0]
+        assert (o_slot >= 0).all(), "an original without a row"
+        o_slot = np.concatenate([o_slot, decode_slots[:m]])
+        o_birth = np.concatenate([o_birth, dpos])
+    return Entry(tokens=list(new) + list(gen[:m]),
+                 slot=np.concatenate([slot, decode_slots[:m]]),
+                 birth=np.concatenate([birth, dpos]),
+                 age=np.concatenate([age, np.zeros(m, dtype=np.int32)]),
+                 reused=np.concatenate([reused, np.zeros(m, dtype=np.int32)]),
+                 prompt_len=plan.n, call=call, orig_slot=o_slot, orig_birth=o_birth, h=plan.h)
+
+
+def absorb_apc(plan: Plan, entry: Entry, over: int, apc_slots: np.ndarray) -> dict:
+    """vLLM's prefix cache served [p0, p0 + over) from another cached sequence of the arm-session (one
+    that matched further than the previous call, e.g. an older snip marker): the forward used those
+    rows, not the plan's, and the connector copied them to `apc_slots` (the plan's apc_save reserve).
+    The entry takes them as computed at their own positions; returns how many planned overrides and
+    computed positions the cache took over (for the token accounting)."""
+    lo, hi = plan.p0, plan.p0 + over
+    assert over <= len(apc_slots), (over, len(apc_slots))
+    entry.slot[lo:hi] = apc_slots[:over]
+    entry.birth[lo:hi] = np.arange(lo, hi)
+    entry.age[lo:hi] = 0
+    entry.reused[lo:hi] = 0
+    if entry.orig_slot is not None:
+        # e4: a position planned as a new token was never computed (the cache served it), so its planned slot
+        # holds nothing; its first version is the cache's row. Sourced positions keep their source's original.
+        q = np.arange(lo, hi)
+        q = q[plan.src[lo:hi] < 0]
+        entry.orig_slot[q] = apc_slots[q - lo]
+        entry.orig_birth[q] = q
+    plan.served = hi
+    over_s = sum(max(0, min(b, hi) - max(a, lo)) for a, b, _s, _d in plan.override)
+    over_c = sum(max(0, min(b, hi) - max(a, lo)) for a, b in plan.compute)
+    return {"apc_over": over, "apc_over_S": int(over_s), "apc_over_C": int(over_c)}
+
+
+def first_entry(tokens: list[int], slots: np.ndarray, prompt_len: int, call: int, track: bool = False) -> Entry:
+    n = len(tokens)
+    slot = np.asarray(slots, dtype=np.int64)
+    return Entry(tokens=list(tokens), slot=slot, birth=np.arange(n),
+                 age=np.zeros(n, dtype=np.int32), reused=np.zeros(n, dtype=np.int32),
+                 prompt_len=prompt_len, call=call,
+                 orig_slot=slot.copy() if track else None, orig_birth=np.arange(n) if track else None)
+
+
+def plan_json(plan: Plan, save: list[list], decode: dict | None) -> dict:
+    """The connector's per-request plan (kv_transfer_params["splice"])."""
+    return {"p0": plan.p0, "load": plan.load, "override": plan.override, "from_layer": 0,
+            "save": save, "decode": decode}
+
+
+# -- slot allocation --------------------------------------------------------------------------------
+
+class SlotPool:
+    """Free-list allocator over the connector's host store, with reference counts per slot."""
+
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.ref = np.zeros(capacity, dtype=np.int32)
+        self.free_ranges: list[list[int]] = [[0, capacity]]
+
+    @property
+    def used(self) -> int:
+        return int(np.count_nonzero(self.ref))
+
+    def alloc(self, count: int) -> np.ndarray:
+        """`count` slots, as few contiguous ranges as possible (first fit, then split)."""
+        out = []
+        need = count
+        for r in self.free_ranges:
+            if need == 0:
+                break
+            take = min(need, r[1] - r[0])
+            if take > 0:
+                out.append(np.arange(r[0], r[0] + take, dtype=np.int64))
+                r[0] += take
+                need -= take
+        self.free_ranges = [r for r in self.free_ranges if r[1] > r[0]]
+        if need:
+            for chunk in out:                              # give back what was taken
+                self._release(chunk)
+            raise MemoryError(f"slot pool exhausted: need {count}, used {self.used}/{self.capacity}")
+        slots = np.concatenate(out) if out else np.zeros(0, dtype=np.int64)
+        self.ref[slots] += 1
+        return slots
+
+    def assert_held(self, slots: np.ndarray) -> None:
+        """Every slot is referenced and none is on the free list (a guard for the bookkeeping order)."""
+        s = slots[slots >= 0]
+        assert (self.ref[s] > 0).all(), "a held slot has no reference"
+        for lo, hi in self.free_ranges:
+            assert not ((s >= lo) & (s < hi)).any(), f"a held slot is on the free list [{lo}, {hi})"
+
+    def retain(self, slots: np.ndarray) -> None:
+        s = slots[slots >= 0]
+        np.add.at(self.ref, s, 1)
+
+    def release(self, slots: np.ndarray) -> None:
+        s = slots[slots >= 0]
+        np.add.at(self.ref, s, -1)
+        assert (self.ref >= 0).all(), "slot refcount below zero"
+        freed = np.unique(s[self.ref[s] == 0])
+        self._release(freed)
+
+    def _release(self, slots: np.ndarray) -> None:
+        if len(slots) == 0:
+            return
+        slots = np.sort(slots)
+        brk = np.nonzero(np.diff(slots) != 1)[0] + 1
+        for chunk in np.split(slots, brk):
+            self.free_ranges.append([int(chunk[0]), int(chunk[-1]) + 1])
+        self.free_ranges.sort()
+        merged: list[list[int]] = []
+        for r in self.free_ranges:
+            if merged and merged[-1][1] >= r[0]:
+                merged[-1][1] = max(merged[-1][1], r[1])
+            else:
+                merged.append(list(r))
+        self.free_ranges = merged

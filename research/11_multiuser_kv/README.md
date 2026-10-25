@@ -527,3 +527,17 @@ sbatch --export=NONE research/11_multiuser_kv/mu_cpu.sbatch replay
   analyzer reclassifies every chunk from the raw fields with the arrival-time ideal, so all cells read
   alike. Throughput counts every session's work over all loaded periods (the first version counted only
   counted sessions inside the longest steady interval and gave N=12 an impossible 1.35 turns/h).
+- **Ported to vLLM 0.31.0 for topic 18** (2026-10-24, `research/18_harness_wait/`). Every 0.29.0 path is unchanged.
+  - `mu_scheduler.py`:
+    - takes either version through an allowlist, replacing the 0.29.0 assert. Under 0.31 that assert made the
+      observer, and any `MU_GATE`, fail open to the stock scheduler without notice;
+    - reads 0.31's waiting queues (`waiting` + `kv_holding_waiting`, with deferred requests marked in
+      `deferred_waiting`) for the step record's `wq` / `sk` and the queue head;
+    - adds the queue-head reasons `defer` and `stale`;
+    - provides `MUSyncScheduler` beside the async `MUScheduler`;
+    - gives subclasses commit / evict / reset callbacks;
+    - fails closed under `MU_STRICT=1`.
+  - `test_mu_scheduler.py` passes on 0.31: the 6 original tests plus 4 new ones (sync identity, class/async
+    warning, strict mode, callback balance).
+  - `mu_session.py` exports `S15_SESSION_ID` (equal to `X-Session-ID`), which only topic 18's pacing features read.
+  - `mu_scrape.py --gpu` takes a list such as `0,1`. A single index logs as before.

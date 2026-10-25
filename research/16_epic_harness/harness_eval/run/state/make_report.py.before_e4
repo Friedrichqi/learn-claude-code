@@ -1,0 +1,281 @@
+#!/usr/bin/env python3
+"""Write REPORT.md from the trial data: pilot (s15 vs SWE-agent on the X2 instances), the profile (per model x
+benchmark accuracy and stability), costs, and what the next (shift/EPIC) round can use.
+
+    .venv/bin/python report/make_report.py
+"""
+from __future__ import annotations
+
+import json
+import re
+import statistics as st
+import sys
+from collections import defaultdict
+from pathlib import Path
+
+ROOT = Path("/data/fritz/learn-claude-code/research/16_epic_harness/harness_eval")
+sys.path.insert(0, str(ROOT / "report"))
+import collect  # noqa: E402
+import gpu_hours  # noqa: E402
+import cache_snip  # noqa: E402
+
+X2_RUNS = Path("/home/fritz/learn-claude-code/research/16_epic_harness/data/x2_swe/runs")   # read-only
+MODEL_ORDER = ["qwen3-32b", "qwen3.8-27b", "deepseek-v4-flash", "glm-4.7-flash", "minimax-m2.7"]
+ARCH = {"qwen3-32b": "full attention, GQA, RoPE in all 64 layers (legacy)",
+        "qwen3.8-27b": "hybrid: 48 Gated DeltaNet + 16 gated-attention layers",
+        "deepseek-v4-flash": "compressed/sparse: CSA + HCA pooled KV, 128-token window",
+        "glm-4.7-flash": "MLA (latent KV + decoupled RoPE key)",
+        "minimax-m2.7": "full attention, GQA, partial RoPE in all 62 layers"}
+# shift/EPIC round: a pair is usable when its base rate is off the floor (a drop must be visible) and its runs
+# edit their context (the edits are what shift / EPIC act on); above the ceiling mark only drops can show
+FLOOR = 0.15
+CEILING = 0.90
+USABLE_EDITS = 1.0
+BENCH_NAME = {"swe": "SWE-bench Verified Mini", "swepro": "SWE-bench Pro (V2)", "tbench": "Terminal-Bench 2.1",
+              "gaia": "GAIA"}
+
+
+def x2_prefix() -> dict[str, bool]:
+    out = {}
+    for d in X2_RUNS.glob("*-prefix"):
+        inst = d.name.removesuffix("-prefix")
+        rep = d / "report.json"
+        resolved = False
+        if rep.is_file():
+            try:
+                resolved = bool(json.loads(rep.read_text()).get(inst, {}).get("resolved"))
+            except json.JSONDecodeError:
+                pass
+        out[inst] = resolved
+    return out
+
+
+def pilot_section(rows: list[dict]) -> list[str]:
+    pilot = [r for r in rows if r["model"] == "qwen3-32b" and r["bench"] == "swe" and r["phase"].startswith("p1")
+             and not r.get("infra")]
+    x2 = x2_prefix()
+    by_task = {}
+    for r in pilot:
+        by_task[r["task"]] = collect.success(r)
+    common = sorted(set(by_task) & set(x2))
+    s15_res = sum(by_task[t] for t in common)
+    x2_res = sum(x2[t] for t in common)
+    both = sum(1 for t in common if by_task[t] and x2[t])
+    only_s15 = sum(1 for t in common if by_task[t] and not x2[t])
+    only_x2 = sum(1 for t in common if x2[t] and not by_task[t])
+    budget = sum(1 for r in pilot if r["s15_status"] == "budget")
+    lines = ["## 1. Pilot: s15 + Qwen3-32B on SWE-bench Verified Mini (150 lead calls, as in X2)", "",
+             f"- Instances graded: {len(common)} of 50"
+             + (" (the rest were cut by infrastructure and are rerun)." if len(common) < 50 else "."),
+             f"- **s15 resolved {int(s15_res)}/{len(common)}; SWE-agent (X2, same model, template and server setup) "
+             f"resolved {x2_res}/{len(common)}** on the same instances. Both {both}; only s15 {only_s15}; only "
+             f"SWE-agent {only_x2}.",
+             f"- {budget} of {len(pilot)} s15 runs ended at the 150-call budget (Qwen3-32B loops in s15; SWE-agent's "
+             f"median run used 20.5 calls).", ""]
+    res = {}
+    for off in sorted((ROOT / "report" / "swe_official").glob("qwen3-32b_p1[bcd]/results.json")):
+        res.update(json.loads(off.read_text()))
+    if res:
+        n = sum(1 for v in res.values() if v.get("official") is not None)
+        agree = sum(1 for v in res.values() if v.get("official") is not None
+                    and bool(v["official"]) == ((v.get("harbor") or 0) >= 1))
+        lines += [f"- Grader parity: Harbor's verifier and the official swebench harness agree on {agree}/{n} "
+                  f"pilot patches.", ""]
+    return lines
+
+
+def profile_section(rows: list[dict], reps: int) -> list[str]:
+    prof = collect.profile_rows(rows)
+    lines = ["## 2. Profile: accuracy and stability (250 lead calls, 30 tasks per benchmark, 3 trials per task)", "",
+             collect.summarize(prof, reps), "",
+             "pass@1 = mean success over all trials; pass@k = any of the task's trials succeeded; pass^k = all "
+             "succeeded; consistent = share of tasks whose trials all agree. Infrastructure failures (cancelled "
+             "trials, disk-guard kills, broken RPC) are excluded and rerun.", ""]
+    return lines
+
+
+def compaction_section(rows: list[dict]) -> list[str]:
+    prof = [r for r in collect.profile_rows(rows) if not r.get("infra")]
+    agg = defaultdict(lambda: defaultdict(list))
+    for r in prof:
+        key = (r["model"], r["bench"])
+        comp = r.get("compactions") or {}
+        agg[key]["snip"].append(comp.get("snip_compact", 0))
+        agg[key]["micro"].append(comp.get("micro_compact", 0) + comp.get("fit_tool_results", 0))
+        agg[key]["summary"].append(comp.get("compact_history", 0) + comp.get("reactive_compact", 0))
+        agg[key]["budget"].append(comp.get("tool_result_budget", 0))
+        agg[key]["calls"].append(r.get("lead_calls") or 0)
+    lines = ["## 3. Context edits per run (what shift/EPIC would act on next round)", "",
+             "| model | bench | runs | lead calls | snip events | placeholder events | summary/reactive | tool-result persist |",
+             "|---|---|---|---|---|---|---|---|"]
+    for (m, b), d in sorted(agg.items(), key=lambda kv: (MODEL_ORDER.index(kv[0][0]) if kv[0][0] in MODEL_ORDER else 9, kv[0][1])):
+        f = lambda k: f"{st.mean(d[k]):.1f}"  # noqa: E731
+        lines.append(f"| {m} | {b} | {len(d['calls'])} | {f('calls')} | {f('snip')} | {f('micro')} | {f('summary')} | {f('budget')} |")
+    lines.append("")
+    return lines
+
+
+def model_key(m: str) -> int:
+    return MODEL_ORDER.index(m) if m in MODEL_ORDER else 9
+
+
+def cache_section() -> list[str]:
+    lines = ["### Prefix caching and the rolling snip", "",
+             "s15 caps a conversation at 50 messages. Once a run passes that, every lead call cuts the middle again "
+             "and rewrites the archive marker. Everything after the first three messages moves position, so vLLM's "
+             "prefix cache cannot reuse it, although that tail's content is unchanged. This is the edit that shift and "
+             "EPIC can act on. Placeholder and summary compaction trigger only near the context limit, which the "
+             "50-message cap rarely lets a 128K window reach (table above).", ""]
+    lines += cache_snip.table(cache_snip.scan(), MODEL_ORDER)
+    lines.append("")
+    return lines
+
+
+def cost_section(rows: list[dict]) -> list[str]:
+    prof = [r for r in collect.profile_rows(rows) if not r.get("infra")]
+    gpu = gpu_hours.per_model()
+    agg = defaultdict(lambda: {"n": 0, "wall": [], "out": []})
+    for r in prof:
+        a = agg[r["model"]]
+        a["n"] += 1
+        if r.get("wall_s"):
+            a["wall"].append(r["wall_s"] / 60)
+        if r.get("out_tokens") is not None:
+            a["out"].append(r["out_tokens"])
+    lines = ["## 4. Cost", "",
+             "| model | serving | GPU-hours (all phases) | profile trials | median wall min/trial | mean output tokens/trial |",
+             "|---|---|---|---|---|---|"]
+    serving = {"qwen3-32b": "1 GPU", "qwen3.8-27b": "1 GPU", "deepseek-v4-flash": "4 GPUs, TP=4",
+               "glm-4.7-flash": "1 GPU", "minimax-m2.7": "4 GPUs, TP=4"}
+    for m in sorted(set(gpu) | set(agg), key=model_key):
+        a = agg.get(m, {"n": 0, "wall": [], "out": []})
+        wall = f"{st.median(a['wall']):.1f}" if a["wall"] else "—"
+        out = f"{st.mean(a['out']):,.0f}" if a["out"] else "—"
+        lines.append(f"| {m} | {serving.get(m, '?')} | {gpu.get(m, 0):.1f} | {a['n']} | {wall} | {out} |")
+    lines += [f"| **total** | | **{sum(gpu.values()):.1f}** | | | |", "",
+              "GPU-hours count every server from start to stop (loading, idle gaps between chunks, smoke and pilot "
+              "phases included). Wall time is the agent's run inside Harbor; trials of a chunk run concurrently.", ""]
+    return lines
+
+
+def deviations_section() -> list[str]:
+    sub = json.loads((ROOT / "run" / "subsets.json").read_text())
+    tb_rep = sub["tbench"].get("excluded", {}).get("replacements", {})
+    pro_rep = sub["swepro"].get("excluded", {}).get("replacements", {})
+    return ["## 5. Deviations from the official protocols", "",
+            "- **GAIA not run.** The user dropped it on 2026-10-12. The adapter path (web tools, answer file, official "
+            "`question_scorer`) exists and passed its oracle check on 3 tasks.",
+            "- **30 tasks per benchmark, 3 trials each** (the plan allowed 25-40). Docker's root disk (~33 GB usable on a "
+            "shared machine) limits how many SWE-bench / Pro task images can be present at once, which made it the "
+            "throughput bottleneck. Terminal-Bench's leaderboard asks for 5 trials.",
+            f"- **Terminal-Bench: {len(tb_rep)} disk-heavy tasks replaced**: "
+            + ", ".join(f"{a} → {b}" for a, b in tb_rep.items())
+            + ". Each writes up to its 10 GB storage limit into the container layer, so it can only run one trial at a "
+            "time. Each replacement is the first reserve task of the same category and difficulty.",
+            f"- **SWE-bench Pro: {len(pro_rep)} protonmail/webclients tasks replaced** (19.6 GB images) by reserve tasks "
+            "of the same language. Agent without network through Harbor's egress sidecar, as in Scale's protocol; "
+            "local Docker instead of Modal. The V2 task statements specify interfaces and exact error strings.",
+            "- **Budget**: 250 lead calls per run in the profile, raised from 150 at the user's request. The pilot keeps "
+            "150, to compare with X2's SWE-agent runs.",
+            "- **SWE-bench Verified**: Harbor's verifier timeout scaled by 0.6, to the official harness's 1800 s. "
+            "Images are Epoch AI's prebuilt equivalents of the official ones.",
+            "- **Qwen3-32B** keeps its native 32K window (no YaRN), non-thinking, with topic 16's append-only "
+            "template. The other models are served at 128K with thinking on, at each vendor's agentic setting.",
+            "- **s15 benchmark profile**:",
+            "  - removed: teams, cron, worktrees and the mock MCP servers;",
+            "  - memory off;",
+            "  - permission policy: everything inside the task container is allowed, host-only tools are refused;",
+            "  - everything else is unchanged (loop, compaction, todo, subagent, skills).",
+            "- **Infrastructure failures are excluded and rerun**: cancelled trials, disk-guard kills and broken RPC.",
+            "- **Where task containers ran**:",
+            "  - Qwen3-32B's earlier TB trials, DeepSeek-V4-Flash and MiniMax-M2.7 ran on the shared host Docker daemon.",
+            "  - The Qwen phase (from 2026-10-12 18:45 UTC) ran in our own Docker-in-Docker daemon with its data on "
+            "/data (`run/dind.md`), with the same images, resource limits and Harbor version.",
+            "  - The host daemon's root disk (~33 GB usable, shared) had limited how many SWE-bench / Pro images "
+            "could be present at once. Before the switch, the disk guard killed "
+            f"{len((ROOT / 'runs' / 'disk_guard_kills.jsonl').read_text().splitlines())} task containers to protect "
+            "it, and free space dipped to 1.7 GB once (13:38 UTC).",
+            "  - Oracle checks passed in both setups. The nested daemon needed MTU 1460 on its networks; with 1500, a "
+            "verifier's tool download stalled once during testing.",
+            "- **Qwen3-32B serving**:",
+            "  - In BF16 on one H100 it has 40.8K tokens of KV cache, about 1.25 full 32K contexts.",
+            "  - With four lanes on one GPU, median call latency rose from ~1.5 s to ~5 s until helper servers were "
+            "added (`run/helper32.py`).",
+            "  - Agent timeouts (50 min on SWE-bench and Pro) were not reached because of this. On TB (15-60 min), "
+            "some budget-bound runs became timeouts; both are failures, and Qwen3-32B is at the floor on TB.",
+            "- **Official cross-grade of the pilot**: 49 patches got a verdict from the official harness, all agreeing "
+            "with Harbor. On 2 more patches the official harness produced no report (patch not applied); Harbor "
+            "scored one of them unresolved and had no verdict for the other.",
+            ""]
+
+
+def epic_section() -> list[str]:
+    """Section 7: the EPIC round, assembled from the per-model reports the EPIC scripts write (report/e3_*.md,
+    epic_*.md, latency_*.md, replay_*.md, deepseek_*.md) in that order; absent files are skipped."""
+    # per model: the round's report, then its time model / replay; files not named here follow in name order
+    order = ["epic_summary.md", "e3_minimax-m2.7-epic_swe.md", "e3_pooled.md", "epic_minimax-m2.7-epic_swe_e3.md",
+             "latency_minimax-m2.7-epic_swe_e3.md", "epic_minimax-m2.7-epic_swe.md", "latency_minimax-m2.7-epic_swe.md",
+             "epic_minimax-m2.7-epic_swepro.md", "latency_minimax-m2.7-epic_swepro.md",
+             "epic_minimax-m2.7-epic_tbench.md", "latency_minimax-m2.7-epic_tbench.md",
+             "epic_qwen3.8-27b-epic_swe.md", "replay_b1_replay.md", "deepseek_v4_flash.md"]
+    found = {p.name: p for pat in ("e3_*.md", "epic_*.md", "latency_*.md", "replay_*.md", "deepseek_*.md")
+             for p in (ROOT / "report").glob(pat)}
+    parts = [found.pop(n) for n in order if n in found] + [found[k] for k in sorted(found)]
+    if not parts:
+        return []
+    lines = ["## 7. EPIC round: KV reuse after the snip", "",
+             "Plan: `~/.claude/plans/i-want-to-benchmark-expressive-kahn.md` (\"EPIC round\"). MiniMax-M2.7 is the "
+             "confirmatory model; Qwen3.8-27B is exploratory (replay and a small live pilot); DeepSeek-V4-Flash is "
+             "design and selftests only.", ""]
+    for path in parts:
+        # one heading level down, so each part nests under this section
+        lines += [re.sub(r"(?m)^(#{2,5}) ", lambda m: "#" + m.group(1) + " ", path.read_text().rstrip()), ""]
+    return lines
+
+
+def next_round_section(rows: list[dict]) -> list[str]:
+    prof = collect.profile_rows(rows)
+    by = defaultdict(list)
+    for r in prof:
+        if not r.get("infra"):
+            by[(r["model"], r["bench"])].append(r)
+    lines = ["## 6. What the shift/EPIC round can use", "",
+             f"A model × benchmark pair is usable when its pass@1 is at least {FLOOR:.2f}, so a drop caused by shift or "
+             f"EPIC is visible over the floor, and its runs average at least {USABLE_EDITS:.0f} context edit (snip, "
+             f"placeholder or summary): the edits are what shift and EPIC act on. Above {CEILING:.2f} only drops can "
+             "show, which is the direction the next round tests first.", "",
+             "| model | KV architecture | bench | pass@1 | context edits/run | usable |", "|---|---|---|---|---|---|"]
+    for (m, b), rs in sorted(by.items(), key=lambda kv: (model_key(kv[0][0]), kv[0][1])):
+        p1 = st.mean(collect.success(r) for r in rs)
+        edits = st.mean(sum((r.get("compactions") or {}).get(c, 0) for c in
+                            ("snip_compact", "micro_compact", "fit_tool_results", "compact_history", "reactive_compact"))
+                        for r in rs)
+        ok = p1 >= FLOOR and edits >= USABLE_EDITS
+        note = "no (floor)" if p1 < FLOOR else "no (few edits)" if not ok else \
+            "yes (near ceiling: drops only)" if p1 > CEILING else "yes"
+        lines.append(f"| {m} | {ARCH.get(m, '?')} | {b} | {p1:.2f} | {edits:.1f} | {note} |")
+    lines.append("")
+    return lines
+
+
+def main() -> None:
+    rows = collect.load_trials()
+    reps = 10000
+    out = ["# s15 harness on agentic benchmarks with several open models", "",
+           "Generated by `report/make_report.py` from `jobs/` (Harbor 0.24.0, s15 snapshot in "
+           "`vendor/s15/SNAPSHOT.json`, eval image tag in `docker/CURRENT_TAG`). See `MODELS.md` for the model "
+           "survey and the plan file for the design.", ""]
+    out += pilot_section(rows)
+    out += profile_section(rows, reps)
+    out += compaction_section(rows)
+    out += cache_section()
+    out += cost_section(rows)
+    out += deviations_section()
+    out += next_round_section(rows)
+    out += epic_section()
+    (ROOT / "REPORT.md").write_text("\n".join(out) + "\n")
+    print("\n".join(out))
+
+
+if __name__ == "__main__":
+    main()

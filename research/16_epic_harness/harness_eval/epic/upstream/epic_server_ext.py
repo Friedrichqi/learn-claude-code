@@ -1,0 +1,488 @@
+"""vLLM API-server extension of the live EPIC server (research/16_epic_harness). Loaded by vLLM's own
+`--middleware` hook, in the API-server process:
+
+    PYTHONPATH=research/16_epic_harness EPIC_LOG=... EPIC_POOL_ROWS=... VLLM_ALLOW_INSECURE_SERIALIZATION=1 \
+      vllm serve Qwen/Qwen3-32B ... --enforce-eager --enable-prefix-caching \
+      --kv-transfer-config '{"kv_connector":"EpicConnector","kv_connector_module_path":"epic_connector",...}' \
+      --middleware epic_server_ext.Middleware
+
+The first Middleware instance patches AsyncLLM.generate. A request is handled here only when its
+kv_transfer_params carry {"epic": {arm, spec, call, seed_key}} (epic_session.py tags lead calls only):
+
+  * every arm gets cache_salt = "<arm>:<spec>", so vLLM's prefix cache serves each arm-session its own
+    exact prefix and never another arm's blocks (an EPIC arm's blocks hold stale rows by design). When
+    the cache matches beyond the planned prefix (an older sequence of the session shares more), the
+    connector copies those rows to a reserve (apc_save) and the entry takes them; a match beyond the
+    reserve resets the session under salt "<arm>:<spec>:r<n>" (fresh rows, empty cache);
+  * the per-call seed is SHA256(seed_key, call): the same in every arm of a block (common random
+    numbers; vLLM's /v1/messages drops request seeds, so it is set here);
+  * prefix / prefix_aa: nothing else -- vanilla prefix caching (full re-prefill after the first edit);
+  * shift / epic32 / epic64 / epic128: epic_plan aligns the prompt with the session's last sequence and
+    the plan (loads below p0 on a cache miss, overrides of reused rows, saves of computed rows and of
+    decode rows) goes to epic_connector in kv_transfer_params["splice"]; the outputs are teed and the
+    session entry (slot, birth, age of every position's row) advances when the call finishes;
+  * shadow probes on sampled calls of EPIC arms whose KV holds rows that survived an edit
+    (EPIC_SHADOW_EVERY, default 4; every call whose plan shifts a run by >= EPIC_BIG_DELTA tokens, i.e. an
+    LLM-summary compaction), before the response is returned: a fresh full recompute of the same prompt saved to temporary slots -> L1
+    deviation per layer and row class (epic_compare); a teacher-forced pass of the arm's reply over the
+    fresh prefix -> per-token KL / top-1 / dNLL; on a third of them a counterfactual next round decoded
+    from the fresh prefix with the call's seed.
+
+Per-call JSON lines go to EPIC_LOG; GET /epic/stats reports the pool and sessions; POST /epic/end?spec=S
+frees a session. Every patch fails open: an exception logs an `error` line and the call is served as
+prefix caching would serve it (flagged `fallback`).
+"""
+from __future__ import annotations
+
+import asyncio
+import hashlib
+import json
+import math
+import os
+import sys
+import threading
+import time
+import traceback
+from collections import Counter
+from dataclasses import dataclass, field
+from urllib.parse import parse_qs
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import epic_plan as ep  # noqa: E402
+
+IM_START = int(os.environ.get("EPIC_IM_START", "151644"))      # Qwen3 <|im_start|>
+POOL_ROWS = int(os.environ.get("EPIC_POOL_ROWS", "200000"))
+MAX_MODEL_LEN = int(os.environ.get("EPIC_MAX_MODEL_LEN", "32768"))
+SHADOW_EVERY = int(os.environ.get("EPIC_SHADOW_EVERY", "4"))
+APC_RESERVE = int(os.environ.get("EPIC_APC_RESERVE", "256"))   # rows past p0 the prefix cache may serve
+BIG_DELTA = int(os.environ.get("EPIC_BIG_DELTA", "8000"))       # shifts at least this large are always probed
+CF_EVERY = int(os.environ.get("EPIC_CF_EVERY", "3"))
+TF_MAX = int(os.environ.get("EPIC_TF_MAX", "512"))
+LOG_PATH = os.environ.get("EPIC_LOG", "")
+TOPK = 20
+AGE_BINS = (0, 1, 2, 4, 8, 16)            # [0], [1], [2,3], [4,7], [8,15], [16,)
+OFF_BINS = (0, 32, 64, 128, 512)          # offset from the run head: [0,31] ... [512,)
+CLASSES = ("exact", "reused", "head", "computed")
+
+_ORIG: dict = {}
+_INSTALLED = False
+_LOG_LOCK = threading.Lock()
+STATS: Counter = Counter()
+POOL = ep.SlotPool(POOL_ROWS)
+
+
+@dataclass
+class Session:
+    spec: str
+    arm: str
+    entry: ep.Entry | None = None
+    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    calls: int = 0
+    t_last: float = 0.0
+    salt_gen: int = 0           # bumped when the entry is reset: the prefix cache starts empty for it
+
+    @property
+    def salt(self) -> str:
+        return f"{self.arm}:{self.spec}" + (f":r{self.salt_gen}" if self.salt_gen else "")
+
+
+SESSIONS: dict[str, Session] = {}
+
+
+def _log(rec: dict) -> None:
+    if not LOG_PATH:
+        return
+    rec.setdefault("t", round(time.time(), 3))
+    with _LOG_LOCK, open(LOG_PATH, "a", encoding="utf-8") as handle:
+        handle.write(json.dumps(rec, default=str) + "\n")
+
+
+def _error(where: str, exc: BaseException, **extra) -> None:
+    STATS[f"error_{where}"] += 1
+    _log({"ev": "error", "where": where, "error": repr(exc), "tb": traceback.format_exc()[-2000:], **extra})
+
+
+def seed_of(key: str, call: int) -> int:
+    return int(hashlib.sha256(f"{key}|{call}".encode()).hexdigest()[:8], 16)
+
+
+def _tag(sampling_params) -> dict | None:
+    extra = getattr(sampling_params, "extra_args", None) or {}
+    kvp = extra.get("kv_transfer_params") or {}
+    tag = kvp.get("epic") if isinstance(kvp, dict) else None
+    return tag if isinstance(tag, dict) and tag.get("arm") in ep.ARM_K else None
+
+
+def _bin(val: int, edges: tuple) -> int:
+    b = 0
+    for i, e in enumerate(edges):
+        if val >= e:
+            b = i
+    return b
+
+
+def topk_kl(p: dict, q: dict) -> float:
+    """KL(p || q) over p's top tokens; q's missing entries floored at q's smallest logprob."""
+    if not p or not q:
+        return float("nan")
+    floor = min(q.values())
+    return sum(math.exp(lp) * (lp - q.get(t, floor)) for t, lp in p.items())
+
+
+def _lp_dict(entry) -> dict:
+    return {int(t): float(lp.logprob) for t, lp in (entry or {}).items()}
+
+
+def _segments(positions, slots) -> list[list]:
+    """[[pos_lo, pos_hi, slot_lo]] over parallel position/slot lists, contiguous in both."""
+    out: list[list] = []
+    for p, s in zip(positions, slots):
+        p, s = int(p), int(s)
+        if out and out[-1][1] == p and out[-1][2] + (out[-1][1] - out[-1][0]) == s:
+            out[-1][1] = p + 1
+        else:
+            out.append([p, p + 1, s])
+    return out
+
+
+# -- the patched generate --------------------------------------------------------------------------
+
+async def _generate(self, prompt, sampling_params, request_id, *args, **kwargs):
+    tag = _tag(sampling_params)
+    if tag is None or not isinstance(prompt, dict) or "prompt_token_ids" not in prompt:
+        async for out in _ORIG["generate"](self, prompt, sampling_params, request_id, *args, **kwargs):
+            yield out
+        return
+    _ORIG.setdefault("engine", self)
+    arm, spec = tag["arm"], str(tag["spec"])
+    sess = SESSIONS.get(spec)
+    if sess is None:
+        sess = SESSIONS[spec] = Session(spec, arm)
+    async with sess.lock:
+        if "call" not in tag:                   # static tags (SWE-agent): count the session's calls here
+            tag = {**tag, "call": sess.calls}
+        async for out in _serve(self, sess, tag, prompt, sampling_params, request_id, args, kwargs):
+            yield out
+
+
+async def _serve(engine, sess: Session, tag: dict, prompt: dict, sp, request_id, args, kwargs):
+    arm, call = tag["arm"], int(tag.get("call", 0))
+    ids = list(prompt["prompt_token_ids"])
+    t0 = time.perf_counter()
+    rec = {"ev": "call", "spec": sess.spec, "arm": arm, "call": call, "rid": request_id, "P": len(ids)}
+    plan = new_slots = decode_slots = apc_slots = None
+    try:
+        prompt["cache_salt"] = sess.salt
+        sp.seed = seed_of(str(tag.get("seed_key") or sess.spec), call)
+        sp.logprobs = max(int(sp.logprobs or 0), TOPK)
+        extra = dict(sp.extra_args or {})
+        kvp = {k: v for k, v in (extra.get("kv_transfer_params") or {}).items() if k != "epic"}
+        if ep.ARM_K[arm] is not None:
+            plan = ep.plan_call(arm, sess.entry, ids, IM_START)
+            new_slots = POOL.alloc(plan.stats["C"])
+            reserve = max(0, min(int(sp.max_tokens or 0), MAX_MODEL_LEN - len(ids)))
+            decode_slots = POOL.alloc(reserve)
+            # vLLM's prefix cache always leaves the last prompt token to compute
+            n_apc = max(0, min(APC_RESERVE, len(ids) - 1 - plan.p0))
+            apc_slots = POOL.alloc(n_apc)
+            cpos = [p for a, b in plan.compute for p in range(a, b)]
+            save = _segments(cpos, new_slots) + _segments(range(len(ids), len(ids) + reserve), decode_slots)
+            kvp["splice"] = {"p0": plan.p0, "load": plan.load, "override": plan.override,
+                             "from_layer": 0, "save": save,
+                             "apc_save": _segments(range(plan.p0, plan.p0 + n_apc), apc_slots)}
+            rec.update(plan.stats)
+        extra["kv_transfer_params"] = kvp
+        sp.extra_args = extra
+    except Exception as exc:
+        _error("plan", exc, spec=sess.spec, call=call)
+        for slots in (new_slots, decode_slots, apc_slots):
+            if slots is not None:
+                POOL.release(slots)
+        plan = new_slots = decode_slots = apc_slots = None
+        extra = dict(sp.extra_args or {})
+        extra["kv_transfer_params"] = {}
+        sp.extra_args = extra
+        rec["fallback"] = True
+    rec["plan_ms"] = round(1000 * (time.perf_counter() - t0), 2)
+
+    from vllm.sampling_params import RequestOutputKind
+    delta = getattr(sp, "output_kind", None) == RequestOutputKind.DELTA
+    gen: list[int] = []
+    lps: list[dict] = []
+    finished = False
+    try:
+        async for out in _ORIG["generate"](engine, prompt, sp, request_id, *args, **kwargs):
+            if out.outputs:
+                c = out.outputs[0]
+                if delta:
+                    gen.extend(c.token_ids)
+                    lps.extend(c.logprobs or [])
+                else:
+                    gen, lps = list(c.token_ids), list(c.logprobs or [])
+            if out.finished and not finished:
+                finished = True
+                rec.update(gen=len(gen), finish=str(out.outputs[0].finish_reason if out.outputs else None),
+                           apc_hit=getattr(out, "num_cached_tokens", None),
+                           server=(getattr(out, "kv_transfer_params", None) or {}).get("epic_server"),
+                           ms=round(1000 * (time.perf_counter() - t0), 1))
+                try:
+                    await _finish(engine, sess, tag, ids, gen, lps, plan, new_slots, decode_slots, apc_slots,
+                                  sp, rec)
+                except Exception as exc:
+                    _error("finish", exc, spec=sess.spec, call=call)
+                _log(rec)
+            yield out
+    finally:
+        if not finished:                               # aborted: keep the old entry, give slots back
+            for slots in (new_slots, decode_slots, apc_slots):
+                if slots is not None:
+                    POOL.release(slots)
+            rec["aborted"] = True
+            _log(rec)
+
+
+async def _finish(engine, sess: Session, tag: dict, ids, gen, lps, plan, new_slots, decode_slots, apc_slots,
+                  sp, rec):
+    sess.calls += 1
+    sess.t_last = time.time()
+    STATS[f"calls_{sess.arm}"] += 1
+    if plan is None:
+        # the prefix arms' KV is exact up to numerics: their shadows (every 2*SHADOW_EVERY-th call) are
+        # the noise floor of the shadow metrics themselves (batch composition, chunking)
+        pick = seed_of(sess.spec, int(tag.get("call", 0)))
+        if SHADOW_EVERY and int(tag.get("call", 0)) > 0 and pick % (2 * SHADOW_EVERY) == 0:
+            rec["shadow"] = await _shadow(engine, sess, None, None, ids, gen, lps, sp,
+                                          counterfactual=(pick // SHADOW_EVERY) % CF_EVERY == 0)
+        return
+    server = rec.get("server") or {}
+    over = int(server.get("overshoot") or 0)
+    if over and (over > len(apc_slots) or int(server.get("apc_saved") or 0) != over):
+        # vLLM's prefix cache served more than the planned exact prefix and more than the reserve
+        # caught: rows of those positions are unknown to the entry. The session restarts from fresh
+        # rows under a new cache salt (an empty prefix cache), so no later call reads an unsaved row.
+        STATS["overshoot_resets"] += 1
+        rec["entry_reset"] = "overshoot"
+        for slots in (new_slots, decode_slots, apc_slots):
+            POOL.release(slots)
+        if sess.entry is not None:
+            POOL.release(sess.entry.slot)
+        sess.entry = None
+        sess.salt_gen += 1
+        return
+    entry = ep.next_entry(plan, ids, gen, new_slots, decode_slots, int(tag.get("call", 0)))
+    if over:
+        # the cache's rows of [p0, p0 + over) were copied to the reserve: the entry takes them
+        STATS["overshoot_absorbed"] += 1
+        rec.update(ep.absorb_apc(plan, entry, over, apc_slots))
+    POOL.retain(entry.slot)
+    POOL.release(new_slots)
+    POOL.release(decode_slots)
+    POOL.release(apc_slots)
+    old, sess.entry = sess.entry, entry
+    if old is not None:
+        POOL.release(old.slot)
+    rec["pool_used"] = POOL.used
+    # the arm's KV differs from a fresh prefill wherever a row has survived an edit (age > 0): at the
+    # edit itself and, inherited through the exact prefix, at every later call (compounding)
+    P = len(ids)
+    stale_rows = int((entry.age[:P] > 0).sum())
+    rec["stale_rows"] = stale_rows
+    rec["age_max"] = int(entry.age[:P].max()) if P else 0
+    pick = seed_of(sess.spec, int(tag.get("call", 0)))
+    # a large shift is an LLM-summary compaction (R2's reactive_compact moves the kept tail by ~15-22K
+    # tokens; snips move it by at most a few thousand): rare and the case EPIC is stressed by, so always probed
+    big = int(rec.get("max_delta") or 0) >= BIG_DELTA
+    if stale_rows and SHADOW_EVERY and (pick % SHADOW_EVERY == 0 or big):
+        rec["shadow"] = await _shadow(engine, sess, plan, entry, ids, gen, lps, sp,
+                                      counterfactual=big or (pick // SHADOW_EVERY) % CF_EVERY == 0)
+
+
+# -- shadow probes ------------------------------------------------------------------------------------
+
+async def _run(engine, prompt_ids: list[int], sp, rid: str, splice: dict | None, salt: str):
+    extra = dict(sp.extra_args or {})
+    extra["kv_transfer_params"] = {"splice": splice} if splice else {}
+    sp.extra_args = extra
+    final = None
+    async for out in _ORIG["generate"](engine, {"prompt_token_ids": prompt_ids, "cache_salt": salt}, sp, rid):
+        final = out
+    return final
+
+
+async def _shadow(engine, sess: Session, plan, entry, ids, gen, lps, arm_sp, counterfactual: bool) -> dict:
+    from vllm.sampling_params import SamplingParams
+
+    P = len(ids)
+    res: dict = {"floor": entry is None}
+    tmp = POOL.alloc(P)
+    tag = f"{sess.spec}:{entry.call if entry is not None else sess.calls}"
+    try:
+        t = time.perf_counter()
+        fresh = await _run(engine, ids, SamplingParams(max_tokens=1, temperature=0.0, logprobs=TOPK),
+                           f"epicshadow-fresh-{tag}", {"p0": 0, "load": [], "override": [], "from_layer": 0,
+                                                       "save": _segments(range(P), tmp)},
+                           f"shadow:{tag}:fresh")
+        res["fresh_ms"] = round(1000 * (time.perf_counter() - t), 1)
+        if entry is not None:
+            res.update(await _l1(engine, plan, entry, P, tmp))
+        # first-token distribution of the fresh prefix vs the arm's
+        f0 = _lp_dict(fresh.outputs[0].logprobs[0]) if fresh and fresh.outputs and fresh.outputs[0].logprobs else {}
+        a0 = _lp_dict(lps[0]) if lps else {}
+        res["first_kl"] = topk_kl(f0, a0)
+        res["first_top1"] = int(bool(f0) and bool(a0) and max(f0, key=f0.get) == max(a0, key=a0.get))
+        # teacher-forced reply over the fresh prefix
+        n = min(len(gen), TF_MAX)
+        if n > 1:
+            base = (P // ep.BLOCK) * ep.BLOCK
+            sp = SamplingParams(max_tokens=1, temperature=0.0, prompt_logprobs=TOPK,
+                                skip_reading_prefix_cache=False)
+            t = time.perf_counter()
+            tf = await _run(engine, ids + list(gen[:n]), sp, f"epicshadow-tf-{tag}",
+                            {"p0": base, "load": [[lo, hi, s, 0] for lo, hi, s in _segments(range(base), tmp[:base])],
+                             "override": [], "from_layer": 0, "save": []},
+                            f"shadow:{tag}:tf")
+            res["tf_ms"] = round(1000 * (time.perf_counter() - t), 1)
+            kls, top1, dnll = [], [], []
+            plp = tf.prompt_logprobs if tf is not None else None
+            for i in range(n):
+                # vLLM returns [None] + one entry per COMPUTED prompt position: with [0, base)
+                # loaded, entry k is the distribution of the token at position base + k
+                k = P + i - base
+                if plp is None or k <= 0 or k >= len(plp) or plp[k] is None or i >= len(lps):
+                    continue
+                fd, ad = _lp_dict(plp[k]), _lp_dict(lps[i])
+                tok = int(gen[i])
+                kls.append(topk_kl(fd, ad))
+                top1.append(int(max(fd, key=fd.get) == max(ad, key=ad.get)))
+                if tok in fd and tok in ad:
+                    dnll.append(ad[tok] - fd[tok])      # = -log p_fresh - (-log p_arm)
+            if kls:
+                res.update(tf_kl=sum(kls) / len(kls), tf_top1=sum(top1) / len(top1),
+                           tf_dnll=sum(dnll) / len(dnll) if dnll else None, tf_n=len(kls))
+        if counterfactual:
+            base = ((P - 1) // ep.BLOCK) * ep.BLOCK          # vLLM must compute >= 1 prompt token
+            cf_sp = SamplingParams(max_tokens=min(max(len(gen), 1) + 32, 1024),
+                                   temperature=arm_sp.temperature, top_p=arm_sp.top_p, top_k=arm_sp.top_k,
+                                   min_p=arm_sp.min_p, seed=arm_sp.seed, stop_token_ids=arm_sp.stop_token_ids)
+            t = time.perf_counter()
+            cf = await _run(engine, ids, cf_sp, f"epicshadow-cf-{tag}",
+                            {"p0": base, "load": [[lo, hi, s, 0] for lo, hi, s in _segments(range(base), tmp[:base])],
+                             "override": [], "from_layer": 0, "save": []},
+                            f"shadow:{tag}:cf")
+            res["cf_ms"] = round(1000 * (time.perf_counter() - t), 1)
+            cf_ids = list(cf.outputs[0].token_ids) if cf is not None and cf.outputs else []
+            k = next((i for i, (x, y) in enumerate(zip(cf_ids, gen)) if x != y), min(len(cf_ids), len(gen)))
+            res.update(cf_identical=int(cf_ids == list(gen)), cf_first_div=k, cf_len=len(cf_ids),
+                       cf_text=cf.outputs[0].text if cf is not None and cf.outputs else None)
+    except Exception as exc:
+        _error("shadow", exc, spec=sess.spec, tag=tag)
+        res["error"] = repr(exc)
+    finally:
+        POOL.release(tmp)
+    return res
+
+
+async def _l1(engine, plan, entry, P: int, tmp) -> dict:
+    """L1: the arm's rows of [0, P) (as used, re-rotated) against the fresh rows, binned."""
+    import epic_connector as ec_mod
+    res: dict = {}
+    cls = [0] * P
+    for lo, hi, _s, _d in plan.override:
+        for p in range(lo, hi):
+            cls[p] = 1
+    heads = ep.run_heads(plan.segs, plan.k or 0, plan.p0, P) if plan.k else set()
+    for a, b in plan.compute:
+        for p in range(a, b):
+            cls[p] = 2 if p in heads else 3
+    for p in range(max(plan.p0, plan.served)):  # the exact prefix, with whatever the cache served beyond p0
+        cls[p] = 0
+    run_start = [0] * P
+    for seg in plan.segs:
+        if seg[0] == "reuse":
+            for p in range(seg[1], seg[2]):
+                run_start[p] = seg[1]
+    n_age, n_off = len(AGE_BINS), len(OFF_BINS)
+    bins = [(cls[p] * n_age + _bin(int(entry.age[p]), AGE_BINS)) * n_off
+            + _bin(p - run_start[p], OFF_BINS) for p in range(P)]
+    n_bins = len(CLASSES) * n_age * n_off
+    deltas = [int(p - entry.birth[p]) for p in range(P)]
+    t = time.perf_counter()
+    out = await engine.collective_rpc(ec_mod.epic_compare, args=(
+        [int(s) for s in entry.slot[:P]], deltas, [int(s) for s in tmp], bins, n_bins))
+    res["compare_ms"] = round(1000 * (time.perf_counter() - t), 1)
+    res["l1"] = _sparse_l1(out[0])         # {bin: [[dK, |K*|, dV, |V*|, n] per 4-layer group]}
+    res["bins"] = {"classes": CLASSES, "age": AGE_BINS, "offset": OFF_BINS, "layer_group": 4}
+    return res
+
+
+def _sparse_l1(per_layer: list, group: int = 4) -> dict:
+    """[L][n_bins][5] -> {bin: [[dK, |K*|, dV, |V*|, n] per group of `group` layers]}, populated bins only."""
+    L = len(per_layer)
+    n_bins = len(per_layer[0]) if L else 0
+    out = {}
+    for b in range(n_bins):
+        if not any(per_layer[layer][b][4] for layer in range(L)):
+            continue
+        rows = []
+        for g in range(0, L, group):
+            acc = [0.0] * 5
+            for layer in range(g, min(g + group, L)):
+                for j in range(5):
+                    acc[j] += per_layer[layer][b][j]
+            rows.append([float(f"{v:.6g}") for v in acc])
+        out[b] = rows
+    return out
+
+
+# -- install and the ASGI middleware ----------------------------------------------------------------------
+
+def install() -> None:
+    global _INSTALLED
+    if _INSTALLED:
+        return
+    from vllm.v1.engine.async_llm import AsyncLLM
+    _ORIG["generate"] = AsyncLLM.generate
+    AsyncLLM.generate = _generate
+    _INSTALLED = True
+    _log({"ev": "installed", "pool_rows": POOL_ROWS, "shadow_every": SHADOW_EVERY, "cf_every": CF_EVERY,
+          "pid": os.getpid()})
+
+
+def end_session(spec: str) -> dict:
+    sess = SESSIONS.pop(spec, None)
+    if sess is None:
+        return {"spec": spec, "found": False}
+    if sess.entry is not None:
+        POOL.release(sess.entry.slot)
+    return {"spec": spec, "found": True, "calls": sess.calls, "pool_used": POOL.used}
+
+
+def stats() -> dict:
+    return {"pool_rows": POOL_ROWS, "pool_used": POOL.used, "sessions": len(SESSIONS),
+            "stats": dict(STATS), "session_calls": {s.spec: s.calls for s in SESSIONS.values()}}
+
+
+async def _send_json(send, status: int, obj) -> None:
+    body = json.dumps(obj, default=str).encode()
+    await send({"type": "http.response.start", "status": status,
+                "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())]})
+    await send({"type": "http.response.body", "body": body})
+
+
+class Middleware:
+    def __init__(self, app):
+        self.app = app
+        install()
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http":
+            path = scope.get("path", "")
+            if path == "/epic/stats":
+                await _send_json(send, 200, stats())
+                return
+            if path == "/epic/end":
+                query = parse_qs((scope.get("query_string") or b"").decode())
+                spec = (query.get("spec") or [""])[0]
+                await _send_json(send, 200, end_session(spec))
+                return
+        await self.app(scope, receive, send)

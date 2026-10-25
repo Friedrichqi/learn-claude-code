@@ -1,0 +1,1028 @@
+<title>EPIC in the Harness</title>
+<meta name="description" content="Weekly progress, 21 October 2026: whether reusing KV after the agent harness edits its context costs accuracy (topic 16 and harness_eval rounds e1 to e4), what it saves, and a harness-aware serving design checked offline.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #eef1f5;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --ink: #141922;
+  --ink-2: #47505f;
+  --muted: #7a8391;
+  --hair: #d5dbe3;
+  --hair-2: #e6eaf0;
+  --lead: #2a78d6;
+  --lead-soft: #cde2fb;
+  --lead-ink: #1c5cab;
+  --mate: #eb6834;
+  --mate-soft: #fbd9c9;
+  --mate-ink: #b8451c;
+  --mate-1: #f7c9b3;
+  --mate-2: #f29d76;
+  --mate-3: #eb6834;
+  --mate-4: #b8451c;
+  --shot: #1baf7a;
+  --grey-mark: #aeb6c2;
+  --warn: #d03b3b;
+  --focus: #1c5cab;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1117;
+    --surface: #161c25;
+    --surface-2: #1c232e;
+    --ink: #eef1f5;
+    --ink-2: #b9c1cd;
+    --muted: #8791a0;
+    --hair: #2b3441;
+    --hair-2: #232b36;
+    --lead: #3987e5;
+    --lead-soft: #1c355a;
+    --lead-ink: #8dbcf5;
+    --mate: #d95926;
+    --mate-soft: #4a2416;
+    --mate-ink: #f0a17e;
+    --mate-1: #5a2d1c;
+    --mate-2: #9a4222;
+    --mate-3: #d95926;
+    --mate-4: #f29d76;
+    --shot: #199e70;
+    --grey-mark: #5c6673;
+    --warn: #e66767;
+    --focus: #8dbcf5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1117;
+  --surface: #161c25;
+  --surface-2: #1c232e;
+  --ink: #eef1f5;
+  --ink-2: #b9c1cd;
+  --muted: #8791a0;
+  --hair: #2b3441;
+  --hair-2: #232b36;
+  --lead: #3987e5;
+  --lead-soft: #1c355a;
+  --lead-ink: #8dbcf5;
+  --mate: #d95926;
+  --mate-soft: #4a2416;
+  --mate-ink: #f0a17e;
+  --mate-1: #5a2d1c;
+  --mate-2: #9a4222;
+  --mate-3: #d95926;
+  --mate-4: #f29d76;
+  --shot: #199e70;
+  --grey-mark: #5c6673;
+  --warn: #e66767;
+  --focus: #8dbcf5;
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.4;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+h1, h2, h3 { margin: 0; font-family: var(--display); font-weight: 700; text-wrap: balance; letter-spacing: -0.015em; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+b, strong { font-weight: 600; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- deck chrome ---------- */
+.deck { position: fixed; inset: 0; }
+.stage {
+  position: absolute;
+  width: 1280px; height: 720px;
+  left: calc((100vw - 1280px * var(--s, 1)) / 2);
+  top: calc((100vh - 720px * var(--s, 1)) / 2);
+  transform: scale(var(--s, 1));
+  transform-origin: top left;
+}
+.slide {
+  position: absolute; inset: 0;
+  width: 1280px; height: 720px;
+  padding: 44px 64px 40px;
+  background: var(--surface);
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+  border: 1px solid var(--hair);
+}
+.slide.active { display: flex; }
+.slide-head { display: flex; flex-direction: column; gap: 8px; }
+.eyebrow {
+  display: flex; align-items: baseline; gap: 14px;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.eyebrow .num { font-family: var(--mono); letter-spacing: 0; color: var(--ink-2); }
+.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--hair); transform: translateY(-4px); }
+.slide h2 { font-size: 32px; line-height: 1.12; max-width: 1100px; }
+.slide h2 .dim { color: var(--muted); font-weight: 500; }
+.body { flex: 1; min-height: 0; display: grid; gap: 28px; }
+.foot {
+  display: flex; gap: 22px; align-items: baseline;
+  font-size: 11.5px; color: var(--muted); line-height: 1.35;
+  border-top: 1px solid var(--hair-2); padding-top: 10px;
+}
+.foot .mono { font-size: 11px; color: var(--ink-2); }
+.foot p { max-width: none; }
+
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 3px; background: var(--hair-2);
+}
+.hud .bar { height: 100%; width: 0; background: var(--lead); transition: width 200ms ease; }
+.counter {
+  position: fixed; right: 18px; bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted);
+  display: flex; gap: 14px; align-items: center;
+}
+.counter button {
+  font: inherit; color: var(--ink-2); background: var(--surface); border: 1px solid var(--hair); border-radius: 4px;
+  padding: 2px 8px; cursor: pointer;
+}
+.counter button:hover { border-color: var(--muted); }
+.hint { position: fixed; left: 18px; bottom: 10px; font-size: 12px; color: var(--muted); }
+
+/* overview mode */
+body.overview { overflow: auto; }
+body.overview .deck { position: static; }
+body.overview .stage { position: static; transform: none; width: auto; height: auto; display: grid;
+  grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 24px; }
+body.overview .slide { display: flex; position: relative; zoom: 0.3; cursor: pointer; }
+body.overview .slide:hover { outline: 6px solid var(--lead); }
+body.overview .hud, body.overview .hint { display: none; }
+
+body.export .hud, body.export .counter, body.export .hint { display: none; }
+body.export .slide { border: 0; }
+
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .deck, .stage { position: static; transform: none; width: auto; height: auto; }
+  .slide { display: flex; position: relative; page-break-after: always; break-after: page; border: 0; }
+  .hud, .counter, .hint { display: none; }
+}
+
+/* ---------- content primitives ---------- */
+.two { grid-template-columns: 1fr 1fr; }
+.wide-left { grid-template-columns: 1.25fr 1fr; }
+.wide-right { grid-template-columns: 1fr 1.25fr; }
+.stack { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.label {
+  font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500;
+}
+.label.lead { color: var(--lead-ink); }
+.label.mate { color: var(--mate-ink); }
+.claim { font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.25; letter-spacing: -0.01em; }
+.note { font-size: 13.5px; color: var(--ink-2); max-width: 62ch; }
+.list { display: flex; flex-direction: column; gap: 9px; list-style: none; font-size: 14.5px; color: var(--ink); }
+.list li { padding-left: 16px; position: relative; }
+.list li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+.list.tight { gap: 6px; font-size: 13.5px; }
+.list li b { font-weight: 600; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; align-items: baseline; }
+.kv dt { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.kv dd { margin: 0; color: var(--ink); }
+figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 11.5px; padding: 1px 7px; border: 1px solid var(--hair); border-radius: 3px; color: var(--ink-2); background: var(--surface-2); }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.swatch.lead { background: var(--lead); } .swatch.mate { background: var(--mate); } .swatch.shot { background: var(--shot); } .swatch.grey { background: var(--grey-mark); }
+
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.data th, table.data td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--hair-2); vertical-align: top; }
+table.data th { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--hair); }
+table.data td.n, table.data th.n { text-align: right; }
+table.data td.mono { font-size: 12px; }
+table.data tr.hi td { background: var(--surface-2); }
+
+/* diagram text */
+svg text { font-family: var(--body); fill: var(--ink); }
+svg .t-title { font-family: var(--display); font-weight: 700; }
+svg .t-mono { font-family: var(--mono); }
+svg .t-muted { fill: var(--muted); }
+svg .t-ink2 { fill: var(--ink-2); }
+svg .t-lead { fill: var(--lead-ink); }
+svg .t-mate { fill: var(--mate-ink); }
+svg .box { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .box-soft { fill: var(--surface-2); stroke: var(--hair); stroke-width: 1; }
+svg .box-lead { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.2; }
+svg .box-mate { fill: var(--mate-soft); stroke: var(--mate); stroke-width: 1.2; }
+svg .box-dash { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+svg .edge { stroke: var(--ink-2); stroke-width: 1.3; fill: none; }
+svg .edge-lead { stroke: var(--lead); stroke-width: 1.4; fill: none; }
+svg .edge-mate { stroke: var(--mate); stroke-width: 1.4; fill: none; }
+svg .edge-dash { stroke: var(--muted); stroke-width: 1.2; fill: none; stroke-dasharray: 4 3; }
+svg .grid { stroke: var(--hair-2); stroke-width: 1; }
+svg .axis { stroke: var(--hair); stroke-width: 1; }
+svg .f-lead { fill: var(--lead); } svg .f-mate { fill: var(--mate); } svg .f-grey { fill: var(--grey-mark); } svg .f-shot { fill: var(--shot); }
+svg .f-m1 { fill: var(--mate-1); } svg .f-m2 { fill: var(--mate-2); } svg .f-m3 { fill: var(--mate-3); } svg .f-m4 { fill: var(--mate-4); }
+svg .f-surface { fill: var(--surface); }
+svg .node-done { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1.3; }
+svg .node-open { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.2; }
+svg .node-ghost { fill: var(--surface-2); stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+
+/* bar table (slide 5) */
+.bartable { display: grid; grid-template-columns: 250px 1fr 58px 58px; gap: 8px 14px; align-items: center; font-size: 13.5px; }
+.bartable .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.bartable .m { color: var(--ink); line-height: 1.25; }
+.bartable .bars { display: flex; flex-direction: column; gap: 3px; }
+.bartable .bar { height: 11px; border-radius: 0 3px 3px 0; position: relative; }
+.bartable .bar.lead { background: var(--lead); }
+.bartable .bar.mate { background: var(--mate); }
+.bartable .v { font-variant-numeric: tabular-nums; text-align: right; font-family: var(--mono); font-size: 13px; }
+.bartable .v.lead { color: var(--lead-ink); } .bartable .v.mate { color: var(--mate-ink); }
+
+/* dumbbells (slide 6) */
+.dumbbells { display: grid; grid-template-columns: 130px 1fr; gap: 16px 18px; align-items: center; font-size: 13.5px; }
+.dumbbells .m { color: var(--ink); }
+.dumbbells .track { position: relative; height: 26px; }
+.dumbbells .track::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 1px; background: var(--hair); }
+.dumbbells .seg { position: absolute; top: 11.5px; height: 2px; background: var(--ink-2); }
+.dumbbells .dot { position: absolute; top: 6px; width: 14px; height: 14px; border-radius: 50%; transform: translateX(-50%); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--hair); }
+.dumbbells .dot.a { background: var(--grey-mark); } .dumbbells .dot.b { background: var(--lead); }
+.dumbbells .lab { position: absolute; top: -8px; transform: translateX(-50%); font-family: var(--mono); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.dumbbells .lab.b { color: var(--lead-ink); top: 22px; }
+
+/* tiers (last slide) */
+.tiers { display: grid; grid-template-rows: repeat(4, 1fr); gap: 10px; min-height: 0; }
+.tier { display: grid; grid-template-columns: 160px 1fr; gap: 14px; padding: 10px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.tier .name { font-family: var(--display); font-weight: 700; font-size: 15.5px; line-height: 1.2; }
+.tier .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0; }
+.tier .what { font-size: 12.5px; line-height: 1.38; color: var(--ink-2); }
+.tier .what b { color: var(--ink); }
+.tier.hot { border-left-color: var(--lead); }
+.tier.warm { border-left-color: var(--mate); }
+.tier.cold { border-left-color: var(--grey-mark); }
+.tier.drop { border-left-color: var(--warn); }
+
+/* cover */
+.cover { justify-content: space-between; background: var(--surface); }
+.cover .title { font-size: 58px; line-height: 1.02; letter-spacing: -0.03em; max-width: 1000px; font-weight: 800; }
+.cover .sub { font-size: 21px; color: var(--ink-2); max-width: 820px; line-height: 1.35; margin-top: 18px; }
+.cover .meta { display: flex; gap: 40px; font-size: 13px; color: var(--muted); }
+.cover .meta b { display: block; color: var(--ink); font-weight: 500; }
+.cover .rule { height: 6px; width: 120px; background: var(--lead); }
+
+/* questions */
+.qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 44px; align-content: start; padding-top: 8px; }
+.q { display: grid; grid-template-columns: 36px 1fr; gap: 10px; font-size: 17px; line-height: 1.38; }
+.q .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 22px; line-height: 1.1; }
+.q b { font-weight: 600; }
+
+/* ---------- additions for the 2026-09-16 deck ---------- */
+/* tier ladder: rungs are tiers, gaps are the boundaries between them */
+.ladder { display: flex; flex-direction: column; min-height: 0; }
+.rung { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 9px 14px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.rung .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
+.rung .name small { display: block; font-family: var(--mono); font-weight: 400; font-size: 10.5px; color: var(--muted); margin-top: 3px; }
+.rung .what { font-size: 12px; line-height: 1.36; color: var(--ink-2); }
+.rung .what b { color: var(--ink); }
+.rung.gpu { border-left-color: var(--lead); } .rung.cache { border-left-color: var(--shot); } .rung.prompt { border-left-color: var(--mate); } .rung.disk { border-left-color: var(--grey-mark); }
+.gapx { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 5px 14px 5px 18px; align-items: center; }
+.gapx .arrow { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.3; }
+.gapx .price { font-size: 12px; color: var(--ink); background: var(--surface); border: 1px dashed var(--hair); border-radius: 4px; padding: 5px 10px; line-height: 1.35; }
+.gapx .price b { color: var(--lead-ink); font-family: var(--mono); font-weight: 500; }
+.gapx .price.ask { font-family: var(--display); font-weight: 700; color: var(--muted); font-size: 15px; padding: 3px 10px; }
+/* paired bars (slides 3 and 5): ghost = baseline, filled = the measured arm */
+.pairs { display: grid; grid-template-columns: 1fr 300px 90px; gap: 7px 14px; align-items: center; font-size: 12.5px; }
+.pairs .h { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
+.pairs .m { color: var(--ink); line-height: 1.25; }
+.pairs .m small { display: block; color: var(--muted); font-size: 11px; }
+.pairs .bars { display: flex; flex-direction: column; gap: 3px; }
+.pairs .bar { height: 9px; border-radius: 0 3px 3px 0; }
+.pairs .bar.ghost { background: var(--grey-mark); opacity: 0.55; }
+.pairs .bar.mate { background: var(--mate); }
+.pairs .bar.lead { background: var(--lead); }
+.pairs .v { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); line-height: 1.3; }
+.pairs .v b { color: var(--ink); font-weight: 500; }
+/* dense grids */
+.three { grid-template-columns: 1fr 1fr 1fr; }
+.list.tight.xs { font-size: 12.5px; gap: 5px; }
+.note.xs { font-size: 12px; }
+table.data.xs { font-size: 12px; } table.data.xs th, table.data.xs td { padding: 4px 8px; }
+.tag { display: inline-block; font-family: var(--mono); font-size: 10.5px; padding: 0 6px; border-radius: 3px; border: 1px solid var(--hair); color: var(--ink-2); background: var(--surface-2); margin-right: 4px; vertical-align: 1px; }
+.tag.m { color: var(--lead-ink); border-color: var(--lead-soft); background: var(--lead-soft); }
+.tag.r { color: var(--mate-ink); border-color: var(--mate-soft); background: var(--mate-soft); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 22px; align-content: start; }
+.nw { white-space: nowrap; }
+table.data.xxs td, table.data.xxs th { padding: 3px 7px; }
+.step { display: grid; grid-template-columns: 26px 1fr; gap: 8px; font-size: 12.5px; line-height: 1.35; }
+.step .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 15px; line-height: 1.15; }
+.step b { font-weight: 600; }
+.step .group { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+/* ---------- additions for the 2026-09-23 deck ---------- */
+/* verdicts: what is deployable and what is retired */
+.verdicts { display: grid; gap: 7px; align-content: start; }
+.verdict { display: grid; grid-template-columns: 20px 1fr; gap: 9px; padding: 6px 12px; border-left: 4px solid var(--hair); background: var(--surface-2); border-radius: 0 4px 4px 0; align-items: start; }
+.verdict .n { font-family: var(--display); font-weight: 700; font-size: 13.5px; line-height: 1.3; }
+.verdict .what { font-size: 12.5px; line-height: 1.34; color: var(--ink-2); }
+.verdict .what b { color: var(--ink); font-weight: 600; }
+.verdict.keep { border-left-color: var(--shot); } .verdict.keep .n { color: var(--shot); }
+.verdict.drop { border-left-color: var(--warn); } .verdict.drop .n { color: var(--warn); }
+/* arm legend colours: grey = untreated baseline, orange = direct predecessors, blue = transitive closure */
+.swatch.warn { background: var(--warn); }
+svg .t-shot { fill: var(--shot); }
+.bartable .bar.grey { background: var(--grey-mark); }
+.bartable .v.grey { color: var(--muted); }
+.pairs .bar.grey { background: var(--grey-mark); }
+/* denser still, for the six-note week */
+.list.tight.xxs { font-size: 11.8px; gap: 4px; }
+.list.tight.xxs li { padding-left: 13px; }
+.list.tight.xxs li::before { width: 5px; height: 5px; top: 0.58em; }
+table.data.xxs { font-size: 11.5px; }
+.kv.xs { font-size: 12px; gap: 4px 12px; } .kv.xs dt { font-size: 11px; }
+.steps.two-up { grid-template-columns: 1fr 1fr; }
+/* reading keys: every table carries its own terms, metrics and what the values say */
+.key { display: grid; gap: 6px 20px; align-content: start; }
+.key.k2 { grid-template-columns: 1fr 1fr; }
+.key.k3 { grid-template-columns: 1fr 1fr 1fr; }
+.key .kh { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-bottom: 3px; margin-bottom: 5px; border-bottom: 1px solid var(--hair-2); }
+.gloss { display: grid; grid-template-columns: max-content 1fr; gap: 3px 9px; margin: 0; font-size: 11.5px; line-height: 1.32; align-items: baseline; }
+.gloss dt { font-family: var(--mono); font-size: 10.5px; color: var(--ink); white-space: nowrap; }
+.gloss dd { margin: 0; color: var(--ink-2); }
+.gloss b { color: var(--ink); font-weight: 600; }
+/* table furniture: group rows, sub-labels, cells not run, interval verdicts */
+table.data tr.grp td { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding-top: 7px; padding-bottom: 3px; border-bottom: 1px solid var(--hair); background: none; }
+table.data th.grp { text-align: center; border-bottom: 1px solid var(--hair-2); }
+table.data .sub { display: block; font-family: var(--body); font-size: 10.5px; line-height: 1.3; color: var(--muted); margin-top: 1px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+table.data td.na { color: var(--muted); }
+table.data td.warn { color: var(--warn); }
+.verd { font-family: var(--mono); font-size: 10.5px; white-space: nowrap; }
+.verd.yes { color: var(--shot); } .verd.no { color: var(--muted); } .verd.cost { color: var(--warn); }
+svg .t-warn { fill: var(--warn); }
+svg .box-shot { fill: none; stroke: var(--shot); stroke-width: 1.2; stroke-dasharray: 4 3; }
+svg .band-shot { fill: var(--shot); opacity: 0.07; }
+svg .whisk { stroke-width: 2.2; stroke-linecap: round; fill: none; }
+.lc { text-transform: none; letter-spacing: 0; }
+/* ---------- additions for the 2026-09-30 deck ---------- */
+/* colour meaning. section 1: grey = shift RoPE and random picks, blue = EPIC, orange = CacheBlend,
+   green = a repaired cost, red = a cost. section 2: grey = stock vLLM, blue = the session gate,
+   red = thrashing. section 3: blue = this harness, ink = the paper's number. */
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--ink-2); align-items: center; }
+table.data td.fix { background: color-mix(in srgb, var(--shot) 17%, var(--surface)); }
+table.data.arms th { padding: 3px 6px; vertical-align: bottom; }
+table.data.arms td { padding: 1.5px 6px; }
+table.data.arms tr.grp td { padding-top: 4px; padding-bottom: 1px; }
+table.data.arms th .sub { font-size: 9.5px; }
+table.data.arms td.mono { white-space: nowrap; }
+.fixchip { background: color-mix(in srgb, var(--shot) 17%, var(--surface)); padding: 0 3px; border-radius: 2px; }
+.warnchip { color: var(--warn); }
+.swatch.ink2 { background: var(--ink-2); }
+.swatch.hair { background: var(--hair); }
+svg .f-warn { fill: var(--warn); }
+svg .f-ink2 { fill: var(--ink-2); }
+svg .f-soft { fill: var(--surface-2); }
+svg .f-lead-soft { fill: var(--lead-soft); }
+svg .f-hair { fill: var(--hair); }
+svg .box-grey { fill: var(--surface-2); stroke: var(--grey-mark); stroke-width: 1; }
+svg .box-warn { fill: none; stroke: var(--warn); stroke-width: 1.4; }
+svg .edge-warn { stroke: var(--warn); stroke-width: 1.3; fill: none; }
+svg .edge-grey { stroke: var(--grey-mark); stroke-width: 1.3; fill: none; }
+svg .edge-hair { stroke: var(--hair); stroke-width: 1; fill: none; }
+svg .line-lead { stroke: var(--lead); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .line-grey { stroke: var(--grey-mark); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .ring { stroke: var(--surface); stroke-width: 2; }
+/* the three sections: a small numbered tag in eyebrows and tables */
+.sec { display: inline-block; font-family: var(--mono); font-size: 10.5px; line-height: 1.2; padding: 0 5px; border-radius: 3px; border: 1px solid var(--hair); color: var(--ink-2); background: var(--surface-2); letter-spacing: 0; }
+/* a table cell that is a sentence, not a number */
+table.data td.txt { font-size: 11px; line-height: 1.3; color: var(--ink-2); }
+table.data.xxs td.tight, table.data.xxs th.tight { padding-left: 4px; padding-right: 4px; }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+.pend { border: 1px dashed var(--muted); border-radius: 4px; padding: 10px 14px; color: var(--muted); font-size: 12.5px; }
+/* compact reading keys under tall tables */
+.key.tight .gloss { font-size: 11px; gap: 2px 8px; line-height: 1.28; }
+.key.tight .gloss dt { font-size: 10px; }
+.key.tight .list.tight.xxs { font-size: 11.2px; gap: 3px; line-height: 1.3; }
+.key.kk { grid-template-columns: 1fr 1.6fr; }
+figcaption.xs { font-size: 11px; line-height: 1.3; }
+/* ---------- additions for the 2026-10-07 deck ---------- */
+/* colour meaning. part I: grey = baseline arm, blue = the arm under test, green = a fix, red = a limit or a
+   cost. part II: blue = KV the server reuses, orange = known content it recomputes, ink = new work, red = waste. */
+/* setup chips: the configuration a topic ran on, under its h2 */
+.cfg { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.cfg .label { margin-right: 2px; font-size: 10.5px; }
+.cfg .chip { font-size: 10.5px; padding: 0 6px; line-height: 1.6; }
+/* the part-II section tag in eyebrows */
+.eyebrow .sec { text-transform: none; letter-spacing: 0; }
+/* a fitted model, set as a formula */
+.formula { font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--ink); background: var(--surface-2); border-left: 4px solid var(--lead); border-radius: 0 4px 4px 0; padding: 9px 14px; }
+.formula b { color: var(--lead-ink); font-weight: 500; }
+.formula .c { color: var(--ink-2); font-size: 12px; }
+/* a legend that carries values */
+.vlegend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 18px; font-size: 12px; color: var(--ink-2); }
+.vlegend b { color: var(--ink); font-weight: 600; font-family: var(--mono); font-size: 11.5px; }
+.swatch.lead-soft { background: var(--lead-soft); border: 1px solid var(--lead); }
+.swatch.ink { background: var(--ink-2); }
+table.data td.good { color: var(--shot); }
+table.data.xs td.txt2, table.data.xs th.txt2 { font-size: 11.5px; line-height: 1.32; }
+svg .line-ink2 { stroke: var(--ink-2); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .band-warn { fill: var(--warn); opacity: 0.07; }
+svg .f-lead-soft-s { fill: var(--lead-soft); stroke: var(--lead); stroke-width: 1; }
+.steps.six { grid-template-columns: repeat(3, 1fr); gap: 26px 30px; }
+.steps.six .step { font-size: 14px; }
+.steps.six .list.tight { font-size: 14px; gap: 6px; }
+/* the methods box: one card per method; blue = an accepted method, orange = needs what only the harness knows */
+.methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 16px; align-content: start; }
+.method { padding: 9px 13px 10px; border-left: 4px solid var(--lead); background: var(--surface-2); border-radius: 0 4px 4px 0; font-size: 12px; line-height: 1.36; color: var(--ink-2); }
+.method.agent { border-left-color: var(--mate); }
+.method .mh { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; color: var(--ink); }
+.method .mh .n { color: var(--lead-ink); margin-right: 7px; }
+.method.agent .mh .n { color: var(--mate-ink); }
+.method .grp { display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 2px 0 5px; }
+.method ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.method li { padding-left: 11px; position: relative; }
+.method li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); }
+.method b { color: var(--ink); font-weight: 600; }
+.method .go { display: block; margin-top: 5px; font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+/* ---------- additions for the 2026-10-21 deck ---------- */
+/* colour meaning. part I: blue = KV the server reuses (or the arm under test), orange = known text it recomputes,
+   ink = new text, grey = the baseline arm or a noise floor. */
+/* the local file renders in quirks mode, where tables get line-height: normal; the published page gets a doctype,
+   so set it explicitly and both render alike */
+table.data { line-height: normal; }
+table.data td.flag { color: var(--mate-ink); }
+.method .mh + * { margin-top: 3px; }
+/* dense tables for the backup slides */
+table.data.xxs.dense td, table.data.xxs.dense th { padding: 2px 5px; }
+table.data.xxs.dense tr.grp td { padding-top: 3px; padding-bottom: 1px; }
+.steps .list.tight.xs { margin-top: 4px; }
+/* next steps: two columns */
+.ns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-content: start; }
+.ns-col { display: grid; gap: 9px; align-content: start; }
+.ns-head { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: start; }
+.ns-head .n { font-family: var(--display); font-weight: 700; color: var(--lead-ink); font-size: 20px; line-height: 1.1; }
+.ns-head .group { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.ns-title { font-size: 15.5px; line-height: 1.3; }
+.ns-know { font-size: 11.8px; }
+.ns-know .mh { font-size: 13px; margin-bottom: 4px; }
+.ns-steps { font-size: 12.2px; gap: 5px; }
+/* slide 7: prior work by component */
+.cv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.cv-card { background: var(--surface-2); border-left: 4px solid var(--lead); border-radius: 0 4px 4px 0; padding: 6px 11px 7px;
+  display: grid; gap: 3px; align-content: start; font-size: 11.6px; line-height: 1.34; color: var(--ink-2); }
+.cv-card b { color: var(--ink); font-weight: 600; }
+.cv-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13.5px; }
+.cv-h b { font-family: var(--display); font-weight: 700; }
+.cv-h span { font-family: var(--mono); font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+.cv-k { display: inline-block; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--lead-ink); margin-right: 6px; }
+.cv-k.ext { color: var(--muted); }
+.cv-k.new { color: var(--mate-ink); }
+.cv-dim { color: var(--muted); }
+.cv-dir { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(9, auto); grid-auto-flow: column;
+  gap: 1px 18px; font-size: 11px; line-height: 1.32; color: var(--ink-2); }
+.cv-e b { color: var(--ink); font-weight: 600; }
+.cv-aff { color: var(--ink-2); }
+</style>
+
+<div class="deck" id="deck">
+<div class="stage" id="stage">
+
+<!-- ===================== 1 &#183; COVER ===================== -->
+<section class="slide cover" data-title="Cover">
+  <div>
+    <div class="eyebrow"><span>Weekly progress</span><span class="num">2026-10-21</span></div>
+    <div class="rule" style="margin:34px 0 26px"></div>
+    <h1 class="title">Reusing KV after the harness's own edits keeps accuracy and cuts prefill tokens by 91%</h1>
+    <p class="sub">These two weeks: does reusing the KV that survives the harness's context edits hurt the agent (5,240 trials on SWE-bench Verified, Pro and Terminal-Bench), how fast does the reused KV drift with each shift, and does a harness-aware serving design pay (checked offline)? Next: KV management for hybrid models such as Qwen3.8, and DeepSeek's DeepInfer, open-sourced on 10-20.</p>
+  </div>
+  <div class="meta">
+    <div><b>yq335@cornell.edu</b>learn-claude-code &#183; branch <span class="mono">claude</span> &#183; covers 2026-10-07 to 2026-10-20</div>
+    <div><b>Harness</b>s15, made append-only &#183; Harbor 0.24.0 &#183; vLLM 0.31.0 on H100</div>
+    <div><b>Models</b>MiniMax-M2.7 for the reuse rounds &#183; Qwen3.8-27B, DeepSeek-V4-Flash &#183; Qwen3-32B (topic 16)</div>
+    <div><b>Writeups</b><span class="mono">research/16</span> &#183; <span class="mono">16/harness_eval</span> &#183; <span class="mono">method_develop</span> &#183; <span class="mono">conclusion.md</span></div>
+  </div>
+</section>
+
+<!-- ===================== 2 &#183; PART I A: THE EDIT ===================== -->
+<section class="slide" data-title="The edit">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">2</span><span><span class="sec">I &#183; A</span> The edit: fix the harness, then the snip is what is left</span></div>
+    <h2>With the harness's own cache-buster fixed (4.2% &#8594; 89.3% reuse), the rolling snip is the one frequent edit, and the hit rate falls to 9&#8211;54% after it</h2>
+    <div class="cfg"><span class="label">Setup</span><span class="chip">s15, append-only &#183; Harbor 0.24.0</span><span class="chip">vLLM 0.31.0 on H100</span><span class="chip">profile: 1,080 trials</span><span class="chip">reuse arms: MiniMax-M2.7, TP=4</span></div>
+  </div>
+  <div class="body" style="grid-template-columns: 560px 1fr; gap:26px">
+    <div class="stack" style="gap:6px">
+      <p class="label">After the snip: what each arm computes (schematic)</p>
+      <figure><svg viewBox="0 0 560 336" role="img" aria-label="Schematic. Call k has 50 messages, all cached. At call k+1 the snip keeps the system prompt and messages 1-3, writes a new archive marker, and keeps the last 46 messages at new positions. Full re-prefill recomputes all of them (47.3 % of the prompt computed, e4 SWE-bench Verified); shift reuses their KV re-rotated (3.7 %); EPIC-128 also recomputes the first 128 tokens of the moved run (4.2 %); the age caps recompute old rows (a4 11.3 %); the JSD trigger recomputes everything after the head with probability JSD (8.4 %)."><g><text x="132.0" y="14.0" font-size="10.5" class="t-muted">call k: 50 messages, all cached</text><text x="122.0" y="32.0" font-size="11.5" text-anchor="end" class="t-title">before</text><text x="122.0" y="45.0" font-size="9.5" text-anchor="end" class="t-muted">call k</text><rect x="132.0" y="20" width="48.0" height="18" rx="2" class="f-lead"><title>system prompt + messages 1-3: cached</title></rect><rect x="182.0" y="20" width="280.0" height="18" rx="2" class="f-lead"><title>messages 4-50: cached</title></rect><rect x="464.0" y="20" width="34.0" height="18" rx="2" class="f-ink2"><title>the new message: computed</title></rect><text x="132.0" y="62.0" font-size="10.5" class="t-muted">call k+1: the snip keeps messages 1-3, a new archive marker, the last 46</text><text x="122.0" y="82.0" font-size="11.5" text-anchor="end" class="t-title">full re-prefill</text><text x="122.0" y="95.0" font-size="9.5" text-anchor="end" class="t-muted">prefix</text><rect x="132.0" y="70" width="48.0" height="18" rx="2" class="f-lead"><title>head: cached prefix</title></rect><rect x="182.0" y="70" width="14.0" height="18" rx="2" class="f-mate"><title>archive marker: new text</title></rect><rect x="198.0" y="70" width="264.0" height="18" rx="2" class="f-mate"><title>the 46 surviving messages at new positions: recomputed</title></rect><rect x="464.0" y="70" width="34.0" height="18" rx="2" class="f-ink2"><title>new message: computed</title></rect><text x="506.0" y="83.0" font-size="10.5" class="t-mono t-ink2">47.3%<title>full re-prefill: share of the prompt computed per call, e4 SWE-bench Verified: 7,223 (47.3%)</title></text><text x="122.0" y="124.0" font-size="11.5" text-anchor="end" class="t-title">shift</text><text x="122.0" y="137.0" font-size="9.5" text-anchor="end" class="t-muted">re-rotate</text><rect x="132.0" y="112" width="48.0" height="18" rx="2" class="f-lead"><title>head: cached</title></rect><rect x="182.0" y="112" width="14.0" height="18" rx="2" class="f-mate"><title>marker: computed</title></rect><rect x="198.0" y="112" width="264.0" height="18" rx="2" class="f-lead"><title>tail: reused KV, RoPE re-rotated to its new positions</title></rect><rect x="464.0" y="112" width="34.0" height="18" rx="2" class="f-ink2"><title>new message: computed</title></rect><text x="506.0" y="125.0" font-size="10.5" class="t-mono t-ink2">3.7%<title>shift: share of the prompt computed per call, e4 SWE-bench Verified: 543 (3.7%)</title></text><text x="122.0" y="166.0" font-size="11.5" text-anchor="end" class="t-title">EPIC-128</text><text x="122.0" y="179.0" font-size="9.5" text-anchor="end" class="t-muted">+ run heads</text><rect x="132.0" y="154" width="48.0" height="18" rx="2" class="f-lead"><title>head: cached</title></rect><rect x="182.0" y="154" width="14.0" height="18" rx="2" class="f-mate"><title>marker: computed</title></rect><rect x="198.0" y="154" width="22.0" height="18" rx="2" class="f-mate"><title>first 128 tokens of the moved run: recomputed</title></rect><rect x="222.0" y="154" width="240.0" height="18" rx="2" class="f-lead"><title>rest of the tail: reused, re-rotated</title></rect><rect x="464.0" y="154" width="34.0" height="18" rx="2" class="f-ink2"><title>new message: computed</title></rect><text x="506.0" y="167.0" font-size="10.5" class="t-mono t-ink2">4.2%<title>EPIC-128: share of the prompt computed per call, e4 SWE-bench Verified: 647 (4.2%)</title></text><text x="122.0" y="208.0" font-size="11.5" text-anchor="end" class="t-title">age cap a1, a4</text><text x="122.0" y="221.0" font-size="9.5" text-anchor="end" class="t-muted">+ old rows</text><rect x="132.0" y="196" width="48.0" height="18" rx="2" class="f-lead"><title>head: cached</title></rect><rect x="182.0" y="196" width="14.0" height="18" rx="2" class="f-mate"><title>marker: computed</title></rect><rect x="198.0" y="196" width="108.0" height="18" rx="2" class="f-mate"><title>rows older than 1 (a1) or 4 (a4) edits: recomputed</title></rect><rect x="308.0" y="196" width="154.0" height="18" rx="2" class="f-lead"><title>younger rows: reused, with EPIC-128 heads</title></rect><rect x="464.0" y="196" width="34.0" height="18" rx="2" class="f-ink2"><title>new message: computed</title></rect><text x="506.0" y="209.0" font-size="10.5" class="t-mono t-ink2">11.3%<title>age cap a1, a4: share of the prompt computed per call, e4 SWE-bench Verified: 1,738 (11.3%)</title></text><text x="122.0" y="250.0" font-size="11.5" text-anchor="end" class="t-title">JSD trigger</text><text x="122.0" y="263.0" font-size="9.5" text-anchor="end" class="t-muted">rjsd</text><rect x="132.0" y="238" width="48.0" height="18" rx="2" class="f-lead"><title>head: cached</title></rect><rect x="182.0" y="238" width="14.0" height="18" rx="2" class="f-mate"><title>marker: computed</title></rect><rect x="198.0" y="238" width="264.0" height="18" rx="2" class="f-lead"><title>as EPIC-128, but with probability JSD everything after the head is recomputed</title></rect><rect x="464.0" y="238" width="34.0" height="18" rx="2" class="f-ink2"><title>new message: computed</title></rect><text x="506.0" y="251.0" font-size="10.5" class="t-mono t-ink2">8.4%<title>JSD trigger: share of the prompt computed per call, e4 SWE-bench Verified: 1,301 (8.4%)</title></text><rect x="182.0" y="235" width="280.0" height="24" rx="3" class="box-dash"></rect><rect x="132" y="276" width="10" height="10" rx="2" class="f-lead"></rect><text x="146.0" y="285.0" font-size="9.5" class="t-ink2">KV reused</text><rect x="210.6" y="276" width="10" height="10" rx="2" class="f-mate"></rect><text x="224.6" y="285.0" font-size="9.5" class="t-ink2">known text recomputed</text><rect x="354.0" y="276" width="10" height="10" rx="2" class="f-ink2"></rect><text x="368.0" y="285.0" font-size="9.5" class="t-ink2">new text</text><text x="132.0" y="300.0" font-size="9.5" class="t-muted">right: share of the prompt computed per call (e4, SWE-bench Verified)</text></g></svg></figure>
+    </div>
+    <div class="stack" style="gap:10px">
+      <p class="label">Profile: 4 models &#215; 3 benchmarks &#215; 30 tasks &#215; 3 trials</p>
+      <table class="data xs">
+        <thead><tr><th>model</th><th class="grp" colspan="3">pass@1<span class="sub">SWE &#183; Pro &#183; TB</span></th><th class="grp" colspan="3">prefix-cache hit, before &#8594; after the snip<span class="sub">SWE &#183; Pro &#183; TB</span></th></tr></thead>
+        <tbody><tr><td class="nw">DeepSeek-V4-Flash</td><td class="n">0.900</td><td class="n">0.944</td><td class="n">0.589</td><td class="n">91% &#8594; 16%</td><td class="n">92% &#8594; 21%</td><td class="n">90% &#8594; 10%</td></tr><tr><td class="nw">Qwen3.8-27B</td><td class="n">0.789</td><td class="n">0.967</td><td class="n">0.500</td><td class="n">79% &#8594; 12%</td><td class="n">82% &#8594; 13%</td><td class="n">86% &#8594; 9%</td></tr><tr class="hi"><td class="nw">MiniMax-M2.7</td><td class="n">0.644</td><td class="n">0.867</td><td class="n">0.478</td><td class="n">92% &#8594; 23%</td><td class="n">88% &#8594; 19%</td><td class="n">77% &#8594; 19%</td></tr><tr><td class="nw">Qwen3-32B</td><td class="n">0.089</td><td class="n">0.067</td><td class="n">0.022</td><td class="n">67% &#8594; 30%</td><td class="n">82% &#8594; 54%</td><td class="n">61% &#8594; 49%</td></tr></tbody>
+      </table>
+      <ul class="list tight xs"><li><b>The harness fix first</b> (topic 16, stock vLLM): the system prompt carried a per-second timestamp, so reuse was 4.2%; a static prompt plus an append-only chat template give 89.3% (99% of what is reusable)</li><li><b>Then the snip is the edit</b>: past 50 messages s15 keeps messages 1&#8211;3, writes a new archive marker and keeps the last 46, on every call. 83&#8211;96% of the re-prefilled tokens come after it</li><li><b>MiniMax-M2.7 carries the reuse rounds</b>: full attention, so re-rotation is exact, and 0.644 on SWE leaves room both ways. Qwen3.8's DeltaNet layers recompute after any edit; DeepSeek needs a separate design; Qwen3-32B sits at the floor</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">harness_eval/REPORT.md</span> &#167;2 (pass@1, 90 trials per cell) and &#167;3 (hit rates); topic 16 README &#167;4.0 and <span class="mono">e0_tables.md</span> (reuse, compaction off); <span class="mono">s15 code.py</span> <span class="mono">snip_compact</span>; <span class="mono">MODELS.md</span> &#167;6. Shares: computed tokens per call, e4 SWE-bench Verified.</p></div>
+</section>
+
+<!-- ===================== 3 &#183; PART I B: TOPIC 16 ===================== -->
+<section class="slide" data-title="Topic 16">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">3</span><span><span class="sec">I &#183; B</span> Topic 16: EPIC inside the live loop, Qwen3-32B</span></div>
+    <h2>Stale-KV error compounds with every shift (reply KL 0.0006 after the first, 0.0165 by the 16th&#8211;31st), and EPIC's repair removes only 11&#8211;30% of it</h2>
+    <div class="cfg"><span class="label">Setup</span><span class="chip">Qwen3-32B, BF16, non-thinking</span><span class="chip">vLLM 0.31.0, EPIC emulated, H100</span><span class="chip">12 cells &#215; 4 repeats</span><span class="chip">replay: 30 runs, identical prompts</span></div>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1.08fr; grid-template-rows: auto 1fr; gap:8px 22px">
+    <div class="stack" style="gap:4px">
+      <p class="label">How much of the stale KV's deviation EPIC removes</p>
+      <figure><svg viewBox="0 0 520 226" role="img" aria-label="Topic 16, Qwen3-32B, replay of 30 runs on identical prompts. Share of plain re-rotation&#x27;s (shift&#x27;s) K deviation that EPIC removes: k = 32: 11 % [8, 14]; k = 64: 22 % [17, 28]; k = 128: 30 % [24, 37]; 67 % for the one-step control. EPIC-128 by layer group: layers 0-15: 55 %; 16-31: 50 %; 32-47: 35 %; 48-63: 21 %."><g><text x="52.0" y="16.0" font-size="12" class="t-title">a. removed by k, all layers</text><text x="52.0" y="30.0" font-size="9.5" class="t-muted">% of shift&#x27;s K deviation, identical prompts</text><path d="M 52 176.0 H 240" class="grid"></path><text x="46.0" y="179.5" font-size="9.5" text-anchor="end" class="t-mono t-muted tick">0</text><path d="M 52 143.0 H 240" class="grid"></path><text x="46.0" y="146.5" font-size="9.5" text-anchor="end" class="t-mono t-muted tick">20</text><path d="M 52 110.0 H 240" class="grid"></path><text x="46.0" y="113.5" font-size="9.5" text-anchor="end" class="t-mono t-muted tick">40</text><path d="M 52 77.0 H 240" class="grid"></path><text x="46.0" y="80.5" font-size="9.5" text-anchor="end" class="t-mono t-muted tick">60</text><path d="M 52 44.0 H 240" class="grid"></path><text x="46.0" y="47.5" font-size="9.5" text-anchor="end" class="t-mono t-muted tick">80</text><path d="M 95 162.8 V 152.9" class="edge-lead whisk"></path><text x="95.0" y="192.0" font-size="10" text-anchor="middle" class="t-mono t-ink2">k = 32</text><path d="M 150 147.9 V 129.8" class="edge-lead whisk"></path><text x="150.0" y="192.0" font-size="10" text-anchor="middle" class="t-mono t-ink2">k = 64</text><path d="M 215 136.4 V 114.9" class="edge-lead whisk"></path><text x="215.0" y="192.0" font-size="10" text-anchor="middle" class="t-mono t-ink2">k = 128</text><path d="M 95 157.8 L 150 139.7 L 215 126.5" class="line-lead"></path><circle cx="95" cy="157.8" r="4.5" class="f-lead ring"><title>EPIC-32: 11 % [8, 14] of shift's deviation removed</title></circle><text x="87.0" y="149.8" font-size="11" text-anchor="end" class="t-mono t-ink2">11%</text><circle cx="150" cy="139.7" r="4.5" class="f-lead ring"><title>EPIC-64: 22 % [17, 28] of shift's deviation removed</title></circle><text x="142.0" y="131.7" font-size="11" text-anchor="end" class="t-mono t-ink2">22%</text><circle cx="215" cy="126.5" r="4.5" class="f-lead ring"><title>EPIC-128: 30 % [24, 37] of shift's deviation removed</title></circle><text x="207.0" y="118.5" font-size="11" text-anchor="end" class="t-mono t-ink2">30%</text><path d="M 52 65.5 H 240" class="edge-dash"></path><text x="56.0" y="78.5" font-size="9.5" class="t-muted">one-step EPIC-128: 67%</text><text x="300.0" y="16.0" font-size="12" class="t-title">b. EPIC-128 by layer group</text><text x="300.0" y="30.0" font-size="9.5" class="t-muted">% removed; deep layers get the least</text><path d="M 300 176.0 H 510" class="grid"></path><path d="M 300 143.0 H 510" class="grid"></path><path d="M 300 110.0 H 510" class="grid"></path><path d="M 300 77.0 H 510" class="grid"></path><path d="M 300 44.0 H 510" class="grid"></path><path d="M 311.2 176 V 89.2 Q 311.2 85.2 315.2 85.2 H 337.2 Q 341.2 85.2 341.2 89.2 V 176 Z" class="f-lead"><title>EPIC-128, layers 0-15: 55 % [46, 62]</title></path><path d="M 326.2 100.1 V 73.7" class="edge whisk"></path><text x="326.2" y="68.7" font-size="10.5" text-anchor="middle" class="t-mono t-ink2">55%</text><text x="326.2" y="192.0" font-size="9.5" text-anchor="middle" class="t-mono t-ink2">0-15</text><path d="M 363.8 176 V 97.5 Q 363.8 93.5 367.8 93.5 H 389.8 Q 393.8 93.5 393.8 97.5 V 176 Z" class="f-lead"><title>EPIC-128, layers 16-31: 50 % [42, 58]</title></path><path d="M 378.8 106.7 V 80.3" class="edge whisk"></path><text x="378.8" y="75.3" font-size="10.5" text-anchor="middle" class="t-mono t-ink2">50%</text><text x="378.8" y="192.0" font-size="9.5" text-anchor="middle" class="t-mono t-ink2">16-31</text><path d="M 416.2 176 V 122.2 Q 416.2 118.2 420.2 118.2 H 442.2 Q 446.2 118.2 446.2 122.2 V 176 Z" class="f-lead"><title>EPIC-128, layers 32-47: 35 % [28, 42]</title></path><path d="M 431.2 129.8 V 106.7" class="edge whisk"></path><text x="431.2" y="101.7" font-size="10.5" text-anchor="middle" class="t-mono t-ink2">35%</text><text x="431.2" y="192.0" font-size="9.5" text-anchor="middle" class="t-mono t-ink2">32-47</text><path d="M 468.8 176 V 145.3 Q 468.8 141.3 472.8 141.3 H 494.8 Q 498.8 141.3 498.8 145.3 V 176 Z" class="f-lead"><title>EPIC-128, layers 48-63: 21 % [16, 27]</title></path><path d="M 483.8 149.6 V 131.4" class="edge whisk"></path><text x="483.8" y="126.4" font-size="10.5" text-anchor="middle" class="t-mono t-ink2">21%</text><text x="483.8" y="192.0" font-size="9.5" text-anchor="middle" class="t-mono t-ink2">48-63</text><path d="M 52 176 H 240 M 300 176 H 510" class="axis"></path><text x="52.0" y="220.0" font-size="9.5" class="t-muted">95 % CI over runs; dashed: EPIC-128 rebuilt from fresh KV before each call</text></g></svg></figure>
+    </div>
+    <div class="stack" style="gap:4px">
+      <p class="label">KL divergence grows with the number of shifts</p>
+      <figure><svg viewBox="0 0 560 226" role="img" aria-label="KL rises with the number of shifts. Panel a, Qwen3-32B, topic 16 replay, reply KL teacher-forced over the recorded reply: shift is 0.0006 after the first shift and 0.0165 at shifts 16-31, then 0.0135 and 0.0104 later; EPIC-128 follows below it; with fresh KV rebuilt before each call it stays between 0.0039 and 0.0062 from the 4th shift on. Panel b, Qwen3.8-27B replay: first-token KL for shift rises 0.0073, 0.0133, 0.0179, 0.0353 over 0, 1-5, 6-20 and 21+ snips; EPIC-128 likewise; the age cap and the A/A floor stay between 0.0054 and 0.0103."><g><text x="10.0" y="14.0" font-size="11.5" class="t-title">a. Qwen3-32B: reply KL by shifts so far</text><text x="10.0" y="28.0" font-size="9.5" class="t-muted">teacher-forced over the recorded reply, 30 runs</text><path d="M 44 176.0 H 268" class="grid"></path><text x="39.0" y="179.5" font-size="9" text-anchor="end" class="t-mono t-muted tick">0.00</text><path d="M 44 108.0 H 268" class="grid"></path><text x="39.0" y="111.5" font-size="9" text-anchor="end" class="t-mono t-muted tick">0.01</text><path d="M 44 40.0 H 268" class="grid"></path><text x="39.0" y="43.5" font-size="9" text-anchor="end" class="t-mono t-muted tick">0.02</text><path d="M 60.0 171.9 L 92.0 172.6 L 124.0 116.2 L 156.0 90.3 L 188.0 63.8 L 220.0 84.2 L 252.0 105.3" class="line-ink2"></path><circle cx="60.0" cy="171.9" r="3.5" class="f-ink2 ring"><title>shift, shifts 1: reply KL 0.0006 [0.0003, 0.0010]</title></circle><circle cx="92.0" cy="172.6" r="3.5" class="f-ink2 ring"><title>shift, shifts 2-3: reply KL 0.0005 [0.0003, 0.0008]</title></circle><circle cx="124.0" cy="116.2" r="3.5" class="f-ink2 ring"><title>shift, shifts 4-7: reply KL 0.0088 [0.0041, 0.0142]</title></circle><circle cx="156.0" cy="90.3" r="3.5" class="f-ink2 ring"><title>shift, shifts 8-15: reply KL 0.0126 [0.0075, 0.0183]</title></circle><circle cx="188.0" cy="63.8" r="3.5" class="f-ink2 ring"><title>shift, shifts 16-31: reply KL 0.0165 [0.0097, 0.0235]</title></circle><circle cx="220.0" cy="84.2" r="3.5" class="f-ink2 ring"><title>shift, shifts 32-63: reply KL 0.0135 [0.0087, 0.0184]</title></circle><circle cx="252.0" cy="105.3" r="3.5" class="f-ink2 ring"><title>shift, shifts 64+: reply KL 0.0104 [0.0055, 0.0158]</title></circle><path d="M 60.0 171.9 L 92.0 172.6 L 124.0 136.6 L 156.0 124.3 L 188.0 101.2 L 220.0 107.3 L 252.0 116.8" class="line-lead"></path><circle cx="60.0" cy="171.9" r="3.5" class="f-lead ring"><title>EPIC-128, shifts 1: reply KL 0.0006 [0.0003, 0.0010]</title></circle><circle cx="92.0" cy="172.6" r="3.5" class="f-lead ring"><title>EPIC-128, shifts 2-3: reply KL 0.0005 [0.0003, 0.0008]</title></circle><circle cx="124.0" cy="136.6" r="3.5" class="f-lead ring"><title>EPIC-128, shifts 4-7: reply KL 0.0058 [0.0026, 0.0093]</title></circle><circle cx="156.0" cy="124.3" r="3.5" class="f-lead ring"><title>EPIC-128, shifts 8-15: reply KL 0.0076 [0.0043, 0.0115]</title></circle><circle cx="188.0" cy="101.2" r="3.5" class="f-lead ring"><title>EPIC-128, shifts 16-31: reply KL 0.0110 [0.0059, 0.0164]</title></circle><circle cx="220.0" cy="107.3" r="3.5" class="f-lead ring"><title>EPIC-128, shifts 32-63: reply KL 0.0101 [0.0060, 0.0144]</title></circle><circle cx="252.0" cy="116.8" r="3.5" class="f-lead ring"><title>EPIC-128, shifts 64+: reply KL 0.0087 [0.0045, 0.0140]</title></circle><path d="M 60.0 171.2 L 92.0 175.3 L 124.0 133.8 L 156.0 148.1 L 188.0 139.3 L 220.0 148.1 L 252.0 149.5" class="line-grey" style="stroke-dasharray:5 4"></path><circle cx="60.0" cy="171.2" r="3.5" class="f-grey ring"><title>fresh KV each call, shifts 1: reply KL 0.0007 [0.0002, 0.0016]</title></circle><circle cx="92.0" cy="175.3" r="3.5" class="f-grey ring"><title>fresh KV each call, shifts 2-3: reply KL 0.0001 [0.0001, 0.0002]</title></circle><circle cx="124.0" cy="133.8" r="3.5" class="f-grey ring"><title>fresh KV each call, shifts 4-7: reply KL 0.0062 [0.0027, 0.0103]</title></circle><circle cx="156.0" cy="148.1" r="3.5" class="f-grey ring"><title>fresh KV each call, shifts 8-15: reply KL 0.0041 [0.0020, 0.0066]</title></circle><circle cx="188.0" cy="139.3" r="3.5" class="f-grey ring"><title>fresh KV each call, shifts 16-31: reply KL 0.0054 [0.0029, 0.0082]</title></circle><circle cx="220.0" cy="148.1" r="3.5" class="f-grey ring"><title>fresh KV each call, shifts 32-63: reply KL 0.0041 [0.0024, 0.0059]</title></circle><circle cx="252.0" cy="149.5" r="3.5" class="f-grey ring"><title>fresh KV each call, shifts 64+: reply KL 0.0039 [0.0019, 0.0061]</title></circle><text x="60.0" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">1</text><text x="92.0" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">2&#8211;3</text><text x="124.0" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">4&#8211;7</text><text x="156.0" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">8&#8211;15</text><text x="188.0" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">16&#8211;31</text><text x="220.0" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">32&#8211;63</text><text x="252.0" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">64+</text><text x="156.0" y="202.0" font-size="9" text-anchor="middle" class="t-muted">shifts (edits) the session has gone through</text><text x="194.0" y="57.8" font-size="9.5" class="t-ink2">shift</text><text x="194.0" y="113.2" font-size="9.5" class="t-lead">EPIC-128</text><text x="248.0" y="161.5" font-size="9.5" text-anchor="end" class="t-muted">fresh KV</text><text x="300.0" y="14.0" font-size="11.5" class="t-title">b. Qwen3.8-27B: first-token KL by snips so far</text><text x="300.0" y="28.0" font-size="9.5" class="t-muted">harness_eval replay, 10 trajectories, 522 calls</text><path d="M 330 176.0 H 552" class="grid"></path><text x="325.0" y="179.5" font-size="9" text-anchor="end" class="t-mono t-muted tick">0.00</text><path d="M 330 108.0 H 552" class="grid"></path><text x="325.0" y="111.5" font-size="9" text-anchor="end" class="t-mono t-muted tick">0.02</text><path d="M 330 40.0 H 552" class="grid"></path><text x="325.0" y="43.5" font-size="9" text-anchor="end" class="t-mono t-muted tick">0.04</text><path d="M 357.8 151.2 L 413.2 130.8 L 468.8 115.1 L 524.2 56.0" class="line-ink2"></path><circle cx="357.8" cy="151.2" r="3.5" class="f-ink2 ring"><title>shift, snips 0-0: first-token KL 0.0073 (n=216)</title></circle><circle cx="413.2" cy="130.8" r="3.5" class="f-ink2 ring"><title>shift, snips 1-5: first-token KL 0.0133 (n=48)</title></circle><circle cx="468.8" cy="115.1" r="3.5" class="f-ink2 ring"><title>shift, snips 6-20: first-token KL 0.0179 (n=124)</title></circle><circle cx="524.2" cy="56.0" r="3.5" class="f-ink2 ring"><title>shift, snips 21-+: first-token KL 0.0353 (n=134)</title></circle><path d="M 357.8 151.2 L 413.2 130.1 L 468.8 116.2 L 524.2 68.2" class="line-lead"></path><circle cx="357.8" cy="151.2" r="3.5" class="f-lead ring"><title>EPIC-128, snips 0-0: first-token KL 0.0073 (n=216)</title></circle><circle cx="413.2" cy="130.1" r="3.5" class="f-lead ring"><title>EPIC-128, snips 1-5: first-token KL 0.0135 (n=48)</title></circle><circle cx="468.8" cy="116.2" r="3.5" class="f-lead ring"><title>EPIC-128, snips 6-20: first-token KL 0.0176 (n=124)</title></circle><circle cx="524.2" cy="68.2" r="3.5" class="f-lead ring"><title>EPIC-128, snips 21-+: first-token KL 0.0317 (n=134)</title></circle><path d="M 357.8 153.6 L 413.2 141.0 L 468.8 149.8 L 524.2 152.2" class="line-grey" style="stroke-dasharray:5 4"></path><circle cx="357.8" cy="153.6" r="3.5" class="f-grey ring"><title>age cap a1, snips 0-0: first-token KL 0.0066 (n=216)</title></circle><circle cx="413.2" cy="141.0" r="3.5" class="f-grey ring"><title>age cap a1, snips 1-5: first-token KL 0.0103 (n=48)</title></circle><circle cx="468.8" cy="149.8" r="3.5" class="f-grey ring"><title>age cap a1, snips 6-20: first-token KL 0.0077 (n=124)</title></circle><circle cx="524.2" cy="152.2" r="3.5" class="f-grey ring"><title>age cap a1, snips 21-+: first-token KL 0.0070 (n=134)</title></circle><path d="M 357.8 154.9 L 413.2 157.0 L 468.8 155.3 L 524.2 157.6" class="line-grey" style="stroke-dasharray:5 4"></path><circle cx="357.8" cy="154.9" r="3.5" class="f-hair ring"><title>A/A floor, snips 0-0: first-token KL 0.0062 (n=216)</title></circle><circle cx="413.2" cy="157.0" r="3.5" class="f-hair ring"><title>A/A floor, snips 1-5: first-token KL 0.0056 (n=48)</title></circle><circle cx="468.8" cy="155.3" r="3.5" class="f-hair ring"><title>A/A floor, snips 6-20: first-token KL 0.0061 (n=124)</title></circle><circle cx="524.2" cy="157.6" r="3.5" class="f-hair ring"><title>A/A floor, snips 21-+: first-token KL 0.0054 (n=134)</title></circle><text x="357.8" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">0</text><text x="413.2" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">1&#8211;5</text><text x="468.8" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">6&#8211;20</text><text x="524.2" y="189.0" font-size="9" text-anchor="middle" class="t-mono t-ink2">21+</text><text x="441.0" y="202.0" font-size="9" text-anchor="middle" class="t-muted">snips the session has gone through</text><text x="516.2" y="49.0" font-size="9.5" text-anchor="end" class="t-ink2">shift</text><text x="516.2" y="81.2" font-size="9.5" text-anchor="end" class="t-lead">EPIC-128</text><text x="516.2" y="146.2" font-size="9.5" text-anchor="end" class="t-muted">age cap, A/A</text><text x="10.0" y="222.0" font-size="9" class="t-muted">dashed: KV rebuilt or capped; points carry 95% intervals (panel a) and call counts (b)</text></g></svg></figure>
+    </div>
+    <div class="stack" style="gap:4px">
+      <p class="label">The job: 48 paired blocks, 240 live runs</p>
+      <table class="data xxs dense">
+        <thead><tr><th>arm</th><th class="n">blocks</th><th class="n">score vs prefix<span class="sub">95% CI</span></th><th>differs?</th><th>within &#8722;0.08?</th><th class="n">cut off<span class="sub">at the budget, vs prefix</span></th></tr></thead>
+        <tbody><tr class="hi"><td class="nw">identical copy</td><td class="n">24</td><td class="n nw">&#8722;0.031 [&#8722;0.106, +0.051]</td><td class="nw">no</td><td class="nw"><span class="verd cost">no</span></td><td class="n nw">&#8722;0.083 [&#8722;0.250, +0.083]</td></tr><tr><td class="nw">shift</td><td class="n">24</td><td class="n nw">+0.052 [+0.020, +0.088]</td><td class="nw">yes, higher</td><td class="nw"><span class="verd yes">yes</span></td><td class="n nw warn">+0.250 [+0.125, +0.375]</td></tr><tr><td class="nw">EPIC-32</td><td class="n">48</td><td class="n nw">&#8722;0.023 [&#8722;0.065, +0.019]</td><td class="nw">no</td><td class="nw"><span class="verd yes">yes</span></td><td class="n nw">+0.062 [&#8722;0.062, +0.188]</td></tr><tr><td class="nw">EPIC-64</td><td class="n">48</td><td class="n nw">+0.044 [&#8722;0.027, +0.117]</td><td class="nw">no</td><td class="nw"><span class="verd yes">yes</span></td><td class="n nw">+0.042 [&#8722;0.083, +0.188]</td></tr><tr><td class="nw">EPIC-128</td><td class="n">48</td><td class="n nw">+0.026 [&#8722;0.047, +0.088]</td><td class="nw">no</td><td class="nw"><span class="verd yes">yes</span></td><td class="n nw">+0.083 [&#8722;0.042, +0.208]</td></tr></tbody>
+      </table>
+    </div>
+    <ul class="list tight xxs"><li><b>Blocks</b>: 12 task cells &#215; 4 repeats. Each block runs prefix and the three EPIC arms on the same task and seed, plus either shift or the identical copy, so those two have 24 blocks each. A row compares an arm with prefix in the same blocks, on partial credit from 0 to 1 (no run fully passed)</li><li><b>Two tests per row</b>: <i>differs?</i> asks whether the 95% interval excludes 0; <i>within &#8722;0.08?</i> whether its low end stays above the pre-registered margin, i.e. at most 8 points worse. The identical copy cannot truly differ, yet fails the margin: its interval is as wide as the margin, so the EPIC arms' passes are weak evidence</li><li><b>Cut off at the budget</b>: the share of runs stopped at the cap (150 lead calls and 32,000 output tokens) instead of finishing on their own, arm minus prefix. Shift is cut off in 14 of its 24 blocks, prefix in 8: without repair the agent loops</li><li><b>SWE-agent replica</b>: 7/50 resolved under full re-prefill; 6, 11 and 9/50 under EPIC-32/64/128</li></ul>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">research/16_epic_harness/README.md</span> &#167;4.4&#8211;&#167;4.7, <span class="mono">main_tables.md</span> T1, <span class="mono">replay_tables.md</span>, <span class="mono">data/replay_kl_by_moves.md</span> (new, from the replay records by <span class="mono">epic_kl_by_moves.py</span>); <span class="mono">harness_eval/REPORT.md</span> &#167;7 (Qwen3.8 replay). Shift = one edit that moves the surviving KV.</p></div>
+</section>
+
+<!-- ===================== 4 &#183; PART I C: ACCURACY ===================== -->
+<section class="slide" data-title="Accuracy">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">4</span><span><span class="sec">I &#183; C</span> Accuracy on real benchmarks: MiniMax-M2.7</span></div>
+    <h2>Pre-registered on 100 new tasks, EPIC-128 stays within 5 points of full re-prefill, and e4 shows nothing beyond noise on three benchmarks</h2>
+    <div class="cfg"><span class="label">Setup</span><span class="chip">MiniMax-M2.7, TP=4 &#183; vLLM 0.31.0, reuse emulated</span><span class="chip">e3: 5 arms, 1,500 trials</span><span class="chip">e4: 7 arms, 1,890 trials</span><span class="chip">90% t-intervals over task means</span></div>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto; gap:6px">
+    <div style="display:grid; grid-template-columns: 470px 1fr; gap:22px">
+      <div class="stack" style="gap:4px">
+        <p class="label">e3, pre-registered: 100 new SWE-bench Verified tasks &#215; 3</p>
+        <figure><svg viewBox="0 0 470 232" role="img" aria-label="e3, pre-registered, 100 new SWE-bench Verified tasks x 3 replicates, MiniMax-M2.7. Differences in resolve rate (accuracy) from the control (mean of the two full re-prefill arms), 90 % t-intervals: A/A +0.020 [-0.017, +0.057]; EPIC-128 -0.010 [-0.043, +0.023], above the -0.05 margin; age cap a1 -0.000 [-0.033, +0.033]; a4 +0.017 [-0.014, +0.047]."><g><path d="M 150.0 28 V 192" class="grid"></path><text x="150.0" y="206.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted tick">&#8722;0.08</text><path d="M 226.2 28 V 192" class="grid"></path><text x="226.2" y="206.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted tick">&#8722;0.04</text><path d="M 302.5 28 V 192" class="grid"></path><text x="302.5" y="206.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted tick">0</text><path d="M 378.8 28 V 192" class="grid"></path><text x="378.8" y="206.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted tick">+0.04</text><path d="M 455.0 28 V 192" class="grid"></path><text x="455.0" y="206.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted tick">+0.08</text><path d="M 302.5 26 V 192" class="axis" style="stroke:var(--ink-2)"></path><rect x="150" y="26" width="57.2" height="166" class="band-warn"></rect><path d="M 207.2 24 V 192" class="edge-warn" style="stroke-dasharray:5 4"></path><text x="203.2" y="18.0" font-size="10" text-anchor="end" class="t-warn">margin &#8722;0.05</text><text x="302.5" y="222.0" font-size="9.5" text-anchor="middle" class="t-muted">accuracy: resolve rate minus the control&#x27;s, 90% interval</text><text x="140.0" y="50.0" font-size="11" text-anchor="end" class="t-ink2">A/A: prefix_aa vs prefix</text><path d="M 270.1 46 H 411.2" class="edge-grey whisk"></path><circle cx="340.6" cy="46" r="5" class="f-grey ring"><title>A/A: prefix_aa vs prefix: +0.020 [&#8722;0.017, +0.057]</title></circle><text x="340.6" y="63.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted">+0.020 [&#8722;0.017, +0.057]</text><text x="140.0" y="90.0" font-size="11" text-anchor="end">EPIC-128 (H1)</text><path d="M 220.5 86 H 346.3" class="edge-lead whisk"></path><circle cx="283.4" cy="86" r="5" class="f-lead ring"><title>EPIC-128 (H1): &#8722;0.010 [&#8722;0.043, +0.023]</title></circle><text x="283.4" y="103.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted">&#8722;0.010 [&#8722;0.043, +0.023]</text><text x="140.0" y="130.0" font-size="11" text-anchor="end">age cap a1 (H2: worse?)</text><path d="M 239.6 126 H 365.4" class="edge-lead whisk"></path><circle cx="302.5" cy="126" r="5" class="f-lead ring"><title>age cap a1 (H2: worse?): &#8722;0.000 [&#8722;0.033, +0.033]</title></circle><text x="302.5" y="143.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted">&#8722;0.000 [&#8722;0.033, +0.033]</text><text x="140.0" y="170.0" font-size="11" text-anchor="end">age cap a4</text><path d="M 275.8 166 H 392.1" class="edge-lead whisk"></path><circle cx="334.9" cy="166" r="5" class="f-lead ring"><title>age cap a4: +0.017 [&#8722;0.014, +0.047]</title></circle><text x="334.9" y="183.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted">+0.017 [&#8722;0.014, +0.047]</text></g></svg></figure>
+      </div>
+      <div class="stack" style="gap:4px">
+        <p class="label">e4, exploratory: the first 30 tasks &#215; 3, three benchmarks</p>
+        <figure><svg viewBox="0 0 640 232" role="img" aria-label="e4, exploratory, 30 tasks x 3 replicates per benchmark. Differences in resolve rate from the control with 90 % intervals for the A/A copy and five reuse arms on SWE-bench Verified, SWE-bench Pro and Terminal-Bench. 14 of the 15 reuse intervals cover 0; the exception is EPIC-128 on SWE-bench Pro, +0.117 [+0.035, +0.198]."><g><text x="152.7" y="16.0" font-size="11.5" text-anchor="middle" class="t-title">SWE-bench Verified</text><path d="M 74.4 28 V 192" class="grid"></path><text x="74.4" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">&#8722;0.1</text><path d="M 126.6 28 V 192" class="grid"></path><text x="126.6" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">0</text><path d="M 178.7 28 V 192" class="grid"></path><text x="178.7" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">+0.1</text><path d="M 230.9 28 V 192" class="grid"></path><text x="230.9" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">+0.2</text><path d="M 126.6 26 V 192" class="axis" style="stroke:var(--ink-2)"></path><text x="56.0" y="44.0" font-size="10.5" text-anchor="end" class="t-ink2">A/A</text><path d="M 83.3 40 H 134.9" class="edge-grey whisk"></path><circle cx="109.4" cy="40" r="4.5" class="f-grey ring"><title>A/A, SWE-bench Verified: &#8722;0.033 [&#8722;0.083, +0.016]</title></circle><text x="56.0" y="71.0" font-size="10.5" text-anchor="end">shift</text><path d="M 109.9 67 H 172.0" class="edge-lead whisk"></path><circle cx="141.2" cy="67" r="4.5" class="f-lead ring"><title>shift, SWE-bench Verified: +0.028 [&#8722;0.032, +0.087]</title></circle><text x="56.0" y="98.0" font-size="10.5" text-anchor="end">EPIC-128</text><path d="M 76.5 94 H 147.5" class="edge-lead whisk"></path><circle cx="112.0" cy="94" r="4.5" class="f-lead ring"><title>EPIC-128, SWE-bench Verified: &#8722;0.028 [&#8722;0.096, +0.040]</title></circle><text x="56.0" y="125.0" font-size="10.5" text-anchor="end">a1</text><path d="M 95.8 121 H 151.6" class="edge-lead whisk"></path><circle cx="123.5" cy="121" r="4.5" class="f-lead ring"><title>a1, SWE-bench Verified: &#8722;0.006 [&#8722;0.059, +0.048]</title></circle><text x="56.0" y="152.0" font-size="10.5" text-anchor="end">a4</text><path d="M 103.6 148 H 155.3" class="edge-lead whisk"></path><circle cx="129.7" cy="148" r="4.5" class="f-lead ring"><title>a4, SWE-bench Verified: +0.006 [&#8722;0.044, +0.055]</title></circle><text x="56.0" y="179.0" font-size="10.5" text-anchor="end">JSD</text><path d="M 115.6 175 H 166.7" class="edge-lead whisk"></path><circle cx="141.2" cy="175" r="4.5" class="f-lead ring"><title>JSD, SWE-bench Verified: +0.028 [&#8722;0.021, +0.077]</title></circle><text x="352.0" y="16.0" font-size="11.5" text-anchor="middle" class="t-title">SWE-bench Pro</text><path d="M 273.8 28 V 192" class="grid"></path><text x="273.8" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">&#8722;0.1</text><path d="M 325.9 28 V 192" class="grid"></path><text x="325.9" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">0</text><path d="M 378.1 28 V 192" class="grid"></path><text x="378.1" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">+0.1</text><path d="M 430.2 28 V 192" class="grid"></path><text x="430.2" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">+0.2</text><path d="M 325.9 26 V 192" class="axis" style="stroke:var(--ink-2)"></path><path d="M 293.6 40 H 346.8" class="edge-grey whisk"></path><circle cx="320.2" cy="40" r="4.5" class="f-grey ring"><title>A/A, SWE-bench Pro: &#8722;0.011 [&#8722;0.062, +0.040]</title></circle><path d="M 315.0 67 H 366.1" class="edge-lead whisk"></path><circle cx="340.5" cy="67" r="4.5" class="f-lead ring"><title>shift, SWE-bench Pro: +0.028 [&#8722;0.021, +0.077]</title></circle><path d="M 344.2 94 H 429.2" class="edge-lead whisk"></path><circle cx="386.9" cy="94" r="4.5" class="f-mate ring"><title>EPIC-128, SWE-bench Pro: +0.117 [+0.035, +0.198]</title></circle><text x="433.2" y="98.0" font-size="9.5" class="t-mono t-mate">+0.117</text><path d="M 310.3 121 H 405.7" class="edge-lead whisk"></path><circle cx="357.7" cy="121" r="4.5" class="f-lead ring"><title>a1, SWE-bench Pro: +0.061 [&#8722;0.030, +0.153]</title></circle><path d="M 315.5 148 H 353.6" class="edge-lead whisk"></path><circle cx="334.8" cy="148" r="4.5" class="f-lead ring"><title>a4, SWE-bench Pro: +0.017 [&#8722;0.020, +0.053]</title></circle><path d="M 305.1 175 H 364.0" class="edge-lead whisk"></path><circle cx="334.8" cy="175" r="4.5" class="f-lead ring"><title>JSD, SWE-bench Pro: +0.017 [&#8722;0.040, +0.073]</title></circle><text x="551.3" y="16.0" font-size="11.5" text-anchor="middle" class="t-title">Terminal-Bench</text><path d="M 473.1 28 V 192" class="grid"></path><text x="473.1" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">&#8722;0.1</text><path d="M 525.3 28 V 192" class="grid"></path><text x="525.3" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">0</text><path d="M 577.4 28 V 192" class="grid"></path><text x="577.4" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">+0.1</text><path d="M 629.6 28 V 192" class="grid"></path><text x="629.6" y="206.0" font-size="9" text-anchor="middle" class="t-mono t-muted tick">+0.2</text><path d="M 525.3 26 V 192" class="axis" style="stroke:var(--ink-2)"></path><path d="M 486.1 40 H 552.4" class="edge-grey whisk"></path><circle cx="519.5" cy="40" r="4.5" class="f-grey ring"><title>A/A, Terminal-Bench: &#8722;0.011 [&#8722;0.075, +0.052]</title></circle><path d="M 495.5 67 H 560.7" class="edge-lead whisk"></path><circle cx="528.4" cy="67" r="4.5" class="f-lead ring"><title>shift, Terminal-Bench: +0.006 [&#8722;0.057, +0.068]</title></circle><path d="M 521.1 94 H 604.5" class="edge-lead whisk"></path><circle cx="562.8" cy="94" r="4.5" class="f-lead ring"><title>EPIC-128, Terminal-Bench: +0.072 [&#8722;0.008, +0.152]</title></circle><path d="M 491.4 121 H 553.4" class="edge-lead whisk"></path><circle cx="522.1" cy="121" r="4.5" class="f-lead ring"><title>a1, Terminal-Bench: &#8722;0.006 [&#8722;0.065, +0.054]</title></circle><path d="M 510.7 148 H 569.1" class="edge-lead whisk"></path><circle cx="539.9" cy="148" r="4.5" class="f-lead ring"><title>a4, Terminal-Bench: +0.028 [&#8722;0.028, +0.084]</title></circle><path d="M 491.4 175 H 588.4" class="edge-lead whisk"></path><circle cx="539.9" cy="175" r="4.5" class="f-lead ring"><title>JSD, Terminal-Bench: +0.028 [&#8722;0.065, +0.121]</title></circle><text x="64.0" y="226.0" font-size="9.5" class="t-muted">accuracy: resolve rate minus the control&#x27;s, 90% interval; orange: the one interval that excludes 0</text></g></svg></figure>
+      </div>
+    </div>
+    <ul class="list tight xxs cols2"><li><b>What is plotted</b>: accuracy is the resolve rate, the share of tasks the agent solves. Each dot is an arm's resolve rate minus the control's (the average of the two identical full re-prefill arms in the same block): &#8722;0.010 means 1 point lower. The bar is a 90% confidence interval; its low end is a one-sided 95% bound</li><li><b>Why a second test, e3</b>: e1 tested three arms in a fixed order (a1, then EPIC-128, then shift) against a 10-point margin and had to stop at the first that failed. a1's interval reached &#8722;0.130, below &#8722;0.10, so EPIC-128 was never formally tested. e3 asked again on 100 new tasks, with a 5-point margin and EPIC-128 first</li><li><b>What e4 adds</b>: 5 reuse arms &#215; 3 benchmarks give 15 accuracy differences, and 14 of the 15 intervals include 0 (no detectable change). At 90% about 1.5 of 15 would exclude 0 by chance; the one that does (EPIC-128 on Pro, +0.117) is a gain, and the same arm on the same tasks was &#8722;0.083 in e2</li><li><b>So only e3 supports "within 5 points"</b>: e4's 30-task intervals reach &#8722;0.096. H2, "a1 is worse", is not shown: &#8722;0.000 [&#8722;0.033, +0.033]. Plain shift has no pre-registered verdict</li></ul>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">harness_eval/REPORT.md</span> &#167;7 (e1, e3, e4 summaries), <span class="mono">report/e3_pooled.md</span>, <span class="mono">runs/epic/prereg_e3.md</span>. Control = mean of the two identical full re-prefill arms per block. Pairing is by task only: in no e3 block is the A/A copy identical to prefix, and the median first divergence is at call 0.</p></div>
+</section>
+
+<!-- ===================== 5 &#183; PART I E: JSD TRIGGER ===================== -->
+<section class="slide" data-title="JSD trigger">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">5</span><span><span class="sec">I &#183; E</span> e4: recompute when the KV has drifted?</span></div>
+    <h2>D_JSD measures how far the repaired KV has drifted from the original; as a recompute trigger it tracks the real error but sits near its own noise floor</h2>
+    <div class="cfg"><span class="label">Setup</span><span class="chip">epic128rjsd: full recompute with probability JSD</span><span class="chip">first-token distributions, top-128</span><span class="chip">6,414 decisions, 0 failed</span></div>
+  </div>
+  <div class="body" style="grid-template-columns: 560px 1fr; gap:24px">
+    <div class="stack" style="gap:6px">
+      <p class="label">How D_JSD is computed and used, at every edited call</p>
+      <figure><svg viewBox="0 0 560 150" role="img" aria-label="The JSD trigger at each edited call: probe the first-token distribution under the original KV (O) and under the after-EPIC KV (E), compute their Jensen-Shannon distance D_JSD, draw u uniform in [0, 1), and recompute everything after the never-edited head when u is below D_JSD; otherwise serve the repaired KV."><g><defs><marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-ink2"></path></marker></defs><rect x="4" y="8" width="150" height="40" rx="5" class="box"></rect><text x="79.0" y="25.0" font-size="11" text-anchor="middle" class="t-title">O: original KV</text><text x="79.0" y="39.0" font-size="9.5" text-anchor="middle" class="t-muted">every row in its first version</text><rect x="4" y="70" width="150" height="40" rx="5" class="box"></rect><text x="79.0" y="87.0" font-size="11" text-anchor="middle" class="t-title">E: after-EPIC KV</text><text x="79.0" y="101.0" font-size="9.5" text-anchor="middle" class="t-muted">what this call would use</text><rect x="196" y="39" width="120" height="40" rx="5" class="box"></rect><text x="256.0" y="56.0" font-size="11" text-anchor="middle" class="t-title">D_JSD(O, E)</text><text x="256.0" y="70.0" font-size="9.5" text-anchor="middle" class="t-muted">first token, top-128</text><rect x="352" y="39" width="92" height="40" rx="5" class="box"></rect><text x="398.0" y="56.0" font-size="11" text-anchor="middle" class="t-title">u &lt; D_JSD ?</text><text x="398.0" y="70.0" font-size="9.5" text-anchor="middle" class="t-muted">u uniform in [0, 1)</text><rect x="474" y="4" width="82" height="40" rx="5" class="box-mate"></rect><text x="515.0" y="21.0" font-size="11" text-anchor="middle" class="t-title">recompute</text><text x="515.0" y="35.0" font-size="9.5" text-anchor="middle" class="t-muted">fresh [h, P)</text><rect x="474" y="74" width="82" height="40" rx="5" class="box-lead"></rect><text x="515.0" y="91.0" font-size="11" text-anchor="middle" class="t-title">serve E</text><text x="515.0" y="105.0" font-size="9.5" text-anchor="middle" class="t-muted">repaired KV</text><path d="M 154 28 C 175 28 178 52 194 55" class="edge" marker-end="url(#ar4)"></path><path d="M 154 90 C 175 90 178 66 194 63" class="edge" marker-end="url(#ar4)"></path><path d="M 316 59 H 350" class="edge" marker-end="url(#ar4)"></path><path d="M 444 52 C 456 40 460 26 472 24" class="edge" marker-end="url(#ar4)"></path><path d="M 444 66 C 456 80 460 92 472 94" class="edge" marker-end="url(#ar4)"></path><text x="454.0" y="34.0" font-size="9.5" class="t-ink2">yes</text><text x="454.0" y="92.0" font-size="9.5" class="t-ink2">no</text><text x="4.0" y="136.0" font-size="9.5" class="t-muted">1-token probes at every edited call; so P(recompute) = D_JSD. h = end of the never-edited head.</text></g></svg></figure>
+      <div class="formula">D<sub>JSD</sub>(O, E) = &#8730;( &#189; KL(O &#8214; M) + &#189; KL(E &#8214; M) ), &nbsp;M = &#189; (O + E), log base 2 <span class="c">&#8594; 0 when E predicts what O does, 1 when they share nothing</span></div>
+      <ul class="list tight xxs"><li><b>O and E</b>: two 1-token forwards (temperature 0, top-128 log-probs) give the first-token distribution under the original KV, every reused row in its first-ever version moved to its new position, and under the after-EPIC KV this call would serve. KL, TVD and 1 &#8722; e<sup>&#8722;KL</sup> are logged too</li><li><b>Decision</b>: u comes from a hash of the task, replicate and call, uniform in [0, 1). If u &lt; D<sub>JSD</sub>, everything after the never-edited head is recomputed fresh and becomes the new original; otherwise the repaired KV is served. So the recompute probability equals D<sub>JSD</sub></li><li><b>Cost</b>: the original-KV probe's tokens at every decision, plus the after-EPIC prefill when it recomputes</li></ul>
+    </div>
+    <div class="stack" style="gap:6px">
+      <p class="label">The signal against its own noise</p>
+      <figure><svg viewBox="0 0 500 200" role="img" aria-label="e4 recompute arm. Mean JSD at a decision vs the noise floor (two probes of the same after-EPIC cache): SWE-bench Verified 0.0531 vs 0.0354 (67 %); SWE-bench Pro 0.0461 vs 0.0306 (66 %); Terminal-Bench 0.0733 vs 0.0527 (72 %)."><g><path d="M 150.0 22 V 160" class="grid"></path><text x="150.0" y="174.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted tick">0.00</text><path d="M 230.0 22 V 160" class="grid"></path><text x="230.0" y="174.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted tick">0.02</text><path d="M 310.0 22 V 160" class="grid"></path><text x="310.0" y="174.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted tick">0.04</text><path d="M 390.0 22 V 160" class="grid"></path><text x="390.0" y="174.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted tick">0.06</text><path d="M 470.0 22 V 160" class="grid"></path><text x="470.0" y="174.0" font-size="9.5" text-anchor="middle" class="t-mono t-muted tick">0.08</text><text x="140.0" y="45.0" font-size="11" text-anchor="end">SWE-bench Verified</text><path d="M 150 30 H 358.4 Q 362.4 30 362.4 34 V 39 Q 362.4 43 358.4 43 H 150 Z" class="f-lead"><title>SWE-bench Verified: mean decision JSD 0.0531</title></path><text x="367.4" y="40.0" font-size="9.5" class="t-mono t-ink2">0.0531</text><path d="M 150 45 H 287.6 Q 291.6 45 291.6 49 V 54 Q 291.6 58 287.6 58 H 150 Z" class="f-grey"><title>SWE-bench Verified: noise floor: two probes of the same cache 0.0354</title></path><text x="296.6" y="55.0" font-size="9.5" class="t-mono t-ink2">0.0354</text><text x="140.0" y="58.0" font-size="9.5" text-anchor="end" class="t-muted">floor 67% of the mean</text><text x="140.0" y="91.0" font-size="11" text-anchor="end">SWE-bench Pro</text><path d="M 150 76 H 330.4 Q 334.4 76 334.4 80 V 85 Q 334.4 89 330.4 89 H 150 Z" class="f-lead"><title>SWE-bench Pro: mean decision JSD 0.0461</title></path><text x="339.4" y="86.0" font-size="9.5" class="t-mono t-ink2">0.0461</text><path d="M 150 91 H 268.4 Q 272.4 91 272.4 95 V 100 Q 272.4 104 268.4 104 H 150 Z" class="f-grey"><title>SWE-bench Pro: noise floor: two probes of the same cache 0.0306</title></path><text x="277.4" y="101.0" font-size="9.5" class="t-mono t-ink2">0.0306</text><text x="140.0" y="104.0" font-size="9.5" text-anchor="end" class="t-muted">floor 66% of the mean</text><text x="140.0" y="137.0" font-size="11" text-anchor="end">Terminal-Bench</text><path d="M 150 122 H 439.2 Q 443.2 122 443.2 126 V 131 Q 443.2 135 439.2 135 H 150 Z" class="f-lead"><title>Terminal-Bench: mean decision JSD 0.0733</title></path><text x="448.2" y="132.0" font-size="9.5" class="t-mono t-ink2">0.0733</text><path d="M 150 137 H 356.8 Q 360.8 137 360.8 141 V 146 Q 360.8 150 356.8 150 H 150 Z" class="f-grey"><title>Terminal-Bench: noise floor: two probes of the same cache 0.0527</title></path><text x="365.8" y="147.0" font-size="9.5" class="t-mono t-ink2">0.0527</text><text x="140.0" y="150.0" font-size="9.5" text-anchor="end" class="t-muted">floor 72% of the mean</text><path d="M 150 22 V 160" class="axis"></path><rect x="150" y="184" width="10" height="10" rx="2" class="f-lead"></rect><text x="164.0" y="193.0" font-size="9.5" class="t-ink2">mean JSD at a decision</text><rect x="300" y="184" width="10" height="10" rx="2" class="f-grey"></rect><text x="314.0" y="193.0" font-size="9.5" class="t-ink2">noise floor (same cache, probed twice)</text></g></svg></figure>
+      <table class="data xxs dense">
+        <thead><tr><th>benchmark</th><th class="n">recompute rate</th><th class="n">&#961; vs error</th><th class="n">tok/call<span class="sub">JSD arm vs EPIC-128</span></th><th class="n">vs control<span class="sub">90% interval</span></th></tr></thead>
+        <tbody><tr><td class="nw">SWE-bench Verified</td><td class="n">5.55%</td><td class="n">+0.529</td><td class="n nw">1,301 vs 647</td><td class="n nw">+0.028 [&#8722;0.021, +0.077]</td></tr><tr><td class="nw">SWE-bench Pro</td><td class="n">5.28%</td><td class="n">+0.599</td><td class="n nw">1,583 vs 953</td><td class="n nw">+0.017 [&#8722;0.040, +0.073]</td></tr><tr><td class="nw">Terminal-Bench</td><td class="n">6.96%</td><td class="n">+0.442</td><td class="n nw">1,576 vs 614</td><td class="n nw">+0.028 [&#8722;0.065, +0.121]</td></tr></tbody>
+      </table>
+      <ul class="list tight xxs"><li><b>It tracks the error</b>: Spearman &#961; against the shadow probe's KL to a fresh recompute is +0.44 to +0.60</li><li><b>But it is mostly noise</b>: the server is not batch-invariant, so two probes of one cache already differ by 66&#8211;72% of the mean D<sub>JSD</sub>. It costs 1.7&#8211;2.6&#215; EPIC-128's tokens and buys no measurable accuracy; TVD and EXP stay parked until probes are batch-invariant (2.6&#215; decode with today's kernels)</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">harness_eval/REPORT.md</span> &#167;7, e4 summary and secondary tables per benchmark; <span class="mono">runs/epic/prereg_e4.md</span>. &#961; has 90% Fisher intervals in backup slide 11; the decision rule is from <span class="mono">prereg_e4.md</span>. All 396 e4 table values were recomputed independently, 0 mismatches.</p></div>
+</section>
+
+<!-- ===================== 6 &#183; PART II: DESIGN AND E0 ===================== -->
+<section class="slide" data-title="Design and E0">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">6</span><span><span class="sec">II</span> Toward a method: harness-aware serving (<span class="lc">method_develop</span>)</span></div>
+    <h2>Offline, edits are a large and predictable share of the work, but exact refresh of stale KV does not pay, so the design rests on cheap repair</h2>
+    <div class="cfg"><span class="label">Setup</span><span class="chip">offline, CPU only</span><span class="chip">inputs: harness_eval, topics 11 and 16</span><span class="chip">design: Claude Doc, 12 sections</span></div>
+  </div>
+  <div class="body" style="grid-template-columns: 560px 1fr; gap:24px">
+    <div class="stack" style="gap:6px">
+      <p class="label">The design: four components, seven interfaces</p>
+      <figure><svg viewBox="0 0 600 372" role="img" aria-label="Harness-aware serving design. Four components: the harness, the request scheduler (the hub), the memory manager with a repair planner inside it, and the GPU reconfigurator. Interfaces: 1 harness to scheduler, intent; 2 scheduler to memory manager, next use, preload and dead versions; 3 memory manager to scheduler, residency and drift; 4 scheduler to reconfigurator, a demand forecast; 5 reconfigurator to scheduler, layout and roles; 6 server to harness, cache pressure; 7 harness edits to the repair planner as diffs."><g><defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-ink2"></path></marker><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-lead"></path></marker></defs><rect x="8" y="150" width="128" height="86" rx="5" class="box"></rect><text x="18.0" y="169.0" font-size="12.5" class="t-title">Harness</text><text x="18.0" y="185.0" font-size="9.5" class="t-muted">agent loop and its</text><text x="18.0" y="198.0" font-size="9.5" class="t-muted">context policy</text><text x="18.0" y="211.0" font-size="9.5" class="t-muted">(per call)</text><rect x="226" y="138" width="162" height="110" rx="5" class="box"></rect><text x="236.0" y="157.0" font-size="12.5" class="t-title">Request scheduler</text><text x="236.0" y="173.0" font-size="9.5" class="t-muted">the hub: session DAGs,</text><text x="236.0" y="186.0" font-size="9.5" class="t-muted">runs VALID and READY</text><text x="236.0" y="199.0" font-size="9.5" class="t-muted">nodes (every step)</text><rect x="358" y="226" width="22" height="15" rx="3" class="f-lead-soft-s"></rect><text x="369.0" y="237.0" font-size="9.5" text-anchor="middle" class="t-mono t-lead">C1</text><rect x="430" y="10" width="162" height="170" rx="5" class="box"></rect><text x="440.0" y="29.0" font-size="12.5" class="t-title">Memory manager</text><text x="440.0" y="45.0" font-size="9.5" class="t-muted">KV in HBM, peer HBM,</text><text x="440.0" y="58.0" font-size="9.5" class="t-muted">DRAM, flash; admission,</text><text x="440.0" y="71.0" font-size="9.5" class="t-muted">pins, preload (0.1-1 s)</text><rect x="562" y="158" width="22" height="15" rx="3" class="f-lead-soft-s"></rect><text x="573.0" y="169.0" font-size="9.5" text-anchor="middle" class="t-mono t-lead">C3</text><rect x="442" y="82" width="138" height="62" rx="5" class="box-lead"></rect><text x="452.0" y="101.0" font-size="12.5" class="t-title">Repair planner</text><text x="452.0" y="117.0" font-size="9.5" class="t-muted">which runs move,</text><text x="452.0" y="130.0" font-size="9.5" class="t-muted">with what k</text><rect x="550" y="122" width="22" height="15" rx="3" class="f-lead-soft-s"></rect><text x="561.0" y="133.0" font-size="9.5" text-anchor="middle" class="t-mono t-lead">C2</text><rect x="430" y="270" width="162" height="92" rx="5" class="box"></rect><text x="440.0" y="289.0" font-size="12.5" class="t-title">GPU reconfigurator</text><text x="440.0" y="305.0" font-size="9.5" class="t-muted">P/D roles in seconds,</text><text x="440.0" y="318.0" font-size="9.5" class="t-muted">TP/DP in minutes</text><rect x="562" y="340" width="22" height="15" rx="3" class="f-lead-soft-s"></rect><text x="573.0" y="351.0" font-size="9.5" text-anchor="middle" class="t-mono t-lead">C4</text><path d="M 136 180 H 224" class="edge" marker-end="url(#ar1)"></path><text x="180.0" y="172.0" font-size="9.5" text-anchor="middle" class="t-ink2">1 intent</text><path d="M 224 222 H 138" class="edge-dash" marker-end="url(#ar1)"></path><text x="180.0" y="238.0" font-size="9" text-anchor="middle" class="t-muted">6 cache pressure</text><path d="M 330 136 C 350 100 380 80 428 66" class="edge" marker-end="url(#ar1)"></path><text x="332.0" y="92.0" font-size="9" text-anchor="end" class="t-ink2">2 next use,</text><text x="332.0" y="103.0" font-size="9" text-anchor="end" class="t-ink2">preload, dead versions</text><path d="M 428 160 C 410 170 400 172 390 172" class="edge" marker-end="url(#ar1)"></path><text x="400.0" y="196.0" font-size="9" class="t-ink2">3 residency, drift</text><path d="M 360 250 C 380 280 400 296 428 300" class="edge" marker-end="url(#ar1)"></path><text x="352.0" y="284.0" font-size="9" text-anchor="end" class="t-ink2">4 demand forecast</text><path d="M 428 340 C 360 344 312 300 300 252" class="edge" marker-end="url(#ar1)"></path><text x="300.0" y="340.0" font-size="9" text-anchor="end" class="t-ink2">5 layout, roles</text><path d="M 72 150 C 72 40 300 24 440 100" class="edge-lead" marker-end="url(#ar2)"></path><text x="150.0" y="50.0" font-size="9.5" class="t-lead">7 edits as diffs, laid out a round ahead (D4)</text><text x="8.0" y="366.0" font-size="9.5" class="t-muted">C1-C4: the design&#x27;s four claims; 1-7: its interfaces</text></g></svg></figure>
+    </div>
+    <div class="stack" style="gap:8px">
+      <p class="label">E0: an offline check of the design's riskiest assumptions</p>
+      <p class="note xs">Run on our recorded traces, no GPUs. Each rule and its pass threshold were written down before any analysis ran (pre-registered, 10-13).</p>
+      <table class="data xxs dense">
+        <thead><tr><th>rule</th><th>the question</th><th>passes if</th><th>result</th><th></th></tr></thead>
+        <tbody><tr><td><b>D1</b></td><td>Are edits a big enough share of the work to design for?</td><td>edit work &#8805; 5% of the critical path or &#8805; 20% of GPU time</td><td>9.7&#8211;17.3% of the lead chain at 1 session; 30% / 27% of GPU time at 4 / 8 sessions</td><td><span class="verd yes">pass</span></td></tr><tr><td><b>D4</b></td><td>Can the server know an edit before it happens?</td><td>&#8805; 50% of edit tokens laid out when the previous decode ends</td><td>99.5% (97.9% already at round start)</td><td><span class="verd yes">pass</span></td></tr><tr><td><b>D2</b></td><td>Does an exact background refresh of stale KV pay?</td><td>recovers &#8805; 50% of the fidelity a full refresh would, at &#8804; 1/3 of its tokens</td><td>best 49% at 0.32 (post hoc); pre-registered 43% at 0.30; an oracle 89% at 0.33</td><td><span class="verd cost">fail</span></td></tr><tr><td><b>D3</b></td><td>Does that refresh fit in idle time?</td><td>&#8805; 50% of it fits in tool pauses or spare decode capacity</td><td>6&#8211;11% at 1 session; 52&#8211;100% at 4&#8211;16 sessions (illustrative), moot after D2</td><td><span class="verd cost">fail</span></td></tr></tbody>
+      </table>
+      <ul class="list tight xxs"><li><b>So "approximate now, exact later" (C2) reduces to EPIC</b>: refresh misses its bar narrowly and, at one session, barely fits tool pauses. That matches Part I: approximate KV is good enough</li><li><b>Not tested offline</b>: C1 (scheduling) and C3 (residency), which need the E1 simulator. C4 is strengthened: a 10% decode slowdown buys only 3&#8211;25 prefill tokens per step</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">research/method_develop/README.md</span> (E0a&#8211;E0f, verdicts), the topic-17 Claude Doc (components, interfaces, claims C1&#8211;C4 with the 2026 papers that cover each). E0 is offline: harness_eval traces, topic 16 replays, topic 11 tables; every model priced with Qwen3-32B H100 timing.</p></div>
+</section>
+
+<!-- ===================== 7 &#183; PART II: PRIOR WORK ===================== -->
+<section class="slide" data-title="Prior work">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">7</span><span><span class="sec">II</span> Prior work on each component of the design</span></div>
+    <h2>Papers already cover 13 of the design's 22 parts; of the 5 no paper covers, 4 concern the harness's edits</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto; gap:12px; align-content: start">
+    <div class="cv-grid"><div class="cv-card"><p class="cv-h"><b>Request scheduler</b><span>6 of 8 parts covered</span></p><p class="cv-l"><span class="cv-k">covered</span><b>online DAG</b>: HexAGenT, Autellix &#183; <b>priority and critical path</b>: SmoothAgent, HexAGenT, TOPAS, Autellix, Tokencake &#183; <b>cost model</b>: SmoothAgent, HexAGenT, TOPAS, SMetric, xLLM &#183; <b>stall budget</b>: SmoothAgent, xLLM &#183; <b>background compaction</b>: SmoothAgent, Slipstream, LCM &#183; <b>exact lookahead KV</b>: SmoothAgent</p><p class="cv-l"><span class="cv-k ext">extend</span><b>a Modify effect (edits as requests)</b> &#183; <b>a READY state an edit can revoke</b></p></div><div class="cv-card"><p class="cv-h"><b>Memory manager and repair planner</b><span>4 of 7 parts covered</span></p><p class="cv-l"><span class="cv-k">covered</span><b>approximate repair</b>: Leyline, CacheSlide, AgentKVShift, EPIC &#183; <b>queue-time pins</b>: Continuum &#183; <b>next-use eviction</b>: Continuum, Tokencake, KVFlow, CacheScout, UNISON, CacheWise, Ask the Tool, Don&#8217;t Guess &#183; <b>preload</b>: Tokencake, KVFlow, CacheScout, UNISON, Ask the Tool, Don&#8217;t Guess</p><p class="cv-l"><span class="cv-k ext">extend</span><b>admission gated by DAG state</b></p><p class="cv-l"><span class="cv-k new">new</span><b>drift tracking and refresh</b> (partly: Leyline, CacheSlide, AgentKVShift) &#183; <b>dead-version GC, HBM and DRAM</b> (partly: KVFlow, CacheSlide, Leyline)</p></div><div class="cv-card"><p class="cv-h"><b>GPU reconfigurator</b><span>2 of 3 parts covered</span></p><p class="cv-l"><span class="cv-k">covered</span><b>P/D placement</b>: HexAGenT, xLLM, PPD, AMPD, ConServe &#183; <b>dynamic P:D</b>: xLLM, Dynamo Planner, PEARL; partly HeteroScale, AMPD</p><p class="cv-l"><span class="cv-k ext">extend</span><b>P:D sized from the harness's DAG forecast</b> (backup B3)</p><p class="cv-l"><span class="cv-k new">new</span><b>TP vs DP chosen at runtime</b> (partly: xLLM, Dynamo Planner, AMPD)</p></div><div class="cv-card"><p class="cv-h"><b>Harness</b><span>1 of 4 parts covered</span></p><p class="cv-l"><span class="cv-k">covered</span><b>duration and progress hints</b>: Continuum, Tokencake, CacheWise, Ask the Tool, Don&#8217;t Guess</p><p class="cv-l"><span class="cv-k ext">extend</span><b>edits timed to a cold cache</b></p><p class="cv-l"><span class="cv-k new">new</span><b>server-to-harness feedback</b> (partly: Ask the Tool, Don&#8217;t Guess) &#183; <b>live edit diffs for GQA models</b> (partly: Leyline, CacheSlide)</p></div></div>
+    <div class="stack" style="gap:6px">
+      <p class="label">The papers: corresponding author and affiliation, as each paper marks them <span class="lc">&#183; (last): none marked, so the last author</span></p>
+      <div class="cv-dir"><div class="cv-e"><b>AgentKVShift</b> &#183; Nilesh Prasad Pandey &#183; <span class="cv-aff">UC San Diego</span></div><div class="cv-e"><b>AMPD</b> &#183; Fangcheng Fu &#183; <span class="cv-aff">Shanghai Jiao Tong University</span></div><div class="cv-e"><b>Ask the Tool, Don&#8217;t Guess</b> &#183; Huanchen Zhang <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">Tsinghua University</span></div><div class="cv-e"><b>Autellix</b> &#183; Ion Stoica <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">UC Berkeley</span></div><div class="cv-e"><b>CacheScout</b> &#183; Liting Hu <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">UC Santa Cruz</span></div><div class="cv-e"><b>CacheSlide</b> &#183; Yunfei Gu, Chentao Wu &#183; <span class="cv-aff">Shanghai Jiao Tong University</span></div><div class="cv-e"><b>CacheWise</b> &#183; Haiying Shen <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">University of Virginia</span></div><div class="cv-e"><b>ConServe</b> &#183; Jianru Ding &#183; <span class="cv-aff">University of Chicago</span></div><div class="cv-e"><b>Continuum</b> &#183; Hanchen Li <span class="cv-dim">(v1 only)</span> &#183; <span class="cv-aff">UC Berkeley</span></div><div class="cv-e"><b>Dynamo Planner</b> &#183; documentation, not a paper &#183; <span class="cv-aff">NVIDIA</span></div><div class="cv-e"><b>EPIC</b> &#183; Tao Xie; Yizhou Shan &#183; <span class="cv-aff">Peking University; Huawei Cloud</span></div><div class="cv-e"><b>HeteroScale</b> &#183; Shufan Liu &#183; <span class="cv-aff">ByteDance Seed</span></div><div class="cv-e"><b>HexAGenT</b> &#183; Binhang Yuan <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">HKUST</span></div><div class="cv-e"><b>KVFlow</b> &#183; Zhengding Hu &#183; <span class="cv-aff">UC San Diego</span></div><div class="cv-e"><b>LCM</b> &#183; Theodore Blackman <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">Voltropy PBC</span></div><div class="cv-e"><b>Leyline</b> &#183; Harald K&#246;stler <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">NHR@FAU Erlangen</span></div><div class="cv-e"><b>Parallel Context Compaction</b> &#183; Mahmut Kandemir <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">Penn State</span></div><div class="cv-e"><b>PEARL</b> &#183; Youhui Bai &#183; <span class="cv-aff">USTC</span></div><div class="cv-e"><b>PPD</b> &#183; Zongze Li &#183; <span class="cv-aff">University of Chicago</span></div><div class="cv-e"><b>Slipstream</b> &#183; Ravi Netravali <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">Princeton University</span></div><div class="cv-e"><b>SMetric</b> &#183; Xingda Wei &#183; <span class="cv-aff">Shanghai Jiao Tong University (IPADS)</span></div><div class="cv-e"><b>SmoothAgent</b> &#183; Yufei Ding <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">UC San Diego</span></div><div class="cv-e"><b>Tokencake</b> &#183; Youwei Zhuo &#183; <span class="cv-aff">Peking University</span></div><div class="cv-e"><b>TOPAS</b> &#183; Haisheng Tan <span class="cv-dim">(last)</span> &#183; <span class="cv-aff">USTC</span></div><div class="cv-e"><b>UNISON</b> &#183; Yan Li &#183; <span class="cv-aff">Fudan University</span></div><div class="cv-e"><b>xLLM</b> &#183; Tongxuan Liu, Ke Zhang + 7 &#183; <span class="cv-aff">JD.com and 5 universities</span></div></div>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: the topic-17 Claude Doc, prior-work table (rev 32; its row 22, contention past the turning point, is the regime, covered by CacheWise) and P:D tab, which also cites HeteroPanacea and Autopoiesis (no part covered); author blocks read 2026-10-21; arXiv ids in <span class="mono">conclusion.md</span>.</p></div>
+</section>
+
+<!-- ===================== 8 &#183; CONCLUSION ===================== -->
+<section class="slide" data-title="Conclusion">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">8</span><span>Conclusion</span></div>
+    <h2>Approximate KV repair is safe for agent accuracy; whether it pays is decided under contention, and that is where the paper has to be won</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:34px">
+    <div class="stack" style="gap:10px">
+      <p class="label">Established</p>
+      <div class="verdicts"><div class="verdict keep"><span class="n">1</span><div class="what" style="font-size:13px"><b>Fix the harness before measuring a cache method</b>: one timestamp held reuse at 4.2%; static prompt + append-only template give 89.3%</div></div><div class="verdict keep"><span class="n">2</span><div class="what" style="font-size:13px"><b>EPIC-128 after the snip costs under 5 points</b> (pre-registered, 100 tasks &#215; 3) and computes 91% fewer prompt tokens; MiniMax does not loop under it</div></div><div class="verdict keep"><span class="n">3</span><div class="what" style="font-size:13px"><b>Edits are predictable and material under load</b>: 99.5% known a round ahead; about 30% of GPU time at 4&#8211;8 sessions (offline, first order)</div></div></div>
+      <p class="label" style="margin-top:6px">Retired or parked</p>
+      <div class="verdicts"><div class="verdict drop"><span class="n">&#215;</span><div class="what" style="font-size:13px"><b>Drift-bounded exact refresh</b>: neither pays nor fits (D2, D3)</div></div><div class="verdict drop"><span class="n">&#215;</span><div class="what" style="font-size:13px"><b>Divergence triggers (JSD, TVD, EXP)</b>: the floor is 66&#8211;72% of the signal; parked until probes are batch-invariant (2.6&#215; decode today)</div></div><div class="verdict drop"><span class="n">&#215;</span><div class="what" style="font-size:13px"><b>Qwen3-32B as the study model</b> (pass@1 0.022&#8211;0.089), GAIA (dropped 10-12; its search key returned 403), live DeepSeek reuse</div></div></div>
+    </div>
+    <div class="stack" style="gap:10px">
+      <p class="label">Not established</p>
+      <ul class="list tight xs"><li><b>The payoff with many users</b>, when prefill and cache management compete for the whole HBM: emulation computes every token, so it needs a real reuse path</li><li><b>Margins under 5 points</b>: 2 points at 80% power needs about 6&#215; e3's 300 blocks</li><li><b>Terminal-Bench accuracy</b>: its round-trip check stays below 99% (95.7&#8211;96.6%) until the harness keeps token-level history</li><li><b>Hybrid (Qwen3.8) and compressed-KV (DeepSeek) models</b>; the design's scheduling and residency claims (C1, C3)</li></ul>
+      <div class="method" style="border-left-color: var(--lead)"><div class="mh">The paper, as it stands</div><ul><li><b>Claim</b>: an agent harness edits its context predictably (99.5% a round ahead), and cheap approximate KV repair is safe for accuracy (pre-registered), so a server can schedule edits as repair work and manage KV versions under contention</li><li><b>Missing</b>: the payoff under contention, and a real (not emulated) reuse path</li><li><b>Go / no-go</b>: the E1 simulator shows at least 10% over the best baseline</li></ul></div>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: slides 2&#8211;7; <span class="mono">MODELS.md</span> &#167;6 (power); the Claude Doc's stage table (the 10% gate is its proposal). "Established" means pre-registered or measured on every run; offline results are marked.</p></div>
+</section>
+
+<!-- ===================== 9 &#183; NEXT STEPS ===================== -->
+<section class="slide" data-title="Next steps">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">9</span><span>Next steps (numbering continues 093026's 19&#8211;22)</span></div>
+    <h2>Next: work out KV management for hybrid models like Qwen3.8, and study DeepSeek's DeepInfer, open-sourced on 10-20</h2>
+  </div>
+  <div class="body" style="grid-template-rows: 1fr; gap:12px">
+    <div class="ns-grid"><div class="ns-col"><div class="ns-head"><span class="n">23</span><div><span class="group">models &#183; CPU first, then 1 GPU</span><p class="ns-title"><b>KV management for hybrid models</b> (Qwen3.8-27B)</p></div></div><div class="method ns-know"><div class="mh">Why it is open (harness_eval)</div><ul><li><b>Two kinds of layer</b>: 16 &#215; (3 Gated DeltaNet + 1 gated attention). The 16 attention layers keep 64 KiB of KV per token, movable by re-rotation (RoPE on 64 of 256 dims)</li><li><b>The 48 DeltaNet layers keep a state, not KV</b>: ~72 MiB per sequence (the size of 1,152 tokens of attention KV), summing up every earlier token. After a snip every later token must run through the whole model again, so reuse saved no compute: the arms computed what full re-prefill does (66.5% of the prompt), not the 5.7&#8211;6.1% the attention layers alone need</li><li><b>Stale attention KV still drifts</b>: with exact DeltaNet states, first-token KL rose from 0.007 before the first snip to 0.032&#8211;0.035 after 20 or more; in a 5-task pilot, EPIC runs took 118&#8211;128 lead calls against 78</li></ul></div><ul class="list tight xs ns-steps"><li><b>23a &#183; Survey</b> (by <span class="nw">10-28</span>): how vLLM 0.31.0, SGLang and DeepInfer keep, checkpoint and evict a per-sequence state beside paged KV; the papers on caching for hybrid models</li><li><b>23b &#183; Repair the linear layers</b>: recompute from the head's checkpoint (exact, today's cost); re-run only the recurrence over each DeltaNet layer's stored per-token inputs (approximate like shift; memory for compute); or recompute only when drift is large</li><li><b>23c &#183; Measure</b> (1 GPU): KL against full re-prefill, tokens computed and memory per session on the Qwen3.8 replay; then accuracy</li><li><b>23d &#183; Two pools</b>: paged KV and a fixed state per session compete for HBM at 4&#8211;16 sessions: what to keep, offload or drop</li></ul></div><div class="ns-col"><div class="ns-head"><span class="n">24</span><div><span class="group">systems &#183; reading, no GPU</span><p class="ns-title"><b>DeepSeek DeepInfer</b>, open-sourced 2026-10-20</p></div></div><div class="method ns-know"><div class="mh">What it is (its repo, Q&amp;A and DeepSeek's Zhihu post)</div><ul><li><b>An engine, not the whole stack</b>: DeepSeek's in-house inference engine, derived from vLLM, Apache-2.0. It serves only DeepSeek-V4.1-Flash, on NVIDIA SM100 or Huawei Ascend 950, so not on our H100s</li><li><b>Open</b>: a C++ scheduler and block manager with two pools, paged KV blocks plus one fixed state slot per sequence, admitted together; chunked prefill, preemption, prefix forks. <b>Withheld</b>: the KV-cache system, P/D disaggregation, data-parallel load balancing</li><li><b>Documented for production</b>: KV in HBM; sliding-window KV in host DRAM (TTL about 180 s); paged KV on a 3FS SSD cluster, kept 3 days for agent traffic and 7 for chat. 96% of input tokens hit the cache, at 77K-token average inputs; P:D roughly 1:1, autoscaled; prefill FIFO within 4 context-length tiers; no priorities or fairness</li></ul></div><ul class="list tight xs ns-steps"><li><b>24a &#183; Read the engine</b>: its two-pool admission and state slot are the closest open design for step 23's state pool</li><li><b>24b &#183; Place it on slide 7's map</b>: it covers tiered residency (memory manager) and P:D sizing (GPU reconfigurator), with no harness hints, edit handling or typed scheduling</li><li><b>24c &#183; The agent question</b>: how does a hash-chain prefix match reach 96% hits when, in our profile, the snip cuts vLLM's hit rate to 9&#8211;54%? Which of its clients edit their context, and how?</li></ul></div></div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">MODELS.md</span> &#167;2, &#167;6 and <span class="mono">REPORT.md</span> &#167;7 (Qwen3.8), <span class="mono">epic/epic_connector.py</span> (DeltaNet exact); <span class="mono">github.com/deepseek-ai/DeepInfer</span> and DeepSeek's Zhihu post, read 2026-10-21 (DeepSeek's own numbers). Still open from the 10-19 plan, in <span class="mono">conclusion.md</span>: the E1 simulator, E0g, token-level history, E2 (only if E1 shows at least 10%), commits and the Drive archive.</p></div>
+</section>
+
+<!-- ===================== 10 &#183; BACKUP B1: E4 IN FULL ===================== -->
+<section class="slide" data-title="Backup: e4">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">10</span><span><span class="sec">backup</span> B1 &#183; e4 in full</span></div>
+    <h2>e4 in full: each arm's accuracy (resolve rate) against the control, and the prompt tokens it computed, per benchmark</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto; gap:14px">
+    <table class="data xs">
+      <thead><tr><th>arm</th><th class="grp" colspan="3">resolve rate minus the control's, 90% interval<span class="sub">SWE-bench Verified &#183; Pro &#183; Terminal-Bench</span></th><th class="grp" colspan="3">prompt tokens computed per call (share of the prompt)<span class="sub">SWE-bench Verified &#183; Pro &#183; Terminal-Bench</span></th></tr></thead>
+      <tbody><tr><td class="nw">full re-prefill (baseline)</td><td class="n na">pass@1 0.667</td><td class="n na">pass@1 0.811</td><td class="n na">pass@1 0.567</td><td class="n nw">7,223 (47.3%)</td><td class="n nw">6,734 (33.6%)</td><td class="n nw">9,939 (53.2%)</td></tr><tr><td class="nw">A/A copy vs baseline</td><td class="n nw">&#8722;0.033 [&#8722;0.083, +0.016]</td><td class="n nw">&#8722;0.011 [&#8722;0.062, +0.040]</td><td class="n nw">&#8722;0.011 [&#8722;0.075, +0.052]</td><td class="n nw">7,903 (52.7%)</td><td class="n nw">6,692 (35.4%)</td><td class="n nw">9,652 (52.2%)</td></tr><tr><td class="nw">shift</td><td class="n nw">+0.028 [&#8722;0.032, +0.087]</td><td class="n nw">+0.028 [&#8722;0.021, +0.077]</td><td class="n nw">+0.006 [&#8722;0.057, +0.068]</td><td class="n nw">543 (3.7%)</td><td class="n nw">910 (4.7%)</td><td class="n nw">596 (3.4%)</td></tr><tr class="hi"><td class="nw">EPIC-128</td><td class="n nw">&#8722;0.028 [&#8722;0.096, +0.040]</td><td class="n nw flag">+0.117 [+0.035, +0.198]</td><td class="n nw">+0.072 [&#8722;0.008, +0.152]</td><td class="n nw">647 (4.2%)</td><td class="n nw">953 (5.0%)</td><td class="n nw">614 (3.3%)</td></tr><tr><td class="nw">EPIC-128, age cap 1</td><td class="n nw">&#8722;0.006 [&#8722;0.059, +0.048]</td><td class="n nw">+0.061 [&#8722;0.030, +0.153]</td><td class="n nw">&#8722;0.006 [&#8722;0.065, +0.054]</td><td class="n nw">4,108 (27.9%)</td><td class="n nw">4,174 (21.4%)</td><td class="n nw">5,596 (28.5%)</td></tr><tr><td class="nw">EPIC-128, age cap 4</td><td class="n nw">+0.006 [&#8722;0.044, +0.055]</td><td class="n nw">+0.017 [&#8722;0.020, +0.053]</td><td class="n nw">+0.028 [&#8722;0.028, +0.084]</td><td class="n nw">1,738 (11.3%)</td><td class="n nw">1,893 (9.9%)</td><td class="n nw">2,112 (11.8%)</td></tr><tr><td class="nw">EPIC-128 + JSD recompute</td><td class="n nw">+0.028 [&#8722;0.021, +0.077]</td><td class="n nw">+0.017 [&#8722;0.040, +0.073]</td><td class="n nw">+0.028 [&#8722;0.065, +0.121]</td><td class="n nw">1,301 (8.4%)</td><td class="n nw">1,583 (7.9%)</td><td class="n nw">1,576 (8.2%)</td></tr></tbody>
+    </table>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:28px">
+      <div class="stack" style="gap:6px"><p class="label">Same 30 tasks, an earlier round vs e4</p>
+      <table class="data xs"><thead><tr><th>cell</th><th>earlier</th><th class="n">then</th><th class="n">e4</th></tr></thead><tbody><tr><td class="nw">SWE-bench Pro &#183; EPIC-128</td><td>e2</td><td class="n">&#8722;0.083</td><td class="n">+0.117</td></tr><tr><td class="nw">SWE-bench Pro &#183; age cap 1</td><td>e2</td><td class="n">&#8722;0.083</td><td class="n">+0.061</td></tr><tr><td class="nw">SWE-bench Verified &#183; shift</td><td>e1</td><td class="n">&#8722;0.050</td><td class="n">+0.028</td></tr><tr><td class="nw">SWE-bench Verified &#183; A/A</td><td>e1</td><td class="n">+0.033</td><td class="n">&#8722;0.033</td></tr></tbody></table></div>
+      <ul class="list tight xs"><li><b>Gates</b>: every gate passed on SWE-bench Verified and Pro; Terminal-Bench's round-trip check (E-0) was flagged at 95.7&#8211;96.6%, under the 99% gate and over the 90% stop, the template limit seen in e2 (94.2%)</li><li><b>Terminal-Bench</b>: e2's two identical control arms differed by &#8722;0.300 [&#8722;0.485, &#8722;0.115]; with a longer agent timeout, a larger host pool and a decode reserve, e4's A/A is &#8722;0.011</li><li><b>Cost</b>: 270 blocks, 1,890 trials, 141.7 GPU-h against a cap of 300; all 396 table values recomputed independently, 0 mismatches</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">harness_eval/REPORT.md</span> &#167;7 e4 (accuracy and prefill tables, validity gates), <span class="mono">report/e3_pooled.md</span> (e1, e2 per round). Orange: the interval excludes 0.</p></div>
+</section>
+
+<!-- ===================== 11 &#183; BACKUP B2: JSD DECISIONS ===================== -->
+<section class="slide" data-title="Backup: JSD">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">11</span><span><span class="sec">backup</span> B2 &#183; the JSD decisions</span></div>
+    <h2>Every decision ran (0 failed), but the noise floor sits at two thirds of the mean JSD on all three benchmarks</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto; gap:14px">
+    <table class="data xs">
+      <thead><tr><th>the recompute arm's decisions</th><th class="n">SWE-bench Verified</th><th class="n">SWE-bench Pro</th><th class="n">Terminal-Bench</th></tr></thead>
+      <tbody><tr><td>decisions per run</td><td class="n nw">37.656</td><td class="n nw">11.567</td><td class="n nw">22.044</td></tr><tr><td>mean JSD = recompute probability</td><td class="n nw">0.0531</td><td class="n nw">0.0461</td><td class="n nw">0.0733</td></tr><tr><td>noise floor: two probes of one cache (n)</td><td class="n nw">0.0354 (215)</td><td class="n nw">0.0306 (66)</td><td class="n nw">0.0527 (129)</td></tr><tr><td>recompute rate</td><td class="n nw">5.55%</td><td class="n nw">5.28%</td><td class="n nw">6.96%</td></tr><tr><td>recomputes per run</td><td class="n nw">2.089</td><td class="n nw">0.611</td><td class="n nw">1.533</td></tr><tr><td>decision tokens per run (share of computed)</td><td class="n nw">15,642 (20.6%)</td><td class="n nw">7,806 (15.9%)</td><td class="n nw">9,111 (15.0%)</td></tr><tr><td>time per decision, emulated</td><td class="n nw">2.68 s</td><td class="n nw">5.19 s</td><td class="n nw">9.30 s</td></tr><tr><td>Spearman &#961; of JSD vs the real error [90%]</td><td class="n nw">+0.529 [+0.416, +0.625]</td><td class="n nw">+0.599 [+0.443, +0.720]</td><td class="n nw">+0.442 [+0.298, +0.567]</td></tr><tr><td>probed decision calls (n)</td><td class="n">132</td><td class="n">61</td><td class="n">99</td></tr><tr><td>rate a TVD trigger would give</td><td class="n">0.0433</td><td class="n">0.0370</td><td class="n">0.0614</td></tr><tr><td>rate an EXP trigger would give</td><td class="n">0.0115</td><td class="n">0.0091</td><td class="n">0.0214</td></tr></tbody>
+    </table>
+    <ul class="list tight xs"><li><b>Real error</b> = the shadow probe's first-token KL between a fresh recompute and the after-EPIC cache, on the same calls. KL, TVD and EXP give &#961; within 0.02 of JSD's on every benchmark</li><li><b>The SWE-bench recompute rate rose across its three replicates</b>: 4.2%, 5.5%, 6.6%</li></ul>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">harness_eval/REPORT.md</span>, e4 secondary tables (decisions, decision metrics, validity gates) per benchmark. EXP is logged as 1 &#8722; exp(&#8722;KL).</p></div>
+</section>
+
+<!-- ===================== 12 &#183; BACKUP B3: P:D CONTROL ===================== -->
+<section class="slide" data-title="Backup: P:D">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">12</span><span><span class="sec">backup</span> B3 &#183; P:D control, the deep dive</span></div>
+    <h2>In a harness the waiting queue is nearly empty below the turning point, so a P:D controller needs the harness's one-round forecast</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 470px 1fr; gap:26px">
+    <div class="stack" style="gap:6px">
+      <p class="label">One harness session's cycle</p>
+      <figure><svg viewBox="0 0 470 270" role="img" aria-label="One harness session&#x27;s cycle: queue, prefill, decode, a tool or a wait, then back to the queue. Below the turning point a lead call waits 0.01 s in the queue on average, so the queue holds almost nothing to forecast from."><g><defs><marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="f-ink2"></path></marker></defs><rect x="194" y="28" width="112" height="36" rx="18" class="box-mate"></rect><text x="250.0" y="50.0" font-size="12" text-anchor="middle" class="t-title">prefill</text><rect x="334" y="122" width="112" height="36" rx="18" class="box-lead"></rect><text x="390.0" y="144.0" font-size="12" text-anchor="middle" class="t-title">decode</text><rect x="194" y="216" width="112" height="36" rx="18" class="box"></rect><text x="250.0" y="238.0" font-size="12" text-anchor="middle" class="t-title">tool or wait</text><rect x="54" y="122" width="112" height="36" rx="18" class="box-soft"></rect><text x="110.0" y="144.0" font-size="12" text-anchor="middle" class="t-title">queue</text><path d="M 298 60 C 350 74 380 98 386 120" class="edge" marker-end="url(#ar3)"></path><path d="M 386 160 C 380 196 350 214 300 226" class="edge" marker-end="url(#ar3)"></path><path d="M 200 226 C 150 214 122 196 116 160" class="edge" marker-end="url(#ar3)"></path><path d="M 116 120 C 122 90 150 70 198 58" class="edge" marker-end="url(#ar3)"></path><text x="4.0" y="180.0" font-size="9.5" class="t-mono t-ink2">waits 0.01 s</text><text x="4.0" y="193.0" font-size="9.5" class="t-mono t-ink2">per lead call</text><text x="4.0" y="206.0" font-size="9.5" class="t-muted">below the</text><text x="4.0" y="219.0" font-size="9.5" class="t-muted">turning point</text><text x="250.0" y="140.0" font-size="10" text-anchor="middle" class="t-ink2">the next prefill is</text><text x="250.0" y="154.0" font-size="10" text-anchor="middle" class="t-ink2">this decode&#x27;s successor</text></g></svg></figure>
+    </div>
+    <div class="stack" style="gap:10px">
+      <ul class="list tight xs"><li><b>The queue is the wrong input below the turning point</b>: a lead call waits 0.01 s in it on average; the demand a P:D role flip must prepare for is still in the sessions, decoding or in a tool. Above it the queue is real: 3.2 s per call at 12 users, 19.0 at 16, 75.3 at 32 (093026)</li><li><b>Flip ahead of the burst</b>: a role flip waits about one round for decodes to drain; the harness forecast has about one round of lead</li><li><b>Match each cause of prefill to its resource</b>: new tokens need prefill GPUs; edits need repair or a harness fix; eviction recompute needs residency (a session gate, a DRAM tier), not more prefill GPUs</li><li><b>Size for critical demand, then shape the rest</b> through the harness</li></ul>
+      <p class="label">E0g, proposed (not run, not yet pre-registered)</p>
+      <table class="data xs"><thead><tr><th>rule</th><th>passes if</th></tr></thead><tbody><tr><td class="nw"><b>G1 lead time</b></td><td>&#8805; 50% of prefill GPU-seconds have size and arrival known &#8805; 5 s ahead from harness state</td></tr><tr><td class="nw"><b>G2 forecast</b></td><td>the harness forecast's error is &#8804; half the best queue-only forecaster's (5 s and 30 s windows)</td></tr><tr><td class="nw"><b>G3 regret</b></td><td>with a one-round role-flip delay, &#8805; 30% less capacity shortfall than the best queue-only controller</td></tr><tr><td class="nw"><b>G4 cause</b></td><td>in topic 11's thrashing cells (12&#8211;32 sessions), add no prefill GPUs and recover throughput through the gate (3.5&#8211;3.8&#215;)</td></tr></tbody></table>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: the Claude Doc, tab "P:D control (deep dive)" (2026-10-13); <span class="mono">weekly_progress/093026/slides.html</span> slide 6 (queue seconds per call); prior work on P:D control in the doc (PPD, ConServe, AMPD, PEARL and others) uses no harness hints.</p></div>
+</section>
+
+<!-- ===================== 13 &#183; BACKUP B4: LEDGER ===================== -->
+<section class="slide" data-title="Backup: ledger">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">13</span><span><span class="sec">backup</span> B4 &#183; the run ledger and housekeeping</span></div>
+    <h2>About 402 H100 GPU-hours over two weeks, all accounted for; the last GPU work ended 10-17 and everything is stopped</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1.05fr 1fr; grid-template-rows: auto 1fr; gap:14px 28px">
+    <div class="stack" style="gap:6px">
+      <p class="label">What ran: trials and H100 GPU-hours</p>
+      <table class="data xs"><thead><tr><th>dates</th><th>round</th><th class="n">trials</th><th class="n">GPU-h</th></tr></thead><tbody><tr><td class="nw">10-09</td><td>topic 16 (Qwen3-32B): E-0, pilot, screen, main sweep, replay, timing, SWE-agent</td><td class="n">240 + 200 runs; + 64 pilot, 48 screen, 54 E-0</td><td class="n nw">about 47</td></tr><tr><td class="nw">10-12 &#8594; 13</td><td>harness_eval pilot (s15 vs SWE-agent), then the profile: 4 models &#215; 3 benchmarks</td><td class="n">1,080 + 50 pilot</td><td class="n nw">86.1</td></tr><tr><td class="nw">10-13</td><td>MiniMax pilots, then e1 on SWE-bench Verified</td><td class="n">450 + 15 pilot</td><td class="n nw">3.55 + 23.32</td></tr><tr><td class="nw">10-13</td><td>Qwen3.8 replay and pilot; DeepSeek design and selftests</td><td class="n">20</td><td class="n nw">6.2 + 1.0</td></tr><tr><td class="nw">10-13</td><td>e2 on SWE-bench Pro and Terminal-Bench</td><td class="n">300</td><td class="n nw">20.55</td></tr><tr><td class="nw">10-14</td><td>e3, pre-registered</td><td class="n">1,500</td><td class="n nw">72.23</td></tr><tr><td class="nw">10-15 &#8594; 17</td><td>e4 pilot, then main</td><td class="n">1,890 + 42 pilot</td><td class="n nw">3.63 + 138.08</td></tr><tr class="hi"><td></td><td><b>harness_eval total</b> (topic 16 adds about 47 GPU-h)</td><td class="n"><b>5,240 + 107 pilot</b></td><td class="n"><b>354.7</b></td></tr></tbody></table>
+    </div>
+    <div class="stack" style="gap:6px">
+      <p class="label">Housekeeping</p>
+      <ul class="list tight xs"><li><b>Committed</b>: topic 16 (a03117a), topic 17 (59a24c1). <b>Not yet</b>: harness_eval and the rename of topic 17 to <span class="mono">method_develop</span></li><li><b>Only on this host</b>: the harness_eval traces (28 GB), topic 16's data (1.4 GB), method_develop's data (152 MB); the Drive watcher runs on alpha1, not here: since 10-08 it pushes every topic hourly, skips files changed in the last 30 minutes, and a SessionStart hook keeps it alive (Drive takes about 1.2 new files per second)</li><li><b>Torn down on 10-19</b>: the e4 Docker-in-Docker host with its 98 task images (88.21GB), the eval and dind images, and two exited Terminal-Bench containers with their images; GPUs 0&#8211;7 idle</li><li><b>Corrections</b> (in conclusion.md): topic 16's "no arm differs detectably"; 82&#8211;97% vs 83&#8211;96% re-prefill after the snip; DeepSeek stage GPU-hours 1.0 vs 1.4; "baseline" means two things across rounds; the e1 plan file was overwritten by later plans</li></ul>
+    </div>
+    <div class="stack" style="gap:4px; grid-column: 1 / -1"><p class="label">The fortnight on one axis (UTC)</p>
+<figure><svg viewBox="0 0 1150 92" role="img" aria-label="Timeline, 10-07 to 10-20: topic 16 ran on 10-09 (about 47 GPU-hours); the harness_eval profile 10-12 to 10-13 (86.1); e1 and e2 on 10-13; e3 on 10-14 (72.2); e4 10-15 to 10-17 (141.7); the method_develop design and offline check on 10-13, CPU only."><g><path d="M 230.0 14 V 76" class="grid"></path><text x="233.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-07</text><path d="M 295.0 14 V 76" class="grid"></path><text x="298.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-08</text><path d="M 360.0 14 V 76" class="grid"></path><text x="363.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-09</text><path d="M 425.0 14 V 76" class="grid"></path><text x="428.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-10</text><path d="M 490.0 14 V 76" class="grid"></path><text x="493.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-11</text><path d="M 555.0 14 V 76" class="grid"></path><text x="558.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-12</text><path d="M 620.0 14 V 76" class="grid"></path><text x="623.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-13</text><path d="M 685.0 14 V 76" class="grid"></path><text x="688.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-14</text><path d="M 750.0 14 V 76" class="grid"></path><text x="753.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-15</text><path d="M 815.0 14 V 76" class="grid"></path><text x="818.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-16</text><path d="M 880.0 14 V 76" class="grid"></path><text x="883.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-17</text><path d="M 945.0 14 V 76" class="grid"></path><text x="948.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-18</text><path d="M 1010.0 14 V 76" class="grid"></path><text x="1013.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-19</text><path d="M 1075.0 14 V 76" class="grid"></path><text x="1078.0" y="88.0" font-size="9.5" class="t-mono t-muted tick">10-20</text><text x="222.0" y="31.0" font-size="10.5" text-anchor="end" class="t-ink2">topic 16 &#183; Qwen3-32B</text><text x="222.0" y="51.0" font-size="10.5" text-anchor="end" class="t-ink2">harness_eval &#183; 4 models</text><text x="222.0" y="71.0" font-size="10.5" text-anchor="end" class="t-ink2">method_develop &#183; CPU only</text><rect x="363.3" y="22" width="59.9" height="12" rx="2" class="f-grey"><title>topic 16: GPU stages 10-09 01:11-23:18 UTC, about 47 GPU-hours</title></rect><text x="427.1" y="32.0" font-size="10" class="t-mono t-ink2">&#8776;47 GPU-h</text><rect x="561.0" y="42" width="63.6" height="12" rx="2" class="f-grey"><title>profile: 4 models x 3 benchmarks, 1,080 trials, 86.1 GPU-hours</title></rect><rect x="627.0" y="42" width="39.3" height="12" rx="2" class="f-lead"><title>e1 (23.32 GPU-h), Qwen3.8 and DeepSeek stages, e2 (20.55 GPU-h): 10-13 02:38-17:07 UTC</title></rect><rect x="689.1" y="42" width="49.0" height="12" rx="2" class="f-lead"><title>e3: pre-registered, 1,500 trials, 72.23 GPU-hours, 10-14 01:29-19:33 UTC</title></rect><text x="742.1" y="52.0" font-size="10" class="t-mono t-ink2">e3 72.2</text><rect x="794.4" y="42" width="96.4" height="12" rx="2" class="f-lead"><title>e4: JSD-triggered recompute, 1,890 trials, 141.7 GPU-hours, 10-15 16:26 to 10-17 03:57 UTC</title></rect><text x="894.8" y="52.0" font-size="10" class="t-mono t-ink2">e4 141.7</text><rect x="622.7" y="62" width="59.6" height="12" rx="2" class="f-hair"><title>method_develop: design doc and offline check E0, 10-13, CPU only</title></rect><text x="686.3" y="72.0" font-size="10" class="t-mono t-ink2">E0 + doc</text><text x="556.0" y="52.0" font-size="10" text-anchor="end" class="t-mono t-ink2">profile 86.1</text><text x="627.0" y="38.0" font-size="10" class="t-mono t-ink2">e1, e2</text></g></svg></figure>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">harness_eval/report/gpu_hours.py</span> (server records), topic 16 README GPU time log, <span class="mono">du</span> and the inner Docker daemon's <span class="mono">system df</span> on 10-19.</p></div>
+</section>
+
+<!-- ===================== 14 &#183; BACKUP B5: TOPIC 16 GROUNDWORK ===================== -->
+<section class="slide" data-title="Backup: topic 16 (1/2)">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">14</span><span><span class="sec">backup</span> B5 &#183; topic 16 in full (1/2): cache baseline, selftests, pilot, screen</span></div>
+    <h2>Topic 16's groundwork: the cache baseline, 12 selftests, the pilot's gates and a 48-cell screen fixed the main design before any main run</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:24px">
+    <div class="stack" style="gap:8px">
+      <p class="label">E-0: KV reuse of the original system and its append-only versions (stock vLLM)</p>
+      <table class="data xxs"><thead><tr><th>condition</th><th>config</th><th class="n">token-weighted reuse</th><th class="n">exact extensions</th><th class="n">reusable realized</th></tr></thead><tbody><tr><td class="nw">compaction off</td><td class="nw">A: original</td><td class="n">4.2%</td><td class="n">0.0%</td><td class="n">98.7%</td></tr><tr><td class="nw">compaction off</td><td class="nw">B: static system prompt</td><td class="n">87.0%</td><td class="n">0.0%</td><td class="n">99.4%</td></tr><tr class="hi"><td class="nw">compaction off</td><td class="nw">C: B + append-only template</td><td class="n">89.3%</td><td class="n">95.3%</td><td class="n">99.0%</td></tr><tr><td class="nw">R1: snip + placeholders</td><td class="nw">A: original</td><td class="n">5.6%</td><td class="n">0.0%</td><td class="n">98.9%</td></tr><tr><td class="nw">R1: snip + placeholders</td><td class="nw">B: static system prompt</td><td class="n">50.5%</td><td class="n">0.0%</td><td class="n">99.9%</td></tr><tr><td class="nw">R1: snip + placeholders</td><td class="nw">C: B + append-only template</td><td class="n">51.1%</td><td class="n">16.2%</td><td class="n">100.3%</td></tr></tbody></table>
+      <ul class="list tight xxs"><li><b>The template change itself moves the model</b>: official vs append-only rendering, first-token KL mean / median 0.1318 / 0.0044, top-1 96.0%, greedy 48-token continuations identical 78.0% (A/A 98.7%)</li><li><b>Selftests, 12 of 12 pass</b>: loads bit-identical to vLLM's prefix cache; re-rotated keys rel. error 0.0010 (unrotated: 0.20); values identical; overrides exact across a chunked prefill (max abs diff 0.0); one rotation by (p &#8722; birth) instead of two chained bf16 rotations: 0.14 % relative drift avoided</li><li><b>Batch invariance, shown then not used</b>: batch-invariant kernels made the A/A copy identical to prefix over all 41 calls of the smoke, but slowed decode 2.6&#215; (83-90 ms vs ~33 ms per output token with 2 sessions); the live runs use standard kernels, so arms are paired by task, not by trajectory (The 4 batch-invariant pilot runs are kept)</li></ul>
+    </div>
+    <div class="stack" style="gap:8px">
+      <p class="label">Pilot gates (64 runs, 10-09 03:47&#8211;08:44)</p>
+      <table class="data xxs"><thead><tr><th>gate</th><th>result</th></tr></thead><tbody><tr><td class="nw"><b>G1</b> rendering</td><td class="txt">689 / 689 lead calls re-render offline to the server's prompt length</td></tr><tr><td class="nw"><b>G2</b> common random numbers</td><td class="txt"><span class="mono">prefix_aa</span> identical to <span class="mono">prefix</span> through the first edit in 8 / 12 blocks</td></tr><tr><td class="nw"><b>G3</b> edits</td><td class="txt">R1: 83 % of runs edit, median 127 edit calls per run; R2: 31 % reach an LLM-summary compaction</td></tr><tr><td class="nw"><b>G4</b> base rates</td><td class="txt">pass rate of prefix-type runs: E1 0.29, M3 0.25, E2 / E3 / M1 / M2 0.00</td></tr><tr><td class="nw"><b>G6</b> run behaviour</td><td class="txt">emulated arms 1.23&#215; prefix's median wall time; 52 % of runs end at the call cap</td></tr><tr><td class="nw"><b>G7</b> graders</td><td class="txt">blind audit 15 / 15 on pass/fail; partial credit added (cleanup note 08:50); second batch (15 screen runs) 13 / 15, both misses one citation-format defect of the EXPLAIN graders, fixed: 30 / 30 (cleanup note 14:45)</td></tr><tr><td class="nw"><b>G8</b> memory</td><td class="txt">no preemption, no OOM; host pool peak 50,235 of 200,000 rows</td></tr></tbody></table>
+      <ul class="list tight xxs"><li><b>Pilot outcome</b>: passes 1 / 12 (prefix), 2 / 12 (prefix_aa), 0 / 12 (shift), 1 / 12 (epic128); runs at the 150-call cap prefix 6, prefix_aa 8, shift 6, epic128 7 of 12. R2 (LLM-summary compaction) was dropped: it leaves EPIC little to reuse, and 7 of the 16 R2 runs looped without end</li><li><b>Screen &#8594; main design</b>: 48 more cells run once under prefix split into "finish before the first snip", "loop to the cap" and "compact and can score"; the main sweep used the 12 R1 cells on 8 codebases where the outcome can move. Of its 240 runs, 127 ended on their own, 113 at their budget (no failures)</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">research/16_epic_harness/README.md</span> &#167;4.0&#8211;&#167;4.3, <span class="mono">data/e0_reuse/e0_tables.md</span>. Exact extension = call k is call k&#8722;1 plus new text. Reusable realized = cached tokens over what a perfect prefix cache could serve.</p></div>
+</section>
+
+<!-- ===================== 15 &#183; BACKUP B6: TOPIC 16 RESULTS ===================== -->
+<section class="slide" data-title="Backup: topic 16 (2/2)">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">15</span><span><span class="sec">backup</span> B6 &#183; topic 16 in full (2/2): live probes, time, SWE-agent replica</span></div>
+    <h2>On live trajectories EPIC restores 2&#8211;18% of the KV, and on one H100 it cuts time to first token from 494 ms to 70&#8211;86 ms</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:24px">
+    <div class="stack" style="gap:7px">
+      <p class="label">Live shadow probes: each arm on its own trajectory</p>
+      <table class="data xxs dense"><thead><tr><th>arm</th><th class="n">probes</th><th class="n">reused D^K</th><th class="n">first-token KL</th><th class="n">reply KL</th><th class="n">top-1</th><th class="n">next round identical</th></tr></thead><tbody><tr><td class="nw">prefix (probe floor)</td><td class="n">248</td><td class="n">&#8212;</td><td class="n">0.0001</td><td class="n">0.0001</td><td class="n nw">99.97 %</td><td class="n nw">92 %</td></tr><tr><td class="nw">shift</td><td class="n">256</td><td class="n">0.067</td><td class="n">0.021</td><td class="n">0.012</td><td class="n nw">99.54 %</td><td class="n nw">84 %</td></tr><tr><td class="nw">EPIC-32</td><td class="n">442</td><td class="n">0.066</td><td class="n">0.009</td><td class="n">0.013</td><td class="n nw">99.52 %</td><td class="n nw">85 %</td></tr><tr><td class="nw">EPIC-64</td><td class="n">485</td><td class="n">0.056</td><td class="n">0.013</td><td class="n">0.010</td><td class="n nw">99.30 %</td><td class="n nw">82 %</td></tr><tr><td class="nw">EPIC-128</td><td class="n">501</td><td class="n">0.055</td><td class="n">0.012</td><td class="n">0.008</td><td class="n nw">99.58 %</td><td class="n nw">81 %</td></tr></tbody></table>
+      <ul class="list tight xxs"><li><b>Restoration on live trajectories</b>: 2 % (k = 32), 16 % (64) and 18 % (128) of shift's deviation; 80-86 % of the reused rows have crossed two or more edits, and past 16 edits every EPIC arm is above shift (0.087-0.118 vs 0.080); the deviation sits in the deep layers (layers 48-51: 0.16-0.19 in every arm)</li><li><b>Live prefill</b>: <span class="mono">prefix</span> computed 4,359 of 7,889 prompt tokens (55%); the reuse arms 9&#8211;12%; a KV hit rate of 88-91 % against 45 %. Run heads are 1.6 % (k = 32), 2.3 % (64) and 3.9 % (128) of the reused rows</li></ul>
+      <p class="label">X2: SWE-agent with observation masking, 50 SWE-bench Verified Mini instances, one seed</p>
+      <table class="data xxs dense"><thead><tr><th>arm</th><th class="n">resolved [95% CI]</th><th class="n">patches</th><th class="n">runs at 150 calls</th></tr></thead><tbody><tr><td class="nw">prefix</td><td class="n nw">7 / 50 (14 %) [7, 26]</td><td class="n">47</td><td class="n">4</td></tr><tr><td class="nw">EPIC-32</td><td class="n nw">6 / 50 (12 %) [6, 24]</td><td class="n">46</td><td class="n">2</td></tr><tr><td class="nw">EPIC-64</td><td class="n nw">11 / 50 (22 %) [13, 35]</td><td class="n">43</td><td class="n">5</td></tr><tr><td class="nw">EPIC-128</td><td class="n nw">9 / 50 (18 %) [10, 31]</td><td class="n">47</td><td class="n">6</td></tr></tbody></table>
+    </div>
+    <div class="stack" style="gap:7px">
+      <p class="label">E-C: prefill time on one H100, one session (600 timed calls; prefill per call on 30 runs, 2,290 lead calls)</p>
+      <table class="data xxs dense"><thead><tr><th>arm</th><th class="n">tokens computed</th><th class="n">TTFT median, ms</th><th class="n">prefill per call, ms</th></tr></thead><tbody><tr><td class="nw">full recompute</td><td class="n">8,126</td><td class="n">904</td><td class="n">1,005</td></tr><tr><td class="nw">prefix</td><td class="n">4,571</td><td class="n">494</td><td class="n">523</td></tr><tr><td class="nw">shift</td><td class="n">590</td><td class="n">65</td><td class="n">143</td></tr><tr><td class="nw">EPIC-32</td><td class="n">650</td><td class="n">70</td><td class="n">147</td></tr><tr><td class="nw">EPIC-64</td><td class="n">708</td><td class="n">77</td><td class="n">151</td></tr><tr class="hi"><td class="nw">EPIC-128</td><td class="n">826</td><td class="n">86</td><td class="n">157</td></tr></tbody></table>
+      <ul class="list tight xxs"><li><b>The time model holds</b>: TTFT fit held-out MdAPE 1.8 % (computing) and 3.8% (reuse); against stock vLLM on 503 calls, MdAPE 3.4% per call. These are single-session numbers; with many users the cost of prefill grows with contention for HBM</li><li><b>X2 reading</b>: McNemar p = 1.00 / 0.29 / 0.63; prefix computed 44% of each prompt (4,684 tokens, hit rate 56%), EPIC 6% (634&#8211;664 tokens, hit rate 94%); reused D^K 0.035 / 0.044 / 0.043, reply KL 0.005 / 0.004 / 0.003 against 0.0003 on exact KV. Qwen3-32B under this masking resolved 15.0 % of all 500 instances in JetBrains' study; one seed can only rule out differences of about 15&#8211;20 points</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">research/16_epic_harness/README.md</span> &#167;4.4, &#167;4.6, &#167;4.7; <span class="mono">data/live/main/latency/*.md</span>, <span class="mono">data/x2_swe/x2_tables.md</span>. D^K = &#931;&#8214;K &#8722; K*&#8214;&#178; / &#931;&#8214;K*&#8214;&#178; over 64 layers against a fresh recompute.</p></div>
+</section>
+
+<!-- ===================== 16 &#183; BACKUP B7: PROFILE IN FULL ===================== -->
+<section class="slide" data-title="Backup: profile">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">16</span><span><span class="sec">backup</span> B7 &#183; the harness_eval profile in full</span></div>
+    <h2>Profile in full: four models on three benchmarks, 1,080 trials; only Qwen3-32B falls below the usable floor, and it loops</h2>
+  </div>
+  <div class="body" style="grid-template-rows: auto auto; gap:10px">
+    <table class="data xxs arms dense" style="font-size:11px">
+      <thead><tr><th>bench</th><th class="n">pass@1 [95% CI]</th><th class="n">pass@3</th><th class="n">pass^3</th><th class="n">consistent</th><th class="n">lead calls</th><th class="n">out tok</th><th class="n">edits / run</th><th class="n">wall min</th><th class="n">failures</th></tr></thead>
+      <tbody><tr class="grp"><td colspan="10">DeepSeek-V4-Flash</td></tr><tr><td>SWE</td><td class="n nw">0.900 [0.811, 0.967]</td><td class="n">0.967</td><td class="n">0.800</td><td class="n">0.83</td><td class="n">53.2</td><td class="n">15624</td><td class="n">32.2</td><td class="n">5.3</td><td class="n">3</td></tr><tr><td>Pro</td><td class="n nw">0.944 [0.878, 0.989]</td><td class="n">1.000</td><td class="n">0.867</td><td class="n">0.87</td><td class="n">56.4</td><td class="n">23077</td><td class="n">36.6</td><td class="n">9.9</td><td class="n">4</td></tr><tr><td>TB</td><td class="n nw">0.589 [0.456, 0.722]</td><td class="n">0.833</td><td class="n">0.367</td><td class="n">0.53</td><td class="n">26.6</td><td class="n">28608</td><td class="n">9.1</td><td class="n">11.0</td><td class="n">18</td></tr><tr class="grp"><td colspan="10">Qwen3.8-27B</td></tr><tr><td>SWE</td><td class="n nw">0.789 [0.700, 0.867]</td><td class="n">1.000</td><td class="n">0.500</td><td class="n">0.50</td><td class="n">68.2</td><td class="n">39169</td><td class="n">46.6</td><td class="n">27.6</td><td class="n">15</td></tr><tr><td>Pro</td><td class="n nw">0.967 [0.911, 1.000]</td><td class="n">1.000</td><td class="n">0.933</td><td class="n">0.93</td><td class="n">50.8</td><td class="n">25626</td><td class="n">30.5</td><td class="n">18.6</td><td class="n">14</td></tr><tr><td>TB</td><td class="n nw">0.500 [0.356, 0.644]</td><td class="n">0.667</td><td class="n">0.300</td><td class="n">0.63</td><td class="n">31.6</td><td class="n">42078</td><td class="n">14.9</td><td class="n">17.5</td><td class="n">37</td></tr><tr class="grp"><td colspan="10">MiniMax-M2.7</td></tr><tr><td>SWE</td><td class="n nw">0.644 [0.489, 0.789]</td><td class="n">0.733</td><td class="n">0.500</td><td class="n">0.77</td><td class="n">69.0</td><td class="n">11786</td><td class="n">48.4</td><td class="n">5.3</td><td class="n">0</td></tr><tr><td>Pro</td><td class="n nw">0.867 [0.744, 0.967]</td><td class="n">0.900</td><td class="n">0.800</td><td class="n">0.90</td><td class="n">37.4</td><td class="n">8727</td><td class="n">18.0</td><td class="n">5.7</td><td class="n">1</td></tr><tr><td>TB</td><td class="n nw">0.478 [0.333, 0.622]</td><td class="n">0.667</td><td class="n">0.300</td><td class="n">0.63</td><td class="n">38.1</td><td class="n">21932</td><td class="n">22.0</td><td class="n">11.9</td><td class="n">18</td></tr><tr class="grp"><td colspan="10">Qwen3-32B</td></tr><tr><td>SWE</td><td class="n nw">0.089 [0.022, 0.178]</td><td class="n">0.167</td><td class="n">0.033</td><td class="n">0.87</td><td class="n">143.9</td><td class="n">9692</td><td class="n">131.3</td><td class="n">13.3</td><td class="n">7</td></tr><tr><td>Pro</td><td class="n nw">0.067 [0.011, 0.122]</td><td class="n">0.167</td><td class="n">0.000</td><td class="n">0.83</td><td class="n">221.2</td><td class="n">12088</td><td class="n">201.7</td><td class="n">13.1</td><td class="n">2</td></tr><tr><td>TB</td><td class="n nw">0.022 [0.000, 0.056]</td><td class="n">0.067</td><td class="n">0.000</td><td class="n">0.93</td><td class="n">150.8</td><td class="n">7294</td><td class="n">132.5</td><td class="n">9.8</td><td class="n">30</td></tr></tbody>
+    </table>
+    <ul class="list tight xxs"><li><b>Pilot</b> (Qwen3-32B, SWE-bench Verified Mini, 150 calls): s15 resolved 4/50, SWE-agent 7/50; 34 of 50 s15 runs ended at the 150-call budget (SWE-agent's median run: 20.5 calls); Harbor and the official grader agree on 49/49 pilot patches</li><li><b>Cost per model</b> (GPU-h; median wall min per trial; mean output tokens per trial): Qwen3-32B 20.5, 8.6, 9,691; Qwen3.8-27B 16.3, 15.0, 35,625; DeepSeek-V4-Flash 24.1, 5.2, 22,436; MiniMax-M2.7 25.2, 3.7, 14,148</li><li><b>KV per token</b>: MiniMax 248 KiB; Qwen3.8 64 KiB plus ~72 MiB state / seq; DeepSeek ~3-4 KiB; Qwen3-32B 256 KiB (one H100 holds 40.8K tokens, about 1.25 contexts). <b>Usable</b> (pass@1 &#8805; 0.15, &#8805; 1 edit per run): all but Qwen3-32B. <b>Published vs s15</b> (SWE-bench Verified): MiniMax I 73.8 vs 0.644, Qwen3.8 I 86.0 vs 0.789, DeepSeek I 88.8 vs 0.900. <b>Deviations</b>: GAIA dropped on 10-12 (search key returned 403; adapter passed its oracle check on 3 tasks); 4 + 4 tasks replaced (disk); 3 trials where Terminal-Bench asks for 5; 8 disk-guard kills before our own Docker daemon</li></ul>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">harness_eval/REPORT.md</span> &#167;1&#8211;&#167;6, <span class="mono">MODELS.md</span>. 30 tasks &#215; 3 trials per cell, 250 lead calls; edits/run = compactions per run, almost all of them snips; failures = runs with an exception or timeout (infra failures excluded and rerun).</p></div>
+</section>
+
+<!-- ===================== 17 &#183; BACKUP B8: E1, E2, QWEN3.8, DEEPSEEK ===================== -->
+<section class="slide" data-title="Backup: e1, e2, others">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">17</span><span><span class="sec">backup</span> B8 &#183; the earlier rounds, and the other two models</span></div>
+    <h2>The earlier rounds: e1's pre-registered test stopped at the age cap, e2's 30-task rounds were noisy, and Qwen3.8 and DeepSeek stayed exploratory</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr; gap:10px 24px">
+    <div class="stack" style="gap:6px; grid-column: 1 / -1">
+      <p class="label">MiniMax-M2.7: e1 (SWE-bench Verified, 90 blocks per arm) and e2 (Pro, Terminal-Bench, 30 blocks each)</p>
+      <table class="data xxs arms dense"><thead><tr><th>arm</th><th class="grp" colspan="3">difference from the control, 90%<span class="sub">e1 SWE &#183; e2 Pro &#183; e2 TB</span></th><th class="grp" colspan="3">pass@1<span class="sub">e1 &#183; Pro &#183; TB</span></th><th class="grp" colspan="3">computed / prompt<span class="sub">e1 &#183; Pro &#183; TB</span></th></tr></thead><tbody><tr class="hi"><td class="nw">EPIC-128</td><td class="n nw">+0.017 [&#8722;0.043, +0.076]</td><td class="n nw">&#8722;0.083 [&#8722;0.206, +0.039]</td><td class="n nw">+0.150 [+0.002, +0.298]</td><td class="n">0.689</td><td class="n">0.767</td><td class="n">0.633</td><td class="n">4.3%</td><td class="n">4.7%</td><td class="n">7.7%</td></tr><tr><td class="nw">age cap a1</td><td class="n nw">&#8722;0.061 [&#8722;0.130, +0.007]</td><td class="n nw">&#8722;0.083 [&#8722;0.155, &#8722;0.012]</td><td class="n nw">+0.050 [&#8722;0.104, +0.204]</td><td class="n">0.611</td><td class="n">0.767</td><td class="n">0.533</td><td class="n">25.3%</td><td class="n">18.4%</td><td class="n">27.5%</td></tr><tr><td class="nw">shift</td><td class="n nw">&#8722;0.050 [&#8722;0.129, +0.029]</td><td class="n nw">&#8722;0.017 [&#8722;0.093, +0.059]</td><td class="n nw">+0.017 [&#8722;0.127, +0.161]</td><td class="n">0.622</td><td class="n">0.833</td><td class="n">0.500</td><td class="n">3.8%</td><td class="n">4.9%</td><td class="n">10.2%</td></tr><tr><td class="nw">A/A</td><td class="n nw">+0.033 [&#8722;0.016, +0.083]</td><td class="n nw">+0.033 [&#8722;0.066, +0.133]</td><td class="n nw">&#8722;0.300 [&#8722;0.485, &#8722;0.115]</td><td class="n">0.689</td><td class="n">0.867</td><td class="n">0.333</td><td class="n">49.0%</td><td class="n">30.6%</td><td class="n">50.2%</td></tr><tr><td class="nw">prefix</td><td class="na">control</td><td class="na">control</td><td class="na">control</td><td class="n">0.656</td><td class="n">0.833</td><td class="n">0.633</td><td class="n">48.7%</td><td class="n">37.4%</td><td class="n">44.4%</td></tr></tbody></table>
+      <ul class="list tight xxs"><li><b>e1</b>: the pre-registered order (a1, EPIC-128, shift; margin &#8722;0.10) stopped at a1; no looping (lead calls 47.8&#8211;53.4 per run vs the profile's 69.0); first-token KL EPIC-128 0.0368, a1 0.0171, shift 0.0403; 23.32 GPU-h</li><li><b>e2</b>: Terminal-Bench's identical control arms differ by &#8722;0.300, so it supports no accuracy conclusion; E-0 99.4% (Pro) and 94.2% (Terminal-Bench); 20.55 GPU-h</li></ul>
+    </div>
+    <div class="stack" style="gap:6px">
+      <p class="label">Qwen3.8-27B, stage B: 5-task pilot and a 10-trajectory replay</p>
+      <table class="data xxs arms"><thead><tr><th>arm</th><th class="n">pilot pass@1</th><th class="n">lead calls</th><th class="n">replay KL vs prefix</th><th class="n">after 21+ snips</th><th class="n">computed / prompt</th></tr></thead><tbody><tr><td class="nw">prefix</td><td class="n">1.000</td><td class="n">78.2</td><td class="n">&#8212;</td><td class="n nw">&#8212;</td><td class="n">66.5%</td></tr><tr><td class="nw">EPIC-128</td><td class="n">0.800</td><td class="n">117.6</td><td class="n">0.0166</td><td class="n nw">0.0317 (n=134)</td><td class="n">6.1%</td></tr><tr><td class="nw">age cap a1</td><td class="n">0.800</td><td class="n">124.4</td><td class="n">0.0073</td><td class="n nw">0.0070 (n=134)</td><td class="n">35.0%</td></tr><tr><td class="nw">shift</td><td class="n">0.600</td><td class="n">127.6</td><td class="n">0.0175</td><td class="n nw">0.0353 (n=134)</td><td class="n">5.7%</td></tr><tr><td class="nw">A/A copy</td><td class="na">&#8212;</td><td class="na">&#8212;</td><td class="n">0.0059</td><td class="n nw">0.0054 (n=134)</td><td class="n">66.5%</td></tr></tbody></table>
+      <ul class="list tight xxs"><li><b>Reading</b>: shift and EPIC-128 drift with snips (KL rises to about 0.03); the age cap stays at the A/A floor; EPIC arms ran about 50% more lead calls in the pilot, a looping hint that 5 tasks cannot resolve; 6.2 GPU-h</li></ul>
+    </div>
+    <div class="stack" style="gap:6px">
+      <p class="label">DeepSeek-V4-Flash, stage C: design and selftests only</p>
+      <ul class="list tight xxs"><li><b>Design B</b>: its pooled and indexer caches cannot be re-rotated, so the server stores every token's attention input (about 344 KB per token) and substitutes it through pre-hooks (43 pre-hooks on each of the 4 ranks)</li><li><b>Selftests</b>: deviation of substituted inputs 0.093 and 0.096, with rows from decode; 0.074 with prefill rows only with no edit, against 0.29&#8211;0.30 for shift, epic128 and epic128a1; 0.24 for the 128-aligned shift of 5,248 tokens; first-token KL after the snip 0.022&#8211;0.087 by arm and run, inside the model's own noise (two recomputes differ by KL 0.01&#8211;0.07). Three checks still failed (thresholds calibrated on exact models); 1.0 GPU-h; no live runs</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">harness_eval/REPORT.md</span> &#167;7 (phases e1, e2, b1 and stage C; per-arm and server-side tables). Control = mean of prefix and prefix_aa per block; computed / prompt from the server log.</p></div>
+</section>
+
+<!-- ===================== 18 &#183; BACKUP B9: E3 IN FULL ===================== -->
+<section class="slide" data-title="Backup: e3">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">18</span><span><span class="sec">backup</span> B9 &#183; e3 in full</span></div>
+    <h2>e3 in full: 1,500 trials and every gate passed; one of 15 exploratory intervals excludes 0, about what chance gives at 90%</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1.35fr 1fr; gap:22px">
+    <div class="stack" style="gap:6px">
+      <p class="label">Per arm: 300 trials each (100 new tasks &#215; 3)</p>
+      <table class="data xxs arms"><thead><tr><th>arm</th><th class="n">pass@1</th><th class="n">lead calls</th><th class="n">at budget</th><th class="n">computed / prompt</th><th class="n">first-token KL</th><th class="n">reused-row D^K by edits survived<span class="sub">0 / 1 / 2&#8211;3 / 4&#8211;7 / 8&#8211;15 / 16+</span></th></tr></thead><tbody><tr><td class="nw">prefix</td><td class="n">0.730</td><td class="n">46.7</td><td class="n">1.7%</td><td class="n">47.7%</td><td class="n">&#8212;</td><td class="n nw">&#8212; / &#8212; / &#8212; / &#8212; / &#8212; / &#8212;</td></tr><tr><td class="nw">prefix_aa</td><td class="n">0.750</td><td class="n">46.7</td><td class="n">1.3%</td><td class="n">46.1%</td><td class="n">&#8212;</td><td class="n nw">&#8212; / &#8212; / &#8212; / &#8212; / &#8212; / &#8212;</td></tr><tr class="hi"><td class="nw">EPIC-128</td><td class="n">0.730</td><td class="n">46.3</td><td class="n">1.0%</td><td class="n">4.3%</td><td class="n">0.0314</td><td class="n nw">0.022 / 0.098 / 0.104 / 0.113 / 0.154 / 0.199</td></tr><tr><td class="nw">age cap a1</td><td class="n">0.740</td><td class="n">47.7</td><td class="n">1.0%</td><td class="n">24.6%</td><td class="n">0.0139</td><td class="n nw">0.027 / 0.089 / &#8212; / &#8212; / &#8212; / &#8212;</td></tr><tr><td class="nw">age cap a4</td><td class="n">0.757</td><td class="n">44.0</td><td class="n">1.0%</td><td class="n">11.0%</td><td class="n">0.0220</td><td class="n nw">0.021 / 0.112 / 0.104 / 0.129 / &#8212; / &#8212;</td></tr></tbody></table>
+      <ul class="list tight xxs"><li><b>Pre-registered power</b>: H1 83 % if the true difference is 0; 47 % if &#8722;0.02; H2 94 % for a true &#8722;0.07; 73 % for &#8722;0.05</li><li><b>Machinery</b>: every gate passed in every replicate; E-0 99.4&#8211;99.6 %; 17 resets in 41,380 EPIC-arm calls, all decode overflows; no fallbacks; no agent timeouts</li><li><b>One deviation</b>: the interim check stopped the run falsely at 02:01 UTC (a read-order race in the gates script); fixed, tested, and the run resumed at 02:25 UTC; no outcome had been looked at. 72.23 GPU-h of the approved 86</li><li><b>Age, not the arm, sets the drift</b>: reused rows deviate about 0.02 before any edit and 0.20 after 16 or more; the age caps stop the oldest rows from being reused</li></ul>
+    </div>
+    <div class="stack" style="gap:6px">
+      <p class="label">Exploratory comparisons (no verdicts), 90% intervals</p>
+      <table class="data xxs"><thead><tr><th>comparison</th><th class="n">difference</th></tr></thead><tbody><tr><td class="txt">a4 &#8722; control</td><td class="n nw">+0.017 [&#8722;0.014, +0.047]</td></tr><tr><td class="txt">a4 &#8722; a1</td><td class="n nw">+0.017 [&#8722;0.025, +0.059]</td></tr><tr><td class="txt">EPIC-128 &#8722; a1</td><td class="n nw">&#8722;0.010 [&#8722;0.053, +0.033]</td></tr><tr><td class="txt">EPIC-128 &#8722; control, stratum <15 min fix</td><td class="n nw">&#8722;0.033 [&#8722;0.093, +0.026]</td></tr><tr><td class="txt">a1 &#8722; control, stratum <15 min fix</td><td class="n nw">&#8722;0.024 [&#8722;0.059, +0.011]</td></tr><tr><td class="txt">a4 &#8722; control, stratum <15 min fix</td><td class="n nw">+0.014 [&#8722;0.017, +0.046]</td></tr><tr><td class="txt">EPIC-128 &#8722; control, stratum 15 min - 1 hour</td><td class="n nw">+0.000 [&#8722;0.042, +0.042]</td></tr><tr><td class="txt">a1 &#8722; control, stratum 15 min - 1 hour</td><td class="n nw">+0.027 [&#8722;0.028, +0.082]</td></tr><tr><td class="txt">a4 &#8722; control, stratum 15 min - 1 hour</td><td class="n nw">&#8722;0.007 [&#8722;0.056, +0.043]</td></tr><tr><td class="txt">EPIC-128 &#8722; control, stratum 1-4 hours</td><td class="n nw">+0.011 [&#8722;0.105, +0.127]</td></tr><tr><td class="txt">a1 &#8722; control, stratum 1-4 hours</td><td class="n nw">&#8722;0.033 [&#8722;0.133, +0.066]</td></tr><tr><td class="txt">a4 &#8722; control, stratum 1-4 hours</td><td class="n nw flag">+0.100 [+0.002, +0.198]</td></tr><tr><td class="txt">EPIC-128 &#8722; control, blocks whose control snipped</td><td class="n nw">&#8722;0.006 [&#8722;0.043, +0.030]</td></tr><tr><td class="txt">a1 &#8722; control, blocks whose control snipped</td><td class="n nw">&#8722;0.008 [&#8722;0.048, +0.032]</td></tr><tr><td class="txt">a4 &#8722; control, blocks whose control snipped</td><td class="n nw">+0.021 [&#8722;0.014, +0.056]</td></tr></tbody></table>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">harness_eval/REPORT.md</span> &#167;7 e3 (hypotheses, exploratory, per arm, server side, time model, setup and deviations); <span class="mono">runs/epic/prereg_e3.md</span> (power). Orange: the interval excludes 0.</p></div>
+</section>
+
+<!-- ===================== 19 &#183; BACKUP B10: E0 AND P:D SIZING ===================== -->
+<section class="slide" data-title="Backup: E0 and P:D">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">19</span><span><span class="sec">backup</span> B10 &#183; E0 in full, and P:D sizing</span></div>
+    <h2>E0 in full: edits take 9.7&#8211;17.3% of one session and 30% of a shared GPU, the drift sits in old rows, and P per D swings 0.45&#8211;9</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:24px">
+    <div class="stack" style="gap:6px">
+      <p class="label">E0, all seven parts (offline, rules pre-registered 10-13)</p>
+      <table class="data xxs"><thead><tr><th>part</th><th>result</th></tr></thead><tbody><tr><td class="nw"><b>E0a census, 1 session</b></td><td class="txt">Edit work 9.7-17.3 % per model (11.2 % pooled over 1,116 harness_eval trials); topic 16's prefix arms 13.3 %; checked against topic 16: estimate / truth 0.975, edited-call recall 99.7 %</td></tr><tr><td class="nw"><b>E0a census, many sessions</b></td><td class="txt">edit work is 30 % / 27 % of GPU time and 29 % / 25 % of a lead call's time at N = 4 / 8; past the turning point only 13% / 10% / 11% at 12 / 16 / 32 sessions; behind the session gate, it is 34-39 % of GPU time; with the per-second timestamp left in, 68% at 8 (topic 11's cells, first order)</td></tr><tr><td class="nw"><b>E0b lookahead</b></td><td class="txt">97.9 / 99.5 / 100 % over 85,527 transitions (round start / decode end / tool end); The rolling snip is 99.9 % of edit tokens; s15's rules reproduces 85,507 of 85,507 logged requests</td></tr><tr><td class="nw"><b>E0c slack, 1 session</b></td><td class="txt">refresh work that fits tool windows: 6-11 % (whole windows), 17-22 % (partial). Window p50 0-0.25 s, p90 0.3-2.3 s</td></tr><tr><td class="nw"><b>E0d stall curve</b></td><td class="txt">0 / 3-25 / 15-140 tokens per step at N = 4-16 at 5 / 10 / 20% decode slowdown (a mixed step costs &#8805; ~2 ms); 74-304 spare tokens/s per GPU at 10 %. Illustrative D3 at 4 / 8 / 12 / 16 sessions and the gate: the 10% budget hosts 100 / 52 / 60 / 70 / 52% of a refresh of 384 tokens per lead call, is moot at N = 4-8 because D2 failed</td></tr><tr><td class="nw"><b>E0e drift</b></td><td class="txt">Best implementable: every 7 edits, 49 % at 0.32 (post hoc); pre-registered every 8, 43 % at 0.30; an oracle reaches 89 % at 0.33; Held-out Spearman of the ex-ante predictor: 0.37</td></tr><tr><td class="nw"><b>E0f hysteresis</b></td><td class="txt">Edit work 10.0 % &#8594; 0.7 % of the N = 1 lead chain; calls with an edit 75.2 % &#8594; 9.3 %</td></tr></tbody></table>
+    </div>
+    <div class="stack" style="gap:8px">
+      <p class="label">Where the drift sits (E0e, EPIC-128, topic 16 replay)</p>
+      <ul class="list tight xxs"><li><b>Age is the lever</b>: per-row K deviation 0.020 after one edit, 0.032 after 4-7, 0.051 after 8-15, 0.092 after 16+; one-step 0.017; rows that survived >= 8 edits are 29% of the stale rows but carry 60% of their excess, so a partial refresh should take the oldest rows</li><li><b>Offset is not</b>: 80% of the reused rows' excess lies >= 512 tokens from any head (rows near a head: 0.088 vs 0.033 beyond), so a larger k cannot reach it</li><li><b>Depth</b>: Layers 40-63 carry 78% of the excess (layers 0-31: 14%), but a refresh must recompute every layer of a row</li></ul>
+      <p class="label">P:D deep dive (model-based, from the design doc): prefill GPUs per decode GPU</p>
+      <table class="data xxs"><thead><tr><th>harness state</th><th class="n">computed tok / call</th><th class="n">prefill GPU-s / call</th><th class="n">calls/h per P GPU</th><th class="n">P per D</th></tr></thead><tbody><tr><td class="txt">Edits removed (append-only counterfactual)</td><td class="n">~0.9k</td><td class="n">~0.16</td><td class="n">~22k</td><td class="n nw">~0.45</td></tr><tr><td class="txt">Edits repaired with shift + EPIC</td><td class="n">~1.2k</td><td class="n">~0.21</td><td class="n">~17k</td><td class="n nw">~0.6</td></tr><tr><td class="txt">As run (prefix caching, snip off, &#8804; 8 sessions)</td><td class="n">3.4k</td><td class="n">0.55</td><td class="n">6.5k</td><td class="n nw">~1.5 (&#8776; 3P : 2D)</td></tr><tr><td class="txt">Past the turning point (16 sessions, as run)</td><td class="n">~23.4k</td><td class="n">~3.2</td><td class="n">~1.1k</td><td class="n nw">~9</td></tr></tbody></table>
+      <p class="note xs">The same request stream needs anywhere from 0.45 to 9 prefill GPUs per decode GPU, a 20&#215; swing, depending on state the queue does not show. These are estimates, not measurements: the 6.5k calls/h per prefill GPU is topic 14's pre-registered bound (about 6,500 lead calls/h for 1p1d).</p>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">research/method_develop/README.md</span> &#167;3 and <span class="mono">data/tables/E0e_drift.md</span>; the Claude Doc, tab "P:D control (deep dive)" (sizing from topics 11, 13, 15 and harness_eval).</p></div>
+</section>
+
+<!-- ===================== 20 &#183; BACKUP B11: PILOTS, CHECKS, INCIDENTS ===================== -->
+<section class="slide" data-title="Backup: pilots and checks">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">20</span><span><span class="sec">backup</span> B11 &#183; pilots, checks and incidents</span></div>
+    <h2>The pilots caught template, memory, timeout and network problems early; incidents during runs were rerun or bracketed by sensitivity analyses</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1.15fr; gap:24px">
+    <div class="stack" style="gap:6px">
+      <p class="label">Topic 16 (10-09): incidents and their fixes</p>
+      <ul class="list tight xxs"><li><b>A second GPU for 46 s</b> (02:33 UTC), against the one-GPU rule at the time: a queued diagnostic fell back to GPU 1. GPU selection now waits for the pinned GPU; nothing from that run is used</li><li><b>Session resets in the pilot</b>: the prefix cache served past the planned prefix on 79 of 801 EPIC-arm calls in the first hour, and later shadow probes read unwritten rows (relative &#916;K 0.33-0.40 instead of 0.02&#8211;0.03). Fixed with a 256-row reserve; the three affected pilot runs (435 server records) were superseded and rerun</li><li><b>E-A slot bookkeeping</b>: the first replay test overwrote two arms' rows (stale-row deviation 0.6-0.7 instead of 0.03-0.3); its shift and epic64 rows are not used, and the full replay ran after the fix</li><li><b>X2 client timeout</b> raised from 600 s to 1800 s after one call was resent seventeen times (15:35-18:30 UTC); three prefix runs were rerun</li><li><b>Repository tests</b> after the append-only change: <span class="mono">tests/</span> passes except two tests. One needs the web app's versions.json regenerated (step 27); the other tests chapter 8, which the study did not touch</li></ul>
+      <p class="label">Also written</p>
+      <ul class="list tight xxs"><li><b>BACKGROUND.md</b> (10-09): how harnesses, agentic capability and KV-reuse fidelity are evaluated, &#167;0&#8211;&#167;8, ending in &#167;8 What this study adopts and why</li><li><b>MODELS.md</b> (2026-10-11): 15 open models that fit 4 H100s, by KV-cache architecture and published scores</li></ul>
+    </div>
+    <div class="stack" style="gap:6px">
+      <p class="label">harness_eval: what each pilot and check caught</p>
+      <ul class="list tight xxs"><li><b>e1 pilots</b>: p0r0 and ep0 were aborted (replies did not round-trip through the template; the tool parser drops <span class="mono">&lt;/think&gt;</span>). ep1 (3 tasks &#215; 5 arms &#215; 1 replicate) failed two gates: E-0 at 97.3 % of 185 pre-snip call pairs (fix: split reasoning at the last blank lines), and preemptions failed: 4 instead of 0 with the KV peaked at 99.6 % of 253,536 tokens (fix: <span class="mono">gpu_util</span> raised from 0.90 to 0.93 and <span class="mono">--watermark 0.08</span>: 8 % of the KV blocks kept free)</li><li><b>e1 agent timeouts</b>: Three trials of 62 hit Harbor's 50-min agent timeout. The emulating server takes 12.5&#8211;17 s, against about 2 s in the baseline, and the timeout binds earlier for the EPIC arms (at about 175 calls, against 234 for prefix), a bias against EPIC. Without those blocks shift is &#8722;0.075 [&#8722;0.150, +0.001]. Later rounds doubled the timeout, and e4 used the &#215;3 Terminal-Bench timeout</li><li><b>e3 oracle check</b>: the gold patch on all 100 new tasks scored 1.0 before the run</li><li><b>e4 first start</b>: selftests with bounds of KL &lt; 1e-3 measured 0.0019&#8211;0.0048: the server's own noise (two forwards of one cache differ by up to about 0.002&#8211;0.01). Bounds raised to 0.02 with a structural check; the same history gave decision JSD 0.090 in one session and 0.035 in another</li><li><b>e4 network fix</b>: 10 verifiers had failed on stalled downloads (6 SWE-bench Verified, 4 Terminal-Bench); clamping TCP MSS in the nested Docker fixed it (succeeded 3 of 3); e1&#8211;e3's 2,347 verifier logs had no such failure. A verifier that cannot download its test runner now counts as an infrastructure failure (of 3,633 verifier logs before e4, one DeepSeek-V4-Flash profile trial had it)</li><li><b>e4 pilot</b>: 42 trials, E-0 99.06&#8211;99.30 %, decisions 44: 7 on SWE-bench Verified and 37 on Pro, duplicate-probe floor JSD 0.037 and 0.047 (n = 1 each), a decision took 1.1&#8211;1.2 s on average, KV use at most 69 % at 21 sessions; 3.63 GPU-h</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">research/16_epic_harness/README.md</span> cleanup notes; <span class="mono">harness_eval/REPORT.md</span> &#167;7 (e1 setup, pilots and deviations; e3 setup; e4 setup and deviations); <span class="mono">BACKGROUND.md</span>, <span class="mono">MODELS.md</span>.</p></div>
+</section>
+
+<!-- ===================== 21 &#183; BACKUP B12: SECONDARY RESULTS ===================== -->
+<section class="slide" data-title="Backup: secondary results">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">21</span><span><span class="sec">backup</span> B12 &#183; e4, e2 and Qwen3.8: secondary results</span></div>
+    <h2>Secondary results: per-arm pass rates and fidelity for e4, e2's time and snipped-task subsets, and Qwen3.8's valid reply-level probes</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr; gap:10px 24px">
+    <div class="stack" style="gap:6px; grid-column: 1 / -1">
+      <p class="label">e4 per arm (30 tasks &#215; 3 per benchmark): SWE &#183; Pro &#183; TB in each group</p>
+      <table class="data xxs arms dense"><thead><tr><th>arm</th><th class="grp" colspan="3">pass@1</th><th class="grp" colspan="3">pass^3</th><th class="grp" colspan="3">first-token KL vs fresh</th><th class="grp" colspan="3">D^K, rows 16+ edits old</th></tr></thead><tbody><tr><td class="nw">full re-prefill</td><td class="n">0.667</td><td class="n">0.811</td><td class="n">0.567</td><td class="n">0.500</td><td class="n">0.733</td><td class="n">0.300</td><td class="n">&#8212;</td><td class="n">&#8212;</td><td class="n">&#8212;</td><td class="n">&#8212;</td><td class="n">&#8212;</td><td class="n">&#8212;</td></tr><tr><td class="nw">A/A copy</td><td class="n">0.633</td><td class="n">0.800</td><td class="n">0.556</td><td class="n">0.467</td><td class="n">0.700</td><td class="n">0.367</td><td class="n">&#8212;</td><td class="n">&#8212;</td><td class="n">&#8212;</td><td class="n">&#8212;</td><td class="n">&#8212;</td><td class="n">&#8212;</td></tr><tr><td class="nw">shift</td><td class="n">0.678</td><td class="n">0.833</td><td class="n">0.567</td><td class="n">0.600</td><td class="n">0.767</td><td class="n">0.367</td><td class="n">0.0323</td><td class="n">0.0282</td><td class="n">0.0533</td><td class="n">0.222</td><td class="n">0.232</td><td class="n">0.177</td></tr><tr class="hi"><td class="nw">EPIC-128</td><td class="n">0.622</td><td class="n">0.922</td><td class="n">0.633</td><td class="n">0.400</td><td class="n">0.867</td><td class="n">0.467</td><td class="n">0.0327</td><td class="n">0.0261</td><td class="n">0.0807</td><td class="n">0.225</td><td class="n">0.230</td><td class="n">0.185</td></tr><tr><td class="nw">age cap a1</td><td class="n">0.644</td><td class="n">0.867</td><td class="n">0.556</td><td class="n">0.500</td><td class="n">0.800</td><td class="n">0.333</td><td class="n">0.0164</td><td class="n">0.0149</td><td class="n">0.0294</td><td class="n">&#8212;</td><td class="n">&#8212;</td><td class="n">&#8212;</td></tr><tr><td class="nw">age cap a4</td><td class="n">0.656</td><td class="n">0.822</td><td class="n">0.589</td><td class="n">0.567</td><td class="n">0.667</td><td class="n">0.400</td><td class="n">0.0214</td><td class="n">0.0210</td><td class="n">0.0453</td><td class="n">&#8212;</td><td class="n">&#8212;</td><td class="n">&#8212;</td></tr><tr><td class="nw">JSD recompute</td><td class="n">0.678</td><td class="n">0.822</td><td class="n">0.589</td><td class="n">0.600</td><td class="n">0.700</td><td class="n">0.400</td><td class="n">0.0308</td><td class="n">0.0459</td><td class="n">0.0580</td><td class="n">0.223</td><td class="n">0.263</td><td class="n">0.222</td></tr><tr><td class="nw">probe floor (exact cache)</td><td class="na"></td><td class="na"></td><td class="na"></td><td class="na"></td><td class="na"></td><td class="na"></td><td class="n">0.0118</td><td class="n">0.0069</td><td class="n">0.0169</td><td class="na"></td><td class="na"></td><td class="na"></td></tr></tbody></table>
+    </div>
+    <div class="stack" style="gap:6px">
+      <ul class="list tight xxs"><li><b>e4 fidelity</b>: on Terminal-Bench EPIC-128's first-token KL is above plain shift's (0.0807 vs 0.0533); only the age caps come near the floor. Rows that survived 16+ edits deviate 0.18&#8211;0.26 in every arm that keeps them</li><li><b>e4 sensitivity and noise</b>: without the 2 Pro blocks with an agent timeout, EPIC-128 on Pro is +0.106 [+0.025, +0.186]; on Terminal-Bench the same rule drops 31 of 90 blocks. Real error is not monotone in JSD: Pro's lowest-JSD quintile has the highest KL (0.1067)</li></ul>
+    </div>
+    <div class="stack" style="gap:6px">
+      <ul class="list tight xxs"><li><b>e2</b>: first-token KL of shift 0.0453 (Pro) and 0.1037 (Terminal-Bench), of a1 0.0152 and 0.0195; on the 17 Terminal-Bench tasks whose baseline snipped, EPIC-128 and a1 are +0.206 [+0.021, +0.391]. Only one replicate fit the 150 GPU-h budget (120.2 were used before e2); Terminal-Bench exhausted the 640K-row host pool once, at 15:20&#8211;15:23 UTC: 10 post-snip fallbacks</li><li><b>Qwen3.8</b>: pooled E-0 99.0%; reply-level probes were valid only on the one server that ran the fix (the median shadow <span class="mono">tf_kl</span> is 0.0047 on @g3, against 10.4&#8211;11.2 on @g0&#8211;@g2). Reply KL there, replay / pilot: prefix 0.0039 / 0.0032; A/A 0.0038; a1 0.0063 / 0.0042; EPIC-128 0.0110 / 0.0039; shift 0.0095 / 0.0085. Pilot intervals are &#177;0.47 wide (5 tasks)</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">harness_eval/REPORT.md</span> &#167;7 (e4 per-benchmark tables, decision metrics and sensitivity; e2 time models, secondary and pool notes; stage B notes). D^K = relative K deviation of reused rows against a fresh recompute.</p></div>
+</section>
+
+<!-- ===================== 22 &#183; BACKUP B13: TOPIC 16 SECONDARY ===================== -->
+<section class="slide" data-title="Backup: topic 16 secondary">
+  <div class="slide-head">
+    <div class="eyebrow"><span class="num">22</span><span><span class="sec">backup</span> B13 &#183; topic 16: secondary analyses</span></div>
+    <h2>Topic 16 secondary: no EPIC-k beats shift on the job, only the rename template moves, and compounding staleness, not k, sets the fidelity</h2>
+  </div>
+  <div class="body" style="grid-template-columns: 1fr 1fr; gap:24px">
+    <div class="stack" style="gap:6px">
+      <p class="label">E-B secondary tests (score, cluster bootstrap over cells)</p>
+      <table class="data xxs dense"><thead><tr><th>comparison</th><th class="n">difference [95% CI]</th><th class="n">Holm p</th></tr></thead><tbody><tr><td class="nw">EPIC-32 &#8722; shift</td><td class="n nw">&#8722;0.025 [&#8722;0.147, +0.080]</td><td class="n">1.000</td></tr><tr><td class="nw">EPIC-64 &#8722; shift</td><td class="n nw">+0.075 [&#8722;0.007, +0.168]</td><td class="n">0.321</td></tr><tr><td class="nw">EPIC-128 &#8722; shift</td><td class="n nw">&#8722;0.015 [&#8722;0.117, +0.054]</td><td class="n">1.000</td></tr><tr><td class="nw">dose: per 100 tokens of k</td><td class="n nw">+0.045 [&#8722;0.036, +0.118]</td><td class="n">0.758</td></tr></tbody></table>
+      <ul class="list tight xxs"><li><b>By template</b>: only M2 (renames) moves: shift +0.098 [+0.048, +0.142] and EPIC-128 +0.054 [+0.013, +0.096] against prefix; M1 intervals cover 0, and the single M3 cell scores 0 in every arm</li></ul>
+      <p class="label">Pilot shadow probes (64 runs, before the main design)</p>
+      <table class="data xxs dense"><thead><tr><th>arm</th><th class="n">probes</th><th class="n">stale-row D^K</th><th class="n">first-token KL, median</th><th class="n">next round identical</th></tr></thead><tbody><tr><td class="nw">prefix (probe floor)</td><td class="n">285</td><td class="n">&#8212;</td><td class="n">0</td><td class="n">78 / 84</td></tr><tr><td class="nw">shift</td><td class="n">218</td><td class="n">0.087</td><td class="n">2.7e-4</td><td class="n">71 / 84</td></tr><tr><td class="nw">EPIC-128</td><td class="n">249</td><td class="n">0.043</td><td class="n">4.7e-5</td><td class="n">65 / 80</td></tr></tbody></table>
+      <ul class="list tight xxs"><li><b>Pilot prefill and time</b>: prefix recomputed 61 % of the prompt (5,577 tokens); shift 13 % (1,169) and epic128 10 % (811); median TTFT recompute 1,044 ms, prefix 411 ms, shift 58 ms, epic32 59 ms, epic64 61 ms, epic128 72 ms on 24 timed calls</li></ul>
+    </div>
+    <div class="stack" style="gap:6px">
+      <p class="label">E-A replay: what compounding does (30 runs, identical prompts)</p>
+      <ul class="list tight xxs"><li><b>Reply KL</b> against a fresh recompute falls by 11 % (k = 32), 23 % (64) and 28 % (128) relative to shift, all three intervals excluding 1; the K deviation by 11 / 22 / 30%</li><li><b>Compounding is the larger effect</b>: fresh KV before each call gives about 3&#215; less reply KL (shift 2.96&#215; [2.56, 3.50], EPIC-128 2.91&#215; [2.47, 3.52]); refreshing every row before each call would remove 64 % of shift's deviation, against EPIC-128's 30%</li><li><b>Next round</b>: top-1 agreement stays above 99.3% in every arm; 78-81 % of greedy next rounds match the fresh one when staleness compounds (90-91 % one step)</li><li><b>By template</b>: reply KL under shift is largest where the model re-reads what moved, E1 inventories (0.035 under shift), M2 renames (0.018) and M3 docstrings (0.020); EPIC-128 helps most on M2 (0.0116) and E1 (0.0268) and not on M3 (0.0202)</li></ul>
+    </div>
+  </div>
+  <div class="foot"><p>Sources: <span class="mono">research/16_epic_harness/README.md</span> &#167;4.2, &#167;4.4, &#167;4.5; <span class="mono">data/live/main/main_tables.md</span> T1b, T2; <span class="mono">data/replay_tables.md</span>. Pilot rows are each arm on its own trajectory.</p></div>
+</section>
+
+</div>
+</div>
+<div class="hud"><div class="bar" id="bar"></div></div>
+<div class="hint">← → navigate · O overview</div>
+<div class="counter"><span id="ctr">1 / 22</span><button id="ovbtn" type="button" aria-label="Toggle overview">overview</button></div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var body = document.body;
+  var bar = document.getElementById('bar');
+  var ctr = document.getElementById('ctr');
+  var idx = 0;
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    document.documentElement.style.setProperty('--s', String(s));
+  }
+  function show(i, push) {
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === idx); });
+    bar.style.width = ((idx + 1) / slides.length * 100) + '%';
+    ctr.textContent = (idx + 1) + ' / ' + slides.length;
+    document.title = (slides[idx].dataset.title ? slides[idx].dataset.title + ' · ' : '') + 'EPIC in the Harness';
+    if (push !== false) { try { history.replaceState(null, '', '#' + (idx + 1)); } catch (e) {} }
+  }
+  function fromHash() {
+    var n = parseInt((location.hash || '#1').slice(1), 10);
+    show(isNaN(n) ? 0 : n - 1, false);
+  }
+  function toggleOverview(force) {
+    var on = typeof force === 'boolean' ? force : !body.classList.contains('overview');
+    body.classList.toggle('overview', on);
+    if (!on) { show(idx); window.scrollTo(0, 0); }
+  }
+
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', fromHash);
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'l': case 'j':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx + 1); } break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'h': case 'k':
+        if (!body.classList.contains('overview')) { e.preventDefault(); show(idx - 1); } break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End': e.preventDefault(); show(slides.length - 1); break;
+      case 'o': case 'O': toggleOverview(); break;
+      case 'Escape': toggleOverview(false); break;
+      case 'p': case 'P': window.print(); break;
+    }
+  });
+  slides.forEach(function (el, k) {
+    el.addEventListener('click', function (e) {
+      if (body.classList.contains('overview')) { show(k); toggleOverview(false); return; }
+      var r = stage.getBoundingClientRect();
+      if (e.clientX - r.left > r.width * 0.5) show(idx + 1); else show(idx - 1);
+    });
+  });
+  document.getElementById('ovbtn').addEventListener('click', function () { toggleOverview(); });
+  window.addEventListener('beforeprint', function () { body.classList.remove('overview'); });
+
+  if (location.search.indexOf('export') !== -1) body.classList.add('export');
+  fit();
+  fromHash();
+})();
+</script>

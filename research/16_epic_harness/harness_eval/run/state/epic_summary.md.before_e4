@@ -1,0 +1,162 @@
+## Summary: shift and EPIC after s15's snip
+
+**Setup.**
+- After about 25 turns, s15's rolling 50-message snip (`snip_compact`) rewrites the middle of the history on every
+  call, so the prefix cache stops helping: 82–97 % of re-prefilled tokens come after a snip (section 3).
+- This round reuses the KV of the messages that survive the snip:
+  - `shift` re-rotates them to their new positions;
+  - `epic128` also recomputes the first 128 tokens after every edit;
+  - `epic128a1` also recomputes rows that have survived more than one edit.
+- Coverage:
+  - MiniMax-M2.7:
+    - e1: confirmatory, 90 paired blocks per arm on SWE-bench Verified;
+    - e2: exploratory, on SWE-bench Pro and Terminal-Bench, 30 blocks per arm, added at the user's request;
+    - **e3: pre-registered, 300 paired blocks per arm on 100 new SWE-bench Verified tasks**, the user's follow-up
+      question;
+  - Qwen3.8-27B: exploratory, a 10-trajectory replay and a 5-task live pilot;
+  - DeepSeek-V4-Flash: design and selftests.
+
+**e3: the pre-registered answer to "does EPIC cost accuracy?" (MiniMax-M2.7, SWE-bench Verified).**
+- **Design.**
+  - 100 tasks that neither e1 nor the profile used, 3 replicates, so 300 paired blocks per arm.
+  - Fixed in `runs/epic/prereg_e3.md` before the first trial: the hypotheses, sample, tests and stopping rule.
+  - The agent timeout was doubled for every arm.
+  - Control = the mean of prefix and prefix_aa in each block.
+  - Differences are in success rate (0.05 = 5 points), with 90 % t-intervals over the 100 task means, i.e.
+    one-sided 95 % bounds.
+
+  | arm | pass@1 | difference from the control | 90 % interval | result |
+  |---|---|---|---|---|
+  | prefix | 0.730 | | | |
+  | prefix_aa | 0.750 | +0.020 against prefix (A/A) | [−0.017, +0.057] | covers 0: the check passes |
+  | epic128 | 0.730 | −0.010 | [−0.043, +0.023] | **non-inferior at a 5-point margin (H1, primary)** |
+  | epic128a1 | 0.740 | −0.000 | [−0.033, +0.033] | **not shown to be worse (H2)** |
+  | epic128a4 | 0.757 | +0.017 | [−0.014, +0.047] | exploratory |
+
+- **H1 holds.** With 95 % confidence, epic128 costs less than 5 points: its lower bound is −4.3 points.
+- **H2 does not.** The epic128a1 drop of about 7 points in e1 and e2 did not replicate on new tasks.
+  - Pooled over e1, e2 and e3 (descriptive), epic128a1 shrinks to −0.023 [−0.050, +0.004].
+  - Pooled the same way, epic128 is −0.008 [−0.036, +0.020].
+  - The looser age cap, epic128a4, is not worse either.
+- **No looping:**
+  - 44–48 lead calls per run in every arm;
+  - 1.0–1.7 % of runs at the 250-call budget;
+  - no agent timeouts.
+- **Prefill.** The share of the prompt computed falls from 47.7 % (prefix) to:
+  - 4.3 % for epic128, i.e. 6,937 → 634 tokens per call, −91 %;
+  - 11.0 % for epic128a4 (−77 %);
+  - 24.6 % for epic128a1 (−49 %).
+- **Time.** Modeled LLM time per run is 239 s for prefix, 217 s for epic128 (−9 %) and 210 s for epic128a4. Job
+  time is 0.90–1.00× prefix, because decode dominates (`latency_minimax-m2.7-epic_swe_e3.md`).
+- **Machinery.** Every gate passed in every replicate:
+  - E-0 99.4–99.6 %;
+  - no preemptions and no fallbacks;
+  - 17 resets in 41,380 EPIC-arm calls, all of them replies longer than the 4,096-token decode reserve;
+  - one server record per call; consistent ranks; no session left.
+- **One deviation.** The interim check stopped the run falsely at 02:01 UTC, because of a read-order race in the
+  gates script itself. It was fixed and tested, and the run resumed at 02:25 UTC. The design was unchanged, and no
+  outcome had been looked at.
+- **Cost:** 72 GPU-h of the approved ~86.
+
+**Accuracy, MiniMax-M2.7, e1** (e3 above supersedes these results for epic128 and epic128a1).
+
+The control is the mean of prefix (0.656) and prefix_aa (0.689). Differences from it, with 90 % t-intervals over the
+30 task means:
+
+| arm | difference | 90 % interval |
+|---|---|---|
+| epic128 | +0.017 | [−0.043, +0.076] |
+| shift | −0.050 | [−0.129, +0.029] |
+| epic128a1 | −0.061 | [−0.130, +0.007] |
+| prefix_aa vs prefix (A/A) | +0.033 | [−0.016, +0.083] |
+
+- The pre-registered test (fixed order epic128a1, epic128, shift; margin −0.10) stopped at epic128a1, whose lower
+  bound missed the margin by 0.03. So **no arm is formally declared non-inferior**.
+- Outside that sequence, epic128 would pass and shift would not. All three point estimates lie within the A/A noise.
+- No looping: 48–53 lead calls per run in every arm, and 2–4 % of runs at the 250-call budget. That differs from
+  topic 16's Qwen3-32B.
+
+**SWE-bench Pro and Terminal-Bench, MiniMax-M2.7 (phase e2).**
+- **Design:** exploratory, one replicate of 30 blocks per arm, the agent timeout doubled for every arm. The
+  budget allowed no second replicate.
+- **Pass@1 by arm** (the control is the mean of prefix and prefix_aa; baseline = the profile's runs on the same tasks):
+
+  | | baseline | prefix | prefix_aa | shift | epic128 | epic128a1 |
+  |---|---|---|---|---|---|---|
+  | SWE-bench Pro | 0.867 | 0.833 | 0.867 | 0.833 | 0.767 | 0.767 |
+  | Terminal-Bench | 0.478 | 0.633 | 0.333 | 0.500 | 0.633 | 0.533 |
+
+- **SWE-bench Pro, which sits near its ceiling.**
+  - Differences from the control: shift −0.017 [−0.093, +0.059], epic128 −0.083 [−0.206, +0.039], epic128a1 −0.083
+    [−0.155, −0.012]. Only epic128a1's interval excludes zero, and only just; without the one block that had a
+    fallback it becomes [−0.139, +0.001].
+  - On SWE-bench Verified epic128a1 also had the lowest point estimate (−0.061), although it has the best fidelity.
+    That was worth a look, but it was not established. e3 then tested it on 100 new tasks and found no drop:
+    −0.000 [−0.033, +0.033].
+  - The A/A difference was +0.033 [−0.066, +0.133].
+- **Terminal-Bench: no accuracy conclusion.**
+  - The two identical control arms differ by −0.300 [−0.485, −0.115] (13 agent timeouts against 6). The cause is
+    trajectory divergence plus a time limit that binds hard on the emulating server, where a call takes about 20 s.
+  - The arms' differences from the control (+0.017 to +0.150) are inside that noise.
+- **Prefill and fidelity carry over.** Prompt tokens computed per call:
+
+  | | prefix | shift | epic128 | epic128a1 |
+  |---|---|---|---|---|
+  | SWE-bench Pro | 7,519 | 884 (−88 %) | 964 (−87 %) | 3,615 (−52 %) |
+  | Terminal-Bench | 7,952 | 1,508 (−81 %) | 752 (−91 %) | 4,410 (−45 %) |
+
+  - First-token KL against a fresh recompute: shift 0.045 on Pro and 0.104 on Terminal-Bench, against 0.040 on
+    SWE-bench Verified; epic128a1 0.015–0.020. Reply top-1 agreement is 96.5–98.7 %.
+  - The modeled job time again changes little: 0.91–1.09× prefix on Pro.
+- **Machinery.**
+  - Pro passed every gate (E-0 99.4 %).
+  - Terminal-Bench passed every gate except E-0, which was 94.2 %. Its long reasoning hits the template's
+    `\n\n\n` limit far more often.
+  - Terminal-Bench also exhausted the 640K-row host pool once, at 15:20–15:23 UTC: 10 post-snip fallbacks.
+  - 23 decode-overflow resets came from replies longer than the 4,096-token reserve.
+
+**What reuse does to the model.**
+- **MiniMax live shadow probes.**
+  - First-token KL: 0.017 (epic128a1) to 0.040 (shift). Reply KL: 0.009–0.021. Reply top-1 agreement: 97–98 %.
+  - The K deviation of reused rows grows with the number of edits they have survived: from 0.02 (none) to
+    0.23–0.25 (16 or more) for shift and epic128. The age cap keeps it at or below 0.1.
+- **Qwen3.8 replay**, on the same recorded prompts in every arm (522 calls per arm). First-token KL against prefix:
+  - prefix_aa (noise floor) 0.006, epic128a1 0.007, epic128 0.017, shift 0.018;
+  - for shift and epic128 it grows from 0.007 before the first snip to 0.032–0.035 after 20 or more snips.
+- **Qwen3.8 pilot**, 5 tasks: prefix 5/5, epic128 4/5, epic128a1 4/5, shift 3/5. The EPIC arms ran about 50 % more
+  lead calls (118–128 against 78). That hints at topic 16's looping effect, but 5 blocks cannot resolve it.
+- **DeepSeek-V4-Flash.** The port works mechanically. Its run-to-run noise is large (7–10 % in recomputed attention
+  inputs), so the selftests cannot show exactness below it.
+
+**Performance.**
+- **Prefill.**
+  - MiniMax: prompt tokens computed per call fall from 7,552 (prefix, unbounded cache) to 605 (shift) and 702
+    (epic128), which is −92 %; epic128a1 computes 3,835 (−49 %).
+  - Qwen3.8 replay: the computed share falls from 66.5 % of the prompt to 5.7–6.1 %; epic128a1 computes 35 %.
+- **Time.** Decode (about 20 ms per output token, about 200 output tokens per call) and fixed overhead dominate
+  MiniMax's lead-call time on SWE-bench.
+  - So the modeled job time changes by only −6 % (epic128) to +3 % (shift, epic128a1).
+  - This is a lower-bound model, fitted on the baseline's measured calls (median absolute error 29 %).
+  - On a prefill-bound server, cutting 90 % of the prefill would raise throughput far more than one run's latency
+    suggests. The emulating server was prefill-bound at about 15K prompt tokens/s with 20 sessions. This round
+    did not measure it: emulation computes every token.
+  - Qwen3.8 and DeepSeek-V4 save no compute in this live form. The hybrid's DeltaNet layers recompute every token,
+    and DeepSeek-V4's pooled and indexer caches are rebuilt from stored inputs.
+
+**The machinery itself.**
+- MiniMax e1, every gate in every replicate:
+  - no preemptions, no fallbacks, no post-snip resets;
+  - one server record per tagged call (22,814);
+  - identical overrides on all 4 ranks;
+  - append-only round-trip (E-0) at 99.2–99.4 %.
+- Qwen3.8: pooled E-0 of 99.0 %. Its misses come from non-canonical tokenization of sampled text. Every other gate
+  passed.
+
+**Deviations** (details in each part):
+- e3: a false interim stop caused by the gates script's read order; fixed, tested and resumed (deviation 1 in the
+  e3 notes);
+- after pilot ep1: a KV watermark and more KV memory, against preemptions;
+- one-task chunks, run as a forward and a reverse batch;
+- the agent timeout binds earlier for the EPIC arms on the emulating server (a sensitivity analysis is reported);
+- Qwen3.8's reply-level probe metrics are invalid on 3 of 4 instances (fixed during the stage; the valid subset is
+  reported).

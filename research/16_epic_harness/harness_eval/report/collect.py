@@ -1,0 +1,216 @@
+#!/usr/bin/env python3
+"""Collect every s15 trial under jobs/ into report/trials.jsonl and summary tables (report/tables.md).
+
+    python3 report/collect.py [--phase-prefix p] [--reps 10000]
+
+One row per trial: model, benchmark, phase, task, reward (Harbor's verifier; for GAIA also the official
+question_scorer on the final answer, strict = answer written to /app/answer.txt by the model itself), s15
+status, lead calls, tokens, compaction counts, wall time, exceptions. Summary per model x benchmark: pass@1
+(mean over trials) with a 95 % cluster-bootstrap interval over tasks, pass@k / pass^k over the k trials of
+each task, outcome consistency (tasks whose trials all agree), process means.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import random
+import statistics as st
+import sys
+from collections import defaultdict
+from pathlib import Path
+
+ROOT = Path("/data/fritz/learn-claude-code/research/16_epic_harness/harness_eval")
+sys.path.insert(0, str(ROOT))
+from adapter.vendor_scorers.gaia_scorer import question_scorer  # noqa: E402
+
+import contextlib  # noqa: E402
+import io  # noqa: E402
+
+
+def gaia_score(answer: str, expected: str) -> bool:
+    with contextlib.redirect_stdout(io.StringIO()):
+        try:
+            return bool(question_scorer(answer or "", expected))
+        except Exception:                                       # noqa: BLE001
+            return False
+
+
+EXCLUDED_PHASES = ("p1x", "p3s", "p4x")
+INFRA_EXC = {"CancelledError", "KeyboardInterrupt", "RuntimeError", "EnvironmentStartError", "DockerError", "BuildError", "SandboxBuildFailedError",
+             "HealthcheckError", "ConnectionError", "OSError"}
+CONN = ("APIConnectionError", "Connection error", "Connection refused", "InternalServerError", "ServiceUnavailable")
+# e4 on: a verifier that could not install its test runner (the uv download stalled; Docker-in-Docker networks before
+# the MSS clamp of 2026-10-15, run/dind.md) judged nothing, so the trial is an infrastructure failure, rerun under the
+# same block key. Earlier rounds keep their classification (one DeepSeek-V4 profile trial has the line).
+VERIFIER_NET = ("failed to download https://github.com/astral-sh/uv",)
+VERIFIER_NET_PHASES = ("e4",)
+
+
+def verifier_net_failure(trial: Path) -> bool:
+    out = trial / "verifier" / "test-stdout.txt"
+    if not out.is_file():
+        return False
+    text = out.read_text(errors="replace")
+    return any(sig in text for sig in VERIFIER_NET)
+
+
+def load_trials(prefix: str = "") -> list[dict]:
+    kills = set()
+    kf = ROOT / "runs" / "disk_guard_kills.jsonl"
+    if kf.is_file():
+        for line in kf.read_text().splitlines():
+            kills.add(json.loads(line)["container"].removesuffix("__env-main-1"))
+    rows = []
+    for res in sorted(ROOT.glob("jobs/*/*/*/*/result.json")):
+        trial = res.parent
+        job, bench, model = trial.parent.name, trial.parent.parent.name, trial.parent.parent.parent.name
+        if model.startswith("fake") or not job.startswith(prefix) or job.split("__")[0] in EXCLUDED_PHASES:
+            continue
+        try:
+            r = json.loads(res.read_text())
+        except json.JSONDecodeError:
+            continue
+        if "task_name" not in r:
+            continue
+        task = r["task_name"].split("/")[-1]
+        s15 = trial / "agent" / "s15"
+        sres = json.loads((s15 / "result.json").read_text()) if (s15 / "result.json").is_file() else {}
+        fin = json.loads((s15 / "finalize.json").read_text()) if (s15 / "finalize.json").is_file() else {}
+        rewards = (r.get("verifier_result") or {}).get("rewards") or {}
+        exc = r.get("exception_info") or {}
+        counter = sres.get("counter") or {}
+        cfgf = s15 / "config.json"
+        cap = json.loads(cfgf.read_text()).get("max_lead_calls") if cfgf.is_file() else None
+        row = {"model": model, "bench": bench, "phase": job.split("__")[0], "job": job, "task": task,
+               "trial": trial.name, "cap": cap, "reward": rewards.get("reward"),
+               "exception": exc.get("exception_type"), "exception_msg": (exc.get("exception_message") or "")[:300],
+               "s15_status": ("timeout" if exc.get("exception_type") == "AgentTimeoutError" else sres.get("status")),
+               "stop_reason": sres.get("stop_reason"),
+               "lead_calls": counter.get("lead"), "sub_calls": counter.get("sub"), "tool_calls": counter.get("tool_calls"),
+               "in_tokens": counter.get("in_tokens"), "out_tokens": counter.get("out_tokens"),
+               "cache_read_tokens": counter.get("cache_read_tokens"), "overflows": counter.get("overflows"),
+               "compactions": sres.get("compactions") or {}, "wall_s": sres.get("wall_s"),
+               "started": r.get("started_at"), "finished": r.get("finished_at")}
+        err = str(sres.get("error") or "")
+        hist = s15 / "history.json"
+        rpc_broken = hist.is_file() and "agent side closed the connection" in hist.read_text(errors="replace")
+        row["verifier_net"] = job.split("__")[0].startswith(VERIFIER_NET_PHASES) and verifier_net_failure(trial)
+        row["infra"] = bool(rpc_broken or trial.name.lower() in kills or exc.get("exception_type") in INFRA_EXC or (sres.get("status") in ("error", "crash")
+                                                                      and any(c in err for c in CONN)) or row["verifier_net"])
+        if bench == "gaia":
+            expected = (ROOT / "datasets" / "gaia" / task / "tests" / "expected_answer.txt")
+            exp = expected.read_text().strip() if expected.is_file() else ""
+            row.update(answer=fin.get("answer"), answer_source=fin.get("answer_source"),
+                       official=gaia_score(fin.get("answer") or "", exp) if exp else None)
+            row["official_strict"] = bool(row["official"]) and fin.get("answer_source") == "file"
+        if bench in ("swe", "swepro"):
+            row.update(patch_bytes=fin.get("patch_bytes"))
+        rows.append(row)
+    return rows
+
+
+PROFILE_N = {"swe": 30, "swepro": 30, "tbench": 30, "gaia": 30}
+PROFILE_K = 3
+
+
+def profile_rows(rows: list[dict], n: dict[str, int] | None = None, k: int = PROFILE_K) -> list[dict]:
+    """The profile: finished q-phase trials (250 lead calls) on the first n[bench] tasks of each subset (after
+    the in-place replacements recorded in run/subsets.json), keeping each task's first k valid trials by start
+    time. Infrastructure failures stay in (they are counted, never scored)."""
+    n = n or PROFILE_N
+    subsets = json.loads((ROOT / "run" / "subsets.json").read_text())
+    tasks = {b: set(v["tasks"][: n.get(b, 30)]) for b, v in subsets.items() if isinstance(v, dict)}
+    out, seen = [], defaultdict(int)
+    # EPIC arms ("<server>+<arm>") are the EPIC round's, never the baseline profile's
+    for r in sorted((r for r in rows if r["phase"].startswith("q") and r.get("finished") and "+" not in r["model"]),
+                    key=lambda r: r.get("started") or ""):
+        if r["task"] not in tasks.get(r["bench"], set()):
+            continue
+        if not r.get("infra"):
+            key = (r["model"], r["bench"], r["task"])
+            if seen[key] >= k:
+                continue
+            seen[key] += 1
+        out.append(r)
+    return out
+
+
+def success(row: dict) -> float:
+    if row["bench"] == "gaia" and row.get("official") is not None:
+        return float(row["official"])
+    return float((row.get("reward") or 0) >= 1.0)
+
+
+def cluster_ci(by_task: dict[str, list[float]], reps: int, seed: int = 0) -> tuple[float, float, float]:
+    tasks = sorted(by_task)
+    means = [st.mean(by_task[t]) for t in tasks]
+    point = st.mean(means)
+    rng = random.Random(seed)
+    boots = sorted(st.mean(rng.choice(means) for _ in tasks) for _ in range(reps))
+    return point, boots[int(0.025 * reps)], boots[int(0.975 * reps) - 1]
+
+
+def summarize(rows: list[dict], reps: int) -> str:
+    groups = defaultdict(list)
+    infra = defaultdict(int)
+    for row in rows:
+        if row.get("infra"):
+            infra[(row["model"], row["bench"])] += 1
+            continue
+        groups[(row["model"], row["bench"])].append(row)
+    out = ["| model | bench | tasks | trials | pass@1 [95% CI] | tasks with 3 trials | pass@3 | pass^3 | consistent | lead calls | "
+           "out tok | compactions/run | wall min | s15 status | exceptions | infra (excluded) |",
+           "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    for (model, bench), rs in sorted(groups.items()):
+        by_task = defaultdict(list)
+        for r in rs:
+            by_task[r["task"]].append(success(r))
+        point, lo, hi = cluster_ci(by_task, reps)
+        k = 3
+        full = {t: v[:k] for t, v in by_task.items() if len(v) >= k}      # tasks with all their trials
+        pass_k = st.mean(float(any(v)) for v in full.values()) if full else float("nan")
+        pass_all = st.mean(float(all(v)) for v in full.values()) if full else float("nan")
+        consistent = st.mean(float(len(set(v)) == 1) for v in full.values()) if full else float("nan")
+        mean = lambda key: st.mean([r[key] for r in rs if r.get(key) is not None] or [float("nan")])  # noqa: E731
+        comp = st.mean(sum(r["compactions"].get(c, 0) for c in ("snip_compact", "micro_compact", "compact_history",
+                                                                 "reactive_compact")) for r in rs)
+        status = defaultdict(int)
+        for r in rs:
+            status[r["s15_status"] or "none"] += 1
+        excs = sum(1 for r in rs if r["exception"])
+        out.append(f"| {model} | {bench} | {len(by_task)} | {len(rs)} | {point:.3f} [{lo:.3f}, {hi:.3f}] | "
+                   f"{len(full)} | {pass_k:.3f} | {pass_all:.3f} | {consistent:.2f} | {mean('lead_calls'):.1f} | "
+                   f"{mean('out_tokens'):.0f} | {comp:.1f} | {mean('wall_s') / 60:.1f} | "
+                   f"{' '.join(f'{k}:{v}' for k, v in sorted(status.items()))} | {excs} | {infra[(model, bench)]} |")
+    return "\n".join(out)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--phase-prefix", default="")
+    ap.add_argument("--reps", type=int, default=10000)
+    a = ap.parse_args()
+    rows = load_trials(a.phase_prefix)
+    (ROOT / "report").mkdir(exist_ok=True)
+    with open(ROOT / "report" / "trials.jsonl", "w") as f:
+        for r in rows:
+            f.write(json.dumps(r) + "\n")
+    sections = [
+        ("Profile (250 lead calls; qualification q3 + profiling q4+; first 30 tasks per benchmark, first 3 valid "
+         "trials per task)", None),
+        ("Pilot (150 lead calls, as in X2)", lambda r: r["phase"].startswith("p1")),
+        ("Earlier 150-call trials, not used in the profile (smoke p2, first qualification p3/p4)",
+         lambda r: r["phase"] in ("p2", "p3", "p4")),
+    ]
+    out = []
+    for title, keep in sections:
+        part = profile_rows(rows) if keep is None else [r for r in rows if keep(r)]
+        if part:
+            out += [f"## {title}", "", summarize(part, a.reps), ""]
+    table = "\n".join(out)
+    (ROOT / "report" / "tables.md").write_text(table + "\n")
+    print(table)
+
+
+if __name__ == "__main__":
+    main()

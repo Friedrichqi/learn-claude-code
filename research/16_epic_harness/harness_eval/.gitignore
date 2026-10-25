@@ -1,0 +1,52 @@
+# harness_eval: s15 + Harbor on agentic benchmarks, and the EPIC rounds (moved here from /data/fritz/harness_eval
+# on 2026-10-15). Git tracks the code, the reports and the small records a reader needs. The large traces and
+# detailed results stay on this machine's disk only: they are outside research/*/data/, so the Drive mirror
+# (research/DATA.md) does not copy them either.
+
+# secrets (the search-API key for GAIA)
+secrets.env
+*.env
+
+# environment, downloads, vendored harness and binaries
+.venv/
+datasets/
+vendor/
+docker/bin/
+home/
+hf/
+cache/
+
+# Harbor trial directories (about 19 GB) and the detailed result files
+jobs/
+report/trials.jsonl
+report/swe_official/
+pulled_images.txt
+
+# runs/: server, batch and Harbor logs, per-call EPIC logs and health snapshots stay out. Tracked are the records
+# the reports cite: the e3 and e4 pre-registrations (with their hashes; e3's analysis script as pre-registered;
+# e4's first, unparseable freeze), the e4 spot traces, the two stage logs REPORT.md quotes, the notes, the gate
+# reports, the code hashes and the selftest results.
+runs/**
+!runs/**/
+!runs/epic/prereg_e3.md
+!runs/epic/prereg_e3.sha256
+!runs/epic/prereg_e3_analysis.py
+!runs/epic/prereg_e4.md
+!runs/epic/prereg_e4.sha256
+!runs/epic/prereg_e4_v1_unparsed.md
+!runs/epic/prereg_e4_v1_unparsed.sha256
+!runs/epic/e4_spot_traces.md
+!runs/epic/stage_c.log
+!runs/epic/stage_e4p_dry.log
+!runs/epic/notes_*.md
+!runs/epic/gates_*.json
+!runs/epic/code_*.json
+!runs/epic/selftest*.json
+
+# runner state: slot reservations, stop files and image snapshots. The backups (*.before_*), e3_tasks.json and
+# disk_heavy_tasks.txt stay tracked.
+run/state/stop/
+run/state/slot_*/
+run/state/slots.json
+run/state/images_*.txt
+*.lock/

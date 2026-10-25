@@ -1,0 +1,17 @@
+# s15 evaluation image: Harbor + the s15 benchmark adapter + a read-only snapshot of the s15 harness.
+# Build:  docker build -f docker/Dockerfile.eval -t s15-eval:<git-sha> .
+# Run:    see run/eval.sh (host network, Docker socket, /data/fritz/learn-claude-code/research/16_epic_harness/harness_eval mounted at the same path)
+FROM python:3.12-slim
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+# Docker CLI and compose plugin copied from the host (same versions as the daemon: 29.4.3 / compose v5.6.0 / buildx v0.37.1)
+COPY docker/bin/docker /usr/local/bin/docker
+COPY docker/bin/docker-compose /usr/local/lib/docker/cli-plugins/docker-compose
+COPY docker/bin/docker-buildx /usr/local/lib/docker/cli-plugins/docker-buildx
+RUN pip install --no-cache-dir "harbor==0.24.0" "anthropic==1.12.1" "python-dotenv>=1.0" "pyyaml>=6.0" \
+        "httpx>=0.27" "pypdf>=5" "numpy" "pytest"
+COPY vendor/s15 /opt/harness_eval/vendor/s15
+COPY adapter /opt/harness_eval/adapter
+COPY tests /opt/harness_eval/tests
+ENV PYTHONPATH=/opt/harness_eval S15_VENDOR=/opt/harness_eval/vendor/s15 PYTHONDONTWRITEBYTECODE=1
+WORKDIR /data/fritz/learn-claude-code/research/16_epic_harness/harness_eval
