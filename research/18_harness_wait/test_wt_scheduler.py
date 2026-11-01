@@ -118,6 +118,24 @@ def test_snapshot_file_turns_and_mid():
     assert later["sessions"]["MU-t-S000~a1"]["mid"] is False      # expired
 
 
+def test_last_admission_per_session():
+    """`last` (research/19_efficiency_signals' receipt) is each session's latest first admission of a lead request."""
+    s, _, log, final, _ = run_wt({})
+    assert not [r for r in log if r["k"] == "err"], [r for r in log if r["k"] == "err"][:1]
+    arr = {r["r"]: r for r in log if r["k"] == "arr"}
+    chains = {r["c"]: (r["sid"], r["p"]) for r in log if r["k"] == "chain"}
+    want = {}
+    for r in log:
+        if r["k"] == "adm" and not r["res"]:
+            a = arr[r["r"]]
+            sid, purpose = chains[a["c"]]
+            if purpose == "ld":
+                want[sid] = {"np": a["np"], "ideal": a["ideal"], "hit": r["hit"], "wait_s": r["wait"]}
+    assert len(want) == 5 and {sid: info["last"] for sid, info in final["sessions"].items()} == want
+    assert all(v["hit"] <= v["np"] for v in want.values())
+    assert not s.wt_ld, "every admitted or finished lead request leaves the pending map"
+
+
 def test_gate_still_bounds_active_sessions():
     s, _, log, _, _ = run_wt({"MU_GATE": "2", "MU_GATE_IDLE_S": "0.01"}, tick_s=0.001)
     assert not [r for r in log if r["k"] == "err"], [r for r in log if r["k"] == "err"][:1]

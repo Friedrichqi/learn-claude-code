@@ -26,7 +26,9 @@ WT_SNAP_S = 0.2 s while the engine steps, and once more when the engine drains:
                            lead prompt / output tokens), ws (working set: max(np + out, live tokens)),
                            res (tokens of the session's blocks still in the prefix cache), prefix (leading
                            tokens of the last lead prompt + reply still cached: what its next call would
-                           hit, with the append-only template)
+                           hit, with the append-only template), last (the last lead request's first
+                           admission: np, ideal = leading tokens ever cached when it arrived, hit, wait_s
+                           in the queue; research/19_efficiency_signals' [cost] receipt reads it)
 
 Sessions idle for WT_DROP_IDLE_S = 900 s leave the snapshot. Every 1 s a `wt` record with the global
 part goes to the sched log (MU_SCHED_LOG), so the analysis sees what the harnesses saw. Like the
@@ -92,7 +94,7 @@ class SnapWriter:
 
 class WTSess:
     __slots__ = ("sid", "first", "turn_t0", "inflight", "last_fin", "last_tool", "np", "out", "live",
-                 "hashes", "chains")
+                 "hashes", "chains", "last")
 
     def __init__(self, sid: str, wall: float):
         self.sid = sid
@@ -105,6 +107,7 @@ class WTSess:
         self.live = None              # request id of the lead request in flight
         self.hashes: list = []        # block hashes of the last lead prompt
         self.chains: set[int] = set()
+        self.last = None              # the last lead request's first admission (np, ideal, hit, wait_s)
 
 
 class WTMixin(MUMixin):
@@ -119,6 +122,7 @@ class WTMixin(MUMixin):
         self.wt_res: dict[int, int] = {}           # chain idx -> its blocks still in the prefix cache
         self.wt_sess: dict[str, WTSess] = {}
         self.wt_np: dict[int, int] = {}            # request idx -> prompt tokens (arrival -> admission)
+        self.wt_ld: dict[int, tuple] = {}          # lead request idx -> (sid, np, ideal) (arrival -> admission)
         self.wt_cum = {"preempt": 0, "evict": 0, "evict_live": 0, "pf_fresh": 0, "pf_evict": 0, "pf_pre": 0,
                        "adm": 0, "adm_hit": 0, "adm_np": 0}
         self.wt_seq = 0
@@ -147,12 +151,21 @@ class WTMixin(MUMixin):
                     cum["pf_pre"] += pre
                 elif kind == "arr":
                     self.wt_np[record["r"]] = record["np"]
+                    sid, purpose = self.chain_list[record["c"]].key
+                    if purpose == "ld":
+                        self.wt_ld[record["r"]] = (sid, record["np"], record["ideal"])
                 elif kind == "adm":
                     np_ = self.wt_np.pop(record["r"], None)
                     if not record["res"] and np_ is not None:
                         cum["adm"] += 1
                         cum["adm_hit"] += record["hit"]
                         cum["adm_np"] += np_
+                    ld = None if record["res"] else self.wt_ld.pop(record["r"], None)
+                    sess = self.wt_sess.get(ld[0]) if ld is not None else None
+                    if sess is not None:
+                        sess.last = {"np": ld[1], "ideal": ld[2], "hit": record["hit"], "wait_s": record["wait"]}
+                elif kind == "fin":
+                    self.wt_ld.pop(record["r"], None)
                 elif kind == "pre":
                     cum["preempt"] += 1
             except Exception as exc:
@@ -289,6 +302,7 @@ class WTMixin(MUMixin):
                 "np": s.np, "out": s.out, "ws": ws,
                 "res": sum(self.wt_res.get(ci, 0) for ci in s.chains) * bs,
                 "prefix": min(self._cached_prefix(s.hashes) * bs, s.np + s.out) if s.hashes else 0,
+                "last": s.last,
             }
         snap["sessions"] = sessions
         return snap

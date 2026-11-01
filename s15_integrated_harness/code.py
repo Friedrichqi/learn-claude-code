@@ -115,8 +115,10 @@ SKILLS_DIR = WORKDIR / "skills"
 TRANSCRIPT_DIR = WORKDIR / ".transcripts"
 TOOL_RESULTS_DIR = WORKDIR / ".task_outputs" / "tool-results"
 
-DEFAULT_MAX_TOKENS = 8000
-ESCALATED_MAX_TOKENS = 16000
+# per-call output budgets; research/19_efficiency_signals raises them for a thinking model (defaults unchanged)
+DEFAULT_MAX_TOKENS = int(os.environ.get("S15_MAX_TOKENS") or 8000)
+ESCALATED_MAX_TOKENS = int(os.environ.get("S15_MAX_TOKENS_ESCALATED") or 16000)
+SUMMARY_MAX_TOKENS = int(os.environ.get("S15_SUMMARY_MAX_TOKENS") or 2000)
 MAX_RETRIES = 3
 MAX_CONSECUTIVE_529 = 2
 MAX_RECOVERY_RETRIES = 2
@@ -968,9 +970,10 @@ _delivered_context = {"memory_catalog": "", "memories": ""}
 
 def tools_prompt() -> str:
     text = PROMPT_SECTIONS["tools"]
-    if HOLD.CONFIG.wait_tool:
-        text = (text.replace("connect_mcp.", "connect_mcp, wait.", 1) if "connect_mcp." in text
-                else f"{text} Also available: wait.")
+    names = ", ".join(tool["name"] for tool in wait_tools())
+    if names:
+        text = (text.replace("connect_mcp.", f"connect_mcp, {names}.", 1) if "connect_mcp." in text
+                else f"{text} Also available: {names}.")
     return text
 
 
@@ -985,6 +988,8 @@ def assemble_system_prompt(context: dict) -> str:
                     PROMPT_SECTIONS["memory"],
                     PROMPT_SECTIONS["compaction"],
                     PROMPT_SECTIONS["efficiency"]]
+        if HOLD.server_section():                 # research/19_efficiency_signals (off by default)
+            sections.append(HOLD.server_section())
         sections.append("Skills catalog:\n" + list_skills() +
                         "\nUse load_skill(name) when a skill is relevant.")
         catalog = context.get("memory_catalog") or ""
@@ -1253,25 +1258,40 @@ def run_wait_tool(seconds=None, reason: str | None = None) -> str:
     return HOLD.run_wait(seconds, reason, TRACE)
 
 
+def run_wait_for_capacity_tool(max_seconds=None, reason: str | None = None) -> str:
+    return HOLD.run_wait_for_capacity(max_seconds, reason, TRACE)
+
+
+def run_server_status_tool() -> str:
+    return HOLD.run_server_status(TRACE)
+
+
 def wait_tools() -> list[dict]:
-    """The `wait` schema when S15_WAIT_TOOL=1 (appended to an agent's tool list)."""
-    return [HOLD.wait_tool()] if HOLD.CONFIG.wait_tool else []
+    """The pacing tools' schemas (`wait` when S15_WAIT_TOOL=1; any of wait, wait_for_capacity,
+    server_status listed in S15_TOOLS), appended to an agent's tool list."""
+    return HOLD.pacing_tools()
+
+
+def pacing_handlers() -> dict:
+    handlers = {HOLD.WAIT_TOOL_NAME: run_wait_tool, HOLD.YIELD_TOOL_NAME: run_wait_for_capacity_tool,
+                HOLD.STATUS_TOOL_NAME: run_server_status_tool}
+    return {name: handler for name, handler in handlers.items() if HOLD.enabled(name)}
 
 
 def is_deferred_wait(block) -> bool:
-    return HOLD.CONFIG.wait_tool and getattr(block, "name", None) == HOLD.WAIT_TOOL_NAME
+    return HOLD.is_deferred(getattr(block, "name", None))
 
 
 def run_deferred_waits(deferred: list, results: list) -> None:
-    """Run a round's `wait` calls after its other tool calls (the end of the round) and put
-    their results at the placeholders `deferred` = [(index in results, block)] kept."""
+    """Run a round's `wait` / `wait_for_capacity` calls after its other tool calls (the end of the
+    round) and put their results at the placeholders `deferred` = [(index in results, block)] kept."""
     for index, block in deferred:
         with TRACE.span("tool_start", "tool_end", trace_tool_data(block)) as tool_span:
             blocked = trigger_hooks("PreToolUse", block)
             if blocked:
                 output, status = str(blocked), "denied"
             else:
-                output = call_tool_handler(run_wait_tool, block.input, block.name)
+                output = call_tool_handler(pacing_handlers().get(block.name), block.input, block.name)
                 trigger_hooks("PostToolUse", block, output)
                 status = "error" if output.startswith("Error:") else "ok"
             tool_span.finish(status=status, tool_call_id=block.id, tool=block.name,
@@ -1857,6 +1877,7 @@ def spawn_teammate_thread(name: str, role: str, prompt: str,
             "list_tasks": _run_list_tasks,
             "claim_task": _run_claim_task,
             "complete_task": _run_complete_task,
+            **pacing_handlers(),
         }
 
         should_stop = False
@@ -1877,7 +1898,7 @@ def spawn_teammate_thread(name: str, role: str, prompt: str,
                     with TRACE.model_scope("teammate"):
                         response = client.messages.create(
                             model=MODEL, system=system, messages=messages,
-                            tools=sub_tools, max_tokens=8000)
+                            tools=sub_tools, max_tokens=DEFAULT_MAX_TOKENS)
             except Exception as exc:
                 BUS.send(name, "lead",
                          f"{type(exc).__name__}: {exc}", "error")
@@ -2326,7 +2347,7 @@ def spawn_subagent(description: str) -> str:
                 with TRACE.model_scope("one_shot"):
                     response = client.messages.create(
                         model=MODEL, system=SUB_SYSTEM, messages=messages,
-                        tools=SUB_TOOLS + wait_tools(), max_tokens=8000)
+                        tools=SUB_TOOLS + wait_tools(), max_tokens=DEFAULT_MAX_TOKENS)
                 messages.append({"role": "assistant", "content": response.content})
                 if not has_tool_use(response.content):
                     stop_reason = "no_tool_use"
@@ -2348,7 +2369,7 @@ def spawn_subagent(description: str) -> str:
                             output = str(blocked)
                             status = "denied"
                         else:
-                            handler = SUB_HANDLERS.get(block.name)
+                            handler = SUB_HANDLERS.get(block.name) or pacing_handlers().get(block.name)
                             output = call_tool_handler(handler, block.input, block.name)
                             trigger_hooks("PostToolUse", block, output)
                             status = "error" if str(output).startswith("Error:") else "ok"
@@ -2603,8 +2624,11 @@ def summarize_history(messages: list) -> str:
             model=MODEL,
             system=handoff_system,
             messages=[{"role": "user", "content": conversation}],
-            max_tokens=2000)
-    return extract_text(response.content) or "(empty summary)"
+            max_tokens=SUMMARY_MAX_TOKENS)
+    text = extract_text(response.content)
+    if text.startswith("<think>") and "</think>" in text:   # a model that keeps its reasoning in the text
+        text = text.split("</think>", 1)[1].strip()
+    return text or "(empty summary)"
 
 
 def compact_history(messages: list, active_request: str) -> list:
@@ -3214,8 +3238,7 @@ def assemble_tool_pool() -> tuple[list[dict], dict]:
     global mcp_tool_policies
     tools = list(BUILTIN_TOOLS) + wait_tools()
     handlers = dict(BUILTIN_HANDLERS)
-    if HOLD.CONFIG.wait_tool:
-        handlers[HOLD.WAIT_TOOL_NAME] = run_wait_tool
+    handlers.update(pacing_handlers())
     policies: dict[str, str] = {}
     origins = {tool["name"]: f"built-in tool {tool['name']!r}"
                for tool in tools}
@@ -3708,7 +3731,9 @@ def agent_loop(messages: list, context: dict, active_request: str):
             status_due = False
 
         try:
+            call_t0 = time.monotonic()
             response = call_llm(messages, context, tools, state, max_tokens)
+            HOLD.note_call(response, time.monotonic() - call_t0)     # the next round's [cost] receipt
         except Exception as e:
             if is_prompt_too_long_error(e) and not state.has_attempted_reactive_compact:
                 TRACE.emit(
@@ -3853,8 +3878,8 @@ def agent_loop(messages: list, context: dict, active_request: str):
 
                 if block.name == "todo_write":
                     rounds_since_todo = 0
-                else:
-                    rounds_since_todo += 1
+                elif not (block.name == HOLD.STATUS_TOOL_NAME and HOLD.enabled(block.name)):
+                    rounds_since_todo += 1                # a status read is not work (like wait)
 
                 tool_span.finish(
                     status="error" if str(output).startswith("Error:") else "ok",

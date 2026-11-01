@@ -284,7 +284,7 @@ class MUMixin:
                     "defer_free": self.defer_block_free,
                     "pin": {"on": self._pin_on, "ttl": self.pin_ttl, "when": self.pin_when,
                             "admit": self.pin_admit, "tail": self.pin_tail, "cap": self.pin_cap},
-                    "gate": {"k": self.gate_k, "idle_s": self.gate_idle}})
+                    "gate": {"k": self.gate_k, "idle_s": self.gate_idle}, "tool_tok": TOOL_CALL_TOKEN})
         atexit.register(self._close)
 
     # -- helpers -------------------------------------------------------------------------------------

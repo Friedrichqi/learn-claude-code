@@ -3,6 +3,9 @@
 
 Pairs: A = GPUs 0,1 with vLLM on CPUs 0-25,104-129; B = GPUs 2,3 with vLLM on CPUs 26-51,130-155 (GPUs 0-3
 sit on CPU socket 0). The sessions and scrapers run on socket 1 (CPUs 52-103,156-207). Only GPUs 0-3 are used.
+Group Q = all four GPUs on CPUs 0-51,104-155, for a TP=4 model (research/19_efficiency_signals: MiniMax-M2.7);
+it runs alone. A condition may name its own model ("model"); WT_CAP_GPU_H, WT_DATA_ROOT and WT_LANES let another
+topic keep its own GPU-hour cap, cells and lanes (research/19_efficiency_signals/ef_pipeline.py).
 
     python research/18_harness_wait/wt_pipeline.py cell --cond w16_none --pair A
     python research/18_harness_wait/wt_pipeline.py round w16_none:A w16_none_aa:B    # two cells, B starts 2 min later
@@ -54,12 +57,14 @@ VLLM_CMD = os.environ.get("WT_VLLM_CMD", "/data/fritz/venv/bin/vllm").split()
 DATA_ROOT = Path(os.environ["WT_DATA_ROOT"]) if os.environ.get("WT_DATA_ROOT") else ww.DATA
 CELLS = DATA_ROOT / "cells"
 ALLOWED_GPUS = {0, 1, 2, 3}
-PAIRS = {"A": {"gpus": [0, 1], "cpus": "0-25,104-129"}, "B": {"gpus": [2, 3], "cpus": "26-51,130-155"}}
+PAIRS = {"A": {"gpus": [0, 1], "cpus": "0-25,104-129"}, "B": {"gpus": [2, 3], "cpus": "26-51,130-155"},
+         "Q": {"gpus": [0, 1, 2, 3], "cpus": "0-51,104-155"}}
 CLIENT_CPUS = "52-103,156-207"
-CAP_GPU_H = 100.0
+CAP_GPU_H = float(os.environ.get("WT_CAP_GPU_H") or 100.0)
 HOURS = DATA_ROOT / "gpu_hours.jsonl"
 JOBS = DATA_ROOT / "jobs"
-LANES = DATA_ROOT / "lanes" if os.environ.get("WT_DATA_ROOT") else Path("/data/fritz/wt_lanes")
+LANES = Path(os.environ["WT_LANES"]) if os.environ.get("WT_LANES") else \
+    (DATA_ROOT / "lanes" if os.environ.get("WT_DATA_ROOT") else Path("/data/fritz/wt_lanes"))
 MU_SCRAPE = REPO / "research" / "11_multiuser_kv" / "mu_scrape.py"
 
 
@@ -106,10 +111,11 @@ def tally() -> float:
     return sum(json.loads(line).get("gpu_h", 0.0) for line in HOURS.open() if line.strip())
 
 
-def estimate_gpu_h(c: dict, warmup_s: float | None = None, window_s: float | None = None) -> float:
+def estimate_gpu_h(c: dict, warmup_s: float | None = None, window_s: float | None = None, gpus: int = 2) -> float:
+    """GPUs x (warm-up + window + the condition's startup and teardown allowance, 900 s by default) in hours."""
     warmup = float(c.get("warmup_s", 0)) if warmup_s is None else warmup_s
     window = float(c.get("window_s", 0)) if window_s is None else window_s
-    return 2 * (warmup + window + 900) / 3600
+    return gpus * (warmup + window + float(c.get("overhead_s", 900))) / 3600
 
 
 def read_records(path: Path) -> list[dict]:
@@ -147,6 +153,9 @@ def check_server(sched_log: Path, c: dict, args: list[str], port: int, timeout: 
     gate = int(c["env"].get("MU_GATE", 0))
     if (hdr.get("gate") or {}).get("k") != gate:
         problems.append(f"gate {hdr.get('gate')} != {gate}")
+    tool_tok = int(c["env"].get("MU_TOOLCALL_TOKEN", 151657))
+    if hdr.get("tool_tok", tool_tok) != tool_tok:
+        problems.append(f"tool-call token {hdr.get('tool_tok')} != {tool_tok}")
     if "--num-gpu-blocks-override" in args:
         want = int(args[len(args) - 1 - args[::-1].index("--num-gpu-blocks-override") + 1])
         if hdr.get("nblk") != want:
@@ -210,7 +219,7 @@ def run_cell(cond: str, pair: str, warmup_s: float | None = None, window_s: floa
         raise SystemExit(f"{runs} already holds runs; move the cell away first")
     if not gpus_empty(gpus):
         raise SystemExit(f"GPUs {gpus} are not empty: {gpu_status(gpus)}")
-    est = estimate_gpu_h(c, warmup_s, window_s)
+    est = estimate_gpu_h(c, warmup_s, window_s, len(gpus))
     if tally() + est > CAP_GPU_H:
         raise SystemExit(f"GPU-hour cap: {tally():.1f} spent + {est:.1f} estimated > {CAP_GPU_H}")
     stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
@@ -227,7 +236,8 @@ def run_cell(cond: str, pair: str, warmup_s: float | None = None, window_s: floa
                 "MU_SCHED_LOG": str(sdir / "sched.jsonl"), "WT_STATUS_PATH": status_path,
                 "WT_EXT_LOG": str(sdir / "wt_ext.jsonl")})
     env.update({k: str(v) for k, v in c["env"].items()})
-    cmd = ["taskset", "-c", cpus, *VLLM_CMD, "serve", mw.MODEL, "--host", "127.0.0.1", "--port", str(port),
+    model = c.get("model", mw.MODEL)
+    cmd = ["taskset", "-c", cpus, *VLLM_CMD, "serve", model, "--host", "127.0.0.1", "--port", str(port),
            "--seed", "0", *args]
     info = {"cond": cond, "arm": c.get("arm"), "n": c["n"], "pair": pair, "gpus": gpus, "port": port,
             "kv_events_port": kv_port, "cmd": cmd, "server_env": c["env"], "client_env": c.get("client_env"),
@@ -249,7 +259,7 @@ def run_cell(cond: str, pair: str, warmup_s: float | None = None, window_s: floa
             time.sleep(5)
         info["ready_s"] = round(time.time() - t0, 1)
         req = urllib.request.Request(f"http://127.0.0.1:{port}/v1/completions", method="POST",
-                                     data=json.dumps({"model": mw.MODEL, "prompt": "Hello", "max_tokens": 1}).encode(),
+                                     data=json.dumps({"model": model, "prompt": "Hello", "max_tokens": 1}).encode(),
                                      headers={"Content-Type": "application/json"})
         urllib.request.urlopen(req, timeout=300).read()
         time.sleep(2.5)                                     # the observer's log flushes every second
@@ -336,6 +346,8 @@ def run_round(items: list[str], stagger_s: float = 120.0) -> int:
     pairs = [item.split(":") for item in items]
     if len({p for _, p in pairs}) != len(pairs):
         raise SystemExit("one cell per pair")
+    if len(pairs) > 1 and any(p == "Q" for _, p in pairs):
+        raise SystemExit("group Q uses all four GPUs: run it alone")
     procs = []
     for i, (cond, pair) in enumerate(pairs):
         if i:

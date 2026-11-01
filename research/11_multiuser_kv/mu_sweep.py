@@ -277,7 +277,8 @@ class Cell:
             job = None
             if first and self.c["fillers"]:
                 spec, label, arrival = self.next_filler("w")
-                trunc = rng.uniform(0.1, 1.0) * mw.SESSION_EST_S.get(self.n, 1500)
+                est = self.c.get("session_est_s") or mw.SESSION_EST_S.get(self.n, 1500)   # a condition may set its own
+                trunc = rng.uniform(0.1, 1.0) * float(est)
                 job = (spec, label, 1, arrival, True, "warmup", trunc, None)
             else:
                 nxt = self.next_counted()

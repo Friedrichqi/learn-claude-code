@@ -38,7 +38,8 @@
 > - **KV pool:** 16,137 blocks of 16 tokens (`--num-gpu-blocks-override`). The natural TP=2 pool is 20,012
 >   blocks (S1).
 >
-> **Plan:** `~/.claude/plans/now-i-want-to-jiggly-waffle.md` (approved 2026-10-24).
+> **Plan:** [`PLAN.md`](PLAN.md) (approved 2026-10-24). It was first kept at
+> `~/.claude/plans/now-i-want-to-jiggly-waffle.md`, which now holds topic 19's plan.
 >
 > **Follow-ups:** [`FOLLOWUPS.md`](FOLLOWUPS.md), a brainstorm after the run (2026-10-25, CPU only).
 > - Offline analyses of these cells.
@@ -555,6 +556,83 @@ model on all 17 cells; that moves the main cells' GPU shares by at most 0.1 poin
 - **Limits:** this is one cell, not pre-registered, with the main run's τ and cap, at N=16 only. Whether
   turn-start holds also fix the share rule's cap releases at N=32 was not tested.
 
+## Completion time per task (exploratory, added 2026-10-29)
+
+The run reported throughput. This section derives what a single task experiences, from the traces already on disk,
+on CPU: `wt_latency.py`, with tables in `data/tables/latency.{md,json}`. It was not pre-registered.
+
+**Definitions:**
+- **Task:** one turn, i.e. one task prompt (E1-E3 or M1-M3 on a codebase).
+- **Completion time:** `turn_start` to `turn_end`. It includes queueing, every model call, tools, model waits,
+  harness holds and gate waits. Think pauses between turns are excluded.
+- **Why Kaplan-Meier (KM):** every cell stopped hard at its window end, so tasks still running were cut, 10-69 % of
+  them at N ≥ 16. Plain statistics over finished tasks would be biased low.
+- **Sample:** turns of counted sessions that started in the window, censored at its end. Turns refused at once (the
+  session's 300-call budget was spent) are left out.
+- **Mean:** the area under the KM curve up to the longest follow-up.
+  - "≥" marks a lower bound: the curve does not reach 0.
+  - "*" marks that under 1 % of turns remain.
+- **Quantiles:** "> t" means not reached, and † means fewer than 5 tasks lie beyond the quantile.
+- **Intervals:** 95 % intervals from a bootstrap over task specs, 2,000 draws.
+
+| cell | tasks | cut | mean (s) | p50 | p95 | p99 | mean ÷ none | p50 ÷ none |
+|---|---|---|---|---|---|---|---|---|
+| w08_none | 201 | 8 | 184 [142, 233] | 118 [83, 143] | 562 [391, 770] | 2,349† | — | — |
+| w08_m_stock | 166 | 7 | 229 [189, 275] | 172 [134, 204] | 664 [559, 1,018] | 1,253† | 1.31 [1.00, 1.75] | 1.45 [1.09, 2.27] |
+| w08_m_share | 158 | 8 | 244* [192, 305] | 167 [147, 208] | 915 [545, 1,146] | 1,204† | 1.38 [1.00, 1.90] | 1.42 [1.12, 2.30] |
+| w16_none | 56 | 13 | ≥ 1,498 | 1,094 [506, 2,176] | > 4,977 | n/a | — | — |
+| w16_none_aa | 55 | 15 | ≥ 1,644 | 1,984 [763, 2,255] | 3,584† | n/a | 1.15 [0.81, 1.65] | 1.81 [0.59, 3.84] |
+| w16_m_stock | 37 | 13 | 2,171 [1,825, 2,635] | 2,029 [1,900, 2,442] | 4,151† | n/a | 1.49 [1.06, 2.14] | 1.85 [0.97, 4.15] |
+| w16_m_share | 48 | 16 | ≥ 1,844 | 2,164 [959, 2,435] | 2,999† | n/a | 1.31 [0.90, 1.90] | 1.98 [0.95, 4.19] |
+| w16_h_backoff | 123 | 15 | 726 [581, 880] | 641 [245, 760] | 2,644 [1,763, 3,077] | 3,077† | 0.53 [0.37, 0.77] | 0.59 [0.20, 1.29] |
+| w16_h_share | 159 | 16 | 531 [444, 630] | 378 [319, 409] | 1,738 [1,033, 2,641] | 2,680† | 0.41 [0.29, 0.57] | 0.34 [0.17, 0.71] |
+| w16_sgate | 195 | 15 | 422* [372, 479] | 337 [296, 379] | 1,032 [731, 1,285] | 2,128† | 0.36 [0.26, 0.48] | 0.31 [0.16, 0.65] |
+| x16_h_share_start | 188 | 13 | 443 [379, 523] | 322 [274, 369] | 1,057 [841, 2,129] | 2,839† | 0.33 [0.24, 0.47] | 0.29 [0.15, 0.62] |
+| w32_none | 97 | 32 | ≥ 1,875 | 776 [598, 1,580] | > 5,008 | n/a | — | — |
+| w32_m_stock | 42 | 29 | ≥ 3,985 | 5,229 [4,831, ∞] | > 5,292 | n/a | 2.05 [1.47, 2.87] | — |
+| w32_m_share | 46 | 29 | ≥ 3,530 | 5,227 [1,954, ∞] | > 5,274 | n/a | 1.81 [1.27, 2.58] | — |
+| w32_h_backoff | 107 | 31 | 1,710 [1,374, 2,106] | 1,339 [653, 2,703] | 4,329 [3,505, 5,051] | 5,051† | 0.91 [0.65, 1.27] | 1.73 [0.61, 3.83] |
+| w32_h_share | 116 | 31 | 1,460 [1,325, 1,600] | 1,362 [1,271, 1,655] | 2,819 [2,312, 3,272] | 3,272† | 1.02 [0.81, 1.27] | 1.75 [0.88, 2.50] |
+| w32_sgate | 208 | 29 | 788 [737, 845] | 727 [680, 776] | 1,274 [1,093, 1,942] | 2,306† | 0.53 [0.43, 0.66] | 0.94 [0.48, 1.26] |
+
+A mean ratio compares both means up to the shorter of the two longest follow-ups, so it is defined even where a
+mean itself is only a lower bound.
+
+**Findings:**
+- **When the model decides to wait, tasks take longer at every N.**
+  - At N=8 the mean grows by 31-38 % and the median by 42-45 %.
+  - At N=16 the mean is 1.31-1.49× `none`'s. The interval excludes 1 for `m_stock`.
+  - At N=32 the mean, compared up to the shorter follow-up, is 1.81-2.05× `none`'s. The median task takes
+    5,227-5,229 s, against 776 s, and most tasks were still running when the window closed.
+- **Harness holds and the server gate shorten tasks at N=16.** The mean is 0.33-0.53× `none`'s and the median
+  0.29-0.59×; the best are `x16_h_share_start` (0.33×) and `sgate` (0.36×).
+- **At N=32:**
+  - The gate cuts the mean to 0.53× but leaves the median where it was (0.94×).
+  - The twins leave the mean unchanged (0.91-1.02×).
+- **The tail:**
+  - Under `none` the p95 is not reached at N=16 or N=32: more than 5 % of tasks outlast the 90-min window.
+  - The gate brings it to 1,032 s and 1,274 s.
+  - Most p99 values are thin (†); treat them as indications.
+- **Run-to-run noise is large at N=16.** The two identical `none` cells differ by 1.15× in mean and 1.81× in
+  median, so N=16 median differences under about 2× are not distinguishable. The bootstrap intervals do not include
+  this spread.
+- **Single calls are not slower in the model-wait setups:** at N=32 the median call takes 50-51 s in all three.
+  The extra task time comes from the waits and the 748-2,179 wait-only calls per cell (table L4).
+- **By family (L3):** in the slow cells, sessions rarely reach their MODIFY tasks within the window. For example,
+  `w32_m_stock` has 36 EXPLAIN tasks and 6 MODIFY. So L3 also gives a curve with the two families weighted equally.
+- **Caveats:**
+  - Many tasks end at the 100-call cap (Qwen's loops), so "completion" means the harness returned control. L2 has
+    the normal-end-only variant.
+  - Sessions (4 tasks and 3 think pauses, L6) can be estimated only at N=8 and with the gate or turn-start holds at
+    N=16.
+  - The cross-checks agree where few turns are cut: Little's law 180 s against the KM mean of 184 s in `w08_none`.
+    Where many are cut it breaks down, as expected.
+- **Correction found while doing this (L5):** the stored turns/h counts the turns of warm-up sessions that were
+  killed inside the window.
+  - Without them, `w32_m_stock` falls from 30.0 to 15.3 turns/h, `w32_none` from 64.0 to 51.3 and `w32_sgate` from
+    153.3 to 144.0.
+  - The primary metric, work calls/h, is not affected. The reported numbers are left as they were.
+
 ## Conclusions
 
 1. **The harness can relieve a crowded server by pausing the agent, if the harness decides.**
@@ -662,6 +740,9 @@ $PY research/18_harness_wait/wt_verify.py --json research/18_harness_wait/data/t
 $PY research/18_harness_wait/wt_analyze.py --smoke $MAIN                          # integrity of the main cells
 $PY research/18_harness_wait/wt_analyze.py --cells $MAIN,x16_h_share_start --out research/18_harness_wait/data/tables/contingency.md
 $PY research/18_harness_wait/wt_blocks.py --cells w16_h_share,w32_h_share,w16_h_backoff,w32_h_backoff,x16_h_share_start
+# completion time per task (added 2026-10-29; one topic per process)
+$PY research/18_harness_wait/test_wt_latency.py
+$PY research/18_harness_wait/wt_latency.py --topic 18 --verify                   # data/tables/latency.{md,json}
 ```
 
 ## Data inventory
@@ -675,6 +756,7 @@ $PY research/18_harness_wait/wt_blocks.py --cells w16_h_share,w32_h_share,w16_h_
 | `data/cells/<cond>/` | one folder per cell, 29 in all: `s_*` smoke, `p*` pilot, `w*` main, `x16_h_share_start` exploratory. Each holds `window.json`, `cell_log.jsonl`, `sweep.log`, `COMPLETE`, `runs/<label>/` (capture, trace, meta per session) and `server/<pair>_<UTC>/` (`vllm.log`, `server_info.json`, `sched.jsonl.xz`, `wt_ext.jsonl`, `scrape.jsonl`, `metrics_final.prom`, `kvevents.json`) |
 | `data/tables/main.{md,json}` | the S3 tables and decisions (16 cells) |
 | `data/tables/contingency.{md,json}` | the same plus `x16_h_share_start` and its exploratory contrasts (step model refit on 17 cells) |
+| `data/tables/latency.{md,json}` | completion time per task, per call and per session for the 17 cells (`wt_latency.py`, added 2026-10-29) |
 | `data/tables/pilot_{p1p2,p1p2p3,p2b}.{md,json}` | the pilot tables |
 | `data/gpu_hours.jsonl` | the GPU-hour tally, one line per cell |
 | `data/jobs/` | one pipeline log per cell (`<UTC>_<cond>_<pair>.log`) and the chain logs (`chain_pilot.log`, `chain_main.log`, `chain_contingency.log`) |
@@ -734,3 +816,11 @@ $PY research/18_harness_wait/wt_blocks.py --cells w16_h_share,w32_h_share,w16_h_
   - **`wt_blocks.py` by hold point:** a second table per cell with each hold point's releases and hold lengths,
     the share of the context cached when the hold began, and the prefix kept.
   - **Why:** to describe `x16_h_share_start`, whose turn-start holds are the point of the cell.
+- **2026-10-29, analysis only: `wt_latency.py` and `test_wt_latency.py`** (the section "Completion time per task").
+  - **What they add:** per-task completion times for both topic 18 and topic 19, reading the traces and captures.
+  - **Unchanged:** `wt_analyze.py`, `mu_analyze.py` and every stored table. Topic 19's prereg hashes `ef_analyze.py`,
+    which imports them.
+  - **Reproduction:** `wt_latency.py --verify` reproduces the stored KM p50/p95, turns started, censored share,
+    call p50/mean and turns/h of all 17 cells exactly.
+  - **Found on the way:** the stored KM sample and turns/h count warm-up sessions' turns that were killed inside the
+    window as finished turns. Table L5 of `latency.md` gives the split; the reported values are left as they were.

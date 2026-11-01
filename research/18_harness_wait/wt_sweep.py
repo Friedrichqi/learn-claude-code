@@ -10,6 +10,9 @@ truncated warm-up fillers) with a fixed clock instead of a fixed set of sessions
     and the cell ends; nothing is retried or resumed after that;
   * counted specs come from one queue in manifest order, as in topic 11 (any cell runs specs 0, 1, 2, ...
     in that order, so arms see the same task mix);
+  * with the condition key `cycle_specs` (topic 19; off by default), the queue starts the counted specs again
+    in the same order once its last spec is handed out: pass k runs spec S000 as label ...-S000-pk, so a cell
+    that outruns the manifest still fills its window (without it, the cell ends early and is INCOMPLETE);
   * each session gets the condition's client_env (the S15_* settings that select the arm);
   * lanes exclude the 30 GB of research/16_epic_harness/harness_eval and other large folders;
   * window.json in the cell folder records the clock (wall times of start, window start and end);
@@ -45,6 +48,7 @@ import wt_workloads as ww  # noqa: E402
 
 EXTRA_EXCLUDES = ["research/16_epic_harness/harness_eval", "research/*/.venv", "research/*/.deps", "node_modules",
                   ".pytest_cache"]
+PASS_SEP = "@"   # a queued "S000@2" is spec S000 in the second pass (cycle_specs)
 
 
 def make_lane(lane: Path, base_url: str, model: str) -> None:
@@ -65,6 +69,7 @@ class WindowCell(mu_sweep.Cell):
         self.client_env = {k: str(v) for k, v in (self.c.get("client_env") or {}).items()}
         self.t_start = self.window_start = self.window_end = None
         self.window_done = threading.Event()
+        self.passes = 1
 
     def _todo(self) -> list[tuple[str, int]]:
         return [(spec, 1) for spec in self.counted]          # a window cell never resumes
@@ -72,7 +77,31 @@ class WindowCell(mu_sweep.Cell):
     def next_counted(self):
         if self.window_end is not None and time.time() >= self.window_end:
             return None
-        return super().next_counted()
+        nxt = super().next_counted()
+        if nxt is not None and self.c.get("cycle_specs"):
+            self.refill()
+        return nxt
+
+    def refill(self) -> None:
+        """cycle_specs: queue the next pass as soon as the last spec is handed out, so the queue never runs dry
+        (and the counted-done / drain-filler path never starts) before the window ends."""
+        with self.lock:
+            if self.queue:
+                return
+            self.passes += 1
+            self.queue.extend((f"{spec}{PASS_SEP}{self.passes}", 1) for spec in self.counted)
+        print(f"[sweep] every counted spec handed out: pass {self.passes} queued", flush=True)
+
+    def label(self, spec: str) -> str:
+        base, _, k = spec.partition(PASS_SEP)
+        return super().label(base) + (f"-p{k}" if k else "")
+
+    def launch(self, lane, spec, label, attempt, arrival):
+        return super().launch(lane, spec.partition(PASS_SEP)[0], label, attempt, arrival)
+
+    def finish(self, spec, label, run_dir, proc, t0, slot, attempt, arrival, filler, kind):
+        return super().finish(spec.partition(PASS_SEP)[0], label, run_dir, proc, t0, slot, attempt, arrival,
+                              filler, kind)
 
     def clock(self) -> None:
         """End the cell at the window's end."""

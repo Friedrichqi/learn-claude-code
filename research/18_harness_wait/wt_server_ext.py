@@ -13,7 +13,8 @@ Two views (query `view=`):
   share  the stock fields plus the engine snapshot that wt_scheduler writes to WT_STATUS_PATH: the
          pool and, for the calling session, its working set, its cached prefix and its place among
          the mid-turn sessions (first come, first served by the start of their current turn) with the
-         working sets of the sessions ranked ahead of it.
+         working sets of the sessions ranked ahead of it, and its last lead request's admission
+         (`last`: np, ideal, hit, wait_s; topic 19's [cost] receipt).
 
 Other query fields: sid (the caller's X-Session-ID), state = line | check | hold | wait (what the
 caller is doing: a session that holds or waits is still mid-turn although nothing of it is in flight,
@@ -226,7 +227,8 @@ class Status:
               "res": int(info.get("res") or 0) if info else 0,
               "mid": any(row[2] == sid for row in line),
               "ahead_ws": int(sum(int(row[3].get("ws") or 0) for row in ahead)),
-              "ahead_n": len(ahead), "rank": len(ahead) + 1}
+              "ahead_n": len(ahead), "rank": len(ahead) + 1,
+              "last": info.get("last") if info else None}
         out["me"] = me
         return out
 

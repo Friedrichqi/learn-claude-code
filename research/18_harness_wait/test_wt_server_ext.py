@@ -112,6 +112,14 @@ def test_holders_stay_mid_and_reported_turn_wins():
     assert status.build("share", "B", "line", None)["me"]["ahead_ws"] == 5000
 
 
+def test_share_passes_the_last_admission_through():
+    last = {"np": 7000, "ideal": 6400, "hit": 2048, "wait_s": 3.25}
+    status, *_ = make_status({"A": sess(10.0, 1.0, 5000), "B": dict(sess(20.0, 2.0, 7000), last=last)})
+    assert status.build("share", "B", "line", None)["me"]["last"] == last
+    assert status.build("share", "A", "pull", None)["me"]["last"] is None       # no record yet
+    assert status.build("share", "NEW", "line", None)["me"]["last"] is None     # unknown caller
+
+
 def test_unknown_caller_queues_behind_every_mid_session():
     status, *_ = make_status({"A": sess(10.0, 1.0, 5000), "B": sess(20.0, 2.0, 7000)})
     me = status.build("share", "NEW", "line", None)["me"]

@@ -52,6 +52,9 @@ LIVE = mw.DATA
 CELLS = LIVE / "cells"
 REPLAY_OUT = DIR / "data" / "multiuser_replay"
 OK = {"ok", "budget", "deadline"}
+# tokens at the end of a lead prompt that the next prompt does not reuse (the generation prompt's tail: 4 for
+# the append-only Qwen3 template; research/19_efficiency_signals sets 0 for its MiniMax-M2.7 template)
+TEMPLATE_TAIL = 4
 LIVE_ORDER = ["n01a", "n01b", "n04", "n08", "n16", "n32", "n16kvh", "n16mem", "n16ts", "pilot1", "pilot8", "smoke"]
 
 
@@ -410,7 +413,7 @@ class Cell:
             np_ = row["srv_np"]
             ideal, hit = max(row["ideal"], row["hit"]), row["hit"]
             prev = row.get("prev_np")
-            reusable_prev = ((prev - 4) // 16) * 16 if prev else 0
+            reusable_prev = ((prev - TEMPLATE_TAIL) // 16) * 16 if prev else 0
             edited = prev is not None and row["lcp"] + 16 < reusable_prev
             if edited:
                 tc = row.get("trace_causes") or []
