@@ -752,6 +752,22 @@ separate the two suspects. It crosses two factors:
   waits, and whether the waits help the server at all, which only a live cell measures.
 - **GPU time:** 1.42 GPU-h, which brings the topic 19 tally to 111.51 of 120.
 
+**The user's re-reading and the final prompt (2026-11-01):**
+- **The ruling:** a reply with only one `wait` call is acceptable when there is nothing useful to do yet. That replaces
+  the frozen wait-only limit (5 %), so this is a re-reading, not the pre-registered rule.
+- **Under it, `RCcap` passes the screen's other criteria:**
+  - 58 % of work replies wait at 93 %, and 0 % at 62 %;
+  - in replies that are not wait-only, the recorded action is kept in 58 % [46, 70], against `B0`'s 60 %.
+- **`RXcap` does not pass:** it keeps 48 % [35, 61], 12 points below `B0`. The worked example (v6) adds nothing.
+- **The final prompt** is v5 + `wait_kv` + kv_cue: `S15_WAIT_TOOL=1 S15_WAIT_TEXT=v5 S15_SERVER_SECTION=wait_kv
+  S15_STATUS_LINE=1 S15_STATUS_FORMAT=kv_cue S15_WAIT_KV=0.8`. The line reads `kv_usage` from the status endpoint
+  (`S15_STATUS_URL`, topic 18's `wt_server_ext`), which the default stock view carries.
+- **Open:**
+  - At 93 %, in final-answer replies it waits instead of answering (26 of 36 samples), despite "never add wait to
+    your final answer". That delays the answer by the wait plus one model call.
+  - Whether the waits lower KV use or help throughput needs a live cell.
+  - The evidence is replay only. The capped history stands in for a live session, which has no ignored lines.
+
 ## GPU-hour log
 
 | stage | cells | GPU-h | tally |

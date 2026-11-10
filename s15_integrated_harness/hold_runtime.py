@@ -38,6 +38,11 @@ changes nothing and makes no network request):
                              12 requests waiting") | kv_cue (kv, and at or above S15_WAIT_KV also "At 80% or
                              more: add a wait call to your response.")
     S15_WAIT_KV=0.8          the KV-cache use that text v5, paragraph wait_kv and the kv_cue line name ("80%")
+    S15_SAVE_TOOL=1          advertise `save_context` to the lead (research/23_efficiency_tools): copy the session's
+                             KV cache to host memory (same as listing save_context in S15_TOOLS)
+    S15_SAVE_TEXT=s1         its description: s1 (with every wait), s2 (its own KV rule), s3 (s2, when the
+                             response pauses the session), s4 (s2 plus a worked example), s6 (s1 plus a worked
+                             example); S15_STATUS_FORMAT=kv_cue_save names save_context in the line's cue too
     S15_SESSION_ID           this session's id on the server (the X-Session-ID header the driver sends)
     rule parameters          S15_BACKOFF_D0=2, S15_BACKOFF_DMAX=30, S15_BACKOFF_ENTER_KV=0.92,
                              S15_BACKOFF_EXIT_KV=0.85, S15_SHARE_TAU=0.9, S15_SHARE_POLL_S=2,
@@ -123,8 +128,44 @@ WAIT_TEXTS["v6"] = WAIT_TEXTS["v5"] + (
     "waiting\", do not call wait.")
 YIELD_TOOL_NAME = "wait_for_capacity"
 STATUS_TOOL_NAME = "server_status"
-PACING_TOOLS = (WAIT_TOOL_NAME, YIELD_TOOL_NAME, STATUS_TOOL_NAME)   # the order they are advertised in
-DEFERRED_TOOLS = (WAIT_TOOL_NAME, YIELD_TOOL_NAME)                   # run after the round's other tools
+SAVE_TOOL_NAME = "save_context"
+PACING_TOOLS = (WAIT_TOOL_NAME, YIELD_TOOL_NAME, STATUS_TOOL_NAME, SAVE_TOOL_NAME)  # the order they are advertised in
+DEFERRED_TOOLS = (WAIT_TOOL_NAME, YIELD_TOOL_NAME, SAVE_TOOL_NAME)                 # run after the round's other tools
+LEAD_ONLY_TOOLS = (SAVE_TOOL_NAME,)     # it saves the lead's last request, so subagents and teammates don't get it
+# S15_SAVE_TEXT picks save_context's description (research/23_efficiency_tools, 2026-11-02). The tool copies the
+# session's context (its KV cache) to host memory: the harness re-sends the last lead request with max_tokens 1 and
+# the store flag (X-KV-Store: 1), and the server's KV offload (LMCache) keeps it, so a later step that finds it
+# evicted from GPU memory reloads it instead of recomputing it. s1 ties it to the wait rule; s2 gives it its own KV
+# rule; s3 adds long commands to s2; s4 is s2 plus a worked example. {kv} is S15_WAIT_KV as a percentage.
+_SAVE_MECHANISM = (
+    "Copy this session's processed context (its KV cache) from the model server's GPU memory to host memory, after "
+    "this response's other tool calls. When the GPU's KV cache is full, the server evicts the contexts of sessions "
+    "that are paused, and their next step must recompute them; a saved context is reloaded from host memory "
+    "instead, which is several times faster. It takes no arguments and returns at once.")
+SAVE_TEXTS = {
+    "s1": _SAVE_MECHANISM + " Rule: whenever you add a wait call, also add save_context to the same response.",
+    "s2": _SAVE_MECHANISM + (" Rule: whenever the newest [server] line shows the KV cache {kv} full or more, include "
+                             "one save_context call in your response next to your other tool calls. Below {kv}, do "
+                             "not call it."),
+    "s3": _SAVE_MECHANISM + (" Rule: whenever the newest [server] line shows the KV cache {kv} full or more and your "
+                             "response pauses the session (it adds wait, or starts a command that may run for more "
+                             "than a minute), include one save_context call in that response. Below {kv}, do not "
+                             "call it."),
+}
+SAVE_TEXTS["s4"] = SAVE_TEXTS["s2"] + (
+    " Example: if the newest line reads \"[server] KV cache {kv_hi} full; 12 requests waiting\", add save_context "
+    "(and wait) to your response; if it reads \"[server] KV cache {kv_lo} full; 2 requests waiting\", add neither.")
+# s6 (2026-11-02, the revised screen, after s1-s4 failed: s1 reached 18 % of work replies at 93 % KV, bar 30 %): s1 plus
+# a worked example. The other revised variant is s1 with the [server] line's cue naming save_context (kv_cue_save).
+SAVE_TEXTS["s6"] = SAVE_TEXTS["s1"] + (
+    " Example: if the newest line reads \"[server] KV cache {kv_hi} full; 12 requests waiting\", call your next tools "
+    "and add wait with seconds 20 and save_context to the same response; if it reads \"[server] KV cache {kv_lo} full; "
+    "2 requests waiting\", add neither.")
+SAVE_TOOL = {
+    "name": SAVE_TOOL_NAME,
+    "description": SAVE_TEXTS["s1"],
+    "input_schema": {"type": "object", "properties": {}},
+}
 YIELD_TOOL = {
     "name": YIELD_TOOL_NAME,
     "description": (
@@ -193,7 +234,9 @@ WAIT_TOOL = {
     },
 }
 STALE_S = 5.0
-LINE_FORMATS = ("kv", "kv_cue")     # S15_STATUS_FORMAT (unset: format_line's wording for the view)
+LINE_FORMATS = ("kv", "kv_cue", "kv_cue_save")   # S15_STATUS_FORMAT (unset: format_line's wording for the view)
+# kv_cue_save (research/23_efficiency_tools, 2026-11-02, the revised save_context screen): kv_cue whose cue also names
+# save_context ("At 80% or more: add a wait call and a save_context call to your response.")
 
 
 def _float(name: str, default: float) -> float:
@@ -229,6 +272,7 @@ class Config:
     wait_text: str = "v1"
     line_format: str = ""               # S15_STATUS_FORMAT (LINE_FORMATS)
     wait_kv: float = 0.8                # S15_WAIT_KV
+    save_text: str = "s1"               # S15_SAVE_TEXT (SAVE_TEXTS)
 
     @property
     def wait_tool(self) -> bool:
@@ -258,6 +302,8 @@ def load_config() -> Config:
     tools = {t.strip() for t in env.get("S15_TOOLS", "").split(",") if t.strip()} & set(PACING_TOOLS)
     if env.get("S15_WAIT_TOOL", "0") == "1":
         tools.add(WAIT_TOOL_NAME)
+    if env.get("S15_SAVE_TOOL", "0") == "1":
+        tools.add(SAVE_TOOL_NAME)
     section = env.get("S15_SERVER_SECTION", "none").strip().lower()
     line_format = env.get("S15_STATUS_FORMAT", "").strip().lower()
     wait_kv = _float("S15_WAIT_KV", 0.8)
@@ -275,7 +321,8 @@ def load_config() -> Config:
         seed=env.get("S15_HOLD_SEED", ""), timeout_s=_float("S15_STATUS_TIMEOUT_S", 0.5),
         wait_text=env.get("S15_WAIT_TEXT", "v1") if env.get("S15_WAIT_TEXT", "v1") in WAIT_TEXTS else "v1",
         line_format=line_format if line_format in LINE_FORMATS else "",
-        wait_kv=wait_kv if 0.0 < wait_kv <= 1.0 else 0.8)
+        wait_kv=wait_kv if 0.0 < wait_kv <= 1.0 else 0.8,
+        save_text=env.get("S15_SAVE_TEXT", "s1") if env.get("S15_SAVE_TEXT", "s1") in SAVE_TEXTS else "s1")
 
 
 CONFIG = load_config()
@@ -306,11 +353,18 @@ def enabled(name: str) -> bool:
     return name in CONFIG.tools
 
 
-def pacing_tools() -> list[dict]:
-    """The schemas of the advertised pacing tools, in PACING_TOOLS order (none by default)."""
+def save_tool() -> dict:
+    """The `save_context` schema with the configured description (S15_SAVE_TEXT)."""
+    return {**SAVE_TOOL, "description": _with_kv(SAVE_TEXTS[CONFIG.save_text])}
+
+
+def pacing_tools(lead: bool = False) -> list[dict]:
+    """The schemas of the advertised pacing tools, in PACING_TOOLS order (none by default). LEAD_ONLY_TOOLS only for
+    the lead agent (lead=True)."""
     schemas = {WAIT_TOOL_NAME: wait_tool, YIELD_TOOL_NAME: lambda: dict(YIELD_TOOL),
-               STATUS_TOOL_NAME: lambda: dict(STATUS_TOOL)}
-    return [schemas[name]() for name in PACING_TOOLS if name in CONFIG.tools]
+               STATUS_TOOL_NAME: lambda: dict(STATUS_TOOL), SAVE_TOOL_NAME: save_tool}
+    return [schemas[name]() for name in PACING_TOOLS
+            if name in CONFIG.tools and (lead or name not in LEAD_ONLY_TOOLS)]
 
 
 def is_deferred(name: str | None) -> bool:
@@ -415,8 +469,10 @@ def kv_line(status: dict | None) -> str:
         return ""
     kv = status.get("kv_usage")
     line = f"[server] KV cache {_pct(kv)} full; {int(status.get('waiting') or 0)} requests waiting"
-    if CONFIG.line_format == "kv_cue" and kv is not None and round(100 * float(kv)) >= round(100 * CONFIG.wait_kv):
-        line += f". At {kv_threshold()} or more: add a wait call to your response."
+    if CONFIG.line_format in ("kv_cue", "kv_cue_save") and kv is not None \
+            and round(100 * float(kv)) >= round(100 * CONFIG.wait_kv):
+        what = "a wait call and a save_context call" if CONFIG.line_format == "kv_cue_save" else "a wait call"
+        line += f". At {kv_threshold()} or more: add {what} to your response."
     return line
 
 
@@ -545,6 +601,25 @@ def run_wait(seconds=None, reason: str | None = None, trace=None) -> str:
         text += f" (wait is capped at {CONFIG.wait_max_s:.0f} s.)"
     line = round_line(after)
     return f"{text}\n{line}" if line else text
+
+
+def run_save(resend=None, trace=None) -> str:
+    """Body of `save_context`: resend() re-sends the session's last lead request with max_tokens 1 and the store flag
+    (the caller owns the client) and returns its prompt tokens; the server's KV offload then holds that context in
+    host memory. The result never contains "429" or "529" (the harness retries errors that do)."""
+    if resend is None:
+        return "Error: save_context has nothing to save yet."
+    t0 = CLOCK()
+    try:
+        tokens = int(resend() or 0)
+    except Exception as exc:                                   # noqa: BLE001
+        if trace is not None:
+            trace.emit("save_detail", {"ok": False, "error": type(exc).__name__, "s": round(CLOCK() - t0, 3)})
+        return "Error: save_context could not reach the server; your context was not saved."
+    if trace is not None:
+        trace.emit("save_detail", {"ok": True, "tokens": tokens, "s": round(CLOCK() - t0, 3)})
+    return (f"Saved {tokens} tokens of your context to host memory. If the server evicts them while this session "
+            f"is paused, your next step reloads them instead of recomputing them.")
 
 
 def run_wait_for_capacity(max_seconds=None, reason: str | None = None, trace=None) -> str:

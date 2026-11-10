@@ -970,7 +970,7 @@ _delivered_context = {"memory_catalog": "", "memories": ""}
 
 def tools_prompt() -> str:
     text = PROMPT_SECTIONS["tools"]
-    names = ", ".join(tool["name"] for tool in wait_tools())
+    names = ", ".join(tool["name"] for tool in wait_tools(lead=True))
     if names:
         text = (text.replace("connect_mcp.", f"connect_mcp, {names}.", 1) if "connect_mcp." in text
                 else f"{text} Also available: {names}.")
@@ -1266,15 +1266,33 @@ def run_server_status_tool() -> str:
     return HOLD.run_server_status(TRACE)
 
 
-def wait_tools() -> list[dict]:
+# save_context (S15_SAVE_TOOL=1): the lead's last request, kept by call_llm, is re-sent with max_tokens 1 and the
+# store flag, so the server's KV offload copies that context to host memory (research/23_efficiency_tools)
+LAST_LEAD: dict = {}
+
+
+def _resend_last_lead() -> int:
+    with TRACE.model_scope("save"):
+        response = client.messages.create(**LAST_LEAD, max_tokens=1, extra_headers={"X-KV-Store": "1"})
+    usage = getattr(response, "usage", None)
+    return sum(int(getattr(usage, key, 0) or 0)
+               for key in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
+
+
+def run_save_context_tool() -> str:
+    return HOLD.run_save(_resend_last_lead if LAST_LEAD else None, TRACE)
+
+
+def wait_tools(lead: bool = False) -> list[dict]:
     """The pacing tools' schemas (`wait` when S15_WAIT_TOOL=1; any of wait, wait_for_capacity,
-    server_status listed in S15_TOOLS), appended to an agent's tool list."""
-    return HOLD.pacing_tools()
+    server_status, save_context listed in S15_TOOLS), appended to an agent's tool list. save_context
+    only for the lead (lead=True)."""
+    return HOLD.pacing_tools(lead)
 
 
 def pacing_handlers() -> dict:
     handlers = {HOLD.WAIT_TOOL_NAME: run_wait_tool, HOLD.YIELD_TOOL_NAME: run_wait_for_capacity_tool,
-                HOLD.STATUS_TOOL_NAME: run_server_status_tool}
+                HOLD.STATUS_TOOL_NAME: run_server_status_tool, HOLD.SAVE_TOOL_NAME: run_save_context_tool}
     return {name: handler for name, handler in handlers.items() if HOLD.enabled(name)}
 
 
@@ -1283,9 +1301,10 @@ def is_deferred_wait(block) -> bool:
 
 
 def run_deferred_waits(deferred: list, results: list) -> None:
-    """Run a round's `wait` / `wait_for_capacity` calls after its other tool calls (the end of the
-    round) and put their results at the placeholders `deferred` = [(index in results, block)] kept."""
-    for index, block in deferred:
+    """Run a round's `wait` / `wait_for_capacity` / `save_context` calls after its other tool calls (the
+    end of the round), save_context first so a context is saved before the pause, and put their results
+    at the placeholders `deferred` = [(index in results, block)] kept."""
+    for index, block in sorted(deferred, key=lambda item: item[1].name != HOLD.SAVE_TOOL_NAME):
         with TRACE.span("tool_start", "tool_end", trace_tool_data(block)) as tool_span:
             blocked = trigger_hooks("PreToolUse", block)
             if blocked:
@@ -3236,7 +3255,7 @@ def connect_mcp(name: str) -> str:
 def assemble_tool_pool() -> tuple[list[dict], dict]:
     """Merge builtin tools + all MCP tools into one pool."""
     global mcp_tool_policies
-    tools = list(BUILTIN_TOOLS) + wait_tools()
+    tools = list(BUILTIN_TOOLS) + wait_tools(lead=True)
     handlers = dict(BUILTIN_HANDLERS)
     handlers.update(pacing_handlers())
     policies: dict[str, str] = {}
@@ -3673,6 +3692,8 @@ def inject_background_notifications(messages: list):
 def call_llm(messages: list, context: dict, tools: list,
              state: RecoveryState, max_tokens: int):
     system = assemble_system_prompt(context)
+    if HOLD.enabled(HOLD.SAVE_TOOL_NAME):
+        LAST_LEAD.update(model=state.current_model, system=system, messages=list(messages), tools=tools)
     with TRACE.model_scope("lead"):
         return with_retry(
             lambda: client.messages.create(

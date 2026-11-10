@@ -23,8 +23,37 @@ gdrive:learn-claude-code-data/
   - `12_hw_utilization/data/{sessions.jsonl,conditions.json}`.
   - `02_input_redundancy/data/input_redundancy_runs.md`, read by `05_latency_breakdown/provider_probe.py`.
 
+Also ignored, `*.md` and `*.svg` files included: Harbor job trees (`research/*/data/jobs/`), and each topic's
+`home/` (the eval container's HOME with Docker/Harbor state) and `vendor/` (the pinned s15 snapshot the runs
+mounted).
+
 A new topic needs no change. If a new script reads a file from `data/` as input, add a `!` line for it in
 `.gitignore`.
+
+## Harbor job trees of topics 22-23: archives, not the mirror
+
+`22_wait_bench/data/jobs/` and `23_efficiency_tools/data/jobs/` hold about 97k files (11 GB). At about 1.2
+files per second, a file-by-file push would take about a day, so they are on Drive as one `.tar.zst` per
+job, like `16_epic_harness/harness_eval`. The rest of those topics' `data/` is in the mirror as usual. Pushed
+2026-11-09:
+
+```
+gdrive:learn-claude-code-data/research/<topic>/archives/
+  jobs/<job>.tar.zst      data/jobs/<job>/ (paths inside: jobs/<job>/...)
+  vendor.tar.zst          vendor/ (paths inside: vendor/...)
+  MANIFEST.tsv            entries, raw and packed bytes and sha256 of each archive
+  README.txt
+```
+
+Restore one job, from `research/<topic>/data`:
+
+```
+rclone copy gdrive:learn-claude-code-data/research/<topic>/archives/jobs/<job>.tar.zst .
+zstd -dc <job>.tar.zst | tar -x && rm <job>.tar.zst
+```
+
+`drive_data.py status 22 23` lists the unpacked `jobs/` files as "only local". Don't run `drive_data.py push`
+on 22 or 23 unless you want the file-by-file copy too (about a day).
 
 ## Syncing
 
