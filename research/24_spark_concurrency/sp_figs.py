@@ -99,7 +99,7 @@ def xaxis(ax, R):
 def by_model(ax, R, path, title, ylabel, unit="", scale=1.0, fmt="{:,.3g}", top=None):
     """One line per model over the number of users; the last point of each line is labelled."""
     x = np.arange(len(users(R)))
-    drawn, hi = 0, 0.0
+    drawn, hi, ends = 0, 0.0, []
     for v in variants(R):
         y = pivot(R, v, *path, scale=scale)
         if not has(y):
@@ -107,11 +107,18 @@ def by_model(ax, R, path, title, ylabel, unit="", scale=1.0, fmt="{:,.3g}", top=
         ax.plot(x, y, color=VCOL[v], lw=2, marker="o", ms=8, mec=SURFACE, mew=2, label=VNAME[v],
                 solid_capstyle="round", solid_joinstyle="round", zorder=3)
         j = np.where(np.isfinite(y))[0][-1]
-        ax.annotate(fmt.format(y[j]) + unit, (x[j], y[j]), xytext=(8, 0), textcoords="offset points", va="center",
-                    fontsize=9, color=INK2)
+        ends.append([x[j], y[j], fmt.format(y[j]) + unit])
         hi = max(hi, float(np.nanmax(y)))
         drawn += 1
     headroom(ax, top or hi)
+    # end labels, moved apart when the lines end close together (the marker stays where the value is)
+    gap = 0.065 * ax.get_ylim()[1]
+    ends.sort(key=lambda e: e[1])
+    ypos = [e[1] for e in ends]
+    for i in range(1, len(ypos)):
+        ypos[i] = max(ypos[i], ypos[i - 1] + gap)
+    for (xe, ye, text), yl in zip(ends, ypos):
+        ax.annotate(text, (xe, ye), xytext=(xe + 0.13, yl), textcoords="data", va="center", fontsize=9, color=INK2)
     ax._sp_legend = min(drawn, 3) if drawn >= 2 else 0
     ax.set_title(title)
     ax.set_ylabel(ylabel)
@@ -126,7 +133,8 @@ def legend_above(ax, ncols):
     n = len(ax.get_legend_handles_labels()[0])
     ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncols=ncols, handlelength=1.4, borderaxespad=0.1,
               columnspacing=1.2)
-    ax.set_title(ax.get_title(loc="left"), pad=24 + 14 * ((n - 1) // max(ncols, 1)))
+    ax._sp_pad = 24 + 14 * ((n - 1) // max(ncols, 1))
+    ax.set_title(ax.get_title(loc="left"), pad=ax._sp_pad)
 
 
 def headroom(ax, top):
@@ -166,9 +174,14 @@ def panels(R, rows=1, h=3.9, sharey=True):
 
 def save(fig, name: str, note: str | None = None):
     FIGS.mkdir(parents=True, exist_ok=True)
+    pads = []
     for ax in fig.axes:
         if getattr(ax, "_sp_legend", 0):
             legend_above(ax, ax._sp_legend)
+            pads.append(ax.title.get_position()[1] and ax._sp_pad)
+    for ax in fig.axes:                      # panels without a legend get the same title height as those with one
+        if pads and not getattr(ax, "_sp_legend", 0) and not getattr(ax, "_sp_fixed_pad", False) and ax.get_title(loc="left"):
+            ax.set_title(ax.get_title(loc="left"), pad=max(pads))
     if note:
         fig.text(0.01, -0.03, note, fontsize=8, color=MUTED, ha="left", va="top")
     fig.savefig(FIGS / name, format="svg", bbox_inches="tight")
@@ -180,9 +193,9 @@ def save(fig, name: str, note: str | None = None):
 
 # ---------------------------------------------------------------------------------------------------------------------
 def fig1(R):
-    fig, (a, b, c) = plt.subplots(1, 3, figsize=(14, 3.9), gridspec_kw={"wspace": 0.3})
-    by_model(a, R, ("throughput", "steady", "output_tok_s"), "Output tokens/s, all users, steady period", "tokens/s")
-    by_model(b, R, ("throughput", "per_user_decode_tok_s"), "Decode speed one user sees (1 / TPOT p50)",
+    fig, (a, b, c) = plt.subplots(1, 3, figsize=(14.5, 3.9), gridspec_kw={"wspace": 0.32})
+    by_model(a, R, ("throughput", "steady", "output_tok_s"), "Output tokens/s, all users (steady)", "tokens/s")
+    by_model(b, R, ("throughput", "per_user_decode_tok_s"), "Decode speed per user (1 / TPOT p50)",
              "tokens/s per user")
     by_model(c, R, ("latency", "all", "tpot_ms", "p50"), "TPOT, p50", "ms", unit=" ms", fmt="{:,.0f}")
     save(fig, "fig1_throughput.svg")
@@ -298,6 +311,7 @@ def fig5(R):
                 c.text(j, i, f"{M[i, j] * 100:.0f}", ha="center", va="center", fontsize=8,
                        color="#ffffff" if M[i, j] > 0.55 else INK)
     c.set_title("Busy share of each core, % (shown from 30%)", pad=22)
+    c._sp_fixed_pad = True
     c.set_xlabel("core")
     fig.colorbar(im, ax=c, fraction=0.02, pad=0.01).outline.set_visible(False)
     save(fig, "fig5_cpu.svg")

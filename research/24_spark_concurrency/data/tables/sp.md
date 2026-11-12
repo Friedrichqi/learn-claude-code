@@ -11,8 +11,12 @@ Models: `bf16` = BF16 (`Qwen/Qwen3.8-27B`); `fp8` = FP8 (`Qwen/Qwen3.8-27B-FP8`)
 | bf16 | 1 | 51.25 | 53.79 | 50.13 | 36G | 566,472 | 295.30 |
 | fp8 | 1 | 26.93 | 29.47 | 27.55 | 56G | 881,346 | 163.52 |
 | nvfp4 | 1 | 19.10 | 21.65 | 20.35 | 63G | 991,326 | 117.87 |
+| bf16 | 2 | 51.25 | 53.79 | 50.13 | 36G | 566,472 | 322.14 |
+| fp8 | 2 | 26.93 | 29.47 | 27.55 | 56G | 881,346 | 211.28 |
+| nvfp4 | 2 | 19.10 | 21.65 | 20.35 | 63G | 991,326 | 139.79 |
 | bf16 | 4 | 51.25 | 53.79 | 50.13 | 36G | 566,472 | 313.19 |
 | fp8 | 4 | 26.93 | 29.47 | 27.55 | 56G | 881,346 | 175.42 |
+| nvfp4 | 4 | 19.10 | 21.65 | 20.35 | 63G | 991,326 | 118.84 |
 | bf16 | 8 | 51.25 | 53.79 | 50.13 | 36G | 566,472 | 296.11 |
 | fp8 | 8 | 26.93 | 29.47 | 27.55 | 56G | 881,346 | 191.46 |
 | nvfp4 | 8 | 19.10 | 21.65 | 20.35 | 63G | 991,326 | 117.94 |
@@ -24,8 +28,12 @@ Models: `bf16` = BF16 (`Qwen/Qwen3.8-27B`); `fp8` = FP8 (`Qwen/Qwen3.8-27B-FP8`)
 | bf16 | 1 | 3.67 | 4.0 | 19 | 218.6 | 16.50 | 237 | 14,166 | 33% | 0% | 5% |
 | fp8 | 1 | 4.00 | 6.9 | 35 | 120.8 | 6.54 | 136 | 10,639 | 40% | 0% | 3% |
 | nvfp4 | 1 | 2.84 | 9.2 | 58 | 100.0 | 9.86 | 99 | 12,374 | 34% | 0% | 3% |
+| bf16 | 2 | 3.67 | 7.6 | 45 | 175.8 | 10.58 | 244 | 8,692 | 45% | 0% | 7% |
+| fp8 | 2 | 3.84 | 12.4 | 52 | 163.1 | 10.20 | 141 | 12,583 | 46% | 0% | 7% |
+| nvfp4 | 2 | 4.00 | 16.1 | 72 | 161.9 | 11.16 | 110 | 12,365 | 42% | 0% | 6% |
 | bf16 | 4 | 4.00 | 13.4 | 74 | 200.9 | 10.70 | 262 | 8,373 | 51% | 1% | 15% |
 | fp8 | 4 | 4.00 | 22.1 | 129 | 141.9 | 7.20 | 160 | 8,177 | 51% | 0% | 9% |
+| nvfp4 | 4 | 3.01 | 27.9 | 143 | 129.1 | 5.53 | 124 | 8,397 | 49% | 0% | 9% |
 | bf16 | 8 | 4.00 | 22.3 | 122 | 234.8 | 11.55 | 296 | 7,454 | 53% | 4% | 28% |
 | fp8 | 8 | 2.17 | 33.9 | 259 | 117.4 | 6.32 | 192 | 6,563 | 54% | 0% | 16% |
 | nvfp4 | 8 | 4.00 | 39.1 | 231 | 112.3 | 6.86 | 157 | 8,806 | 51% | 1% | 17% |
@@ -37,8 +45,12 @@ Models: `bf16` = BF16 (`Qwen/Qwen3.8-27B`); `fp8` = FP8 (`Qwen/Qwen3.8-27B-FP8`)
 | bf16 | 1 | 225.1 (82%) | 220.5 / 2.9 | 0.8 | 2.01 | 4.7 | 5.0 | 6.8 | 47.6 | 11.94 | 1.35 | 36.8 | 24.2 |
 | fp8 | 1 | 209.6 (77%) | 204.5 / 3.3 | 0.9 | 2.03 | 8.1 | – | 3.9 | 41.6 | 5.96 | 1.39 | 34.5 | 26.5 |
 | nvfp4 | 1 | 210.6 (77%) | 201.2 / 7.4 | 1.0 | 2.14 | 11.2 | – | 3.7 | 45.0 | 4.84 | 1.45 | 28.3 | 24.7 |
+| bf16 | 2 | 222.7 (82%) | 216.7 / 4.2 | 0.9 | 2.14 | 8.7 | 9.8 | 3.0 | 44.4 | 5.82 | 1.41 | 32.1 | 23.2 |
+| fp8 | 2 | 211.2 (77%) | 203.7 / 5.8 | 0.9 | 2.16 | 11.2 | – | 4.4 | 45.2 | 3.61 | 1.44 | 34.7 | 26.4 |
+| nvfp4 | 2 | 209.7 (77%) | 198.3 / 9.5 | 0.9 | 2.15 | 12.1 | – | 3.8 | 46.5 | 2.86 | 1.48 | 33.7 | 27.1 |
 | bf16 | 4 | 221.4 (81%) | 212.6 / 6.8 | 0.9 | 2.17 | 12.3 | 14.0 | 3.5 | 48.4 | 3.58 | 1.54 | 27.6 | 23.0 |
 | fp8 | 4 | 210.1 (77%) | 198.4 / 9.6 | 1.0 | 2.08 | 13.8 | – | 5.3 | 49.2 | 2.21 | 1.62 | 25.9 | 24.6 |
+| nvfp4 | 4 | 211.8 (78%) | 195.9 / 13.1 | 1.3 | 2.02 | 13.6 | – | 4.5 | 49.4 | 1.75 | 1.92 | 25.0 | 19.8 |
 | bf16 | 8 | 218.6 (80%) | 206.0 / 10.5 | 1.0 | 2.19 | 16.6 | 18.9 | 3.6 | 59.5 | 2.64 | 1.63 | 26.5 | 21.1 |
 | fp8 | 8 | 208.2 (76%) | 190.6 / 15.3 | 1.0 | 2.07 | 18.7 | – | 6.8 | 57.0 | 1.67 | 1.76 | 20.3 | 25.8 |
 | nvfp4 | 8 | 209.4 (77%) | 187.9 / 19.2 | 1.1 | 2.05 | 18.3 | – | 5.7 | 57.1 | 1.45 | 1.79 | 26.2 | 17.4 |
@@ -55,10 +67,18 @@ append = at least 80% of the active sessions not yet trimmed; steady = from the 
 | fp8 | 1 | steady | 11095 | 6.8 | 133 | 84.0 | 12.96 | 137 | 12,126 | 3% | 203.1 | 208.6 | 8.9 | – | 42.5 |
 | nvfp4 | 1 | append | 4400 | 10.3 | 29 | 74.0 | 0.80 | 95 | 1,404 | 2% | 210.4 | 217.0 | 7.6 | – | 40.8 |
 | nvfp4 | 1 | steady | 8584 | 9.0 | 233 | 136.9 | 21.48 | 105 | 13,925 | 3% | 199.4 | 209.4 | 11.9 | – | 45.5 |
+| bf16 | 2 | append | 6519 | 8.2 | 19 | 187.8 | 2.01 | 240 | 1,593 | 6% | 222.2 | 226.0 | 4.3 | 4.9 | 39.9 |
+| bf16 | 2 | steady | 10406 | 7.4 | 135 | 188.7 | 17.41 | 246 | 10,510 | 7% | 215.2 | 221.8 | 9.9 | 11.2 | 45.5 |
+| fp8 | 2 | append | 6863 | 13.8 | 24 | 186.1 | 1.61 | 138 | 1,983 | 6% | 212.6 | 217.3 | 6.7 | – | 39.6 |
+| fp8 | 2 | steady | 12080 | 12.1 | 204 | 210.2 | 18.20 | 149 | 14,699 | 7% | 202.5 | 210.5 | 11.9 | – | 45.8 |
+| nvfp4 | 2 | append | 3401 | 19.0 | 41 | 76.5 | 1.04 | 103 | 1,511 | 4% | 208.1 | 216.1 | 7.4 | – | 40.8 |
+| nvfp4 | 2 | steady | 13218 | 15.8 | 267 | 227.7 | 19.28 | 123 | 13,824 | 6% | 197.5 | 209.1 | 12.5 | – | 46.9 |
 | bf16 | 4 | append | 3835 | 15.6 | 35 | 136.4 | 1.83 | 253 | 1,464 | 10% | 219.6 | 225.0 | 5.2 | 6.0 | 41.3 |
 | bf16 | 4 | steady | 11681 | 13.0 | 197 | 274.9 | 22.30 | 290 | 10,735 | 16% | 211.4 | 220.7 | 13.5 | 15.3 | 49.6 |
 | fp8 | 4 | append | 1441 | 27.2 | 52 | 148.2 | 1.58 | 151 | 1,390 | 5% | 208.7 | 216.3 | 7.1 | – | 41.3 |
 | fp8 | 4 | steady | 11138 | 21.1 | 357 | 109.4 | 12.49 | 173 | 8,999 | 9% | 195.4 | 208.3 | 15.5 | – | 51.3 |
+| nvfp4 | 4 | append | 969 | 35.6 | 86 | 76.9 | 1.20 | 112 | 1,405 | 5% | 204.7 | 216.5 | 8.2 | – | 43.3 |
+| nvfp4 | 4 | steady | 9770 | 27.1 | 363 | 185.0 | 9.52 | 133 | 9,518 | 9% | 195.0 | 211.3 | 14.2 | – | 50.0 |
 | bf16 | 8 | append | 2623 | 27.2 | 108 | 208.6 | 3.04 | 282 | 2,010 | 19% | 213.4 | 223.2 | 9.2 | 10.6 | 53.3 |
 | bf16 | 8 | steady | 11097 | 20.8 | 298 | 298.9 | 21.69 | 342 | 10,029 | 31% | 203.6 | 217.2 | 18.8 | 21.5 | 60.8 |
 | fp8 | 8 | append | 945 | 47.5 | 146 | 116.3 | 1.76 | 170 | 1,329 | 9% | 203.4 | 216.8 | 9.8 | – | 45.6 |
@@ -78,10 +98,18 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | fp8 | 1 | snip | 18 | 85.2 | 13.89 | 13.15 | 13.11 | 72.1 | 137 | 25,440 | 6% |
 | nvfp4 | 1 | append | 22 | 74.0 | 0.61 | 0.80 | 0.79 | 73.2 | 95 | 1,404 | 87% |
 | nvfp4 | 1 | snip | 18 | 131.7 | 22.21 | 20.93 | 20.89 | 110.7 | 105 | 25,864 | 10% |
+| bf16 | 2 | append | 43 | 187.8 | 1.65 | 2.01 | 1.79 | 185.8 | 240 | 1,593 | 87% |
+| bf16 | 2 | snip | 37 | 161.9 | 18.78 | 20.54 | 20.37 | 141.4 | 246 | 19,181 | 10% |
+| fp8 | 2 | append | 43 | 186.1 | 1.05 | 1.61 | 1.47 | 184.4 | 138 | 1,983 | 89% |
+| fp8 | 2 | snip | 28 | 127.8 | 21.68 | 23.39 | 23.20 | 104.4 | 147 | 29,161 | 7% |
+| nvfp4 | 2 | append | 44 | 76.5 | 0.88 | 1.04 | 0.88 | 75.5 | 103 | 1,511 | 89% |
+| nvfp4 | 2 | snip | 36 | 266.3 | 23.83 | 23.53 | 22.77 | 242.7 | 123 | 29,422 | 11% |
 | bf16 | 4 | append | 87 | 136.4 | 1.41 | 1.83 | 1.59 | 134.5 | 253 | 1,464 | 89% |
 | bf16 | 4 | snip | 58 | 297.7 | 22.30 | 24.00 | 23.42 | 273.7 | 290 | 24,340 | 9% |
 | fp8 | 4 | append | 87 | 148.2 | 0.95 | 1.58 | 1.23 | 146.6 | 151 | 1,390 | 89% |
 | fp8 | 4 | snip | 62 | 133.2 | 14.71 | 15.09 | 14.07 | 118.1 | 169 | 20,702 | 11% |
+| nvfp4 | 4 | append | 85 | 76.9 | 0.82 | 1.20 | 0.91 | 75.7 | 112 | 1,405 | 89% |
+| nvfp4 | 4 | snip | 51 | 216.0 | 13.11 | 12.74 | 12.24 | 203.3 | 134 | 20,848 | 12% |
 | bf16 | 8 | append | 175 | 208.6 | 1.68 | 3.04 | 2.53 | 205.5 | 282 | 2,010 | 84% |
 | bf16 | 8 | snip | 126 | 271.1 | 20.03 | 23.38 | 21.75 | 247.7 | 331 | 21,202 | 10% |
 | fp8 | 8 | append | 174 | 116.3 | 1.18 | 1.76 | 1.29 | 114.5 | 170 | 1,329 | 89% |
@@ -96,8 +124,12 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | bf16 | 1 | 0.01 | 0.10 | 0.01 | 0.00 | 0.00 | 0.00 | 1.19 | 0.03 |
 | fp8 | 1 | 0.02 | 0.11 | 0.01 | 0.00 | 0.00 | 0.00 | 1.21 | 0.04 |
 | nvfp4 | 1 | 0.02 | 0.15 | 0.01 | 0.00 | 0.00 | 0.00 | 1.25 | 0.03 |
+| bf16 | 2 | 0.01 | 0.13 | 0.01 | 0.00 | 0.00 | 0.00 | 1.22 | 0.04 |
+| fp8 | 2 | 0.02 | 0.16 | 0.01 | 0.00 | 0.00 | 0.00 | 1.26 | -0.01 |
+| nvfp4 | 2 | 0.02 | 0.18 | 0.01 | 0.00 | 0.00 | 0.00 | 1.29 | -0.02 |
 | bf16 | 4 | 0.01 | 0.19 | 0.01 | 0.00 | 0.00 | 0.00 | 1.29 | 0.04 |
 | fp8 | 4 | 0.02 | 0.22 | 0.01 | 0.00 | 0.01 | 0.01 | 1.32 | 0.04 |
+| nvfp4 | 4 | 0.02 | 0.22 | 0.01 | 0.00 | 0.00 | 0.01 | 1.32 | 0.35 |
 | bf16 | 8 | 0.01 | 0.28 | 0.01 | 0.00 | 0.01 | 0.01 | 1.37 | -0.05 |
 | fp8 | 8 | 0.02 | 0.34 | 0.01 | 0.00 | 0.01 | 0.01 | 1.45 | -0.08 |
 | nvfp4 | 8 | 0.02 | 0.37 | 0.01 | 0.00 | 0.02 | 0.01 | 1.48 | -0.12 |
@@ -109,8 +141,12 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | bf16 | 1 | 52255 | 1.0 | 29,353 | 216.9 | 1.3 | 8.2 | 226.4 | 227.3 | 1.00 |
 | fp8 | 1 | 99460 | 1.0 | 22,636 | 195.5 | 2.2 | 10.9 | 208.7 | 211.7 | 1.01 |
 | nvfp4 | 1 | 94195 | 1.0 | 24,784 | 194.1 | 3.1 | 16.5 | 213.7 | 216.4 | 1.01 |
+| bf16 | 2 | 49697 | 1.9 | 36,816 | 210.1 | 2.5 | 9.9 | 222.5 | 224.8 | 1.01 |
+| fp8 | 2 | 85539 | 2.0 | 54,873 | 185.9 | 4.2 | 24.8 | 215.0 | 216.3 | 1.01 |
+| nvfp4 | 2 | 116430 | 2.0 | 55,000 | 174.6 | 5.5 | 32.9 | 213.1 | 216.0 | 1.01 |
 | bf16 | 4 | 47258 | 3.8 | 78,952 | 197.4 | 4.5 | 20.0 | 221.9 | 224.4 | 1.01 |
 | fp8 | 4 | 78100 | 3.9 | 73,359 | 174.8 | 7.8 | 31.2 | 213.9 | 215.9 | 1.01 |
+| nvfp4 | 4 | 75889 | 3.8 | 81,023 | 157.2 | 9.7 | 44.0 | 210.9 | 216.7 | 1.03 |
 | bf16 | 8 | 37961 | 7.8 | 148,161 | 178.1 | 8.4 | 33.7 | 220.2 | 223.6 | 1.02 |
 | fp8 | 8 | 31164 | 7.8 | 127,303 | 152.7 | 13.6 | 47.3 | 213.6 | 217.8 | 1.02 |
 | nvfp4 | 8 | 66063 | 7.7 | 158,757 | 128.4 | 16.0 | 69.9 | 214.4 | 220.3 | 1.03 |
@@ -122,8 +158,12 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | bf16 | 1 | stable 4/3.55/4 | NOT stable 0.0735/0.0508/0.0487 | stable 223/212/221 |
 | fp8 | 1 | stable 6.75/6.78/6.83 | NOT stable 0.0223/0.0346/0.0281 | stable 201/204/204 |
 | nvfp4 | 1 | stable 8.42/9.3/9.37 | NOT stable 0.0395/0.0194/0.0256 | stable 195/200/203 |
+| bf16 | 2 | stable 7.13/7.38/7.64 | NOT stable 0.0859/0.0614/0.0759 | stable 213/214/218 |
+| fp8 | 2 | NOT stable 13/10.8/12.5 | NOT stable 0.071/0.0816/0.0575 | stable 209/195/204 |
+| nvfp4 | 2 | stable 15/16/16.5 | NOT stable 0.0872/0.0533/0.0445 | stable 199/195/198 |
 | bf16 | 4 | NOT stable 13.1/11.4/14.5 | NOT stable 0.171/0.207/0.105 | stable 213/207/215 |
 | fp8 | 4 | stable 20.1/20.5/22.6 | NOT stable 0.1/0.0976/0.0723 | stable 194/195/197 |
+| nvfp4 | 4 | stable 25.7/29.4/26.2 | NOT stable 0.109/0.089/0.0795 | stable 194/199/192 |
 | bf16 | 8 | stable 19.4/21.5/21.6 | stable 0.323/0.278/0.315 | stable 201/204/206 |
 | fp8 | 8 | stable 30.4/32.3/30.9 | NOT stable 0.178/0.141/0.169 | stable 188/188/187 |
 | nvfp4 | 8 | stable 35.6/40.2/35.2 | NOT stable 0.17/0.162/0.195 | stable 182/189/186 |
@@ -155,29 +195,52 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | 1 | GPU kJ per 1k output tokens | 11.94 | 5.96 | 4.84 | 0.50 | 0.41 |
 | 1 | busy CPU cores | 1.35 | 1.39 | 1.45 | 1.03 | 1.08 |
 | 1 | MemAvailable min GiB | 24.2 | 26.5 | 24.7 | 1.09 | 1.02 |
-| 4 | output tok/s (steady) | 13.0 | 21.1 | – | 1.62 | – |
-| 4 | output tok/s (whole window) | 13.4 | 22.1 | – | 1.65 | – |
-| 4 | decode tok/s per user (1 / TPOT p50) | 3.81 | 6.26 | – | 1.64 | – |
-| 4 | TPOT p50 ms | 262 | 160 | – | 0.61 | – |
-| 4 | TTFT mean s | 10.70 | 7.20 | – | 0.67 | – |
-| 4 | call latency mean s | 200.9 | 141.9 | – | 0.71 | – |
-| 4 | output tokens per call | 624 | 613 | – | 0.98 | – |
-| 4 | prompt tokens recomputed per call | 8,373 | 8,177 | – | 0.98 | – |
-| 4 | KV pool pinned | 0.151 | 0.089 | – | 0.59 | – |
-| 4 | cache loss share | 0.005 | 0.000 | – | 0.00 | – |
-| 4 | weights read per step GB | 51.25 | 26.93 | – | 0.53 | – |
-| 4 | GPU read GB/s | 212.6 | 198.4 | – | 0.93 | – |
-| 4 | GPU read GB/s, decode-only seconds | 222.0 | 211.9 | – | 0.95 | – |
-| 4 | DRAM total GB/s | 221.4 | 210.1 | – | 0.95 | – |
-| 4 | DRAM GB per output token | 16.54 | 9.52 | – | 0.58 | – |
-| 4 | memory latency x idle | 2.17 | 2.08 | – | 0.96 | – |
-| 4 | tensor active % | 12.3 | 13.8 | – | 1.12 | – |
-| 4 | tensor instructions/s (1e9) | 3.47 | 3.87 | – | 1.12 | – |
-| 4 | workload TFLOPS (linear layers) | 9.6 | 16.2 | – | 1.68 | – |
-| 4 | GPU W | 48.4 | 49.2 | – | 1.02 | – |
-| 4 | GPU kJ per 1k output tokens | 3.58 | 2.21 | – | 0.62 | – |
-| 4 | busy CPU cores | 1.54 | 1.62 | – | 1.05 | – |
-| 4 | MemAvailable min GiB | 23.0 | 24.6 | – | 1.07 | – |
+| 2 | output tok/s (steady) | 7.4 | 12.1 | 15.8 | 1.64 | 2.14 |
+| 2 | output tok/s (whole window) | 7.6 | 12.4 | 16.1 | 1.64 | 2.13 |
+| 2 | decode tok/s per user (1 / TPOT p50) | 4.10 | 7.09 | 9.05 | 1.73 | 2.21 |
+| 2 | TPOT p50 ms | 244 | 141 | 110 | 0.58 | 0.45 |
+| 2 | TTFT mean s | 10.58 | 10.20 | 11.16 | 0.96 | 1.05 |
+| 2 | call latency mean s | 175.8 | 163.1 | 161.9 | 0.93 | 0.92 |
+| 2 | output tokens per call | 587 | 851 | 805 | 1.45 | 1.37 |
+| 2 | prompt tokens recomputed per call | 8,692 | 12,583 | 12,365 | 1.45 | 1.42 |
+| 2 | KV pool pinned | 0.071 | 0.065 | 0.059 | 0.93 | 0.83 |
+| 2 | cache loss share | 0.000 | 0.000 | 0.000 | – | – |
+| 2 | weights read per step GB | 51.25 | 26.93 | 19.10 | 0.53 | 0.37 |
+| 2 | GPU read GB/s | 216.7 | 203.7 | 198.3 | 0.94 | 0.92 |
+| 2 | GPU read GB/s, decode-only seconds | 223.6 | 214.2 | 211.4 | 0.96 | 0.95 |
+| 2 | DRAM total GB/s | 222.7 | 211.2 | 209.7 | 0.95 | 0.94 |
+| 2 | DRAM GB per output token | 29.47 | 17.03 | 13.00 | 0.58 | 0.44 |
+| 2 | memory latency x idle | 2.14 | 2.16 | 2.15 | 1.01 | 1.01 |
+| 2 | tensor active % | 8.7 | 11.2 | 12.1 | 1.29 | 1.39 |
+| 2 | tensor instructions/s (1e9) | 2.44 | 3.15 | 3.42 | 1.29 | 1.40 |
+| 2 | workload TFLOPS (linear layers) | 6.0 | 10.0 | 13.6 | 1.65 | 2.25 |
+| 2 | GPU W | 44.4 | 45.2 | 46.5 | 1.02 | 1.05 |
+| 2 | GPU kJ per 1k output tokens | 5.82 | 3.61 | 2.86 | 0.62 | 0.49 |
+| 2 | busy CPU cores | 1.41 | 1.44 | 1.48 | 1.03 | 1.05 |
+| 2 | MemAvailable min GiB | 23.2 | 26.4 | 27.1 | 1.14 | 1.17 |
+| 4 | output tok/s (steady) | 13.0 | 21.1 | 27.1 | 1.62 | 2.09 |
+| 4 | output tok/s (whole window) | 13.4 | 22.1 | 27.9 | 1.65 | 2.08 |
+| 4 | decode tok/s per user (1 / TPOT p50) | 3.81 | 6.26 | 8.10 | 1.64 | 2.12 |
+| 4 | TPOT p50 ms | 262 | 160 | 124 | 0.61 | 0.47 |
+| 4 | TTFT mean s | 10.70 | 7.20 | 5.53 | 0.67 | 0.52 |
+| 4 | call latency mean s | 200.9 | 141.9 | 129.1 | 0.71 | 0.64 |
+| 4 | output tokens per call | 624 | 613 | 687 | 0.98 | 1.10 |
+| 4 | prompt tokens recomputed per call | 8,373 | 8,177 | 8,397 | 0.98 | 1.00 |
+| 4 | KV pool pinned | 0.151 | 0.089 | 0.088 | 0.59 | 0.58 |
+| 4 | cache loss share | 0.005 | 0.000 | 0.000 | 0.00 | 0.00 |
+| 4 | weights read per step GB | 51.25 | 26.93 | 19.10 | 0.53 | 0.37 |
+| 4 | GPU read GB/s | 212.6 | 198.4 | 195.9 | 0.93 | 0.92 |
+| 4 | GPU read GB/s, decode-only seconds | 222.0 | 211.9 | 210.0 | 0.95 | 0.95 |
+| 4 | DRAM total GB/s | 221.4 | 210.1 | 211.8 | 0.95 | 0.96 |
+| 4 | DRAM GB per output token | 16.54 | 9.52 | 7.59 | 0.58 | 0.46 |
+| 4 | memory latency x idle | 2.17 | 2.08 | 2.02 | 0.96 | 0.93 |
+| 4 | tensor active % | 12.3 | 13.8 | 13.6 | 1.12 | 1.11 |
+| 4 | tensor instructions/s (1e9) | 3.47 | 3.87 | 3.85 | 1.12 | 1.11 |
+| 4 | workload TFLOPS (linear layers) | 9.6 | 16.2 | 18.7 | 1.68 | 1.95 |
+| 4 | GPU W | 48.4 | 49.2 | 49.4 | 1.02 | 1.02 |
+| 4 | GPU kJ per 1k output tokens | 3.58 | 2.21 | 1.75 | 0.62 | 0.49 |
+| 4 | busy CPU cores | 1.54 | 1.62 | 1.92 | 1.05 | 1.25 |
+| 4 | MemAvailable min GiB | 23.0 | 24.6 | 19.8 | 1.07 | 0.86 |
 | 8 | output tok/s (steady) | 20.8 | 31.2 | 37.0 | 1.50 | 1.78 |
 | 8 | output tok/s (whole window) | 22.3 | 33.9 | 39.1 | 1.52 | 1.75 |
 | 8 | decode tok/s per user (1 / TPOT p50) | 3.38 | 5.20 | 6.36 | 1.54 | 1.88 |
@@ -206,7 +269,7 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 
 | model | N | cell | gate | value | need | ok |
 |---|---|---|---|---|---|---|
-| bf16 | 1 | bf16_n01 | calls_cut_at_teardown | 1 | calls in flight at teardown <= 2N | yes |
+| bf16 | 1 | bf16_n01 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
 | bf16 | 1 | bf16_n01 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
 | bf16 | 1 | bf16_n01 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
 | bf16 | 1 | bf16_n01 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |
@@ -224,7 +287,7 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | bf16 | 1 | bf16_n01 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
 | bf16 | 1 | bf16_n01 | preemptions | 0 | no preempted requests | yes |
 | bf16 | 1 | bf16_n01 | hw_counters | True | root counter sampler ran for the cell | yes |
-| fp8 | 1 | fp8_n01 | calls_cut_at_teardown | 2 | calls in flight at teardown <= 2N | yes |
+| fp8 | 1 | fp8_n01 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
 | fp8 | 1 | fp8_n01 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
 | fp8 | 1 | fp8_n01 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
 | fp8 | 1 | fp8_n01 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |
@@ -242,7 +305,7 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | fp8 | 1 | fp8_n01 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
 | fp8 | 1 | fp8_n01 | preemptions | 0 | no preempted requests | yes |
 | fp8 | 1 | fp8_n01 | hw_counters | True | root counter sampler ran for the cell | yes |
-| nvfp4 | 1 | nvfp4_n01 | calls_cut_at_teardown | 3 | calls in flight at teardown <= 2N | **NO** |
+| nvfp4 | 1 | nvfp4_n01 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
 | nvfp4 | 1 | nvfp4_n01 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
 | nvfp4 | 1 | nvfp4_n01 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
 | nvfp4 | 1 | nvfp4_n01 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |
@@ -260,6 +323,60 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | nvfp4 | 1 | nvfp4_n01 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
 | nvfp4 | 1 | nvfp4_n01 | preemptions | 0 | no preempted requests | yes |
 | nvfp4 | 1 | nvfp4_n01 | hw_counters | True | root counter sampler ran for the cell | yes |
+| bf16 | 2 | bf16_n02 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
+| bf16 | 2 | bf16_n02 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
+| bf16 | 2 | bf16_n02 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
+| bf16 | 2 | bf16_n02 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |
+| bf16 | 2 | bf16_n02 | client_ge_server | 0 | calls where client latency < server e2e = 0 | yes |
+| bf16 | 2 | bf16_n02 | phases_within_e2e | 0 | requests with queue+prefill+decode > e2e = 0 | yes |
+| bf16 | 2 | bf16_n02 | counter_generation_tokens | 1.0 | plugin total / vLLM counter within 1% | yes |
+| bf16 | 2 | bf16_n02 | counter_computed_prompt_tokens | 1.0 | plugin total / vLLM counter within 1% | yes |
+| bf16 | 2 | bf16_n02 | counter_requests | 1.0 | plugin total / vLLM counter within 1% | yes |
+| bf16 | 2 | bf16_n02 | tokens_of_unfinished_requests | 2904 | step tokens minus finished requests' tokens: >= 0 and small | yes |
+| bf16 | 2 | bf16_n02 | sampler_hz | 10.0 | 10 Hz sampler >= 9 Hz | yes |
+| bf16 | 2 | bf16_n02 | extra_hz | 1.0 | 1 Hz sampler >= 0.9 Hz | yes |
+| bf16 | 2 | bf16_n02 | probe_coverage | 1.0 | probe windows cover >= 90% of the window | yes |
+| bf16 | 2 | bf16_n02 | cell_done | stable | stop reason is done, hard_limit or stable | yes |
+| bf16 | 2 | bf16_n02 | mem_available_min_gib | 23.2 | MemAvailable never below 4 GiB | yes |
+| bf16 | 2 | bf16_n02 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
+| bf16 | 2 | bf16_n02 | preemptions | 0 | no preempted requests | yes |
+| bf16 | 2 | bf16_n02 | hw_counters | True | root counter sampler ran for the cell | yes |
+| fp8 | 2 | fp8_n02 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
+| fp8 | 2 | fp8_n02 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
+| fp8 | 2 | fp8_n02 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
+| fp8 | 2 | fp8_n02 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |
+| fp8 | 2 | fp8_n02 | client_ge_server | 0 | calls where client latency < server e2e = 0 | yes |
+| fp8 | 2 | fp8_n02 | phases_within_e2e | 0 | requests with queue+prefill+decode > e2e = 0 | yes |
+| fp8 | 2 | fp8_n02 | counter_generation_tokens | 1.0 | plugin total / vLLM counter within 1% | yes |
+| fp8 | 2 | fp8_n02 | counter_computed_prompt_tokens | 1.0 | plugin total / vLLM counter within 1% | yes |
+| fp8 | 2 | fp8_n02 | counter_requests | 1.0 | plugin total / vLLM counter within 1% | yes |
+| fp8 | 2 | fp8_n02 | tokens_of_unfinished_requests | 1898 | step tokens minus finished requests' tokens: >= 0 and small | yes |
+| fp8 | 2 | fp8_n02 | sampler_hz | 10.0 | 10 Hz sampler >= 9 Hz | yes |
+| fp8 | 2 | fp8_n02 | extra_hz | 1.0 | 1 Hz sampler >= 0.9 Hz | yes |
+| fp8 | 2 | fp8_n02 | probe_coverage | 1.0 | probe windows cover >= 90% of the window | yes |
+| fp8 | 2 | fp8_n02 | cell_done | stable | stop reason is done, hard_limit or stable | yes |
+| fp8 | 2 | fp8_n02 | mem_available_min_gib | 26.4 | MemAvailable never below 4 GiB | yes |
+| fp8 | 2 | fp8_n02 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
+| fp8 | 2 | fp8_n02 | preemptions | 0 | no preempted requests | yes |
+| fp8 | 2 | fp8_n02 | hw_counters | True | root counter sampler ran for the cell | yes |
+| nvfp4 | 2 | nvfp4_n02 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
+| nvfp4 | 2 | nvfp4_n02 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
+| nvfp4 | 2 | nvfp4_n02 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
+| nvfp4 | 2 | nvfp4_n02 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |
+| nvfp4 | 2 | nvfp4_n02 | client_ge_server | 0 | calls where client latency < server e2e = 0 | yes |
+| nvfp4 | 2 | nvfp4_n02 | phases_within_e2e | 0 | requests with queue+prefill+decode > e2e = 0 | yes |
+| nvfp4 | 2 | nvfp4_n02 | counter_generation_tokens | 1.0 | plugin total / vLLM counter within 1% | yes |
+| nvfp4 | 2 | nvfp4_n02 | counter_computed_prompt_tokens | 1.0 | plugin total / vLLM counter within 1% | yes |
+| nvfp4 | 2 | nvfp4_n02 | counter_requests | 1.0 | plugin total / vLLM counter within 1% | yes |
+| nvfp4 | 2 | nvfp4_n02 | tokens_of_unfinished_requests | 343 | step tokens minus finished requests' tokens: >= 0 and small | yes |
+| nvfp4 | 2 | nvfp4_n02 | sampler_hz | 10.0 | 10 Hz sampler >= 9 Hz | yes |
+| nvfp4 | 2 | nvfp4_n02 | extra_hz | 1.0 | 1 Hz sampler >= 0.9 Hz | yes |
+| nvfp4 | 2 | nvfp4_n02 | probe_coverage | 1.0 | probe windows cover >= 90% of the window | yes |
+| nvfp4 | 2 | nvfp4_n02 | cell_done | hard_limit | stop reason is done, hard_limit or stable | yes |
+| nvfp4 | 2 | nvfp4_n02 | mem_available_min_gib | 27.1 | MemAvailable never below 4 GiB | yes |
+| nvfp4 | 2 | nvfp4_n02 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
+| nvfp4 | 2 | nvfp4_n02 | preemptions | 0 | no preempted requests | yes |
+| nvfp4 | 2 | nvfp4_n02 | hw_counters | True | root counter sampler ran for the cell | yes |
 | bf16 | 4 | bf16_n04 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
 | bf16 | 4 | bf16_n04 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
 | bf16 | 4 | bf16_n04 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
@@ -278,7 +395,7 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | bf16 | 4 | bf16_n04 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
 | bf16 | 4 | bf16_n04 | preemptions | 0 | no preempted requests | yes |
 | bf16 | 4 | bf16_n04 | hw_counters | True | root counter sampler ran for the cell | yes |
-| fp8 | 4 | fp8_n04 | calls_cut_at_teardown | 7 | calls in flight at teardown <= 2N | yes |
+| fp8 | 4 | fp8_n04 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
 | fp8 | 4 | fp8_n04 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
 | fp8 | 4 | fp8_n04 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
 | fp8 | 4 | fp8_n04 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |
@@ -296,7 +413,25 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | fp8 | 4 | fp8_n04 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
 | fp8 | 4 | fp8_n04 | preemptions | 0 | no preempted requests | yes |
 | fp8 | 4 | fp8_n04 | hw_counters | True | root counter sampler ran for the cell | yes |
-| bf16 | 8 | n08 | calls_cut_at_teardown | 4 | calls in flight at teardown <= 2N | yes |
+| nvfp4 | 4 | nvfp4_n04 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
+| nvfp4 | 4 | nvfp4_n04 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
+| nvfp4 | 4 | nvfp4_n04 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
+| nvfp4 | 4 | nvfp4_n04 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |
+| nvfp4 | 4 | nvfp4_n04 | client_ge_server | 0 | calls where client latency < server e2e = 0 | yes |
+| nvfp4 | 4 | nvfp4_n04 | phases_within_e2e | 0 | requests with queue+prefill+decode > e2e = 0 | yes |
+| nvfp4 | 4 | nvfp4_n04 | counter_generation_tokens | 1.0 | plugin total / vLLM counter within 1% | yes |
+| nvfp4 | 4 | nvfp4_n04 | counter_computed_prompt_tokens | 1.0 | plugin total / vLLM counter within 1% | yes |
+| nvfp4 | 4 | nvfp4_n04 | counter_requests | 1.0 | plugin total / vLLM counter within 1% | yes |
+| nvfp4 | 4 | nvfp4_n04 | tokens_of_unfinished_requests | 7695 | step tokens minus finished requests' tokens: >= 0 and small | yes |
+| nvfp4 | 4 | nvfp4_n04 | sampler_hz | 10.0 | 10 Hz sampler >= 9 Hz | yes |
+| nvfp4 | 4 | nvfp4_n04 | extra_hz | 1.0 | 1 Hz sampler >= 0.9 Hz | yes |
+| nvfp4 | 4 | nvfp4_n04 | probe_coverage | 1.0 | probe windows cover >= 90% of the window | yes |
+| nvfp4 | 4 | nvfp4_n04 | cell_done | stable | stop reason is done, hard_limit or stable | yes |
+| nvfp4 | 4 | nvfp4_n04 | mem_available_min_gib | 19.8 | MemAvailable never below 4 GiB | yes |
+| nvfp4 | 4 | nvfp4_n04 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
+| nvfp4 | 4 | nvfp4_n04 | preemptions | 0 | no preempted requests | yes |
+| nvfp4 | 4 | nvfp4_n04 | hw_counters | True | root counter sampler ran for the cell | yes |
+| bf16 | 8 | n08 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
 | bf16 | 8 | n08 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
 | bf16 | 8 | n08 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
 | bf16 | 8 | n08 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |
@@ -314,7 +449,7 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | bf16 | 8 | n08 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
 | bf16 | 8 | n08 | preemptions | 0 | no preempted requests | yes |
 | bf16 | 8 | n08 | hw_counters | True | root counter sampler ran for the cell | yes |
-| fp8 | 8 | fp8_n08 | calls_cut_at_teardown | 5 | calls in flight at teardown <= 2N | yes |
+| fp8 | 8 | fp8_n08 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
 | fp8 | 8 | fp8_n08 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
 | fp8 | 8 | fp8_n08 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
 | fp8 | 8 | fp8_n08 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |
@@ -332,7 +467,7 @@ append = before the session's first trim; snip = after it (the prompt changes ne
 | fp8 | 8 | fp8_n08 | swap_out_in_window_gib | 0.0 | swap use grew by < 0.25 GiB during the window | yes |
 | fp8 | 8 | fp8_n08 | preemptions | 0 | no preempted requests | yes |
 | fp8 | 8 | fp8_n08 | hw_counters | True | root counter sampler ran for the cell | yes |
-| nvfp4 | 8 | nvfp4_n08 | calls_cut_at_teardown | 11 | calls in flight at teardown <= 2N | yes |
+| nvfp4 | 8 | nvfp4_n08 | calls_cut_at_teardown | 0 | calls in flight at teardown <= 2N + 2 | yes |
 | nvfp4 | 8 | nvfp4_n08 | calls_joined | 1.0 | share of harness calls with a server record >= 0.99 | yes |
 | nvfp4 | 8 | nvfp4_n08 | output_tokens_match | 0 | calls whose output tokens differ = 0 | yes |
 | nvfp4 | 8 | nvfp4_n08 | prompt_tokens_match | 0 | calls whose prompt tokens differ = 0 | yes |

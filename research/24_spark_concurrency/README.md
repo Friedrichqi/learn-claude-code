@@ -1,8 +1,9 @@
 # Topic 24: Qwen3.8-27B on the DGX Spark at 1 to 8 concurrent agent users, in BF16, FP8 and NVFP4 (vLLM 0.32)
 
-> **Status:** part 2 chain running since 2026-11-10 18:05 (`sp_chain.py status`): 8 users done for all three
-> models; 1, 4 and 2 users to go.
-> Plans: [PLAN.md](PLAN.md) (part 1, BF16) and [PLAN2.md](PLAN2.md) (part 2, three precisions). Nothing committed.
+> **Status:** done 2026-11-12. 12 cells: BF16, FP8 and NVFP4 at 1, 2, 4 and 8 users; every data-quality gate
+> passes. Plans: [PLAN.md](PLAN.md) (part 1, BF16) and [PLAN2.md](PLAN2.md) (part 2, three precisions). Commit
+> 9f17514 holds a partial snapshot; everything after it (the 2-user cells, the final analysis, this writeup) is
+> not committed. `data/` is on this machine only (not yet mirrored to the Drive, see `research/DATA.md`).
 > vLLM 0.32.0, one NVIDIA GB10 (DGX Spark, 121.7 GiB unified memory), root hardware counters on.
 > 16 tasks: 8 SWE-bench Lite (not in Verified) + 8 SWE-bench Verified, arm64 images.
 
@@ -16,9 +17,82 @@
 
 ## Results
 
-Partial (2026-11-11 15:50): all three models are done at 8 users and at 1 user; FP8 at 4 users is done; the
-rest is running. Tables:
-`data/tables/sp.md` (all finished cells, with a "ratio to BF16" table); figures: `data/tables/figs/`.
+Tables: `data/tables/sp.md` (every cell, every metric, and a "ratio to BF16" table per user count; numbers in
+`sp.json`). Figures: `data/tables/figs/fig1` to `fig7` (users on the x-axis, one line or panel per model) and one
+time-series page per cell (`ts_<cell>.svg`).
+
+### Summary: 12 cells
+
+"NVFP4" is the mixed checkpoint `unsloth/Qwen3.8-27B-NVFP4`: 4-bit MLPs in layers 0-55, FP8 elsewhere. Windows are
+2.2 to 4.0 h; six cells ended by the stable rule, six at the 4 h limit.
+
+| Users | Model | Output tok/s (steady) | TPOT p50 | TTFT mean | GPU reads, decode-only s | DRAM per output token | GPU W | kJ per 1k tokens | KV pool pinned |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | BF16 | 3.8 | 237 ms | 16.5 s | 226 GB/s | 57.0 GB | 47.6 | 11.9 | 5% |
+| 1 | FP8 | 6.8 | 136 ms | 6.5 s | 211 GB/s | 30.4 GB | 41.6 | 6.0 | 3% |
+| 1 | NVFP4 | 9.0 | 99 ms | 9.9 s | 213 GB/s | 22.9 GB | 45.0 | 4.8 | 3% |
+| 2 | BF16 | 7.4 | 244 ms | 10.6 s | 224 GB/s | 29.5 GB | 44.4 | 5.8 | 7% |
+| 2 | FP8 | 12.1 | 141 ms | 10.2 s | 214 GB/s | 17.0 GB | 45.2 | 3.6 | 7% |
+| 2 | NVFP4 | 15.8 | 110 ms | 11.2 s | 211 GB/s | 13.0 GB | 46.5 | 2.9 | 6% |
+| 4 | BF16 | 13.0 | 262 ms | 10.7 s | 222 GB/s | 16.5 GB | 48.4 | 3.6 | 15% |
+| 4 | FP8 | 21.1 | 160 ms | 7.2 s | 212 GB/s | 9.5 GB | 49.2 | 2.2 | 9% |
+| 4 | NVFP4 | 27.1 | 124 ms | 5.5 s | 210 GB/s | 7.6 GB | 49.4 | 1.8 | 9% |
+| 8 | BF16 | 20.8 | 296 ms | 11.6 s | 219 GB/s | 9.8 GB | 59.5 | 2.6 | 28% |
+| 8 | FP8 | 31.2 | 192 ms | 6.3 s | 211 GB/s | 6.2 GB | 57.0 | 1.7 | 16% |
+| 8 | NVFP4 | 37.0 | 157 ms | 6.9 s | 210 GB/s | 5.4 GB | 57.1 | 1.5 | 17% |
+
+Output against BF16 at the same number of users (weights read per step are 1.90 and 2.68 times smaller):
+
+| Users | FP8 / BF16 | NVFP4 / BF16 |
+|---|---|---|
+| 1 | 1.76 | 2.35 |
+| 2 | 1.64 | 2.14 |
+| 4 | 1.62 | 2.09 |
+| 8 | 1.50 | 1.78 |
+
+What the 12 cells say:
+
+1. **The DRAM is the limit in every cell.** In decode-only seconds the GPU reads 210 to 226 GB/s (77% to 83% of
+   the 273 GB/s peak) for every model and every number of users, one user included. The tensor cores are under 8%
+   active in those seconds. Memory latency on the probe core is 2.0 to 2.2 times idle throughout.
+2. **A decode step costs the bytes it reads.** The byte model (weights + DeltaNet state + KV read per step) matches
+   the measured GPU traffic in decode-only steps within 3% in all 12 cells (ratio 1.00 to 1.03).
+3. **Quantization speeds decoding by the weight bytes it removes, less as users are added.** At one user FP8 gives
+   1.76 and NVFP4 2.35 times BF16's output, near the weight ratios. At 8 users it is 1.50 and 1.78. Each user adds
+   KV and state bytes that stay BF16 and FP32: in decode-only steps at 8 users the weights are 178 of 220 GB/s for
+   BF16, 153 of 214 for FP8 and 128 of 214 for NVFP4.
+4. **More users add tokens per step, not traffic.** From 1 to 8 users BF16's output grows 5.5 times, FP8's 4.6
+   times and NVFP4's 4.1 times, while TPOT grows 25%, 41% and 59%.
+5. **The freed memory removes the cache loss that starts at 8 users.** With BF16's 36 GiB pool, 3.6% of
+   append-phase calls at 8 users lost cached prefix (0.5% at 4 users, none below). With 56 GiB (FP8) and 63 GiB
+   (NVFP4) it is 0.3% and 0.9% at 8 users and none below. Running requests pin 28% of the small pool, 16% to 17%
+   of the larger ones.
+6. **Prefill gains less from NVFP4 than decode does.** After a trim a call recomputes 17,000 to 34,000 prompt
+   tokens. Snip-phase TTFT p50 at 8 users is 20.0 s (BF16), 11.9 s (FP8) and 14.2 s (NVFP4); at one user 31.3,
+   13.9 and 22.2 s. In prefill seconds the tensor cores are 40% to 59% active and GPU reads drop to 90 to 167 GB/s.
+7. **Energy per token follows step time.** GPU power is 42 to 60 W in every cell, so energy per 1,000 output tokens
+   falls from 11.9 kJ (BF16, one user) to 1.5 kJ (NVFP4, 8 users).
+8. **The CPU stays idle.** 1.35 to 1.92 busy cores of 20, of which 1.2 to 1.4 are the measurement (the latency
+   probe holds one core). vLLM uses 0.12 to 0.39 cores, harness and tools at most 0.02. All CPU cores together move 1.7
+   to 2.8 GB/s of DRAM traffic.
+9. **Tensor instructions cannot be compared across models.** Measured alone with the counters on, one tensor
+   instruction does 4,034 FLOPs in the BF16 GEMM, 8,197 in the FP8 GEMMs and 16,394 in the FP4 GEMM
+   (`data/runs/checks/qgemm_1112/qgemm.json`). The tables therefore give TFLOPS from the tokens computed: 4.0 to
+   14.2 (BF16), 5.7 to 26.3 (FP8) and 10.7 to 31.1 (NVFP4), far below what the kernels reach alone (95, 176 and
+   113 TFLOPS on an 8192-cubed multiply).
+
+Limits of these numbers:
+
+- Accuracy was not measured (verification was off). The quantized models may solve fewer or more tasks.
+- The workload is not identical across models: the models write different replies. Output tokens per call range
+  from 463 to 851 across cells, so whole-call latency and TTFT means carry that difference; per-token numbers
+  (TPOT, tokens/s, GB and kJ per token) do not.
+- Steady-period output by thirds is within 10% of its mean in 10 of 12 cells (not in BF16 at 4 users: 13.1 / 11.4 /
+  14.5, and FP8 at 2 users: 13.0 / 10.8 / 12.5). GPU reads are within 10% in all 12. KV pool use keeps moving in
+  11 of 12 cells: it follows which sessions happen to be long.
+- At 1 and 2 users a window holds 2 to 9 sessions, so call-level numbers rest on few tasks.
+- Two things differ between models besides the weights, both by design: the KV pool (36, 56, 63 GiB) and, for
+  NVFP4, which layers are 4-bit. `nvfp4_n08`'s first minutes overlapped an analysis process (see Process).
 
 ### Three precisions at 8 users
 
@@ -96,6 +170,47 @@ holds two to five whole sessions, so whole-call numbers rest on few tasks; per-t
   against 13.9 s (and 14.2 s against 11.9 s at 8 users). Its decode is faster (99 against 136 ms per token).
 - One gate is flagged for `nvfp4_n01` in `sp.md` (calls cut at teardown: 3, limit 2): the three are the last
   records of sessions that ended at their call budget, not cut calls. The gate is corrected for later analyses.
+
+### Three precisions at 4 users
+
+Windows: BF16 4.0 h (hard limit), FP8 4.0 h (hard limit), NVFP4 3.01 h (stable stop). All gates pass.
+
+| Metric | BF16 | FP8 | NVFP4 | FP8 / BF16 | NVFP4 / BF16 |
+|---|---|---|---|---|---|
+| Output tokens/s, all users, steady period | 13.0 | 21.1 | 27.1 | 1.62 | 2.09 |
+| TPOT p50 | 262 ms | 160 ms | 124 ms | 0.61 | 0.47 |
+| TTFT mean | 10.7 s | 7.2 s | 5.5 s | 0.67 | 0.52 |
+| Call latency mean | 201 s | 142 s | 129 s | 0.71 | 0.64 |
+| Output tokens per call | 624 | 613 | 687 | 0.98 | 1.10 |
+| KV pool pinned by running requests | 15% | 9% | 9% | 0.59 | 0.58 |
+| Append calls that lost cached prefix | 0.5% | 0% | 0% | - | - |
+| GPU DRAM reads, decode-only seconds | 222 GB/s | 212 GB/s | 210 GB/s | 0.95 | 0.95 |
+| DRAM traffic per output token | 16.5 GB | 9.5 GB | 7.6 GB | 0.58 | 0.46 |
+| Measured / byte model, decode-only steps | 1.01 | 1.01 | 1.03 | - | - |
+| GPU power | 48.4 W | 49.2 W | 49.4 W | 1.02 | 1.02 |
+| GPU energy per 1,000 output tokens | 3.58 kJ | 2.21 kJ | 1.75 kJ | 0.62 | 0.49 |
+
+- The speed-up sits between the 1-user and the 8-user values: 1.62 (FP8) and 2.09 (NVFP4) times BF16's output.
+- BF16's output by thirds of the steady period is 13.1 / 11.4 / 14.5 tokens/s (not within 10%): with four users the
+  mix of trimmed and fresh sessions swings more than with eight.
+
+### Three precisions at 2 users
+
+Windows: BF16 3.67 h (stable stop), FP8 3.84 h (stable stop), NVFP4 4.0 h (hard limit). All gates pass.
+
+| Metric | BF16 | FP8 | NVFP4 | FP8 / BF16 | NVFP4 / BF16 |
+|---|---|---|---|---|---|
+| Output tokens/s, all users, steady period | 7.4 | 12.1 | 15.8 | 1.64 | 2.14 |
+| TPOT p50 | 244 ms | 141 ms | 110 ms | 0.58 | 0.45 |
+| Output tokens per call | 587 | 851 | 805 | 1.45 | 1.37 |
+| Call latency mean | 176 s | 163 s | 162 s | 0.93 | 0.92 |
+| GPU DRAM reads, decode-only seconds | 224 GB/s | 214 GB/s | 211 GB/s | 0.96 | 0.95 |
+| DRAM traffic per output token | 29.5 GB | 17.0 GB | 13.0 GB | 0.58 | 0.44 |
+| Measured / byte model, decode-only steps | 1.01 | 1.01 | 1.01 | - | - |
+| GPU energy per 1,000 output tokens | 5.82 kJ | 3.61 kJ | 2.86 kJ | 0.62 | 0.49 |
+
+- The quantized models wrote 1.4 times longer replies here, so their calls took almost as long as BF16's although
+  each token came 1.7 to 2.2 times faster.
 
 ### BF16 at 8 users
 
@@ -216,7 +331,13 @@ holds two to five whole sessions, so whole-call numbers rest on few tasks; per-t
     - Both are re-run in their place in the list. The chain now analyses each cell itself and waits for that
       before starting the next one.
   - `fp8_n04`: 08:30 to 12:36, hard limit (4.0 h). `nvfp4_n01` (second try): 12:43 to 15:41, stable stop after
-    2.84 h. `bf16_n04` (second try): started 15:48.
+    2.84 h. `bf16_n04` (second try): 15:48 to 19:56, hard limit. `nvfp4_n04`: 20:05 to 23:12, stable stop after
+    3.01 h.
+  - `bf16_n02`: 2026-11-11 23:22 to 2026-11-12 03:11, stable stop after 3.67 h. `fp8_n02`: 03:22 to 07:20, stable
+    stop after 3.84 h. `nvfp4_n02`: 07:31 to 11:38, hard limit. Chain done after 41.75 h.
+- Q4 (2026-11-12): all 12 cells re-analysed with nothing running (`sp_analyze.py`), every gate passes; FLOPs per
+  tensor instruction measured for the BF16, FP8 and FP4 GEMMs (`data/runs/checks/qgemm_1112/`); the root counter
+  sampler stopped (`echo stop > data/hw/control`) after 49.3 h.
 
 ## Changes
 
@@ -273,4 +394,30 @@ holds two to five whole sessions, so whole-call numbers rest on few tasks; per-t
 
 ## Data inventory
 
-None yet.
+Everything is under `research/24_spark_concurrency/data/` on the DGX Spark (20 GB; git tracks only the `*.md` tables,
+the `*.svg` figures and `tasks.json`).
+
+| Path | What | Size |
+|---|---|---|
+| `tasks.json`, `taskdirs/`, `queue/` | The 16 drawn tasks, their Harbor task folders, the queue Harbor reads | 0.4 MB |
+| `variants.json`, `model_bytes_{bf16,fp8,nvfp4}.json` | KV pool per model; byte model of each checkpoint | small |
+| `runs/<cell>/` | One folder per cell: `cell.json` (flags, marks, stop reason, stable checks, kernel lines), `reqlog/` (per-request and per-step records of the vLLM plugin), `raw/` (10 Hz sampler, probe windows, server config), `extra.jsonl` (1 Hz process groups, PSI, energy), `logs/` | 2.3 GB |
+| `jobs/<cell>/` | Harbor's job: one folder per trial with the s15 harness's `calls.jsonl`, `events.jsonl`, `result.json` | 0.5 GB |
+| `hw/session_20261110_104702/` | Root counter sampler, 49.3 h: `perf_*.csv` (6 PMU events per core per second), `gpu_*.nsys-rep` and their `.sqlite` exports (GPU counters at 100 Hz), `segments.jsonl`, `hw.log` | 17 GB |
+| `runs/checks/` | Server checks (`server_*`), counter check (`counters_1110_104724`), overhead check, container check, dry run, quantized GEMM calibration (`qgemm_1112`) | small |
+| `runs/aborted/`, `runs/*_old*` | Set-aside runs: the first BF16 8-user start, both 32-user starts, the two failed starts of 2026-11-11 | small |
+| `tables/sp.md`, `sp.json` | Final tables and numbers, all 12 cells | - |
+| `tables/cells/<cell>.json`, `series_<cell>.json` | Per-cell results (the cache `--reuse` reads) and 30-second series | - |
+| `tables/figs/` | `fig1_throughput` to `fig7_power`, `ts_<cell>` | - |
+| `tables/sp_<cells>.md`, `stable_replay_n08.json` | Intermediate tables written during the run; the stop-rule replay | - |
+
+Cells: `n08` (BF16, 8 users), `bf16_n01/02/04`, `fp8_n01/02/04/08`, `nvfp4_n01/02/04/08`; smoke cells `smoke`,
+`smoke_fp8`, `smoke_nvfp4`.
+
+To rebuild the tables and figures (nothing may be serving on the GPU; about 1 h, up to 10 GiB of RAM):
+
+```
+PY=~/dgxspark-profiling/exp01_um_profiling/.venv/bin/python
+HF_HOME=/home/hf_data $PY research/24_spark_concurrency/sp_analyze.py      # add --reuse to use the cached cells
+$PY research/24_spark_concurrency/sp_figs.py
+```
