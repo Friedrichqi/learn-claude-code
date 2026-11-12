@@ -1,0 +1,23 @@
+# Topic 24: merged into every task container's compose project (harbor run --extra-docker-compose).
+# - the agents' cores only (vLLM keeps 9,17,18,19; the probe 8; the samplers 0,11,13)
+# - no pulls inside a run: every image is pulled beforehand (sp_tasks.py sanity)
+# - at most 6 GiB per container (PLAN.md, memory budget)
+# - the image's test environment first on PATH: Harbor runs commands with `bash -c`, which reads no profile, and the
+#   Epoch images' PATH has only /opt/miniconda3/bin (checked in the image config)
+services:
+  main:
+    cpuset: "1-7,10,12,14-16"
+    pull_policy: never
+    mem_limit: 6g
+    environment:
+      PATH: /opt/miniconda3/envs/testbed/bin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      CONDA_DEFAULT_ENV: testbed
+      CONDA_PREFIX: /opt/miniconda3/envs/testbed
+# - one shared network for all task containers, created beforehand (`docker network create --subnet 10.224.0.0/16
+#   sp24net`; sp_cell.py does it). Compose would otherwise create a network per trial, and Docker's default address
+#   pools hold about 30: at 32 users, 98 of 128 trials failed with "all predefined address pools have been fully
+#   subnetted" (2026-11-10).
+networks:
+  default:
+    name: sp24net
+    external: true

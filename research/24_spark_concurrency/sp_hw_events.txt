@@ -1,0 +1,8 @@
+# Topic 24: CPU PMU events for sp_hw.py (per core, both core types), read each time perf starts.
+# At most eight; names must exist in /sys/bus/event_source/devices/armv8_pmuv3_*/events/.
+cpu_cycles
+inst_retired
+stall_backend_mem     # cycles stalled on memory in the backend
+ll_cache_miss_rd      # demand read misses of the last-level cache (lower bound of DRAM reads, 64 B each)
+bus_access            # transactions on the core's bus, prefetches and writes included (upper bound of DRAM traffic)
+l2d_cache_refill      # L2 refills
